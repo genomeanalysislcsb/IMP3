@@ -1,0 +1,17 @@
+.*
+!.gitignore
+!.gitlab-ci.yml
+*~
+conf/userconfig.imp.json
+output/*
+db
+__pycache__
+gitold/
+databases/*
+tmp/*
+IMPnew/*
+IMPAnna/*
+bin/*
+lib/*
+docker/*
+dependencies/*

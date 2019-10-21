@@ -1,0 +1,34 @@
+rule run_DAS_tool:
+    input:
+        contigs="Assembly/%s.assembly.merged.fa" % ASS,
+        proteins="Binning/prokka.renamed.faa", 
+        tabs=expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"])
+    output:
+        "Binning/selected_DASTool_summary.txt",
+        "Binning/selected_DASTool_bins"
+    threads: 1
+    run:
+        bintabs = ",".join(map(str, input.tabs))
+        binnames = ",".join(map(str, config["binning"]))
+        shell("DAS_Tool -i {bintabs} \
+        -l {binnames} \
+        -c {input.contigs} \
+        --proteins {input.proteins} --score_threshold 0.3 \
+        --threads {threads} --write_bins 1 \
+        -o Binning/selected")
+
+rule format_protein_names:
+    input:
+        "Analysis/annotation/prokka.faa",
+        "Analysis/annotation/annotation.filt.gff"
+    output:
+        "Analysis/annotation/annotation.filt.contig2ID.tsv",
+        "Binning/prokka.renamed.faa"
+    shell:
+        """
+        TMP_PROT=$(mktemp --tmpdir={TMPDIR} -t "proteins_XXXXXX.faa")
+        cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
+	sed 's/ .*//' {input[0]} >> $TMP_PROT
+        prokka2dastoolHeader.pl  $TMP_PROT {output[0]} >{output[1]}
+	"""
+

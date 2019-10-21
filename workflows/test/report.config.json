@@ -1,0 +1,6 @@
+{
+    "threads": 3,
+    "memory_total_gb": 18,
+    "memory_per_core_gb": 6,
+    "outputdir": "/data/idiv-biu/heintzbu/PROCESSING/allmega"
+}

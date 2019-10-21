@@ -1,0 +1,35 @@
+rule allmotu:
+	input:
+		expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv", type=TYPES, measure=['abundances','counts'])
+	output:
+		"mOTUs.done"
+	shell:
+		"""touch {output}"""
+
+rule motus:
+	input:
+		"Preprocessing/{type}.r1.preprocessed.fq",
+		"Preprocessing/{type}.r2.preprocessed.fq"
+	output:
+		"Analysis/taxonomy/mOTUs/{type}",
+		"Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.abundances.gz",
+		"Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.counts.gz"
+	params:
+		"{type}.r1.preprocessed.fq",
+		"{type}.r2.preprocessed.fq"
+	shell:
+		"""mkdir -p {output[0]}
+		cd {output[0]}
+		ln -s ../../../../{input[0]}
+		ln -s ../../../../{input[1]}
+		mOTUs.pl --processors={threads} {params[0]} {params[1]}
+		cd ../../../../"""
+
+rule getResults:
+	input:
+		"Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.{measure}.gz"
+	output:
+		"Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv"
+	shell:
+		"""zcat {input} >> {output}"""
+

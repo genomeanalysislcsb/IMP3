@@ -1,0 +1,21 @@
+rule maxbin:
+    input:
+       "Assembly/%s.assembly.merged.fa" % ASS,
+       "Analysis/mg.assembly.contig_depth.0.txt"
+    output:
+       "Binning/MaxBin/maxbin_res.log",
+       "Binning/MaxBin/maxbin_res.summary"
+    threads: THREADS
+    shell:
+        """
+	## Create MaxBin dir
+        mkdir -p Binning/MaxBin
+
+	## Run MaxBin
+        run_MaxBin.pl -contig {input[0]} \
+        -abund {input[1]} \
+        -out Binning/MaxBin/maxbin_res \
+        -thread {threads} \
+        -min_contig_length {config[binning][MaxBin][cutoff]}
+
+        """

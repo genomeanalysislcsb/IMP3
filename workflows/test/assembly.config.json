@@ -1,0 +1,7 @@
+{
+    "threads": 6,
+    "memory_total_gb": 108,
+    "memory_per_core_gb": 18,
+    "assembler": "megahit",
+    "outputdir": "/data/idiv-biu/heintzbu/PROCESSING/allmega"
+}

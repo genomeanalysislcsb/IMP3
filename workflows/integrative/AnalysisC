@@ -1,0 +1,150 @@
+# include rules for the Analysis part of the workflow
+
+include:
+    '../../rules/Analysis/assembly.contig-length.rule'
+include:
+    '../../rules/Analysis/contig-depth.rule'
+include:
+    '../../rules/Analysis/contig-length.rule'
+include:
+    '../../rules/Analysis/fastqc.rules'
+include:
+    '../../rules/Analysis/gene-depth.rule'
+#include:
+#    '../../rules/Analysis/krona.rule'
+include:
+    '../../rules/Analysis/prokkaC.rule'
+#include:
+#    '../../rules/Analysis/metaquast.rule'
+include:
+    '../../rules/Analysis/reads-count.rule'
+include:
+    '../../rules/Analysis/stat-output.rename.rule'
+include:
+    '../../rules/Analysis/variant.rule'
+include:
+    '../../rules/Analysis/visualize.rules'
+include:
+    '../../rules/Analysis/vizbin.rule'
+include:
+    '../../rules/Analysis/annotateC.snakefile'
+include:
+    '../../rules/Analysis/featureCount.rule'
+include:
+    '../../rules/Analysis/Taxonomy/mOTUs.rule'
+include:
+    "../../rules/Analysis/Taxonomy/kraken_reads.rule"
+include:
+    "../../rules/Analysis/Taxonomy/kraken_contigs.rule"
+include:
+    "../../rules/Analysis/Taxonomy/mOTUlink.rules"    	
+
+# master command
+rule ANALYSIS:
+    input:
+        "Analysis/mgmt.assembly.length.txt",
+        "Analysis/mgmt.assembly.gc_content.txt",
+        "Analysis/mgmt.vizbin.filtered.fa",
+        "Analysis/mgmt.vizbin.with-contig-names.points",
+#        "Analysis/results/quast/summary/combined_quast_output/contigs_reports/nucmer_output/aux/mgmt.assembly.merged.coords_edited",
+        "Analysis/mg.read_counts.txt",
+        "Analysis/mg.annotation.bed",
+        "Analysis/mg.gene_depth.hist",
+        "Analysis/mg.gene_depth.avg",
+        "Analysis/mg.gene.len",
+        "Analysis/mg.prokkaID2ec.txt",
+        "Analysis/mg.variants.samtools.vcf.gz",
+        "Analysis/mg.variants.platypus.vcf.gz",
+        "Analysis/mg.assembly.contig_coverage.txt",
+        "Analysis/mg.assembly.contig_depth.txt",
+        "Analysis/mg.assembly.contig_flagstat.txt",
+#        "Analysis/results/mg.gene_kegg_krona.txt",
+#        "Analysis/results/mg.gene_kegg_krona.html",
+        'Analysis/stats/mg/mg.r1.fq_fastqc.html',
+        'Analysis/stats/mg/mg.r2.fq_fastqc.html',
+        'Analysis/stats/mg/mg.r1.fq_fastqc.zip',
+        'Analysis/stats/mg/mg.r2.fq_fastqc.zip',
+        "Analysis/stats/mg/mg.r1_preprocessed_fastqc.zip",
+        "Analysis/stats/mg/mg.r2_preprocessed_fastqc.zip",
+        "Analysis/stats/mg/mg.se_preprocessed_fastqc.zip",
+        "Analysis/stats/mg/mg.r1_preprocessed_fastqc.html",
+        "Analysis/stats/mg/mg.r2_preprocessed_fastqc.html",
+        "Analysis/stats/mg/mg.se_preprocessed_fastqc.html",
+        "Analysis/mt.annotation.bed",
+        "Analysis/mt.gene_depth.hist",
+        "Analysis/mt.gene_depth.avg",
+        "Analysis/mt.gene.len",
+        "Analysis/mt.prokkaID2ec.txt",
+        "Analysis/mt.variants.samtools.vcf.gz",
+        "Analysis/mt.variants.platypus.vcf.gz",
+        "Analysis/mt.assembly.contig_coverage.txt",
+        "Analysis/mt.assembly.contig_depth.txt",
+        "Analysis/mt.assembly.contig_flagstat.txt",
+#       "Analysis/results/mt.gene_kegg_krona.txt",
+#       "Analysis/results/mt.gene_kegg_krona.html",
+        "Analysis/stats/mt/mt.r1.fq_fastqc.html",
+        "Analysis/stats/mt/mt.r2.fq_fastqc.html",
+        "Analysis/stats/mt/mt.r1.fq_fastqc.zip",
+        "Analysis/stats/mt/mt.r2.fq_fastqc.zip",
+        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.zip",
+        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.zip",
+        "Analysis/stats/mt/mt.se_preprocessed_fastqc.zip",
+        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.html",
+        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.html",
+        "Analysis/stats/mt/mt.se_preprocessed_fastqc.html",
+#        "Analysis/results/IMP-vizbin_length.png",
+#        "Analysis/results/IMP-vizbin_length_GC.png",
+#        "Analysis/results/IMP-vizbin_length_geneDensity.png",
+#        "Analysis/results/IMP-vizbin_standard.png",
+	"Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+	"Analysis/annotation/mg.rRNA_counts.tsv",
+	"Analysis/annotation/mg.CDS_counts.tsv",
+	"Analysis/annotation/mg.KEGG.counts.tsv",
+	"Analysis/annotation/mg.resfams.counts.tsv",
+        "Analysis/annotation/mg.dbCAN.counts.tsv",
+        "Analysis/annotation/mg.essential.counts.tsv",
+        "Analysis/annotation/mg.metacyc.counts.tsv",
+        "Analysis/annotation/mg.Pfam-A.counts.tsv",
+	"Analysis/annotation/mg.dbCAN.counts.tsv",
+	"Analysis/annotation/mg.TIGRPFAM.counts.tsv",
+	"Analysis/annotation/mg.Cas.counts.tsv",
+	"Analysis/annotation/mt.CDS_counts.tsv",
+	"Analysis/annotation/mt.rRNA_counts.tsv",
+	"Analysis/annotation/mt.KEGG.counts.tsv",
+        "Analysis/annotation/mt.resfams.counts.tsv",
+        "Analysis/annotation/mt.dbCAN.counts.tsv",
+        "Analysis/annotation/mt.essential.counts.tsv",
+        "Analysis/annotation/mt.metacyc.counts.tsv",
+        "Analysis/annotation/mt.Pfam-A.counts.tsv",
+        "Analysis/annotation/mt.dbCAN.counts.tsv",
+        "Analysis/annotation/mt.TIGRPFAM.counts.tsv",
+        "Analysis/annotation/mt.Cas.counts.tsv",
+	"Analysis/taxonomy/kraken/mg.kraken.output",
+	"Analysis/taxonomy/kraken/mt.kraken.output",
+	"Analysis/taxonomy/kraken/mg.kraken.report",
+	"Analysis/taxonomy/kraken/mt.kraken.output",
+	"Analysis/taxonomy/kraken/mgmt.kraken.contig.output",
+	"Analysis/taxonomy/kraken/mgmt.kraken.parsed.tsv",
+	"Analysis/taxonomy/kraken/mgmt.kraken.contig.report",
+	"Analysis/taxonomy/mOTUs/mg.mOTU.abundances.tsv",
+	"Analysis/taxonomy/mOTUs/mt.mOTU.abundances.tsv",
+	"Analysis/taxonomy/mOTUs/mg.mOTU.counts.tsv",
+	"Analysis/taxonomy/mOTUs/mt.mOTU.counts.tsv",
+	"Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",
+	"Analysis/taxonomy/mOTU_links/all.mOTUs.present",
+	"Analysis/taxonomy/mOTU_links/marker_genes",
+	"Analysis/taxonomy/mOTU_links/COG0495.present.DBgenes.fna",
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0012.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0495.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0016.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0541.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0552.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0018.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0215.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0525.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0172.fna", 
+	"Analysis/taxonomy/mOTU_links/marker_genes/COG0533.fna",
+	"Analysis/taxonomy/mOTU_links/COG0495.bestPresentHits.tsv",
+	"Analysis/taxonomy/mOTU_links/COG0495.bestPresentHitPhylogeny.tsv"
+    output:
+        touch('analysis.done')

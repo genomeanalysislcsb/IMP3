@@ -1,0 +1,45 @@
+rule call_gene_depth:
+    input:
+        "Analysis/annotation/annotation.filt.gff",
+        "Assembly/{type}.reads.sorted.bam"
+    output:
+        "Analysis/{type}.annotation.bed",
+        "Analysis/{type}.gene_depth.hist",
+        "Analysis/{type}.gene_depth.avg",
+        "Analysis/{type}.gene.len",
+        "Analysis/{type}.prokkaID2ec.txt"
+    shell:
+        """
+        coverageBed -hist -abam {input[1]} -b <(awk '$4 < $5' {input[0]}) | grep -v "^all" > {output[0]}
+        paste <(cat {output[0]} | cut -f9 | cut -f1 -d \";\" | sed -e \"s/ID=//g\") \
+        <(cut -f10,11,12,13 {output[0]}) > {output[1]}
+        ## This code was adapted and modified from the CONCOCT script to calculate depth
+        ## It prints out a file that contains the average depth of all the genes
+        awk -v OFS='\t' 'BEGIN {{pc=""}}
+        {{
+            c=$1;
+            if (c == pc) {{
+                    cov=cov+$2*$5;
+            }} else {{
+                print pc,cov;
+                cov=$2*$5;
+                pc=c
+            }}
+        }} END {{print pc,cov}}' < {output[1]} | tail -n +2 > {output[2]}
+
+
+        # Record gene length file
+        cut -f 1,4 {output[1]} | uniq > {output[3]}
+        
+        # AHB: if grep -q 'eC_number' {output[1]}
+        if grep -q 'eC_number' {input[0]}
+        then
+	    echo 'EC annotations available'
+            echo 'Creating file {output[4]}'
+            grep "eC_number=" {input[0]} | cut -f9 | cut -f1,2 -d ';'| sed 's/ID=//g'| sed 's/;eC_number=/\t/g' > {output[4]}
+        else
+	    echo 'No EC annotations available'
+            echo 'Creating empty file {output[4]}'
+            touch {output[4]}
+        fi
+        """

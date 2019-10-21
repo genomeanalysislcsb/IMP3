@@ -1,0 +1,10 @@
+rule binny_pgol_table:
+    input:
+        expand("Binning/binny/contigs2clusters.{pk}.{nn}.tsv",pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
+    output:
+        "Binning/binny/scaffold2bin.tsv"
+    shell:
+        """
+        grep [PGOL] {input} >> {output}
+        """
+

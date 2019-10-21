@@ -1,0 +1,41 @@
+rule all:
+	input:
+		'post.done'
+
+configfile:
+	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/conf/config.post.json"	
+
+MG = os.environ.get("MG", config['raws']['Metagenomics']).split()
+MT = os.environ.get("MT", config['raws']['Metatranscriptomics']).split()
+
+if MG and MT:
+	TYPES = ['mg', 'mt']
+	ASS = 'mgmt'
+elif MG:
+	TYPES = ['mg']
+	ASS = 'mg'
+elif MT:
+	TYPES = ['mt']
+	ASS = 'mt'
+        
+include:
+	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/rerunProdigal.snakefile"
+
+include:
+	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/prepareProteomics.snakefile"
+
+include:
+    "/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/prepareProteomicsVariants.snakefile"
+
+include:
+	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/annotate.snakefile"
+
+include:
+	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/mOTUs.snakefile"
+
+include:
+	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/binny.snakefile"
+
+include:
+	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/mOTUlink.snakefile"
+

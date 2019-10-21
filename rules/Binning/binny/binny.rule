@@ -1,0 +1,43 @@
+PLOT_OUTPUT_FILES = [
+    "Analysis/results/mg.read_stats.html",
+    "Analysis/results/mg.read_stats.txt",
+    "Analysis/results/mg_mapping_stats.html",
+    "Analysis/results/mg_mapping_stats.txt",
+    "Analysis/results/mt.read_stats.html",
+    "Analysis/results/mt.read_stats.txt",
+    "Analysis/results/mt_mapping_stats.html",
+    "Analysis/results/mt_mapping_stats.txt",
+    "Analysis/results/mgmt_results.Rdat",
+    expand("Binning/binny/reachabilityDistanceEstimates.{pk}.{nn}.tsv \
+    Binning/binny/clusterFirstScan.{pk}.{nn}.tsv \
+    Binning/binny/bimodalClusterCutoffs.{pk}.{nn}.tsv \
+    Binning/binny/contigs2clusters.{pk}.{nn}.tsv \
+    Binning/binny/contigs2clusters.{pk}.{nn}.RDS \
+    Binning/binny/clusteringWS.{pk}.{nn}.Rdata \
+    Binning/binny/finalClusterMap.{pk}.{nn}.pdf".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
+]
+
+rule binny_visualize:
+    input:
+       'Analysis/mg.read_counts.txt',
+       'Analysis/mt.read_counts.txt',
+       'Analysis/mg.assembly.contig_flagstat.txt',
+       'Analysis/mt.assembly.contig_flagstat.txt',
+       'Analysis/mg.assembly.contig_coverage.txt',
+       'Analysis/mt.assembly.contig_coverage.txt',
+       'Analysis/mg.assembly.contig_depth.txt',
+       'Analysis/mt.assembly.contig_depth.txt',
+       'Analysis/mgmt.assembly.gc_content.txt',
+       "Analysis/mgmt.vizbin.with-contig-names.points",
+       "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
+    output:
+        PLOT_OUTPUT_FILES
+    shell:
+        """
+        PLOT_SCRIPT="{SRCDIR}/IMP_visualize_mgmt_commented.R"
+
+        echo "[x] PLOT `date +"%Y/%m/%d %H:%M:%S"`"
+        mkdir -p Analysis/results
+        mkdir -p Binning/binny/clusterFiles
+	Rscript $PLOT_SCRIPT {config[imp_lib]} Analysis/results {input} {SRCDIR}/IMP_plot_binny_functions.R {config[binning][binny][pk]} {config[binning][binny][nn]}
+        """

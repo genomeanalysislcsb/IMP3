@@ -1,0 +1,24 @@
+# include rules for the Analysis part of the workflow
+
+include:
+        "/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMP/rules/Analysis/Taxonomy/mOTUs.rule"
+include:
+       "/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMP/rules/Analysis/Taxonomy/kraken_reads.rule"
+include:
+       "/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMP/rules/Analysis/Taxonomy/kraken_contigs.rule"
+
+# master command
+rule TAXONOMY:
+    input:
+        "Analysis/taxonomy/mOTUs/mg.mOTU.abundances.tsv",
+	"Analysis/taxonomy/mOTUs/mt.mOTU.abundances.tsv",
+	"Analysis/taxonomy/mOTUs/mg.mOTU.counts.tsv",
+	"Analysis/taxonomy/mOTUs/mt.mOTU.counts.tsv",
+        "Analysis/kraken/mg.GTDBkraken.output",
+	"Analysis/kraken/mt.GTDBkraken.output",
+	"Analysis/kraken/mg.GTDBkraken.report",
+	"Analysis/kraken/mt.GTDBkraken.output",
+	"mgmt.GTDBkraken.contig.output",
+	"mgmt.GTDBkraken.contig.report"
+    output:
+        touch('taxonomy.done')
