@@ -31,18 +31,13 @@ if MG and MT:
         include:
             "workflows/integrative/Assembly"
 
-#    if 'analysis' in IMP_STEPS:
-#        include:
-#            "workflows/integrative/Analysis"
+    if 'analysis' in IMP_STEPS:
+        include:
+            "workflows/integrative/AnalysisC"
 
-#    if 'binning' in IMP_STEPS:
-#        include:
-#            "workflows/integrative/Binning"
-
-#    if 'report' in IMP_STEPS:
-#        include:
-#            "workflows/integrative/Report"
-
+    if 'binning' in IMP_STEPS:
+        include:
+            "workflows/integrative/Binning2"
 
 # Single omics MG workflow
 elif MG:
@@ -56,15 +51,11 @@ elif MG:
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Analysis"
+            "workflows/single_omics/mg/AnalysisC"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Binning"
-
-    if 'report' in IMP_STEPS:
-        include:
-            "workflows/single_omics/mg/Report"
+            "workflows/single_omics/mg/Binning2"
 
 elif MT:
     if 'preprocessing' in IMP_STEPS:
@@ -77,15 +68,11 @@ elif MT:
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Analysis"
+            "workflows/single_omics/mt/AnalysisC"
 
     if 'binning' in IMP_STEPS:
         include:
             "workflows/single_omics/mt/Binning2"
-
-    if 'report' in IMP_STEPS:
-        include:
-            "workflows/single_omics/mt/Report"
 
 else:
     raise Exception('No input data.')
@@ -99,9 +86,6 @@ if 'analysis' in IMP_STEPS:
     inputs.append('analysis.done')
 if 'binning' in IMP_STEPS:
     inputs.append('binning.done')
-if 'report' in IMP_STEPS:
-    inputs.append('report.done')
-
 
 # master command
 rule ALL:

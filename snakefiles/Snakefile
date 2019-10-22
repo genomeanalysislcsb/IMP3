@@ -1,41 +1,111 @@
-rule all:
-	input:
-		'post.done'
+# include configuration file
+include:
+    "rules/ini/config"
 
-configfile:
-	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/conf/config.post.json"	
-
-MG = os.environ.get("MG", config['raws']['Metagenomics']).split()
-MT = os.environ.get("MT", config['raws']['Metatranscriptomics']).split()
-
+# define the data types used and the assembly
 if MG and MT:
-	TYPES = ['mg', 'mt']
-	ASS = 'mgmt'
+    TYPES = ['mg', 'mt']
+    ASS = 'mgmt'
 elif MG:
-	TYPES = ['mg']
-	ASS = 'mg'
+    TYPES = ['mg']
+    ASS = 'mg'
 elif MT:
-	TYPES = ['mt']
-	ASS = 'mt'
-        
-include:
-	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/rerunProdigal.snakefile"
+    TYPES = ['mt']
+    ASS = 'mt'
 
-include:
-	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/prepareProteomics.snakefile"
 
-include:
-    "/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/prepareProteomicsVariants.snakefile"
+workdir:
+    OUTPUTDIR
 
+# include rules for the workflow based on the input parameters
 include:
-	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/annotate.snakefile"
+    "rules/data.input.rules"
 
-include:
-	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/mOTUs.snakefile"
+# INTEGRATIVE MG-MT workflow
+if MG and MT:
+    if 'preprocessing' in IMP_STEPS:
+        include:
+            "workflows/integrative/Preprocessing"
 
-include:
-	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/binny.snakefile"
+    if 'assembly' in IMP_STEPS:
+        include:
+            "workflows/integrative/Assembly"
 
-include:
-	"/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMPnew/snakefiles/mOTUlink.snakefile"
+#    if 'analysis' in IMP_STEPS:
+#        include:
+#            "workflows/integrative/Analysis"
 
+#    if 'binning' in IMP_STEPS:
+#        include:
+#            "workflows/integrative/Binning"
+
+#    if 'report' in IMP_STEPS:
+#        include:
+#            "workflows/integrative/Report"
+
+
+# Single omics MG workflow
+elif MG:
+    if 'preprocessing' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Preprocessing"
+
+    if 'assembly' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Assembly"
+
+    if 'analysis' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Analysis"
+
+    if 'binning' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Binning"
+
+    if 'report' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Report"
+
+elif MT:
+    if 'preprocessing' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Preprocessing"
+
+    if 'assembly' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Assembly"
+
+    if 'analysis' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Analysis"
+
+    if 'binning' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Binning2"
+
+    if 'report' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Report"
+
+else:
+    raise Exception('No input data.')
+
+inputs = []
+if 'preprocessing' in IMP_STEPS:
+    inputs.append('preprocessing.done')
+if 'assembly' in IMP_STEPS:
+    inputs.append('assembly.done')
+if 'analysis' in IMP_STEPS:
+    inputs.append('analysis.done')
+if 'binning' in IMP_STEPS:
+    inputs.append('binning.done')
+if 'report' in IMP_STEPS:
+    inputs.append('report.done')
+
+
+# master command
+rule ALL:
+    input:
+        inputs
+    output:
+        touch('workflow.done')
