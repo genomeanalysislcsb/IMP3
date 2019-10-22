@@ -1,24 +1,24 @@
 EXTRACT_UNMAPPED_SHELL = """
-TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
-bwa mem -v 1 -t {THREADS} {input[3]} {input[0]} {input[1]} | samtools view --threads {THREADS} -bS - > $TMP_FILE
-samtools merge --threads {THREADS} -u - \
-<(samtools view --threads {THREADS} -u  -f 4 -F 264 $TMP_FILE) \
-<(samtools view --threads {THREADS} -u -f 8 -F 260 $TMP_FILE) \
-<(samtools view --threads {THREADS} -u -f 12 -F 256 $TMP_FILE) | \
-samtools view --threads {THREADS} -bF 0x800 -  | samtools sort --threads {THREADS} -m {MEMCORE}G -n - | \
-bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]}
+ TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
+ bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} | samtools view --threads {threads} -bS - > $TMP_FILE
+ samtools merge --threads {threads} -u - \
+  <(samtools view --threads {threads} -u  -f 4 -F 264 $TMP_FILE) \
+  <(samtools view --threads {threads} -u -f 8 -F 260 $TMP_FILE) \
+  <(samtools view --threads {threads} -u -f 12 -F 256 $TMP_FILE) | \
+ samtools view --threads {threads} -bF 0x800 -  | samtools sort --threads {threads} -m {BIGMEMCORE} -n - | \
+  bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]}
 
-if [[ -s {input[2]} ]]
-then
-    bwa mem -v 1 -t {THREADS} {input[3]} {input[2]} | \
-    samtools view --threads {THREADS} -bS - | samtools view --threads {THREADS} -uf 4 - | \
+ if [[ -s {input[2]} ]]
+ then
+    bwa mem -v 1 -t {threads} {input[3]} {input[2]} | \
+    samtools view --threads {threads} -bS - | samtools view --threads {threads} -uf 4 - | \
     bamToFastq -i stdin -fq {output[2]}
-else
+ else
     echo "There are no singletons reads. {input[2]} is empty. Generating empty {output[2]}" 
     touch {output[2]}
-fi
+ fi
 
-rm -rf $TMP_FILE
+ rm -rf $TMP_FILE
 """
 
 rule extract_unmapped:
@@ -36,5 +36,13 @@ rule extract_unmapped:
         'Assembly/{type}.r1.unmapped.fq',
         'Assembly/{type}.r2.unmapped.fq',
         'Assembly/{type}.se.unmapped.fq'
+    params:
+        runtime = "12:00:00",
+        partition = "-p bigmem --qos qos-bigmem ",
+        mem = "--mem=" + BIGMEMTOTAL + "G"
+    threads: BIGCORENO
+    conda: "IMP_mapping.yaml"
+    log: "logs/assembly_extractUnmapped_megahit.{type}.log"
+    message: "Extracting unmapped {type} reads from megahit assembly."
     shell:
         EXTRACT_UNMAPPED_SHELL
