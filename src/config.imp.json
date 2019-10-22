@@ -1,7 +1,8 @@
 {
-    "threads": 4,
-    "memory_total_gb": 8,
-    "memory_per_core_gb": 2,
+    "normal_mem_per_core_gb": 4,
+    "big_mem_total_gb": 1600, 
+    "big_mem_cores": 8,
+    "big_mem_per_core_gb": 200,
     "tmp_dir": "tmp",
     "imp_root": "$imp_root",
     "imp_src": "$imp_root/src",
@@ -39,6 +40,7 @@
         "url": "https://webdav-r3lab.uni.lu/public/R3lab/IMP/linux64.tbl2asn.gz"
     },
     "assembly": {
+        "threads": 8,
         "mink": 25,
         "maxk": 99,
         "step": 4,

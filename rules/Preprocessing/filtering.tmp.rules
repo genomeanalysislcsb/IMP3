@@ -1,3 +1,5 @@
+MEMCORE = config['big_mem_per_core_gb'] + "G"
+
 FILTERING_CMD = """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
         BUFFER=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
@@ -40,10 +42,13 @@ rule mg_filtering:
         'Preprocessing/mg.r2.trimmed.%s_filtered.fq' % FILTER,
         'Preprocessing/mg.se.trimmed.%s_filtered.fq' % FILTER
     params:
-        runtime = "24:00:00"
-    threads: THREADS
+        runtime = "24:00:00",
+        partition = "-p bigmem --qos qos-bigmem ",
+        mem = "--mem=" + config['big_mem_total_gb'] + "G"
+    threads: config['big_mem_cores']
     conda: "IMP_mapping.yaml"
     log: "logs/preprocessing_mgFiltering.log"
+    message: "Filtering mg reads against {filter}."
     shell:
         FILTERING_CMD
 
@@ -61,10 +66,13 @@ rule mt_filtering:
         'Preprocessing/mt.r2.trimmed.rna_filtered.%s_filtered.fq'% FILTER ,
         'Preprocessing/mt.se.trimmed.rna_filtered.%s_filtered.fq' % FILTER
     params:
-        runtime = "24:00:00"
-    threads: THREADS
+        runtime = "24:00:00",
+        partition = "-p bigmem --qos qos-bigmem ",
+        mem = "--mem=" + config['big_mem_total_gb'] + "G"
+    threads: config['big_mem_cores']
     conda: "IMP_mapping.yaml"
     log: "logs/preprocessing_mtFiltering.log"
+    message: "Filtering mt reads against {filter}."
     shell:
         FILTERING_CMD
 
@@ -82,6 +90,7 @@ rule symlink_mt_preprocessed_files:
         runtime = "1:00:00"
     threads: 1
     log: "logs/preprocessing_mtFilterSymlink.log"
+    message: "Symlinking filtered mt reads."
     shell:
         SYMLINK_CMD
 
@@ -98,5 +107,6 @@ rule symlink_mg_preprocessed_files:
         runtime = "1:00:00"
     threads: 1
     log: "logs/preprocessing_mgFilterSymlink.log"
+    message: "Symlinking filtered mg reads."
     shell:
         SYMLINK_CMD
