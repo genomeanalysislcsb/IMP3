@@ -7,6 +7,11 @@ rule bwa_index:
         "{fasta}.pac",
         "{fasta}.sa",
         "{fasta}.ann"
+    params:
+        runtime = "24:00:00"
+    threads: 1
+    conda: "IMP_mapping.yaml"
+    log: "logs/assembly_bwaIndex.{fasta}.log"
     shell:
         """
         bwa index {wildcards.fasta}
