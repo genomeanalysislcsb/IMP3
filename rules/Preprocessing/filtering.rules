@@ -41,7 +41,7 @@ rule mg_filtering:
     params:
         runtime = "24:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + config['big_mem_total_gb'] + "G"
+        mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
     conda: "IMP_mapping.yaml"
     log: "logs/preprocessing_mgFiltering.log"
@@ -65,7 +65,7 @@ rule mt_filtering:
     params:
         runtime = "24:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + config['big_mem_total_gb'] + "G"
+        mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
     conda: "IMP_mapping.yaml"
     log: "logs/preprocessing_mtFiltering.log"
@@ -84,7 +84,9 @@ rule symlink_mt_preprocessed_files:
         'Preprocessing/mt.r2.preprocessed.fq',
         'Preprocessing/mt.se.preprocessed.fq'
     params:
-        runtime = "1:00:00"
+        runtime = "1:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch" 
     threads: 1
     log: "logs/preprocessing_mtFilterSymlink.log"
     message: "Symlinking filtered mt reads."
@@ -101,7 +103,9 @@ rule symlink_mg_preprocessed_files:
         'Preprocessing/mg.r2.preprocessed.fq',
         'Preprocessing/mg.se.preprocessed.fq'
     params:
-        runtime = "1:00:00"
+        runtime = "1:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
     threads: 1
     log: "logs/preprocessing_mgFilterSymlink.log"
     message: "Symlinking filtered mg reads."

@@ -33,7 +33,9 @@ rule cat_se_trimmed:
         'Preprocessing/{type}.se.trimmed.fq'
     threads: 1
     params:
-        runtime="12:00:00"
+        runtime="12:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
     log: "logs/preprocessing_concatSEs.{type}.log"
     message: "Concatenating trimmed single end {type} reads"
     shell:

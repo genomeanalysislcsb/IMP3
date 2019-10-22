@@ -24,7 +24,9 @@ rule no_filtering:
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq'
     params:
-        runtime = "1:00:00"
+        runtime = "1:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
     threads: 1
     log: "logs/preprocessing_noFiltering.{type}.log"
     message: "not filtering {type} reads."
