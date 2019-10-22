@@ -1,4 +1,6 @@
-Rscript -e "install.packages(c('caTools','fpc','FNN','diptest','mixtools','gclus'),repos='http://cran.us.r-project.org')"
+
+
+#Rscript -e "install.packages(c('caTools','fpc','FNN','diptest','mixtools','gclus'),repos='http://cran.us.r-project.org')"
 
 
 # annotateHMMs_Cancerome.sh
