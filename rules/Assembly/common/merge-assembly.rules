@@ -4,6 +4,14 @@ rule cap3:
         'Assembly/%s.%s_unmapped.2.fa' % (ASS, IMP_ASSEMBLER),
     output:
         'Assembly/%s.assembly.merged.fa' % ASS,
+    params:
+        runtime = "72:00:00",
+        partition = "-p bigmem --qos qos-bigmem ",
+        mem = "--mem=" + BIGMEMCORE
+    threads: 1
+#    conda: "IMP_assembly.yaml"
+    log: "logs/assembly_cap3.log"
+    message: "Merging assemblies."
     shell:
         """
         NAME=Assembly/%s.assembly

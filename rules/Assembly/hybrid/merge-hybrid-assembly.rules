@@ -4,6 +4,14 @@ rule collapse_hybrid_assemblies:
         'Assembly/mgmt.%s_hybrid.2.fa' % IMP_ASSEMBLER,
     output:
         'Assembly/mgmt.assembly.merged.fa'
+    params:
+        runtime = "72:00:00",
+        partition = "-p bigmem --qos qos-bigmem ",
+        mem = "--mem=" + BIGMEMCORE
+    threads: 1
+#    conda: "IMP_assembly.yaml"
+    log: "logs/assembly_hybrid_cap3.log"
+    message: "Merging hybrid assemblies."
     shell:
         """
         NAME=Assembly/mgmt.assembly

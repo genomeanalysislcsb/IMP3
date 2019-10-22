@@ -8,6 +8,11 @@ rule trimming:
         'Preprocessing/{type}.se1.trimmed.fq',
         'Preprocessing/{type}.r2.trimmed.fq',
         'Preprocessing/{type}.se2.trimmed.fq'
+    params:
+        runtime="12:00:00"
+    conda: "IMP_preprocessing.yaml"
+    log: "logs/preprocessing_trimmomatic.{type}.log"
+    message: "Trimmming {type} reads."
     shell:
         """
         java -jar {config[trimmomatic][jarfile]} PE -threads {THREADS} {input[0]} {input[1]} {output} \
@@ -25,6 +30,13 @@ rule cat_se_trimmed:
         'Preprocessing/{type}.se1.trimmed.fq',
         'Preprocessing/{type}.se2.trimmed.fq'
     output:
-        'Preprocessing/{type}.se.trimmed.fq',
+        'Preprocessing/{type}.se.trimmed.fq'
+    threads: 1
+    params:
+        runtime="12:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    log: "logs/preprocessing_concatSEs.{type}.log"
+    message: "Concatenating trimmed single end {type} reads"
     shell:
         "cat {input[0]} {input[1]} > {output}"
