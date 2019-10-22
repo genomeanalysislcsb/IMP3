@@ -4,7 +4,6 @@ rule variant_calling:
         "Assembly/{type}.reads.sorted.bam",
     output:
         "Analysis/{type}.variants.samtools.vcf.gz",
-        "Analysis/{type}.variants.platypus.vcf.gz"
     shell:
         """
         echo "[x] {wildcards.type} VARIANT CALLING `date +"%Y/%m/%d %H:%M:%S"`"
@@ -30,16 +29,8 @@ rule variant_calling:
 
         ### run_mpileup {input[0]} {input[1]} {output[0]}
         echo "Running samtools mpileup"
-        samtools mpileup -uAf {input[0]} {input[1]} |\
-        bcftools view -vcg - |\
-        vcf-convert -r {input[0]} -v 4.2 > $VCF_MPU
+        bcftools mpileup -A -Ou -f {input[0]} {input[1]} |
+        bcftools call -vmO >$VCF_MPU 
         bgzip -c $VCF_MPU > {output[0]}
         tabix -f -p vcf {output[0]}
-
-        ### run_platypus {input[0]} {input[1]} {output[1]}
-        echo "Running platypus"
-        Platypus.py callVariants --refFile={input[0]} \
-        --bamFiles={input[1]} --nCPU={THREADS} -o $VCF_PLT
-        bgzip -c $VCF_PLT > {output[1]}
-        tabix -f -p vcf {output[1]}
         """
