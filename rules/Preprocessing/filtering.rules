@@ -1,24 +1,21 @@
-MEMCORE = config['big_mem_per_core_gb'] + "G"
-
 FILTERING_CMD = """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
-        BUFFER=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
-        bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} | samtools view -@ {threads} -bS - > $TMP_FILE
-        samtools merge -@ {threads} -u - \
-        <(samtools view -@ {threads} -u  -f 4 -F 264 $TMP_FILE) \
-        <(samtools view -@ {threads} -u -f 8 -F 260 $TMP_FILE) \
-        <(samtools view -@ {threads} -u -f 12 -F 256 $TMP_FILE) | \
-        samtools view -@ {threads} -bF 0x800 -  | samtools sort -o -@ {threads} -m {MEMCORE}G -n - $BUFFER | \
+        bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} | samtools view --threads {threads} -bS - > $TMP_FILE
+        samtools merge --threads {threads} -u - \
+         <(samtools view --threads {threads} -u  -f 4 -F 264 $TMP_FILE) \
+         <(samtools view --threads {threads} -u -f 8 -F 260 $TMP_FILE) \
+         <(samtools view --threads {threads} -u -f 12 -F 256 $TMP_FILE) | \
+        samtools view --threads {threads} -bF 0x800 -  | samtools sort --threads {threads} -m {BIGMEMCORE} -n -  | \
         bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]}
         if [[ -s {input[2]} ]]
-        then
-        bwa mem -v 1 -t {threads} {input[3]} {input[2]} | samtools view -@ {threads} -bS - | \
-        samtools view -@ {threads} -uf 4 - | bamToFastq -i stdin -fq {output[2]}
+         then
+         bwa mem -v 1 -t {threads} {input[3]} {input[2]} | samtools view --threads {threads} -bS - | \
+         samtools view --threads {threads} -uf 4 - | bamToFastq -i stdin -fq {output[2]}
         else
-        echo "{input[2]} is empty, skipping single end human sequence filtering, but creating it anyway..."
-        touch {output[2]}
+         echo "{input[2]} is empty, skipping single end human sequence filtering, but creating it anyway..."
+         touch {output[2]}
         fi
-        rm -rf $BUFFER* $TMP_FILE
+        rm -rf $TMP_FILE
         """
 
 SYMLINK_CMD = """
@@ -45,7 +42,7 @@ rule mg_filtering:
         runtime = "24:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + config['big_mem_total_gb'] + "G"
-    threads: config['big_mem_cores']
+    threads: BIGCORENO
     conda: "IMP_mapping.yaml"
     log: "logs/preprocessing_mgFiltering.log"
     message: "Filtering mg reads against {filter}."
@@ -69,7 +66,7 @@ rule mt_filtering:
         runtime = "24:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + config['big_mem_total_gb'] + "G"
-    threads: config['big_mem_cores']
+    threads: BIGCORENO
     conda: "IMP_mapping.yaml"
     log: "logs/preprocessing_mtFiltering.log"
     message: "Filtering mt reads against {filter}."

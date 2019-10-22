@@ -27,6 +27,7 @@ rule no_filtering:
         runtime = "1:00:00"
     threads: 1
     log: "logs/preprocessing_noFiltering.{type}.log"
+    message: "not filtering {type} reads."
     shell:
         """
         R1=`echo {input[0]} | sed 's/Preprocessing\///g'`
