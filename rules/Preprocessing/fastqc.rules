@@ -3,7 +3,7 @@ rule fastQC:
         'Preprocessing/{type}.r1.fq',
         'Preprocessing/{type}.r2.fq',
     output:
-	directory('Preprocessing/FastQC')
+	directory('Preprocessing/{type}.FastQC')
     params:
         runtime = "4:00:00",
         mem = "--mem-per-cpu " + MEMCORE,

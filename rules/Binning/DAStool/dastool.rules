@@ -7,15 +7,22 @@ rule run_DAS_tool:
         "Binning/selected_DASTool_summary.txt",
         "Binning/selected_DASTool_bins"
     threads: 1
+    params:
+        runtime = "24:00:00",
+        partition = "-p bigmem --qos qos-bigmem ",
+        mem = "--mem=" + BIGMEMCORE
+#    conda: "IMP_???.yaml"
+    log: "logs/binning_DAStool.log"
+    message: "Running DAS_Tool."
     run:
         bintabs = ",".join(map(str, input.tabs))
         binnames = ",".join(map(str, config["binning"]))
         shell("DAS_Tool -i {bintabs} \
-        -l {binnames} \
-        -c {input.contigs} \
-        --proteins {input.proteins} --score_threshold 0.3 \
-        --threads {threads} --write_bins 1 \
-        -o Binning/selected")
+         -l {binnames} \
+         -c {input.contigs} \
+         --proteins {input.proteins} --score_threshold 0.3 \
+         --threads {threads} --write_bins 1 \
+         -o Binning/selected")
 
 rule format_protein_names:
     input:
@@ -24,11 +31,18 @@ rule format_protein_names:
     output:
         "Analysis/annotation/annotation.filt.contig2ID.tsv",
         "Binning/prokka.renamed.faa"
+    params:
+        runtime = "4:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    log: "logs/binning_dastool_formatProteinNames.log"
+    message: "Preparing protein sequences for DAS tool."
     shell:
         """
         TMP_PROT=$(mktemp --tmpdir={TMPDIR} -t "proteins_XXXXXX.faa")
         cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
 	sed 's/ .*//' {input[0]} >> $TMP_PROT
-        prokka2dastoolHeader.pl  $TMP_PROT {output[0]} >{output[1]}
+        {IMP_root}/bin/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} >{output[1]}
 	"""
 
