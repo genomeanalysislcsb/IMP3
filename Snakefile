@@ -33,11 +33,11 @@ if MG and MT:
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/integrative/AnalysisC"
+            "workflows/integrative/Analysis"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/integrative/Binning2"
+            "workflows/integrative/Binning"
 
 # Single omics MG workflow
 elif MG:
@@ -51,11 +51,11 @@ elif MG:
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/AnalysisC"
+            "workflows/single_omics/mg/Analysis"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Binning2"
+            "workflows/single_omics/mg/Binning"
 
 elif MT:
     if 'preprocessing' in IMP_STEPS:
@@ -68,11 +68,11 @@ elif MT:
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/AnalysisC"
+            "workflows/single_omics/mt/Analysis"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Binning2"
+            "workflows/single_omics/mt/Binning"
 
 else:
     raise Exception('No input data.')

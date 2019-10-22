@@ -1,27 +1,37 @@
 # include rules for the Binning part of the workflow
 
+## DAStool
+include:
+    '../../rules/Binning/DAStool/dastool.rules'
 
 ## MaxBin
 include:
     '../../rules/Binning/MaxBin/maxbin.rule'
 include:
-    '../../rules/Binning/MaxBin/get_contig2bin.rule'
+    '../../rules/Binning/MaxBin/maxbin_get_depth.rule'
 include:
-    '../../rules/Binning/MaxBin/visualize_maxBin.rule'
+    '../../rules/Binning/MaxBin/get_contig2bin.rule'
 ## MetaBAT
-
+include:
+    '../../rules/Binning/MetaBAT/metabat.rule'
 ## binny
 include:
-    '../../rules/Binning/binny/find-essential-genes.rule'
+    '../../rules/Binning/binny/binny.rule'
+include:
+    '../../rules/Binning/binny/binny2dastool.rules'
+
+## GRiD
+include:
+    '../../rules/Binning/GRiD/grid.rule'
 
 
-# master command
+## master command
 rule BINNING:
     input:
         "Binning/MaxBin/maxbin_res.log",
-        "Binning/MaxBin/IMP-MaxBin-vizbin_length_completeness_abundance.png",
-        "Binning/MaxBin/IMP-MaxBin-vizbin_length_bundance.png",
-        "Binning/MaxBin/MaxBin_VizBin-res.Rdat",
-	"Binning/binny/ORFS.hmm.orfs.essential.hits.faa"
+	"Binning/MetaBAT/metabat_res",
+	"Binning/binny/scaffold2bin.tsv",
+	"Binning/selected_DASTool_summary.txt",
+	"Binning/GRiD.done"
     output:
         touch('binning.done')
