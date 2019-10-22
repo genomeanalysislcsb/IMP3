@@ -40,7 +40,6 @@
         "url": "https://webdav-r3lab.uni.lu/public/R3lab/IMP/linux64.tbl2asn.gz"
     },
     "assembly": {
-        "threads": 8,
         "mink": 25,
         "maxk": 99,
         "step": 4,
