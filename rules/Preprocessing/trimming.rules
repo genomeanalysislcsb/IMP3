@@ -12,7 +12,7 @@ rule trimming:
     params:
         runtime="12:00:00"
     conda: "IMP_preprocessing.yaml"
-    log: "logs/preprocessing_trimmomatic.{type}.fq"
+    log: "logs/preprocessing_trimmomatic.{type}.log"
     shell:
         """
         java -jar {config[trimmomatic][jarfile]} PE -threads {THREADS} {input[0]} {input[1]} {output} \
@@ -34,6 +34,6 @@ rule cat_se_trimmed:
     threads: 1
     params:
         runtime="12:00:00"
-    log: "logs/preprocessing_concatSEs.{type}.fq"
+    log: "logs/preprocessing_concatSEs.{type}.log"
     shell:
         "cat {input[0]} {input[1]} > {output}"

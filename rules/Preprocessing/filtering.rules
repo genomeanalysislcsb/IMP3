@@ -1,17 +1,17 @@
 FILTERING_CMD = """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
         BUFFER=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
-        bwa mem -v 1 -t {THREADS} {input[3]} {input[0]} {input[1]} | samtools view -@ {THREADS} -bS - > $TMP_FILE
-        samtools merge -@ {THREADS} -u - \
-        <(samtools view -@ {THREADS} -u  -f 4 -F 264 $TMP_FILE) \
-        <(samtools view -@ {THREADS} -u -f 8 -F 260 $TMP_FILE) \
-        <(samtools view -@ {THREADS} -u -f 12 -F 256 $TMP_FILE) | \
-        samtools view -@ {THREADS} -bF 0x800 -  | samtools sort -o -@ {THREADS} -m {MEMCORE}G -n - $BUFFER | \
+        bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} | samtools view -@ {threads} -bS - > $TMP_FILE
+        samtools merge -@ {threads} -u - \
+        <(samtools view -@ {threads} -u  -f 4 -F 264 $TMP_FILE) \
+        <(samtools view -@ {threads} -u -f 8 -F 260 $TMP_FILE) \
+        <(samtools view -@ {threads} -u -f 12 -F 256 $TMP_FILE) | \
+        samtools view -@ {threads} -bF 0x800 -  | samtools sort -o -@ {threads} -m {MEMCORE}G -n - $BUFFER | \
         bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]}
         if [[ -s {input[2]} ]]
         then
-        bwa mem -v 1 -t {THREADS} {input[3]} {input[2]} | samtools view -@ {THREADS} -bS - | \
-        samtools view -@ {THREADS} -uf 4 - | bamToFastq -i stdin -fq {output[2]}
+        bwa mem -v 1 -t {threads} {input[3]} {input[2]} | samtools view -@ {threads} -bS - | \
+        samtools view -@ {threads} -uf 4 - | bamToFastq -i stdin -fq {output[2]}
         else
         echo "{input[2]} is empty, skipping single end human sequence filtering, but creating it anyway..."
         touch {output[2]}
@@ -39,6 +39,11 @@ rule mg_filtering:
         'Preprocessing/mg.r1.trimmed.%s_filtered.fq' % FILTER,
         'Preprocessing/mg.r2.trimmed.%s_filtered.fq' % FILTER,
         'Preprocessing/mg.se.trimmed.%s_filtered.fq' % FILTER
+    params:
+        runtime = "24:00:00"
+    threads: THREADS
+    conda: "IMP_mapping.yaml"
+    log: "logs/preprocessing_mgFiltering.log"
     shell:
         FILTERING_CMD
 
@@ -55,6 +60,11 @@ rule mt_filtering:
         'Preprocessing/mt.r1.trimmed.rna_filtered.%s_filtered.fq' % FILTER,
         'Preprocessing/mt.r2.trimmed.rna_filtered.%s_filtered.fq'% FILTER ,
         'Preprocessing/mt.se.trimmed.rna_filtered.%s_filtered.fq' % FILTER
+    params:
+        runtime = "24:00:00"
+    threads: THREADS
+    conda: "IMP_mapping.yaml"
+    log: "logs/preprocessing_mtFiltering.log"
     shell:
         FILTERING_CMD
 
@@ -68,6 +78,10 @@ rule symlink_mt_preprocessed_files:
         'Preprocessing/mt.r1.preprocessed.fq',
         'Preprocessing/mt.r2.preprocessed.fq',
         'Preprocessing/mt.se.preprocessed.fq'
+    params:
+        runtime = "1:00:00"
+    threads: 1
+    log: "logs/preprocessing_mtFilterSymlink.log"
     shell:
         SYMLINK_CMD
 
@@ -80,5 +94,9 @@ rule symlink_mg_preprocessed_files:
         'Preprocessing/mg.r1.preprocessed.fq',
         'Preprocessing/mg.r2.preprocessed.fq',
         'Preprocessing/mg.se.preprocessed.fq'
+    params:
+        runtime = "1:00:00"
+    threads: 1
+    log: "logs/preprocessing_mgFilterSymlink.log"
     shell:
         SYMLINK_CMD
