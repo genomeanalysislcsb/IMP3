@@ -1,10 +1,16 @@
-rule trimming:
+rule fastQC:
     input:
         'Preprocessing/{type}.r1.fq',
         'Preprocessing/{type}.r2.fq',
     output:
 	directory('Preprocessing/FastQC')
-	
+    params:
+        runtime = "4:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    log: "logs/preprocessing_fastQC.log"
+    message: "Running FastQC on raw {type} files."	
     shell:
         """
         fastqc --extract -o {output[0]} {input} 2>/dev/null
