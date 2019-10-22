@@ -8,7 +8,9 @@ rule bwa_index:
         "{fasta}.sa",
         "{fasta}.ann"
     params:
-        runtime = "24:00:00"
+        runtime = "24:00:00",
+        partition = "-p bigmem --qos qos-bigmem ",
+        mem = "--mem=" + BIGMEMCORE
     threads: 1
     conda: "IMP_mapping.yaml"
     log: "logs/assembly_bwaIndex.{fasta}.log"
