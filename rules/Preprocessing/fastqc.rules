@@ -13,7 +13,7 @@ rule fastqc_raw:
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch",
         outputdir = 'Stats/{type}'
-    conda: ROOT_DIR + "/envs/IMP_preproccessing.yaml"
+    conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
     log: "logs/preprocessing_fastqc_raw.{type}.log"
     message: "Running fastQC on raw {wildcards.type} reads."
     shell:
@@ -29,17 +29,18 @@ rule fastqc_preprocessed:
         'Preprocessing/{type}.se.preprocessed.fq',
         'Stats/{type}/{type}.r1.fq_fastqc.html'
     output:
-        'Stats/{type}/{type}.r1_preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.r2_preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.se_preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.r1_preprocessed.fq_fastqc.zip',
-        'Stats/{type}/{type}.r2_preprocessed.fq_fastqc.zip',
-        'Stats/{type}/{type}.se_preprocessed.fq_fastqc.zip'
+        'Stats/{type}/{type}.r1.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.r2.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.se.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.r1.preprocessed.fq_fastqc.zip',
+        'Stats/{type}/{type}.r2.preprocessed.fq_fastqc.zip',
+        'Stats/{type}/{type}.se.preprocessed.fq_fastqc.zip'
     threads: 3
     params:
         runtime = "1:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        partition = "-p batch --qos qos-batch",
+        outputdir = 'Stats/{type}'
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
     message: "Running fastqc on preprocessed {wildcards.type} reads."
     conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
@@ -47,7 +48,7 @@ rule fastqc_preprocessed:
         """
         if [[ -s {input[2]} ]]
         then
-          fastqc -o {input[3]} -f fastq {input[0]} {input[1]} {input[2]} -t {threads} -d {TMPDIR}
+          fastqc -o {params.outputdir} -f fastq {input[0]} {input[1]} {input[2]} -t {threads} -d {TMPDIR}
         else
           echo "{input[2]} is empty, FastQC will not run for that file"
           fastqc -o {input[3]} -f fastq {input[0]} {input[1]} -t {threads} -d {TMPDIR}

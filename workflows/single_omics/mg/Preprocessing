@@ -28,6 +28,11 @@ rule PREPROCESSING:
         'Preprocessing/mg.r1.preprocessed.fq',
         'Preprocessing/mg.r2.preprocessed.fq',
         'Preprocessing/mg.se.preprocessed.fq',
-        'Preprocessing/mg.FastQC'
+    	'Stats/mg/mg.r1.preprocessed.fq_fastqc.html',
+	'Stats/mg/mg.r2.preprocessed.fq_fastqc.html',
+	'Stats/mg/mg.se.preprocessed.fq_fastqc.html',
+	'Stats/mg/mg.r1.preprocessed.fq_fastqc.zip',
+	'Stats/mg/mg.r2.preprocessed.fq_fastqc.zip',
+	'Stats/mg/mg.se.preprocessed.fq_fastqc.zip'
     output:
         touch('preprocessing.done')

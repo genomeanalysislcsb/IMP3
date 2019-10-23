@@ -23,19 +23,18 @@ if not config['skip_preprocessing']:
         include:
             "../../../rules/Preprocessing/no-filtering.rules"
 
-
-
-
-
-
-
-
 # master command
 rule PREPROCESSING:
     input:
         'Preprocessing/mt.r1.preprocessed.fq',
         'Preprocessing/mt.r2.preprocessed.fq',
         'Preprocessing/mt.se.preprocessed.fq',
-        'Preprocessing/mt.FastQC'
+        'Stats/mt/mt.r1.preprocessed.fq_fastqc.html',
+        'Stats/mt/mt.r2.preprocessed.fq_fastqc.html',
+        'Stats/mt/mt.se.preprocessed.fq_fastqc.html',
+        'Stats/mt/mt.r1.preprocessed.fq_fastqc.zip',
+        'Stats/mt/mt.r2.preprocessed.fq_fastqc.zip',
+        'Stats/mt/mt.se.preprocessed.fq_fastqc.zip'
+
     output:
         touch('preprocessing.done')
