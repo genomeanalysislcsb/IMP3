@@ -12,9 +12,9 @@ rule bwa_index:
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMCORE
     threads: 1
-    conda: "envs/IMP_mapping.yaml"
+    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/assembly_bwaIndex.{fasta}.log"
-    message: "Indexing {fasta} for bwa."
+    message: "Indexing {wildcards.fasta} for bwa."
     shell:
         """
         bwa index {wildcards.fasta}
