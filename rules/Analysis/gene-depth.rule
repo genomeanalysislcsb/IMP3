@@ -3,11 +3,11 @@ rule call_gene_depth:
         "Analysis/annotation/annotation.filt.gff",
         "Assembly/{type}.reads.sorted.bam"
     output:
-        "Analysis/{type}.annotation.bed",
-        "Analysis/{type}.gene_depth.hist",
-        "Analysis/{type}.gene_depth.avg",
-        "Analysis/{type}.gene.len",
-        "Analysis/{type}.prokkaID2ec.txt"
+        "Stats/{type}/annotation/{type}.annotation_cov.bed",
+        "Stats/{type}/annotation/{type}.gene_depth.hist",
+        "Stats/{type}/annotation/{type}.gene_depth.avg",
+        "Stats/{type}/annotation/{type}.gene.len",
+        "Stats/{type}/annotation/{type}.prokkaID2ec.txt"
     shell:
         """
         coverageBed -hist -abam {input[1]} -b <(awk '$4 < $5' {input[0]}) | grep -v "^all" > {output[0]}
