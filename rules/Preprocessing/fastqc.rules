@@ -13,6 +13,7 @@ rule fastqc_raw:
         runtime = "1:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
+    conda: "IMP_preproccessing.yaml"
     log: "logs/preprocessing_fastqc_raw.{type}.log"
     message: "Running fastQC on raw {type} reads."
     shell:
@@ -40,6 +41,7 @@ rule fastqc_preprocessed:
         partition = "-p batch --qos qos-batch"
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
     message: "Running fastqc on preprocessed {type} reads."
+    conda: "IMP_preproccessing.yaml"
     shell:
         """
         if [[ -s {input[2]} ]]
