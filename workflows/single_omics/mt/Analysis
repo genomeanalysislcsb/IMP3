@@ -14,8 +14,8 @@ include:
     '../../../rules/Analysis/prokka.rule'
 include:
     '../../../rules/Analysis/reads-count.rule'
-include:
-    '../../../rules/Analysis/stat-output.rename.rule'
+#include:
+#    '../../../rules/Analysis/stat-output.rename.rule'
 include:
     '../../../rules/Analysis/variant.rule'
 include:
@@ -27,13 +27,14 @@ include:
 # master command
 rule ANALYSIS:
     input:
-        "Analysis/mt.assembly.length.txt",
-        "Analysis/mt.assembly.gc_content.txt",
-        "Analysis/mt.annotation.bed",
-        "Analysis/mt.gene_depth.hist",
-        "Analysis/mt.gene_depth.avg",
-        "Analysis/mt.gene.len",
-        "Analysis/mt.prokkaID2ec.txt",
+        "Stats/mt/mt.assembly.length.txt",
+        "Stats/mt/mt.assembly.gc_content.txt",
+        "Stats/mt/annotation/mt.annotation.bed",
+        "Stats/mt/annotation/mt.gene_depth.hist",
+        "Stats/mt/annotation/mt.gene_depth.avg",
+        "Stats/mt/annotation/mt.gene.len",
+        "Stats/mt/annotation/mt.prokkaID2ec.txt",
+        "Stats/mt/mt.read_counts.txt",
         "Analysis/snps/mt.variants.samtools.vcf.gz",
         "Analysis/mt.assembly.contig_coverage.txt",
         "Analysis/mt.assembly.contig_depth.txt",

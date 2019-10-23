@@ -14,8 +14,8 @@ include:
     '../../../rules/Analysis/metaquast.rule'
 include:
     '../../../rules/Analysis/reads-count.rule'
-include:
-    '../../../rules/Analysis/stat-output.rename.rule'
+#include:
+#    '../../../rules/Analysis/stat-output.rename.rule'
 include:
     '../../../rules/Analysis/variant.rule'
 include:
@@ -27,13 +27,14 @@ include:
 # master command
 rule ANALYSIS:
     input:
-        "Analysis/mg.assembly.length.txt",
-        "Analysis/mg.assembly.gc_content.txt",
-        "Analysis/mg.annotation.bed",
-        "Analysis/mg.gene_depth.hist",
-        "Analysis/mg.gene_depth.avg",
-        "Analysis/mg.gene.len",
-        "Analysis/mg.prokkaID2ec.txt",
+        "Stats/mg/mg.assembly.length.txt",
+        "Stats/mg/mg.assembly.gc_content.txt",
+        "Stats/mg/annotation/mg.annotation.bed",
+        "Stats/mg/annotation/mg.gene_depth.hist",
+        "Stats/mg/annotation/mg.gene_depth.avg",
+        "Stats/mg/annotation/mg.gene.len",
+        "Stats/mg/annotation/mg.prokkaID2ec.txt",
+        "Stats/mg/mg.read_counts.txt",
         "Analysis/snps/mg.variants.samtools.vcf.gz",
         "Analysis/mg.assembly.contig_coverage.txt",
         "Analysis/mg.assembly.contig_depth.txt",

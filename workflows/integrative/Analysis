@@ -18,8 +18,8 @@ include:
 #    '../../rules/Analysis/metaquast.rule'
 include:
     '../../rules/Analysis/reads-count.rule'
-include:
-    '../../rules/Analysis/stat-output.rename.rule'
+#include:
+#    '../../rules/Analysis/stat-output.rename.rule'
 include:
     '../../rules/Analysis/variant.rule'
 include:
@@ -46,7 +46,7 @@ rule ANALYSIS:
         "Stats/mgmt/mgmt.assembly.gc_content.txt",
         "Analysis/mgmt.vizbin.filtered.fa",
         "Analysis/mgmt.vizbin.with-contig-names.points",
-        "Analysis/mg.read_counts.txt",
+        "Stats/mg/mg.read_counts.txt",
         "Stats/mg/annotation/mg.annotation.bed",
         "Stats/mg/annotation/mg.gene_depth.hist",
         "Stats/mg/annotation/mg.gene_depth.avg",
@@ -61,6 +61,7 @@ rule ANALYSIS:
         "Stats/mt/annotation/mt.gene_depth.avg",
         "Stats/mt/annotation/mt.gene.len",
         "Stats/mt/annotation/mt.prokkaID2ec.txt",
+        "Stats/mg/mg.read_counts.txt",
         "Analysis/snps/mt.variants.samtools.vcf.gz",
         "Analysis/mt.assembly.contig_depth.txt",
         "Analysis/mt.assembly.contig_flagstat.txt",

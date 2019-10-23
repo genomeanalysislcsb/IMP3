@@ -36,7 +36,14 @@ rule reads_count:
     input:
         reads_input_files
     output:
-        'Analysis/{type}.read_counts.txt'
+        'Stats/{type}/{type}.read_counts.txt'
+    params:
+        runtime = "8:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    log: "logs/analysis_read_numbers.{type}.log"
+    message: "Getting length of {wildcards.type} fastq files."
     run:
         for idx, f in enumerate({input}):
             if idx == 0:
