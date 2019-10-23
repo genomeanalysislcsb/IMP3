@@ -29,12 +29,12 @@ rule fastqc_preprocessed:
         'Preprocessing/{type}.se.preprocessed.fq',
         'Stats/{type}/{type}.r1.fq_fastqc.html'
     output:
-        'Stats/{type}/{type}.r1_preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.r2_preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.se_preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.r1_preprocessed.fq_fastqc.zip',
-        'Stats/{type}/{type}.r2_preprocessed.fq_fastqc.zip',
-        'Stats/{type}/{type}.se_preprocessed.fq_fastqc.zip'
+        'Stats/{type}/{type}.r1.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.r2.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.se.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.r1.preprocessed.fq_fastqc.zip',
+        'Stats/{type}/{type}.r2.preprocessed.fq_fastqc.zip',
+        'Stats/{type}/{type}.se.preprocessed.fq_fastqc.zip'
     threads: 3
     params:
         runtime = "1:00:00",
