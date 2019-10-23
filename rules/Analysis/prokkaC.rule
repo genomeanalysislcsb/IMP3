@@ -9,9 +9,16 @@ rule annotate:
         "Analysis/annotation/{p}.fna".format(p=config['prokka']['prefix']),
         "Analysis/annotation/{p}.ffn".format(p=config['prokka']['prefix']),
         "Analysis/annotation/{p}.fsa".format(p=config['prokka']['prefix']),
+    params:
+        runtime = "8:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    log: "logs/analysis_prokka.log"
+    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
+    message: "Running prokkaC."
     shell:
         """
-        ### prokka by default will look databases where is located the binary.
+        ### prokka by default will look for databases where the binary is.
         ### we have to softlink to put the binary somewhere and the databases somewhere else.
         if [[ "{DBPATH}" = /* ]]
         then
@@ -19,17 +26,17 @@ rule annotate:
         else
             PP=$PWD/{DBPATH};
         fi
-        DD=$(dirname $(which prokka))/../db
+        DD=$(dirname $(which prokkaC))/../db
         if [[ ! -L $DD ]]
         then
             CUR=$PWD
             echo "Softlinking $DD to $PP"
-            cd $(dirname $(which prokka))/.. && ln -fs $PP db
+            cd $(dirname $(which prokkaC))/.. && ln -fs $PP db
             cd $CUR
         fi
         rm -rf Analysis/annotation/
         #AHBprokka --force --outdir Analysis/annotation --prefix {config[prokka][prefix]} --cpus {THREADS} --metagenome {input[0]} >> Analysis/annotation.log 2>&1
-	prokkaC --force --outdir Analysis/annotation --prefix {config[prokka][prefix]} --noanno --cpus {THREADS} --metagenome {input[0]} >> Analysis/annotation.log 2>&1
+	{BINDIR}/prokkaC --force --outdir Analysis/annotation --prefix {config[prokka][prefix]} --noanno --cpus {threads} --metagenome {input[0]} >> {log} 2>&1
         
 	# Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
         # And keeps only the gff table.
