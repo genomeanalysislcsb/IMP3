@@ -3,6 +3,9 @@
 # data input preparation
 # include:
 #     "../../../rules/Preprocessing/data_input.rules"
+include:
+    "../../rules/Preprocessing/fastqc.rules"
+
 
 # include only if user don't skip preprocessing
 if not config['skip_preprocessing']:
@@ -32,6 +35,7 @@ rule PREPROCESSING:
     input:
         'Preprocessing/mt.r1.preprocessed.fq',
         'Preprocessing/mt.r2.preprocessed.fq',
-        'Preprocessing/mt.se.preprocessed.fq'
+        'Preprocessing/mt.se.preprocessed.fq',
+        'Preprocessing/mt.FastQC'
     output:
         touch('preprocessing.done')

@@ -17,7 +17,7 @@ rule megahit_hybrid_assembly_1:
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
-    conda: "IMP_assembly.yaml"
+    conda: "envs/IMP_assembly.yaml"
     log: "logs/assembly_hybrid1.log"
     message: "Performing hybrid assembly 1 from preprocessed reads using MEGAHIT"
     shell:
@@ -56,7 +56,7 @@ rule megahit_hybrid_assembly_2:
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
-    conda: "IMP_assembly.yaml"
+    conda: "envs/IMP_assembly.yaml"
     log: "logs/assembly_hybrid2.log"
     message: "Performing hybrid assembly 2 from preprocessed reads using MEGAHIT"
     shell:

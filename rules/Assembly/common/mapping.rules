@@ -12,7 +12,7 @@ rule mapping_on_assembly:
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
-    conda: "IMP_mapping.yaml"
+    conda: "envs/IMP_mapping.yaml"
     log: "logs/assembly_mappingAssembly.{type}.log"
     message: "Mapping {type} reads on merged assembly."
     shell:

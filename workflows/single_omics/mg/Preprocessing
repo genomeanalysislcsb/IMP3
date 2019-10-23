@@ -4,6 +4,10 @@
 # include:
 #     "../../../rules/Preprocessing/data_input.rules"
 
+include:
+    "../../rules/Preprocessing/fastqc.rules"
+
+
 # include only if user don't skip preprocessing
 if not config['skip_preprocessing']:
     # trimming rules
@@ -23,6 +27,7 @@ rule PREPROCESSING:
     input:
         'Preprocessing/mg.r1.preprocessed.fq',
         'Preprocessing/mg.r2.preprocessed.fq',
-        'Preprocessing/mg.se.preprocessed.fq'
+        'Preprocessing/mg.se.preprocessed.fq',
+        'Preprocessing/mg.FastQC'
     output:
         touch('preprocessing.done')

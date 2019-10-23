@@ -32,7 +32,7 @@ rule megahit_assembly_from_preprocessing:
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
-    conda: "IMP_assembly.yaml"
+    conda: "envs/IMP_assembly.yaml"
     log: "logs/assembly_fromPreprocessing.{type}.log"
     message: "Performing {type} assembly step {loop} from preprocessed reads using MEGAHIT"
     shell:
@@ -53,7 +53,7 @@ rule megahit_assembly_from_unmapped:
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
-    conda: "IMP_assembly.yaml"
+    conda: "envs/IMP_assembly.yaml"
     log: "logs/assembly_fromUnmapped.{type}.log"
     message: "Performing {type} assembly step {loop} from unmapped reads using MEGAHIT"
     shell:

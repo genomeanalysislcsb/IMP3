@@ -41,7 +41,7 @@ rule extract_unmapped:
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
-    conda: "IMP_mapping.yaml"
+    conda: "envs/IMP_mapping.yaml"
     log: "logs/assembly_extractUnmapped_megahit.{type}.log"
     message: "Extracting unmapped {type} reads from megahit assembly."
     shell:

@@ -12,7 +12,7 @@ rule bwa_index:
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMCORE
     threads: 1
-    conda: "IMP_mapping.yaml"
+    conda: "envs/IMP_mapping.yaml"
     log: "logs/assembly_bwaIndex.{fasta}.log"
     message: "Indexing {fasta} for bwa."
     shell:

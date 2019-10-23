@@ -9,13 +9,15 @@ rule trimming:
         'Preprocessing/{type}.r2.trimmed.fq',
         'Preprocessing/{type}.se2.trimmed.fq'
     params:
-        runtime="12:00:00"
-    conda: "IMP_preprocessing.yaml"
+        runtime="12:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch -N 1"
+    conda: "envs/IMP_preprocessing.yaml"
     log: "logs/preprocessing_trimmomatic.{type}.log"
     message: "Trimmming {type} reads."
     shell:
         """
-        java -jar {config[trimmomatic][jarfile]} PE -threads {THREADS} {input[0]} {input[1]} {output} \
+        java -jar {config[trimmomatic][jarfile]} PE -threads {threads} {input[0]} {input[1]} {output} \
         ILLUMINACLIP:{DBPATH}/adapters/{config[trimmomatic][adapter]}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
         LEADING:{config[trimmomatic][leading]} \
         TRAILING:{config[trimmomatic][trailing]} \
