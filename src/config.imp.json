@@ -42,7 +42,7 @@
     "assembly": {
         "mink": 25,
         "maxk": 99,
-        "step": 4,
+        "step": 4
     },
     "vizbin": {
         "dimension": 50,

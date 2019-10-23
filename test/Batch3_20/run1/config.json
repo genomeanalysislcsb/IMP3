@@ -1,0 +1,63 @@
+{
+    "assembler": "megahit",
+    "raws": {
+      "Metagenomics": "/work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/Reads/MG.R1.fq /work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/Reads/MG.R2.fq",
+      "Metatranscriptomics": "/work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/Reads/MT.R1.fq /work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/Reads/MT.R2.fq"
+   },	
+    "outputdir": "/work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/run1",
+    "imp_lib": "$imp_lib",
+        "hmmdbs": {
+       "KEGG":{
+               "cutoff": "",
+               "trim": "--trimall"
+       },
+       "essential":{
+               "cutoff": "--cut_tc",
+               "trim": ""
+       },
+       "metacyc":{
+               "cutoff": "",
+               "trim": "--trimall"
+       },
+       "Cas":{
+               "cutoff": "",
+               "trim": ""
+       },
+       "Pfam-A":{
+               "cutoff": "--cut_tc",
+               "trim": ""
+       },
+       "SwissProt":{
+               "cutoff": "",
+               "trim": "--trimall"
+       },
+       "TIGRPFAM":{
+               "cutoff": "--cut_tc",
+               "trim": ""
+       },
+       "dbCAN":{
+               "cutoff": "",
+               "trim": ""
+       },
+       "resfams":{
+               "cutoff": "",
+               "trim": ""
+       }
+    },
+    "COGS":
+    {
+	"COG0012": "",
+	"COG0018": "",
+	"COG0215": "",
+	"COG0525": "",
+	"COG0541": "",
+	"COG0016": "",
+	"COG0172": "",
+	"COG0495": "",
+	"COG0533": "",
+	"COG0552": ""
+    },
+    "humanProteome": "${imp_lib}/human.cds.corrected.protein.fa",
+    "krakendb": "gtdbk2_bacterial"
+}
+

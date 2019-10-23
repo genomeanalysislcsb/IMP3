@@ -40,9 +40,9 @@ if os.path.exists(CUSTOM_CONFIG_PATH):
 
 
 # some parameters
-ROOT_DIR = os.environ.get("ROOTDIR", config['imp_root'])
-SRCDIR = os.environ.get("SRCDIR", config['imp_src'])
-LIBDIR = os.environ.get("LIBDIR", config['imp_lib'])
+ROOT_DIR = os.environ.get("ROOTDIR", os.path.expandvars(config['imp_root']))
+SRCDIR = os.environ.get("SRCDIR", os.path.expandvars(config['imp_src']))
+LIBDIR = os.environ.get("LIBDIR", os.path.expandvars(config['imp_lib']))
 BINDIR = ROOT_DIR + "/bin"
 
 # get parameters from the command line
@@ -69,8 +69,8 @@ FILTER = os.environ.get("FILTER", config['filtering']['filter'])
 #THREADS = os.environ.get("THREADS", config['threads'])
 BIGCORENO = os.environ.get("BIGCORENO", config['big_mem_cores'])
 BIGMEMTOTAL = os.environ.get("BIGMEMTOTAL", config['big_mem_total_gb'])
-MEMCORE = os.environ.get("MEMCORE", config['normal_mem_per_core_gb'] + "G")
-BIGMEMCORE = os.environ.get("BIGMEMCORE", config['big_mem_per_core_gb'] + "G")
+MEMCORE = os.environ.get("MEMCORE", str(config['normal_mem_per_core_gb']) + "G")
+BIGMEMCORE = os.environ.get("BIGMEMCORE", str(config['big_mem_per_core_gb']) + "G")
 
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless a absolute path is set
