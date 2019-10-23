@@ -39,7 +39,8 @@ rule fastqc_preprocessed:
     params:
         runtime = "1:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        partition = "-p batch --qos qos-batch",
+        outputdir = 'Stats/{type}'
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
     message: "Running fastqc on preprocessed {wildcards.type} reads."
     conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
@@ -47,7 +48,7 @@ rule fastqc_preprocessed:
         """
         if [[ -s {input[2]} ]]
         then
-          fastqc -o {input[3]} -f fastq {input[0]} {input[1]} {input[2]} -t {threads} -d {TMPDIR}
+          fastqc -o {params.outputdir} -f fastq {input[0]} {input[1]} {input[2]} -t {threads} -d {TMPDIR}
         else
           echo "{input[2]} is empty, FastQC will not run for that file"
           fastqc -o {input[3]} -f fastq {input[0]} {input[1]} -t {threads} -d {TMPDIR}
