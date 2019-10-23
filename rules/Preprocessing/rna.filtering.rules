@@ -34,6 +34,7 @@ rule filter_rna:
         'Preprocessing/mt.r1.trimmed.rna.fq',
         'Preprocessing/mt.r2.trimmed.rna.fq',
         'Preprocessing/mt.se.trimmed.rna.fq'
+    threads: 1
     params:
         ref = REF,
         sortmernamem = str(config["sortmerna"]["mem"]),
