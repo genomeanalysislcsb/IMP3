@@ -38,11 +38,11 @@ rule extract_unmapped_from_megahit:
     params:
         runtime = "12:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMTOTAL + "G"
+        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
     threads: BIGCORENO
-    conda: "envs/IMP_mapping.yaml"
+    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/assembly_extractUnmapped_megahit.{type}.log"
-    message: "Extracting unmapped {type} reads from megahit assembly."
+    message: "Extracting unmapped {wildcards.type} reads from megahit assembly."
     shell:
         EXTRACT_UNMAPPED_SHELL
 
@@ -64,10 +64,10 @@ rule extract_unmapped_from_hybrid_assembly:
     params:
         runtime = "12:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMTOTAL + "G"
+        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
     threads: BIGCORENO
-    conda: "envs/IMP_mapping.yaml"
+    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/assembly_extractUnmapped_hybrid.{type}.log"
-    message: "Extracting unmapped {type} reads from hybrid assembly."
+    message: "Extracting unmapped {wildcards.type} reads from hybrid assembly."
     shell:
         EXTRACT_UNMAPPED_SHELL
