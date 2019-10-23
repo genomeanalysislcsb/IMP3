@@ -8,6 +8,13 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.gene_depth.avg",
         "Stats/{type}/annotation/{type}.gene.len",
         "Stats/{type}/annotation/{type}.prokkaID2ec.txt"
+    params:
+        runtime = "8:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    log: "logs/analysis_genes.{type}_lengthGC.log"
+    message: "Getting data on gene coverage with {wildcards.type} reads."
     shell:
         """
         coverageBed -hist -abam {input[1]} -b <(awk '$4 < $5' {input[0]}) | grep -v "^all" > {output[0]}
