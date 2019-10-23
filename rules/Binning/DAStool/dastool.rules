@@ -11,7 +11,7 @@ rule run_DAS_tool:
         runtime = "24:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMCORE
-#    conda: "IMP_???.yaml"
+    conda: "IMP_binning.yaml"
     log: "logs/binning_DAStool.log"
     message: "Running DAS_Tool."
     run:
@@ -43,6 +43,6 @@ rule format_protein_names:
         TMP_PROT=$(mktemp --tmpdir={TMPDIR} -t "proteins_XXXXXX.faa")
         cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
 	sed 's/ .*//' {input[0]} >> $TMP_PROT
-        {IMP_root}/bin/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} >{output[1]}
+        {SRCDIR}/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} >{output[1]}
 	"""
 

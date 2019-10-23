@@ -1,17 +1,30 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use strict;
-use Bio::SeqIO;
 
-my $infile = shift;
+my $file=$ARGV[0];
 
-my $seq_io = Bio::SeqIO->new(-file => "$infile", -format => "fasta");
+my %seqs=();
+my @ids=();
+my $id;
 
-while (my $seq = $seq_io->next_seq){
-    my $id = $seq->display_id;
-    my $len = $seq->length;
-    print "$id\t0\t$len\n";
-    
+my $ct=0;
+open(FILE,$file) or die $!;
+while(my $str=<FILE>){
+	chomp($str);
+	$ct++;
+	#next if length($str)==0;
+	die "Empty string $ct\n" if length($str)==0;
+	if ($str=~/^>(.+)$/){
+		$id=$1;
+		$seqs{$id}="";
+	}else{
+		$seqs{$id}.=$str;	
+	}
 }
+close(FILE);
 
+foreach $id (sort {$a<=>$b} keys %seqs){
+    print $id."\t0\t".length($seqs{$id})."\n";
+}
 
