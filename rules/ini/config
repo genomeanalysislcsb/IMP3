@@ -50,7 +50,7 @@ OUTPUTDIR = os.environ.get("OUTPUTDIR", config['outputdir'])
 MG = os.environ.get("MG", config['raws']['Metagenomics']).split()
 MT = os.environ.get("MT", config['raws']['Metatranscriptomics']).split()
 SAMPLE = os.environ.get("SAMPLE", config['sample'])
-DBPATH = os.environ.get("DBPATH", config['db_path'])
+DBPATH = os.environ.get("DBPATH", os.path.expandvars(config['db_path']))
 IMP_SUDO = os.environ.get("IMP_SUDO", '')
 
 IMP_BINNING_METHOD = os.environ.get("IMP_BINNING_METHOD", config['binning'])

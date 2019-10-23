@@ -14,7 +14,7 @@ rule trimming:
         partition = "-p batch --qos qos-batch -N 1"
     conda: "envs/IMP_preprocessing.yaml"
     log: "logs/preprocessing_trimmomatic.{type}.log"
-    message: "Trimmming {type} reads."
+    message: "Trimmming {wildcards.type} reads."
     shell:
         """
         java -jar {config[trimmomatic][jarfile]} PE -threads {threads} {input[0]} {input[1]} {output} \
@@ -39,6 +39,6 @@ rule cat_se_trimmed:
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
     log: "logs/preprocessing_concatSEs.{type}.log"
-    message: "Concatenating trimmed single end {type} reads"
+    message: "Concatenating trimmed single end {wildcards.type} reads"
     shell:
         "cat {input[0]} {input[1]} > {output}"
