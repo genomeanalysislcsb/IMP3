@@ -4,10 +4,10 @@ include:
     '../../../rules/Analysis/assembly.contig-length.rule'
 include:
     '../../../rules/Analysis/contig-depth.rule'
-include:
-    '../../../rules/Analysis/contig-length.rule'
-include:
-    '../../../rules/Analysis/fastqc.rules'
+#include:
+#    '../../../rules/Analysis/contig-length.rule'
+#include:
+#    '../../../rules/Analysis/fastqc.rules'
 include:
     '../../../rules/Analysis/gene-depth.rule'
 include:
@@ -31,8 +31,8 @@ include:
 # master command
 rule ANALYSIS:
     input:
-        "Analysis/mt.assembly.length.txt",
-        "Analysis/mt.assembly.gc_content.txt",
+        "Stats/mt/mt.assembly.length.txt",
+        "Stats/mt/mt.assembly.gc_content.txt",
         "Analysis/results/quast/summary/combined_quast_output/contigs_reports/nucmer_output/aux/mt.assembly.merged.coords_edited",
         "Analysis/mt.annotation.bed",
         "Analysis/mt.gene_depth.hist",
@@ -46,16 +46,16 @@ rule ANALYSIS:
         "Analysis/mt.assembly.contig_flagstat.txt",
         "Analysis/results/mt.gene_kegg_krona.txt",
         "Analysis/results/mt.gene_kegg_krona.html",
-        "Analysis/stats/mt/mt.r1.fq_fastqc.html",
-        "Analysis/stats/mt/mt.r2.fq_fastqc.html",
-        "Analysis/stats/mt/mt.r1.fq_fastqc.zip",
-        "Analysis/stats/mt/mt.r2.fq_fastqc.zip",
-        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.zip",
-        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.zip",
-        "Analysis/stats/mt/mt.se_preprocessed_fastqc.zip",
-        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.html",
-        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.html",
-        "Analysis/stats/mt/mt.se_preprocessed_fastqc.html",
+#        "Analysis/stats/mt/mt.r1.fq_fastqc.html",
+#        "Analysis/stats/mt/mt.r2.fq_fastqc.html",
+#        "Analysis/stats/mt/mt.r1.fq_fastqc.zip",
+#        "Analysis/stats/mt/mt.r2.fq_fastqc.zip",
+#        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.zip",
+#        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.zip",
+#        "Analysis/stats/mt/mt.se_preprocessed_fastqc.zip",
+#        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.html",
+#        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.html",
+#        "Analysis/stats/mt/mt.se_preprocessed_fastqc.html",
         "Analysis/mt.vizbin.filtered.fa",
         "Analysis/mt.vizbin.with-contig-names.points",
         "Analysis/results/IMP-vizbin_length.png",

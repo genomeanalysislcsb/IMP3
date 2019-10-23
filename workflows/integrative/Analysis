@@ -4,8 +4,8 @@ include:
     '../../rules/Analysis/assembly.contig-length.rule'
 include:
     '../../rules/Analysis/contig-depth.rule'
-include:
-    '../../rules/Analysis/contig-length.rule'
+#include:
+#    '../../rules/Analysis/contig-length.rule'
 #include:
 #    '../../rules/Analysis/fastqc.rules'
 include:
@@ -42,8 +42,8 @@ include:
 # master command
 rule ANALYSIS:
     input:
-        "Analysis/mgmt.assembly.length.txt",
-        "Analysis/mgmt.assembly.gc_content.txt",
+        "Stats/mgmt/mgmt.assembly.length.txt",
+        "Stats/mgmt/mgmt.assembly.gc_content.txt",
         "Analysis/mgmt.vizbin.filtered.fa",
         "Analysis/mgmt.vizbin.with-contig-names.points",
 #        "Analysis/results/quast/summary/combined_quast_output/contigs_reports/nucmer_output/aux/mgmt.assembly.merged.coords_edited",
