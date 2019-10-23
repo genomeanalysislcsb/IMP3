@@ -41,7 +41,7 @@ rule filter_rna:
         runtime = "24:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
-    conda: "envs/MP_preprocessing.yaml"
+    conda: ROOT_DIR + "/envs/MP_preprocessing.yaml"
     log: "logs/preprocessing_sortmeRNA.log"
     shell:
         FILTER_RNA_SHELL

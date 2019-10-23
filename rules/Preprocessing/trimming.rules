@@ -12,18 +12,18 @@ rule trimming:
         runtime="12:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch -N 1"
-    conda: "envs/IMP_preprocessing.yaml"
+    conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
     log: "logs/preprocessing_trimmomatic.{type}.log"
     message: "Trimmming {wildcards.type} reads."
     shell:
         """
-        java -jar trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
-        ILLUMINACLIP:{DBPATH}/adapters/{config[trimmomatic][adapter]}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
-        LEADING:{config[trimmomatic][leading]} \
-        TRAILING:{config[trimmomatic][trailing]} \
-        SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
-        MINLEN:{config[trimmomatic][minlen]} \
-        MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]}
+        trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
+         ILLUMINACLIP:{DBPATH}/adapters/{config[trimmomatic][adapter]}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
+         LEADING:{config[trimmomatic][leading]} \
+         TRAILING:{config[trimmomatic][trailing]} \
+         SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
+         MINLEN:{config[trimmomatic][minlen]} \
+         MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]}
         """
 
 
