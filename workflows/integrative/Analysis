@@ -18,8 +18,8 @@ include:
 #    '../../rules/Analysis/metaquast.rule'
 include:
     '../../rules/Analysis/reads-count.rule'
-include:
-    '../../rules/Analysis/stat-output.rename.rule'
+#include:
+#    '../../rules/Analysis/stat-output.rename.rule'
 include:
     '../../rules/Analysis/variant.rule'
 include:
