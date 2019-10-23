@@ -45,7 +45,7 @@ rule mg_filtering:
     threads: BIGCORENO
     conda: "envs/IMP_mapping.yaml"
     log: "logs/preprocessing_mgFiltering.log"
-    message: "Filtering mg reads against {filter}."
+    message: "Filtering mg reads against {FILTER}."
     shell:
         FILTERING_CMD
 
@@ -69,7 +69,7 @@ rule mt_filtering:
     threads: BIGCORENO
     conda: "envs/IMP_mapping.yaml"
     log: "logs/preprocessing_mtFiltering.log"
-    message: "Filtering mt reads against {filter}."
+    message: "Filtering mt reads against {FILTER}."
     shell:
         FILTERING_CMD
 
