@@ -41,7 +41,7 @@ rule fastqc_preprocessed:
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
-    message: "Running fastqc on preprocessed {type} reads."
+    message: "Running fastqc on preprocessed {wildcards.type} reads."
     conda: "envs/IMP_preproccessing.yaml"
     shell:
         """

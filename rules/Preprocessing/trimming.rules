@@ -17,7 +17,7 @@ rule trimming:
     message: "Trimmming {wildcards.type} reads."
     shell:
         """
-        java -jar {config[trimmomatic][jarfile]} PE -threads {threads} {input[0]} {input[1]} {output} \
+        java -jar trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
         ILLUMINACLIP:{DBPATH}/adapters/{config[trimmomatic][adapter]}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
         LEADING:{config[trimmomatic][leading]} \
         TRAILING:{config[trimmomatic][trailing]} \

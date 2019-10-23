@@ -14,7 +14,7 @@ rule bwa_index:
     threads: 1
     conda: "envs/IMP_mapping.yaml"
     log: "logs/assembly_bwaIndex.{fasta}.log"
-    message: "Indexing {fasta} for bwa."
+    message: "Indexing {wildcards.fasta} for bwa."
     shell:
         """
         bwa index {wildcards.fasta}

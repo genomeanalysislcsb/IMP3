@@ -30,11 +30,11 @@ rule megahit_assembly_from_preprocessing:
     params:
         runtime = "120:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMTOTAL + "G"
+        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
     threads: BIGCORENO
     conda: "envs/IMP_assembly.yaml"
     log: "logs/assembly_fromPreprocessing.{type}.log"
-    message: "Performing {type} assembly step {loop} from preprocessed reads using MEGAHIT"
+    message: "Performing {wildcards.type} assembly step {wildcards.loop} from preprocessed reads using MEGAHIT"
     shell:
         MEGAHIT_ASSEMBLY_SHELL
 
@@ -51,10 +51,10 @@ rule megahit_assembly_from_unmapped:
     params:
         runtime = "120:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMTOTAL + "G"
+        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
     threads: BIGCORENO
     conda: "envs/IMP_assembly.yaml"
     log: "logs/assembly_fromUnmapped.{type}.log"
-    message: "Performing {type} assembly step {loop} from unmapped reads using MEGAHIT"
+    message: "Performing {wildcards.type} assembly step {wildcards.loop} from unmapped reads using MEGAHIT"
     shell:
         MEGAHIT_ASSEMBLY_SHELL
