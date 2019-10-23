@@ -43,6 +43,7 @@ if os.path.exists(CUSTOM_CONFIG_PATH):
 ROOT_DIR = os.environ.get("ROOTDIR", config['imp_root'])
 SRCDIR = os.environ.get("SRCDIR", config['imp_src'])
 LIBDIR = os.environ.get("LIBDIR", config['imp_lib'])
+BINDIR = ROOT_DIR + "/bin"
 
 # get parameters from the command line
 OUTPUTDIR = os.environ.get("OUTPUTDIR", config['outputdir'])
@@ -65,9 +66,11 @@ PREPROCESSING_FILTERING = os.environ.get("PREPROCESSING_FILTERING", config['prep
 FILTER = os.environ.get("FILTER", config['filtering']['filter'])
 
 # Get general parameters
-THREADS = os.environ.get("THREADS", config['threads'])
-MEMTOTAL = os.environ.get("MEMTOTAL", config['memory_total_gb'])
-MEMCORE = os.environ.get("MEMCORE", config['memory_per_core_gb'])
+#THREADS = os.environ.get("THREADS", config['threads'])
+BIGCORENO = os.environ.get("BIGCORENO", config['big_mem_cores'])
+BIGMEMTOTAL = os.environ.get("BIGMEMTOTAL", config['big_mem_total_gb'])
+MEMCORE = os.environ.get("MEMCORE", config['normal_mem_per_core_gb'] + "G")
+BIGMEMCORE = os.environ.get("BIGMEMCORE", config['big_mem_per_core_gb'] + "G")
 
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless a absolute path is set
