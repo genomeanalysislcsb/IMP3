@@ -43,7 +43,7 @@ rule mg_filtering:
         partition = "-p bigmem --qos qos-bigmem -N 1",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
-    conda: "IMP_mapping.yaml"
+    conda: "envs/IMP_mapping.yaml"
     log: "logs/preprocessing_mgFiltering.log"
     message: "Filtering mg reads against {filter}."
     shell:
@@ -67,7 +67,7 @@ rule mt_filtering:
         partition = "-p bigmem --qos qos-bigmem -N 1",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
-    conda: "IMP_mapping.yaml"
+    conda: "envs/IMP_mapping.yaml"
     log: "logs/preprocessing_mtFiltering.log"
     message: "Filtering mt reads against {filter}."
     shell:

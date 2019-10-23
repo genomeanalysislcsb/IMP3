@@ -10,7 +10,7 @@ rule trimming:
         'Preprocessing/{type}.se2.trimmed.fq'
     params:
         runtime="12:00:00"
-    conda: "IMP_preprocessing.yaml"
+    conda: "envs/IMP_preprocessing.yaml"
     log: "logs/preprocessing_trimmomatic.{type}.log"
     message: "Trimmming {type} reads."
     shell:

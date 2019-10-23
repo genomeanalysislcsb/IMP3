@@ -11,7 +11,7 @@ rule run_DAS_tool:
         runtime = "24:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
         mem = "--mem=" + BIGMEMCORE
-    conda: "IMP_binning.yaml"
+    conda: "envs/IMP_binning.yaml"
     log: "logs/binning_DAStool.log"
     message: "Running DAS_Tool."
     run:
