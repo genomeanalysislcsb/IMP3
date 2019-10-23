@@ -67,7 +67,7 @@ rule extract_unmapped_from_hybrid_assembly:
         mem = "--mem=" + str(BIGMEMTOTAL) + "G"
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
-    log: "logs/assembly_extractUnmapped_hybrid.{type}.log"
+    log: "logs/assembly_extractUnmapped_hybrid_{assembler}.{type}.log"
     message: "Extracting unmapped {wildcards.type} reads from hybrid assembly."
     shell:
         EXTRACT_UNMAPPED_SHELL

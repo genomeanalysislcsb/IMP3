@@ -15,4 +15,5 @@ bin/*
 lib/*
 docker/*
 conda/*
+test/*
 dependencies/*
