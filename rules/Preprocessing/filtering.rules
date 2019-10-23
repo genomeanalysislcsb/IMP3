@@ -40,7 +40,7 @@ rule mg_filtering:
         'Preprocessing/mg.se.trimmed.%s_filtered.fq' % FILTER
     params:
         runtime = "24:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
+        partition = "-p bigmem --qos qos-bigmem -N 1",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
     conda: "IMP_mapping.yaml"
@@ -64,7 +64,7 @@ rule mt_filtering:
         'Preprocessing/mt.se.trimmed.rna_filtered.%s_filtered.fq' % FILTER
     params:
         runtime = "24:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
+        partition = "-p bigmem --qos qos-bigmem -N 1",
         mem = "--mem=" + BIGMEMTOTAL + "G"
     threads: BIGCORENO
     conda: "IMP_mapping.yaml"
