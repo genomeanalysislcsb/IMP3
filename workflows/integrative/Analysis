@@ -6,8 +6,8 @@ include:
     '../../rules/Analysis/contig-depth.rule'
 include:
     '../../rules/Analysis/contig-length.rule'
-include:
-    '../../rules/Analysis/fastqc.rules'
+#include:
+#    '../../rules/Analysis/fastqc.rules'
 include:
     '../../rules/Analysis/gene-depth.rule'
 #include:
@@ -60,16 +60,16 @@ rule ANALYSIS:
         "Analysis/mg.assembly.contig_flagstat.txt",
 #        "Analysis/results/mg.gene_kegg_krona.txt",
 #        "Analysis/results/mg.gene_kegg_krona.html",
-        'Analysis/stats/mg/mg.r1.fq_fastqc.html',
-        'Analysis/stats/mg/mg.r2.fq_fastqc.html',
-        'Analysis/stats/mg/mg.r1.fq_fastqc.zip',
-        'Analysis/stats/mg/mg.r2.fq_fastqc.zip',
-        "Analysis/stats/mg/mg.r1_preprocessed_fastqc.zip",
-        "Analysis/stats/mg/mg.r2_preprocessed_fastqc.zip",
-        "Analysis/stats/mg/mg.se_preprocessed_fastqc.zip",
-        "Analysis/stats/mg/mg.r1_preprocessed_fastqc.html",
-        "Analysis/stats/mg/mg.r2_preprocessed_fastqc.html",
-        "Analysis/stats/mg/mg.se_preprocessed_fastqc.html",
+#        'Analysis/stats/mg/mg.r1.fq_fastqc.html',
+#        'Analysis/stats/mg/mg.r2.fq_fastqc.html',
+#        'Analysis/stats/mg/mg.r1.fq_fastqc.zip',
+#        'Analysis/stats/mg/mg.r2.fq_fastqc.zip',
+#        "Analysis/stats/mg/mg.r1_preprocessed_fastqc.zip",
+#        "Analysis/stats/mg/mg.r2_preprocessed_fastqc.zip",
+#        "Analysis/stats/mg/mg.se_preprocessed_fastqc.zip",
+#        "Analysis/stats/mg/mg.r1_preprocessed_fastqc.html",
+#        "Analysis/stats/mg/mg.r2_preprocessed_fastqc.html",
+#        "Analysis/stats/mg/mg.se_preprocessed_fastqc.html",
         "Analysis/mt.annotation.bed",
         "Analysis/mt.gene_depth.hist",
         "Analysis/mt.gene_depth.avg",
@@ -82,16 +82,16 @@ rule ANALYSIS:
         "Analysis/mt.assembly.contig_flagstat.txt",
 #       "Analysis/results/mt.gene_kegg_krona.txt",
 #       "Analysis/results/mt.gene_kegg_krona.html",
-        "Analysis/stats/mt/mt.r1.fq_fastqc.html",
-        "Analysis/stats/mt/mt.r2.fq_fastqc.html",
-        "Analysis/stats/mt/mt.r1.fq_fastqc.zip",
-        "Analysis/stats/mt/mt.r2.fq_fastqc.zip",
-        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.zip",
-        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.zip",
-        "Analysis/stats/mt/mt.se_preprocessed_fastqc.zip",
-        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.html",
-        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.html",
-        "Analysis/stats/mt/mt.se_preprocessed_fastqc.html",
+#        "Analysis/stats/mt/mt.r1.fq_fastqc.html",
+#        "Analysis/stats/mt/mt.r2.fq_fastqc.html",
+#        "Analysis/stats/mt/mt.r1.fq_fastqc.zip",
+#        "Analysis/stats/mt/mt.r2.fq_fastqc.zip",
+#        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.zip",
+#        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.zip",
+#        "Analysis/stats/mt/mt.se_preprocessed_fastqc.zip",
+#        "Analysis/stats/mt/mt.r1_preprocessed_fastqc.html",
+#        "Analysis/stats/mt/mt.r2_preprocessed_fastqc.html",
+#        "Analysis/stats/mt/mt.se_preprocessed_fastqc.html",
 #        "Analysis/results/IMP-vizbin_length.png",
 #        "Analysis/results/IMP-vizbin_length_GC.png",
 #        "Analysis/results/IMP-vizbin_length_geneDensity.png",

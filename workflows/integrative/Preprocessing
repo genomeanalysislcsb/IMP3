@@ -5,7 +5,7 @@
 #     "../../rules/Preprocessing/data_input.rules"
 
 include:
-    "../../rules/Preprocessing/fastqc.rules"
+    '../../rules/Preprocessing/fastqc.rules'
 
 # include only if user don't skip preprocessing
 if not config['skip_preprocessing']:
@@ -31,6 +31,15 @@ rule PREPROCESSING:
         'Preprocessing/{type}.r1.preprocessed.fq',
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
-        'Preprocessing/{type}.FastQC'], type=TYPES)
+        'Stats/{type}/{type}.r1.fq_fastqc.html',
+        'Stats/{type}/{type}.r2.fq_fastqc.html',
+        'Stats/{type}/{type}.r1.fq_fastqc.zip',
+        'Stats/{type}/{type}.r2.fq_fastqc.zip',
+        "Stats/{type}/{type}.r1_preprocessed_fastqc.zip",
+        "Stats/{type}/{type}.r2_preprocessed_fastqc.zip",
+        "Stats/{type}/{type}.se_preprocessed_fastqc.zip",
+        "Stats/{type}/{type}.r1_preprocessed_fastqc.html",
+        "Stats/{type}/{type}.r2_preprocessed_fastqc.html",
+        "Stats/{type}/{type}.se_preprocessed_fastqc.html"], type=TYPES)
     output:
         touch('preprocessing.done')

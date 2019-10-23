@@ -1,17 +1,55 @@
-rule fastQC:
+rule fastqc_raw:
     input:
         'Preprocessing/{type}.r1.fq',
-        'Preprocessing/{type}.r2.fq',
+        'Preprocessing/{type}.r2.fq'
     output:
-	directory('Preprocessing/{type}.FastQC')
+        'Stats/{type}/{type}.r1.fq_fastqc.html',
+        'Stats/{type}/{type}.r2.fq_fastqc.html',
+        'Stats/{type}/{type}.r1.fq_fastqc.zip',
+        'Stats/{type}/{type}.r2.fq_fastqc.zip',
+        directory('Stats/{type}')
+    threads: 2
     params:
-        runtime = "4:00:00",
+        runtime = "1:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
-    threads: 1
-    log: "logs/preprocessing_fastQC.log"
-    message: "Running FastQC on raw {type} files."	
+    log: "logs/preprocessing_fastqc_raw.{type}.log"
+    message: "Running fastQC on raw {type} reads."
     shell:
         """
-        fastqc --extract -o {output[0]} {input} 2>/dev/null
+        fastqc -o {output[4]} -f fastq {input[0]} {input[1]} -t {threads} -d {TMPDIR}
+        """
+
+rule fastqc_preprocessed:
+    input:
+        'Preprocessing/{type}.r1.preprocessed.fq',
+        'Preprocessing/{type}.r2.preprocessed.fq',
+        'Preprocessing/{type}.se.preprocessed.fq',
+        'Stats/{type}'
+    output:
+        'Stats/{type}/{type}.r1.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.r2.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.se.preprocessed.fq_fastqc.html',
+        'Stats/{type}/{type}.r1.preprocessed.fq_fastqc.zip',
+        'Stats/{type}/{type}.r2.preprocessed.fq_fastqc.zip',
+        'Stats/{type}/{type}.se.preprocessed.fq_fastqc.zip'
+    threads: 3
+    params:
+        runtime = "1:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
+    message: "Running fastqc on preprocessed {type} reads."
+    shell:
+        """
+        if [[ -s {input[2]} ]]
+        then
+          fastqc -o {input[3]} -f fastq {input[0]} {input[1]} {input[2]} -t {threads} -d {TMPDIR}
+        else
+          echo "{input[2]} is empty, FastQC will not run for that file"
+          fastqc -o {input[3]} -f fastq {input[0]} {input[1]} -t {threads} -d {TMPDIR}
+          echo "Creating empty files for {input[2]}..."
+          touch {output[2]}
+        echo "No single end reads were generated" > {output[5]}
+        fi
         """
