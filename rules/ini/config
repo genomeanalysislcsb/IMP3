@@ -43,6 +43,7 @@ if os.path.exists(CUSTOM_CONFIG_PATH):
 ROOT_DIR = os.environ.get("ROOTDIR", config['imp_root'])
 SRCDIR = os.environ.get("SRCDIR", config['imp_src'])
 LIBDIR = os.environ.get("LIBDIR", config['imp_lib'])
+BINDIR = ROOT_DIR + "/bin"
 
 # get parameters from the command line
 OUTPUTDIR = os.environ.get("OUTPUTDIR", config['outputdir'])
