@@ -3,10 +3,10 @@ rule fastqc_raw:
         'Preprocessing/{type}.r1.fq',
         'Preprocessing/{type}.r2.fq'
     output:
-        'Stats/{type}/{type}.r1.fq_fastqc.html',
-        'Stats/{type}/{type}.r2.fq_fastqc.html',
-        'Stats/{type}/{type}.r1.fq_fastqc.zip',
-        'Stats/{type}/{type}.r2.fq_fastqc.zip',
+        'Stats/{type}/{type}.r1_fastqc.html',
+        'Stats/{type}/{type}.r2_fastqc.html',
+        'Stats/{type}/{type}.r1_fastqc.zip',
+        'Stats/{type}/{type}.r2_fastqc.zip',
     threads: 2
     params:
         runtime = "1:00:00",
@@ -27,14 +27,14 @@ rule fastqc_preprocessed:
         'Preprocessing/{type}.r1.preprocessed.fq',
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
-        'Stats/{type}/{type}.r1.fq_fastqc.html'
+        'Stats/{type}/{type}.r1_fastqc.html'
     output:
-        'Stats/{type}/{type}.r1.preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.r2.preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.se.preprocessed.fq_fastqc.html',
-        'Stats/{type}/{type}.r1.preprocessed.fq_fastqc.zip',
-        'Stats/{type}/{type}.r2.preprocessed.fq_fastqc.zip',
-        'Stats/{type}/{type}.se.preprocessed.fq_fastqc.zip'
+        'Stats/{type}/{type}.r1.preprocessed_fastqc.html',
+        'Stats/{type}/{type}.r2.preprocessed_fastqc.html',
+        'Stats/{type}/{type}.se.preprocessed_fastqc.html',
+        'Stats/{type}/{type}.r1.preprocessed_fastqc.zip',
+        'Stats/{type}/{type}.r2.preprocessed_fastqc.zip',
+        'Stats/{type}/{type}.se.preprocessed_fastqc.zip'
     threads: 3
     params:
         runtime = "1:00:00",

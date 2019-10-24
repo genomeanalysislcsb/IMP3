@@ -29,12 +29,12 @@ rule PREPROCESSING:
         'Preprocessing/mt.r1.preprocessed.fq',
         'Preprocessing/mt.r2.preprocessed.fq',
         'Preprocessing/mt.se.preprocessed.fq',
-        'Stats/mt/mt.r1.preprocessed.fq_fastqc.html',
-        'Stats/mt/mt.r2.preprocessed.fq_fastqc.html',
-        'Stats/mt/mt.se.preprocessed.fq_fastqc.html',
-        'Stats/mt/mt.r1.preprocessed.fq_fastqc.zip',
-        'Stats/mt/mt.r2.preprocessed.fq_fastqc.zip',
-        'Stats/mt/mt.se.preprocessed.fq_fastqc.zip'
+        'Stats/mt/mt.r1.preprocessed_fastqc.html',
+        'Stats/mt/mt.r2.preprocessed_fastqc.html',
+        'Stats/mt/mt.se.preprocessed_fastqc.html',
+        'Stats/mt/mt.r1.preprocessed_fastqc.zip',
+        'Stats/mt/mt.r2.preprocessed_fastqc.zip',
+        'Stats/mt/mt.se.preprocessed_fastqc.zip'
 
     output:
         touch('preprocessing.done')
