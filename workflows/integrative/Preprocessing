@@ -35,11 +35,11 @@ rule PREPROCESSING:
         'Stats/{type}/{type}.r2.fq_fastqc.html',
         'Stats/{type}/{type}.r1.fq_fastqc.zip',
         'Stats/{type}/{type}.r2.fq_fastqc.zip',
-        "Stats/{type}/{type}.r1.preprocessed.fq_fastqc.zip",
-        "Stats/{type}/{type}.r2.preprocessed.fq_fastqc.zip",
-        "Stats/{type}/{type}.se.preprocessed.fq_fastqc.zip",
-        "Stats/{type}/{type}.r1.preprocessed.fq_fastqc.html",
-        "Stats/{type}/{type}.r2.preprocessed.fq_fastqc.html",
-        "Stats/{type}/{type}.se.preprocessed.fq_fastqc.html"], type=TYPES)
+        "Stats/{type}/{type}.r1.preprocessed_fastqc.zip",
+        "Stats/{type}/{type}.r2.preprocessed_fastqc.zip",
+        "Stats/{type}/{type}.se.preprocessed_fastqc.zip",
+        "Stats/{type}/{type}.r1.preprocessed_fastqc.html",
+        "Stats/{type}/{type}.r2.preprocessed_fastqc.html",
+        "Stats/{type}/{type}.se.preprocessed_fastqc.html"], type=TYPES)
     output:
         touch('preprocessing.done')
