@@ -32,5 +32,5 @@ rule contig_fasta2bed_conversion:
     shell:
         """
 #       	cat {input[0]}.fai | perl -ane '@F=split(/[\\t\\s]+/,$_); print "$F[0]\\t0\\t$F[1]\\n";' > {input[1]}.bed3
-        cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {input[1]}.bed3
+        cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output}
         """
