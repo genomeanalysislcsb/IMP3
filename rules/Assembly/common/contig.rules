@@ -8,7 +8,7 @@ rule contig_fasta_indexing:
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
     threads: 1
-    conda: ROOTDIR + "/envs/IMP_mapping.yaml"
+    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/assembly_fastaindex.log"
     message: "Indexing assembly."
     shell:
