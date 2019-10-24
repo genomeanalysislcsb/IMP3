@@ -6,12 +6,12 @@ rule run_DAS_tool:
     output:
         "Binning/selected_DASTool_summary.txt",
         "Binning/selected_DASTool_bins"
-    threads: 1
+    threads: 4
     params:
         runtime = "24:00:00",
         partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMCORE
-    conda: "envs/IMP_binning.yaml"
+        mem = "--mem-per-cpu " + BIGMEMCORE       
+    conda: ROOT_DIR + "/envs/IMP_binning.yaml"
     log: "logs/binning_DAStool.log"
     message: "Running DAS_Tool."
     run:

@@ -1,4 +1,3 @@
-#ugly, but I can't get the grid to build again somewhere else
 rule grid:
     input:
         "Binning/GRiD.prepped",
