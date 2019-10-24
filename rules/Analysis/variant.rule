@@ -4,6 +4,14 @@ rule variant_calling:
         "Assembly/{type}.reads.sorted.bam"
     output:
         "Analysis/snps/{type}.variants.samtools.vcf.gz",
+    params:
+        runtime = "48:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
+    threads: 1
+    log: "logs/analysis_variants.{type}.log"
+    message: "Calling variants using bcftools for {wildcards.type} reads."
     shell:
         """
         #temporary directory and files

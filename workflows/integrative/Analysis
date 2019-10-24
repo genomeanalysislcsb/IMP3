@@ -27,7 +27,7 @@ include:
 include:
     '../../rules/Analysis/vizbin.rule'
 include:
-    '../../rules/Analysis/annotateC.snakefile'
+    '../../rules/Analysis/annotate.rules'
 include:
     '../../rules/Analysis/featureCount.rule'
 include:
