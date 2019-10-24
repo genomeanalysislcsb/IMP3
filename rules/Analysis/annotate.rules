@@ -9,7 +9,7 @@ rule hmmer:
         runtime = "48:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
-    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
+    conda: ROOT_DIR + "/envs/IMP_annotate.yaml"
     threads: 12
     log: "logs/analysis_hmmer.{db}.log"
     message: "Running HMMER for {wildcards.db}."
@@ -29,10 +29,9 @@ rule makegff:
     params:
         "{db}",
         lambda wildcards: config["hmmdbs"][wildcards.db]["trim"],
-        runtime = "48:00:00",
+        runtime = "4:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
-    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     threads: 1
     log: "logs/analysis_add_hmmer_results.{db}.log"
     message: "Adding hmmer results of {wildcards.db} to gff."
@@ -43,10 +42,19 @@ rule makegff:
         """
 
 rule mergegff:
-        input:
-                expand("Analysis/annotation/annotation.CDS.RNA.{db}.gff",db=config["hmmdbs"])
-        output:
-                "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
-        shell:
-                """mergegffs.pl {output} {input}"""
+    input:
+        expand("Analysis/annotation/annotation.CDS.RNA.{db}.gff",db=config["hmmdbs"])
+    output:
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
+    params:
+        runtime = "8:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    log: "logs/analysis_merge_hmmer_results.log"
+    message: "Merging gffs with hmmer results."
+    shell:
+        """
+        {SRCDIR}/mergegffs.pl {output} {input}
+        """
 
