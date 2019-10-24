@@ -1,35 +1,59 @@
+localrules: allmotu
+
 rule allmotu:
-	input:
-		expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv", type=TYPES, measure=['abundances','counts'])
-	output:
-		"mOTUs.done"
-	shell:
-		"""touch {output}"""
+    input:
+        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv", type=TYPES, measure=['abundances','counts'])
+    output:
+        "mOTUs.done"
+    threads: 1
+    log: "logs/analysis_taxonomy_checkMotus.log"
+    message: "mOTUs done?"
+    shell:
+        """touch {output}"""
 
 rule motus:
-	input:
-		"Preprocessing/{type}.r1.preprocessed.fq",
-		"Preprocessing/{type}.r2.preprocessed.fq"
-	output:
-		"Analysis/taxonomy/mOTUs/{type}",
-		"Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.abundances.gz",
-		"Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.counts.gz"
-	params:
-		"{type}.r1.preprocessed.fq",
-		"{type}.r2.preprocessed.fq"
-	shell:
-		"""mkdir -p {output[0]}
-		cd {output[0]}
-		ln -s ../../../../{input[0]}
-		ln -s ../../../../{input[1]}
-		mOTUs.pl --processors={threads} {params[0]} {params[1]}
-		cd ../../../../"""
+    input:
+        "Preprocessing/{type}.r1.preprocessed.fq",
+        "Preprocessing/{type}.r2.preprocessed.fq"
+    output:
+        "Analysis/taxonomy/mOTUs/{type}",
+        "Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.abundances.gz",
+        "Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.counts.gz"
+    threads: 6
+    params:
+        "{type}.r1.preprocessed.fq",
+        "{type}.r2.preprocessed.fq",
+        runtime = "12:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch",
+        outputdir = 'Stats/{type}'
+    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    log: "logs/analysis_mOTUs.{type}.log"
+    message: "Running mOTUs on {wildcards.type} reads."
+    shell:
+        """
+        mkdir -p {output[0]}
+        cd {output[0]}
+        ln -s ../../../../{input[0]}
+        ln -s ../../../../{input[1]}
+        mOTUs.pl --processors={threads} {params[0]} {params[1]}
+        cd ../../../../
+        """
 
 rule getResults:
-	input:
-		"Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.{measure}.gz"
-	output:
-		"Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv"
-	shell:
-		"""zcat {input} >> {output}"""
+    input:
+        "Analysis/taxonomy/mOTUs/{type}/RESULTS/mOTU.{measure}.gz"
+    output:
+        "Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv"
+    threads: 1
+    params:
+        runtime = "1:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    log: "logs/analysis_mOTU_copy.{measure}.{type}.log"
+    message: "Copying mOTU {wildcards.measure} for {wildcards.type} reads." 
+    shell:
+        """
+        zcat {input} >> {output}
+        """
 

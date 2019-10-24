@@ -1,3 +1,4 @@
+#probably doesn't work anymore for snakemake:
 rule hmmer:
     input:
         "Analysis/annotation/prokka.faa"
