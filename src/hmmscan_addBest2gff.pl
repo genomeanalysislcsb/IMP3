@@ -90,7 +90,7 @@ while (@all) {
 		}
 		print RESULT "$line".$addarg."\n";
 	}else{
-		print RESULT "$line\n";
+#		print RESULT "$line\n";
 	}
 } 
 close(FH);

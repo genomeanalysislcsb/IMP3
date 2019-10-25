@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -42,7 +42,7 @@ class Node:
         ancestors = []        # Initialise the list of all nodes from root to leaf.
         tax_id = self.tax_id  # Define leaf
         while 1:
-            if name_object.has_key(tax_id):
+            if tax_id in name_object:
                 ancestors.append(tax_id)
                 tax_id = name_object[tax_id].parent
             else:
@@ -258,7 +258,7 @@ while 1:
     if tax_id in name_dict:
         name = name_dict[tax_id]
     
-    if not name_object.has_key(tax_id):
+    if tax_id not in name_object:
         name_object[tax_id] = Node()
     name_object[tax_id].tax_id   = tax_id        # Assign tax_id
     name_object[tax_id].parent   = tax_id_parent # Assign tax_id parent
@@ -373,19 +373,19 @@ while 1:
 
         kingdom_nameB = phylum_nameB = pclass_nameB = order_nameB = family_nameB = genus_nameB = species_nameB = "unknown"
         if len(kings) >0:
-            kingdom_nameB = max(kings.iteritems(), key=operator.itemgetter(1))[0]
+            kingdom_nameB = max(kings.items(), key=operator.itemgetter(1))[0]
         if len(phys) >0:
-            phylum_nameB = max(phys.iteritems(), key=operator.itemgetter(1))[0]
+            phylum_nameB = max(phys.items(), key=operator.itemgetter(1))[0]
         if len(clas) >0:
-            pclass_nameB = max(clas.iteritems(), key=operator.itemgetter(1))[0]
+            pclass_nameB = max(clas.items(), key=operator.itemgetter(1))[0]
         if len(ords) >0:
-            order_nameB = max(ords.iteritems(), key=operator.itemgetter(1))[0]
+            order_nameB = max(ords.items(), key=operator.itemgetter(1))[0]
         if len(fams) >0:
-            family_nameB = max(fams.iteritems(), key=operator.itemgetter(1))[0]
+            family_nameB = max(fams.items(), key=operator.itemgetter(1))[0]
         if len(gens) >0:
-            genus_nameB = max(gens.iteritems(), key=operator.itemgetter(1))[0]
+            genus_nameB = max(gens.items(), key=operator.itemgetter(1))[0]
         if len(specs) >0:
-            species_nameB = max(specs.iteritems(), key=operator.itemgetter(1))[0]
+            species_nameB = max(specs.items(), key=operator.itemgetter(1))[0]
 
         annoLev = ["none"]
         kingdom_nameA = phylum_nameA = pclass_nameA = order_nameA = family_nameA = genus_nameA = species_nameA = "unknown"
@@ -442,5 +442,5 @@ krak_file.close()
 out_file1.close()
 
 if args.silent:
-    print ucnt 
+    print(ucnt) 
 

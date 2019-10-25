@@ -1,3 +1,6 @@
+bintabs = ",".join(map(str, expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"])))
+binnames = ",".join(map(str, config["binning"]))
+
 rule run_DAS_tool:
     input:
         contigs="Assembly/%s.assembly.merged.fa" % ASS,
@@ -14,15 +17,15 @@ rule run_DAS_tool:
     conda: ROOT_DIR + "/envs/IMP_binning.yaml"
     log: "logs/binning_DAStool.log"
     message: "Running DAS_Tool."
-    run:
-        bintabs = ",".join(map(str, input.tabs))
-        binnames = ",".join(map(str, config["binning"]))
-        shell("DAS_Tool -i {bintabs} \
+    shell:
+        """
+        DAS_Tool -i {bintabs} \
          -l {binnames} \
          -c {input.contigs} \
          --proteins {input.proteins} --score_threshold 0.3 \
          --threads {threads} --write_bins 1 \
-         -o Binning/selected")
+         -o Binning/selected
+         """
 
 rule format_protein_names:
     input:

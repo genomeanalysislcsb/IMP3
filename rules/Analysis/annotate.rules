@@ -5,7 +5,7 @@ rule hmmer:
     output:
         "Analysis/annotation/prokka.faa.{db}.hmmscan"
     params: 
-        "/work/projects/ecosystem_biology/data/hmm/{db}",
+        DBPATH + "/hmm/{db}",
         lambda wildcards: config["hmmdbs"][wildcards.db]["cutoff"],
         runtime = "48:00:00",
         mem = "--mem-per-cpu " + MEMCORE,

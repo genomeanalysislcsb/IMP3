@@ -16,7 +16,7 @@ rule feature_count:
     message: "Quantifying {wildcards.db} with {wildcards.type} reads."
     shell:
         """
-	featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params} -a {input[0]} -T {threads} {input[1]}
+	featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params[0]} -a {input[2]} -T {threads} {input[1]}
 	"""
 
 rule feature_count_gene:
