@@ -6,8 +6,8 @@ rule call_contig_depth:
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
     output:
         "Stats/{type}/{type}.assembly.contig_coverage.txt",
-        "Analysis/{type}/{type}.assembly.contig_depth.txt",
-        "Analysis/{type}/{type}.assembly.contig_flagstat.txt",
+        "Stats/{type}/{type}.assembly.contig_depth.txt",
+        "Stats/{type}/{type}.assembly.contig_flagstat.txt",
     params:
         runtime = "12:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
@@ -15,7 +15,7 @@ rule call_contig_depth:
     threads: 1
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/analysis_contigDepth.{type}.log"
-    message: "Getting data on assembly coverage with {type} reads."
+    message: "Getting data on assembly coverage with {wildcards.type} reads."
     shell:
         """
         coverageBed -abam {input[0]} -b {input[3]} > {output[0]}

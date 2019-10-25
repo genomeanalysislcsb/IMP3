@@ -50,7 +50,7 @@
         "theta": 0.5,
         "perp": 30,
         "cutoff": 1000,
-        "jarfile": "$imp_lib/VizBin-dist.jar"
+        "jarfile": "VizBin-dist.jar"
     },
     "filtering": {
         "filter": "hg38",

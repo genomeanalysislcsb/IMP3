@@ -1,6 +1,6 @@
 rule maxbin_get_depth:
     input:
-        "Analysis/mg.assembly.contig_depth.txt",
+        "Stats/mg/mg.assembly.contig_depth.txt",
         "Assembly/mgmt.assembly.merged.fa"
     output:
         "Analysis/mg.assembly.contig_depth.0.txt"

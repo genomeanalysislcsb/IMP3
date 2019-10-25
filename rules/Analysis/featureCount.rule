@@ -11,9 +11,9 @@ rule feature_count:
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
     threads: 8
-    conda: ROOT_DIR + "/envs/IMP_annotate.yaml"
+    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
     log: "logs/analysis_merge_featurecounts.{type}.{db}.log"
-    message: "Quantifying {wildcards.db} with {type} reads."
+    message: "Quantifying {wildcards.db} with {wildcards.type} reads."
     shell:
         """
 	featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params} -a {input[0]} -T {threads} {input[1]}
@@ -32,11 +32,11 @@ rule feature_count_gene:
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
     threads: 8
-    conda: ROOT_DIR + "/envs/IMP_annotate.yaml"
+    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
     log: "logs/analysis_merge_featurecounts.{type}.genes.log"
-    message: "Quantifying ORFs and rRNAs with {type} reads."
+    message: "Quantifying ORFs and rRNAs with {wildcards.type} reads."
     shell:
         """
-        featureCounts -p -O -t CDS -g ID -o {output[0]} -s {params}  -a {input[0]} -T {threads} {input[1]}
-        featureCounts -p -O -t rRNA -g ID -o {output[1]} -s {params} -a {input[0]} -T {threads} {input[1]}
+        featureCounts -p -O -t CDS -g ID -o {output[0]} -s {params[0]}  -a {input[0]} -T {threads} {input[1]}
+        featureCounts -p -O -t rRNA -g ID -o {output[1]} -s {params[0]} -a {input[0]} -T {threads} {input[1]}
         """

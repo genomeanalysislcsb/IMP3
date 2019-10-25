@@ -3,7 +3,6 @@
 ## DAStool
 include:
     '../../rules/Binning/DAStool/dastool.rules'
-
 ## MaxBin
 include:
     '../../rules/Binning/MaxBin/maxbin.rule'
@@ -16,14 +15,14 @@ include:
     '../../rules/Binning/MetaBAT/metabat.rule'
 ## binny
 include:
+    '../../rules/Binning/binny/vizbin.rule'
+include:
     '../../rules/Binning/binny/binny.rule'
 include:
     '../../rules/Binning/binny/binny2dastool.rules'
-
 ## GRiD
 include:
     '../../rules/Binning/GRiD/grid.rule'
-
 
 ## master command
 rule BINNING:

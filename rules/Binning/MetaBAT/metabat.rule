@@ -1,7 +1,7 @@
 rule metabat:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS,
-        "Analysis/mg.assembly.contig_depth.txt"
+        "Stats/mg/mg.assembly.contig_depth.txt"
     output:
         "Binning/MetaBAT/metabat_res",
 	"Binning/MetaBAT/scaffold2bin.tsv"

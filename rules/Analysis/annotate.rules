@@ -10,7 +10,7 @@ rule hmmer:
         runtime = "48:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
-    conda: ROOT_DIR + "/envs/IMP_annotate.yaml"
+    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
     threads: 12
     log: "logs/analysis_hmmer.{db}.log"
     message: "Running HMMER for {wildcards.db}."

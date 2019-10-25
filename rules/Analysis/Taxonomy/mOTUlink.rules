@@ -21,18 +21,18 @@ rule fetchmg:
         "Analysis/annotation/prokka.faa",
         "Analysis/taxonomy/mOTU_links"
     output:
-        directory("Analysis/taxonomy/mOTU_links/marker_genes"),
         expand("Analysis/taxonomy/mOTU_links/marker_genes/{COG}.fna",COG=config["COGS"])
     threads: 6
     params:
         runtime = "12:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        partition = "-p batch --qos qos-batch",
+        outputdir = "Analysis/taxonomy/mOTU_links/marker_genes"
     log: "logs/analysis_mOTU_extractMarkerGenes.log"
     message: "Finding mOTU marker genes in open reading frames."
     shell:
         """
-        {BINDIR}/fetchMG/fetchMG.pl -o {output[0]} -t {threads} -d {input[0]}  -m extraction {input[1]}
+        {BINDIR}/fetchMG/fetchMG.pl -o {params.outputdir} -t {threads} -d {input[0]}  -m extraction {input[1]}
         """
 	
 rule get_present_mOTUs:
@@ -53,13 +53,11 @@ rule get_present_mOTUs:
         grep "motus.processing" -v {input} -h | cut -f 1 | sort | uniq > {output[1]}
 	"""
 
-#I don't think this can work - AHB:
-rule extract_mOTU_db_genes:
+rule merge_mOTU_geneInfo:
     input:
         "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
     output:
-        "Analysis/taxonomy/mOTU_links/{COG}.present.mOTU.DBgenenames.txt",
-        "Analysis/taxonomy/mOTU_links/{COG}.present.DBgenes.fna"
+        expand("Analysis/taxonomy/mOTU_links/{COG}.present.mOTU.DBgenenames.txt",COG=config['COGS'])
     threads: 1
     params:
         runtime = "12:00:00",
@@ -70,8 +68,28 @@ rule extract_mOTU_db_genes:
     message: "Extracting gene names for present mOTUs."
     shell:
         """
-        Rscript {SRCDIR}/mergeMOTUgeneInfo.R {wildcards.COG} {input} {output[0]}
-        {SRCDIR}/fastaExtract.pl $imp_lib/motus_linking/{wildcards.COG}/{wildcards.COG}.mOTU.v1.padded {output[0]} > {output[1]}
+        for c in {config[COGS]}
+	do
+        	Rscript {SRCDIR}/mergeMOTUgeneInfo.R $c {input} Analysis/taxonomy/mOTU_links/$c.present.mOTU.DBgenenames.txt
+	done
+        """
+
+rule extract_mOTU_db_genes:
+    input:
+        "Analysis/taxonomy/mOTU_links/{COG}.present.mOTU.DBgenenames.txt"
+    output:
+        "Analysis/taxonomy/mOTU_links/{COG}.present.DBgenes.fna"
+    threads: 1
+    params:
+        runtime = "12:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    log: "logs/analysis_getting_present.{COG}.log"
+    message: "Extracting gene names for {wildcards.COG} in present mOTUs."
+    shell:
+        """
+        {SRCDIR}/fastaExtract.pl $imp_lib/motus_linking/{wildcards.COG}/{wildcards.COG}.mOTU.v1.padded {output} > {output}
         """
 
 rule blast_mOTU_db_genes:
@@ -87,8 +105,8 @@ rule blast_mOTU_db_genes:
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
-    log: "logs/analysis_blast.log"
-    message: "Blasting {wildcars.COG} genes to present mOTUs."
+    log: "logs/analysis_blast.{COG}.log"
+    message: "Blasting {wildcards.COG} genes to present mOTUs."
     shell:
         """
         makeblastdb -in {input[0]} -dbtype nucl -parse_seqids

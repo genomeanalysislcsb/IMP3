@@ -1,13 +1,13 @@
 PLOT_OUTPUT_FILES = [
-    "Analysis/results/mg.read_stats.html",
-    "Analysis/results/mg.read_stats.txt",
-    "Analysis/results/mg_mapping_stats.html",
-    "Analysis/results/mg_mapping_stats.txt",
-    "Analysis/results/mt.read_stats.html",
-    "Analysis/results/mt.read_stats.txt",
-    "Analysis/results/mt_mapping_stats.html",
-    "Analysis/results/mt_mapping_stats.txt",
-    "Analysis/results/mgmt_results.Rdat",
+    "Stats/mg/mg.read_stats.html",
+    "Stats/mg/mg.read_stats.txt",
+    "Stats/mg/mg_mapping_stats.html",
+    "Stats/mg/mg_mapping_stats.txt",
+    "Stats/mt/mt.read_stats.html",
+    "Stats/mt/mt.read_stats.txt",
+    "Stats/mt/mt_mapping_stats.html",
+    "Stats/mt/mt_mapping_stats.txt",
+    "Stats/mgmt/mgmt_results.Rdat",
     expand("Binning/binny/reachabilityDistanceEstimates.{pk}.{nn}.tsv \
     Binning/binny/clusterFirstScan.{pk}.{nn}.tsv \
     Binning/binny/bimodalClusterCutoffs.{pk}.{nn}.tsv \
@@ -19,24 +19,30 @@ PLOT_OUTPUT_FILES = [
 
 rule binny_visualize:
     input:
-       'Analysis/mg.read_counts.txt',
-       'Analysis/mt.read_counts.txt',
-       'Analysis/mg.assembly.contig_flagstat.txt',
-       'Analysis/mt.assembly.contig_flagstat.txt',
-       'Analysis/mg.assembly.contig_coverage.txt',
-       'Analysis/mt.assembly.contig_coverage.txt',
-       'Analysis/mg.assembly.contig_depth.txt',
-       'Analysis/mt.assembly.contig_depth.txt',
-       'Analysis/mgmt.assembly.gc_content.txt',
-       "Analysis/mgmt.vizbin.with-contig-names.points",
+       'Stats/mg/mg.read_counts.txt',
+       'Stats/mt/mt.read_counts.txt',
+       'Stats/mg/mg.assembly.contig_flagstat.txt',
+       'Stats/mt/mt.assembly.contig_flagstat.txt',
+       'Stats/mg/mg.assembly.contig_coverage.txt',
+       'Stats/mt/mt.assembly.contig_coverage.txt',
+       'Stats/mg/mg.assembly.contig_depth.txt',
+       'Stats/mt/mt.assembly.contig_depth.txt',
+       'Stats/mgmt/mgmt.assembly.gc_content.txt',
+       "Binning/binny/%s.vizbin.with-contig-names.points" % ASS,
        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         PLOT_OUTPUT_FILES
+    threads: 1
+    params:
+        runtime = "24:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    conda: ROOT_DIR + "/envs/IMP_binning.yaml"
+    log: "logs/binning_binny.log"
+    message: "Running binny."
     shell:
         """
         PLOT_SCRIPT="{SRCDIR}/IMP_visualize_mgmt_commented.R"
-
-        echo "[x] PLOT `date +"%Y/%m/%d %H:%M:%S"`"
         mkdir -p Analysis/results
         mkdir -p Binning/binny/clusterFiles
 	Rscript $PLOT_SCRIPT {config[imp_lib]} Analysis/results {input} {SRCDIR}/IMP_plot_binny_functions.R {config[binning][binny][pk]} {config[binning][binny][nn]}

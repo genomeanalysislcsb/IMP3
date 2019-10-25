@@ -22,8 +22,8 @@ rule variant_calling:
 
         ### run_mpileup {input[0]} {input[1]} {output[0]}
         echo "Running samtools mpileup"
-        bcftools mpileup -A -Ou -f {input[0]} {input[1]} |
-        bcftools call -vmO >$VCF_MPU 
+        bcftools mpileup -A -Ou -f {input[0]} {input[1]} | \
+        bcftools call -vm -Ov  >$VCF_MPU 
         bgzip -c $VCF_MPU > {output[0]}
         tabix -f -p vcf {output[0]}
         """
