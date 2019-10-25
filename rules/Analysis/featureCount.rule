@@ -6,8 +6,14 @@ rule feature_count:
     output:
         "Analysis/annotation/{type}.{db}.counts.tsv"
     params:
-        lambda wildcards: config["featureCountsStranding"][wildcards.type]
-    threads: THREADS
+        lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        runtime = "8:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 8
+    conda: ROOT_DIR + "/envs/IMP_annotate.yaml"
+    log: "logs/analysis_merge_featurecounts.{type}.{db}.log"
+    message: "Quantifying {wildcards.db} with {type} reads."
     shell:
         """
 	featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params} -a {input[0]} -T {threads} {input[1]}
@@ -21,8 +27,14 @@ rule feature_count_gene:
         "Analysis/annotation/{type}.CDS_counts.tsv",
 	"Analysis/annotation/{type}.rRNA_counts.tsv"
     params:
-        lambda wildcards: config["featureCountsStranding"][wildcards.type]
-    threads: THREADS
+        lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        runtime = "8:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 8
+    conda: ROOT_DIR + "/envs/IMP_annotate.yaml"
+    log: "logs/analysis_merge_featurecounts.{type}.genes.log"
+    message: "Quantifying ORFs and rRNAs with {type} reads."
     shell:
         """
         featureCounts -p -O -t CDS -g ID -o {output[0]} -s {params}  -a {input[0]} -T {threads} {input[1]}

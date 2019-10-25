@@ -5,7 +5,14 @@ rule maxbin:
     output:
        "Binning/MaxBin/maxbin_res.log",
        "Binning/MaxBin/maxbin_res.summary"
-    threads: THREADS
+    threads: 4
+    params:
+        runtime = "24:00:00",
+        partition = "-p bigmem --qos qos-bigmem ",
+        mem = "--mem-per-cpu " + BIGMEMCORE
+    conda: ROOT_DIR + "/envs/IMP_binning.yaml"
+    log: "logs/binning_MaxBin.log"
+    message: "Running MaxBin."
     shell:
         """
 	## Create MaxBin dir
@@ -17,5 +24,4 @@ rule maxbin:
         -out Binning/MaxBin/maxbin_res \
         -thread {threads} \
         -min_contig_length {config[binning][MaxBin][cutoff]}
-
         """

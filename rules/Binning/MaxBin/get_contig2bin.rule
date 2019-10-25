@@ -4,10 +4,18 @@ rule maxbin_contig2bin:
     output:
         "Binning/MaxBin/maxbin_contig2bin.txt",
         "Binning/MaxBin/scaffold2bin.tsv"
+    threads: 1
+    params:
+        runtime = "3:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch",
+    log: "logs/binning_contigToBinMapping.log"
+    message: "Getting contig to bin mapping."
     shell:
         """
-        echo "Getting contig to bin mapping"
-        for f in $(ls Binning/MaxBin/*.fasta | cut -f3 -d "/"); do sed -e "s/$/\t$f/g" <(grep "^>" Binning/MaxBin/$f | sed -e 's/>//g') >> {output[0]}; done
+        for f in $(ls Binning/MaxBin/*.fasta | cut -f3 -d "/"); do 
+         sed -e "s/$/\t$f/g" <(grep "^>" Binning/MaxBin/$f | sed -e 's/>//g') >> {output[0]}
+        done
         ln -s ../../{output[0]} {output[1]}
         echo "Contig to bin mapping done"
         """
