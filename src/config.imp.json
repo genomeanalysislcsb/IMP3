@@ -1,7 +1,7 @@
 {
     "steps": "preprocessing assembly analysis binning report",
     "normal_mem_per_core_gb": 4,
-    "big_mem_total_gb": 1600, 
+    "big_mem_total_gb": 1600,
     "big_mem_cores": 8,
     "big_mem_per_core_gb": 200,
     "tmp_dir": "tmp",
@@ -71,7 +71,7 @@
     },
     "prokka": {
         "essentials_genes_db_url": "https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm",
-	"prefix": "prokka",
+        "prefix": "prokka",
         "databases": [
             "cm/Bacteria.i1i",
             "genus/Staphylococcus.phr",
@@ -88,23 +88,23 @@
     },
     "binning": {
         "MaxBin":{
-	    "cutoff": 1000
-	},
-	"MetaBAT":{
-	    "cutoff": 1500
-	},
-	"binny":{
-	     "pk": 10,
-             "nn": 4,
-	     "cutoff": 1000
-	}
+        "cutoff": 1000
+        },
+    "MetaBAT":{
+        "cutoff": 1500
+        },
+    "binny":{
+        "pk": 10,
+        "nn": 4,
+        "cutoff": 1000
+        }
     },
     "checkm": {
         "data_url": "https://webdav-r3lab.uni.lu/public/R3lab/IMP/checkm_data_v1.0.6.tar.gz"
     },
     "krakendb": "minikraken2",
     "featureCountsStranding":{
-	"mt": 2,
+        "mt": 2,
         "mg": 0 
     }
 }
