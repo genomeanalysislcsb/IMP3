@@ -82,6 +82,12 @@ if config['skip_preprocessing']:
                 "Preprocessing/mg.r1.preprocessed.fq",
                 "Preprocessing/mg.r2.preprocessed.fq",
                 "Preprocessing/mg.se.preprocessed.fq",
+            threads: 1
+            params:
+                runtime = "4:00:00",
+                mem = "--mem-per-cpu " + MEMCORE,
+                partition = "-p batch --qos qos-batch"
+                message: "Preparing mg reads."
             run:
                 prepare_input_files(input, 'mg')
     if MT:
@@ -95,6 +101,12 @@ if config['skip_preprocessing']:
                 "Preprocessing/mt.r1.preprocessed.fq",
                 "Preprocessing/mt.r2.preprocessed.fq",
                 "Preprocessing/mt.se.preprocessed.fq",
+            threads: 1
+            params:
+                runtime = "4:00:00",
+                mem = "--mem-per-cpu " + MEMCORE,
+                partition = "-p batch --qos qos-batch"
+                message: "Preparing mt reads."
             run:
                 prepare_input_files(input, 'mt')
 
@@ -107,6 +119,12 @@ else:
             output:
                 "Preprocessing/mg.r1.fq",
                 "Preprocessing/mg.r2.fq"
+            threads: 1
+            params:
+                runtime = "4:00:00",
+                mem = "--mem-per-cpu " + MEMCORE,
+                partition = "-p batch --qos qos-batch"
+                message: "Preparing mg reads."
             run:
                 prepare_input_files(input, 'mg')
     if MT:
@@ -116,5 +134,11 @@ else:
             output:
                 "Preprocessing/mt.r1.fq",
                 "Preprocessing/mt.r2.fq"
+            threads: 1
+            params:
+                runtime = "4:00:00",
+                mem = "--mem-per-cpu " + MEMCORE,
+                partition = "-p batch --qos qos-batch"
+                message: "Preparing mt reads."
             run:
                 prepare_input_files(input, 'mt')
