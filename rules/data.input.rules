@@ -86,6 +86,7 @@ def _process_file(fname, inp, outfilename):
     else:
         shutil.copy(inp, outfilename)
 
+localrules: prepare_input_data
 
 rule prepare_input_data:
     input:
@@ -93,6 +94,12 @@ rule prepare_input_data:
     output:
         outputs,
         symlinked_output
+    threads: 1
+    params:
+        runtime = "4:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    message: "Preparing reads."
     run:
         prepare_input_files(input, outputs)
         if symlinks:
