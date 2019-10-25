@@ -37,7 +37,7 @@ include:
 include:
     "../../rules/Analysis/Taxonomy/kraken_contigs.rule"
 include:
-    "../../rules/Analysis/Taxonomy/mOTUlink.rules"    	
+    "../../rules/Analysis/Taxonomy/mOTUlink.rules"
 
 # master command
 rule ANALYSIS:
@@ -63,11 +63,11 @@ rule ANALYSIS:
         expand("Stats/{type}/{type}.assembly.contig_coverage.txt",type=TYPES),
         expand("Stats/{type}/{type}.assembly.contig_depth.txt",type=TYPES),
         expand("Stats/{type}/{type}.assembly.contig_flagstat.txt",type=TYPES),
-	"Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
         expand(""Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmmdbs"]),
-	"Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",
-	"Analysis/taxonomy/mOTU_links/all.mOTUs.present",
+        "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",
+        "Analysis/taxonomy/mOTU_links/all.mOTUs.present",
 #	"Analysis/taxonomy/mOTU_links/marker_genes",
 #	"Analysis/taxonomy/mOTU_links/COG0495.present.DBgenes.fna",
 #	"Analysis/taxonomy/mOTU_links/marker_genes/COG0012.fna", 
