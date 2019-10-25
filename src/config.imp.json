@@ -88,15 +88,15 @@
     },
     "binning": {
         "MaxBin":{
-        "cutoff": 1000
+            "cutoff": 1000
         },
-    "MetaBAT":{
-        "cutoff": 1500
+        "MetaBAT":{
+           "cutoff": 1500
         },
-    "binny":{
-        "pk": 10,
-        "nn": 4,
-        "cutoff": 1000
+        "binny":{
+           "pk": 10,
+           "nn": 4,
+           "cutoff": 1000
         }
     },
     "checkm": {
