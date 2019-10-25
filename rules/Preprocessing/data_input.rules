@@ -68,6 +68,7 @@ data_input = {
     'mt': MT
 }
 
+localrules: prepare_mg_data, rule prepare_mt_data
 
 if config['skip_preprocessing']:
     if MG:
