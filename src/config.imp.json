@@ -1,4 +1,5 @@
 {
+    "steps": "preprocessing assembly analysis binning report",
     "normal_mem_per_core_gb": 4,
     "big_mem_total_gb": 1600, 
     "big_mem_cores": 8,
