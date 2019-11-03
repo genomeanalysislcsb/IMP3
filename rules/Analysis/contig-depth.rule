@@ -6,8 +6,8 @@ rule call_contig_depth:
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
     output:
         "Stats/{type}/{type}.assembly.contig_coverage.txt",
-        "Analysis/{type}/{type}.assembly.contig_depth.txt",
-        "Analysis/{type}/{type}.assembly.contig_flagstat.txt",
+        "Stats/{type}/{type}.assembly.contig_depth.txt",
+        "Stats/{type}/{type}.assembly.contig_flagstat.txt",
     params:
         runtime = "12:00:00",
         mem = "--mem-per-cpu " + MEMCORE,

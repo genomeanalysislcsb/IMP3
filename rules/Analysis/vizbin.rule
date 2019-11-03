@@ -1,9 +1,9 @@
 rule vizbin:
     input:
-        "Assembly/{type}.assembly.merged.fa"
+        "Assembly/{ass}.assembly.merged.fa"
     output:
-        "Analysis/{type}.vizbin.filtered.fa",
-        "Analysis/{type}.vizbin.with-contig-names.points"
+        "Analysis/{ass}.vizbin.filtered.fa",
+        "Analysis/{ass}.vizbin.with-contig-names.points"
     shell:
         """
         echo "[x] VIZBIN `date +"%Y/%m/%d %H:%M:%S"`"

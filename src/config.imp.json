@@ -5,9 +5,9 @@
     "big_mem_cores": 8,
     "big_mem_per_core_gb": 200,
     "tmp_dir": "tmp",
-    "imp_root": "$imp_root",
-    "imp_src": "$imp_root/src",
-    "imp_lib": "$imp_lib",
+    "imp_root": "/work/projects/ecosystem_biology/local_tools/IMP3",
+    "imp_src": "/work/projects/ecosystem_biology/local_tools/IMP3/src",
+    "imp_lib": "/work/projects/ecosystem_biology/local_tools/IMP3/lib",
     "skip_preprocessing": false,
     "raws": {
       "Metagenomics": "",
@@ -15,7 +15,7 @@
     },
     "sample": "test",
     "outputdir": "",
-    "db_path": "$imp_root/databases",
+    "db_path": "/work/projects/ecosystem_biology/local_tools/IMP3/databases",
     "preprocessing_filtering": true,
     "assembler": "megahit",
     "cap3": {
@@ -42,6 +42,56 @@
         "mink": 25,
         "maxk": 99,
         "step": 4
+    },
+    "hmmdbs": {
+       "KEGG":{
+               "cutoff": "",
+               "trim": "--trimall"
+       },
+       "essential":{
+               "cutoff": "--cut_tc",
+               "trim": ""
+       },
+       "metacyc":{
+               "cutoff": "",
+               "trim": "--trimall"
+       },
+       "Cas":{
+               "cutoff": "",
+               "trim": ""
+       },
+       "Pfam-A":{
+               "cutoff": "--cut_tc",
+               "trim": ""
+       },
+       "SwissProt":{
+               "cutoff": "",
+               "trim": "--trimall"
+       },
+       "TIGRPFAM":{
+               "cutoff": "",
+               "trim": ""
+       },
+       "dbCAN":{
+               "cutoff": "",
+               "trim": ""
+       },
+       "resfams":{
+               "cutoff": "",
+               "trim": ""
+       }
+    },
+    {
+        "COG0012": "",
+        "COG0018": "",
+        "COG0215": "",
+        "COG0525": "",
+        "COG0541": "",
+        "COG0016": "",
+        "COG0172": "",
+        "COG0495": "",
+        "COG0533": "",
+        "COG0552": ""
     },
     "vizbin": {
         "dimension": 50,
@@ -96,7 +146,8 @@
         "binny":{
            "pk": 10,
            "nn": 4,
-           "cutoff": 1000
+           "cutoff": 1000,
+           "Rlibs": "/work/projects/ecosystem_biology/local_tools/minicondaESB/envs/IMP_binning/lib/R/library"
         }
     },
     "checkm": {
