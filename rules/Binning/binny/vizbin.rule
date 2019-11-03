@@ -1,0 +1,32 @@
+rule vizbin:
+    input:
+        "Assembly/{ass}.assembly.merged.fa"
+    output:
+        "Analysis/{ass}.vizbin.filtered.fa",
+        "Analysis/{ass}.vizbin.with-contig-names.points"
+    params:
+        runtime = "24:00:00",
+        partition = "-p bigmem --qos qos-bigmem -N 1",
+        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+    threads: 1
+    log: "logs/binning_vizbin.log"
+    message: "Running VizBin."
+    shell:
+        """
+        TMP_VIZBIN=$(mktemp --tmpdir=Analysis -dt "VIZBIN_XXXXXX")
+        perl {SRCDIR}/fasta_filter_length.pl {config[vizbin][cutoff]} {input[0]} > {output[0]}
+        java -jar {SRCDIR}/VizBin-dist.jar \
+         -a {config[vizbin][dimension]} \
+         -c {config[vizbin][cutoff]} \
+         -i {output[0]} \
+         -o $TMP_VIZBIN/data.points \
+         -k {config[vizbin][kmer]} \
+         -p {config[vizbin][perp]}
+
+         if [ -f $TMP_VIZBIN/data.points ]
+           then
+             paste <(grep "^>" {output[0]} | sed -e 's/>//') \
+              <(cat $TMP_VIZBIN/data.points | sed -e 's/,/\t/') > {output[1]}
+           fi
+        rm -rf $TMP_VIZBIN
+        """

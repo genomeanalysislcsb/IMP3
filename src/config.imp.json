@@ -99,8 +99,7 @@
         "size": 4,
         "theta": 0.5,
         "perp": 30,
-        "cutoff": 1000,
-        "jarfile": "$imp_lib/VizBin-dist.jar"
+        "cutoff": 1000
     },
     "filtering": {
         "filter": "hg38",
