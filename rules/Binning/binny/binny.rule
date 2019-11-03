@@ -1,14 +1,4 @@
-PLOT_OUTPUT_FILES = [
-    "Analysis/results/mg.read_stats.html",
-    "Analysis/results/mg.read_stats.txt",
-    "Analysis/results/mg_mapping_stats.html",
-    "Analysis/results/mg_mapping_stats.txt",
-    "Analysis/results/mt.read_stats.html",
-    "Analysis/results/mt.read_stats.txt",
-    "Analysis/results/mt_mapping_stats.html",
-    "Analysis/results/mt_mapping_stats.txt",
-    "Analysis/results/mgmt_results.Rdata",
-]
+localrules: prepare_binny
 
 prepare_binny:
     input:
@@ -17,6 +7,8 @@ prepare_binny:
        gff="Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
        directory("Binning/binny/clusterFiles")
+    threads: 1
+    message: "Prepare binny."
     shell:
        """
        mkdir -p {output} || echo "{output} exists"
@@ -39,33 +31,13 @@ rule binny:
         "Binning/binny/binny_WS.Rdata"
     params:
         plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",
-        binnydir="Binning/binny"
+        binnydir="Binning/binny",
+        runtime = "24:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    log: "logs/binning_binny.log"
+    message: "Running Binny."
     script:
         SRCDIR + "/binny_only.R"
-
-rule visualize_mgmt:
-    input:
-       'Analysis/mg.read_counts.txt',
-       'Analysis/mt.read_counts.txt',
-       'Analysis/mg.assembly.contig_flagstat.txt',
-       'Analysis/mt.assembly.contig_flagstat.txt',
-       'Analysis/mg.assembly.contig_coverage.txt',
-       'Analysis/mt.assembly.contig_coverage.txt',
-       'Analysis/mg.assembly.contig_depth.txt',
-       'Analysis/mt.assembly.contig_depth.txt',
-       'Analysis/mgmt.assembly.gc_content.txt',
-       "Analysis/mgmt.vizbin.with-contig-names.points",
-       "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
-    output:
-        PLOT_OUTPUT_FILES
-    shell:
-        """
-        PLOT_SCRIPT="{SRCDIR}/IMP_visualize_mgmt_commented.R"
-
-        echo "[x] PLOT `date +"%Y/%m/%d %H:%M:%S"`"
-        mkdir -p Analysis/results
-        mkdir -p Binning/binny/clusterFiles
-        Rscript $PLOT_SCRIPT {config[imp_lib]} Analysis/results {input} {SRCDIR}/IMP_plot_binny_functions.R {config[binning][binny][pk]} {config[binning][binny][nn]}
-        """
-
 
