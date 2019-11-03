@@ -3,6 +3,13 @@ rule binny_pgol_table:
         expand("Binning/binny/contigs2clusters.{pk}.{nn}.tsv",pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
     output:
         "Binning/binny/scaffold2bin.tsv"
+    params:
+        runtime = "2:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    log: "logs/binning_binny.log"
+    message: "Preparing table for DAStool from binny output."
     shell:
         """
         grep [PGOL] {input} >> {output}

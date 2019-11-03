@@ -1,9 +1,26 @@
+rule cut_rRNA:
+    input:
+        "Assembly/{ASS}.assembly.merged.fa",
+        "Analysis/annotation/annotation.filt.gff"
+    output:
+        "Binning/binny/{ASS}.assembly.merged.cut.fa"
+    log: "logs/binning_rRNAcutting.log"
+    params:
+        runtime = "12:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    message: "Cutting contigs for vizbin."
+    shell:
+        """
+        fastaExtractCutRibosomal1000.pl -f {input[0]} -g {input[1]} -l {log} -o {output} -c {config[vizbin][cutoff]}
+        """
+
 rule vizbin:
     input:
-        "Assembly/{ass}.assembly.merged.fa"
+        "Binning/binny/{ass}.assembly.merged.cut.fa"
     output:
-        "Analysis/{ass}.vizbin.filtered.fa",
-        "Analysis/{ass}.vizbin.with-contig-names.points"
+        "Binning/binny/{ass}.vizbin.with-contig-names.points"
     params:
         runtime = "24:00:00",
         partition = "-p bigmem --qos qos-bigmem -N 1",
@@ -14,19 +31,18 @@ rule vizbin:
     shell:
         """
         TMP_VIZBIN=$(mktemp --tmpdir=Analysis -dt "VIZBIN_XXXXXX")
-        perl {SRCDIR}/fasta_filter_length.pl {config[vizbin][cutoff]} {input[0]} > {output[0]}
         java -jar {SRCDIR}/VizBin-dist.jar \
          -a {config[vizbin][dimension]} \
          -c {config[vizbin][cutoff]} \
-         -i {output[0]} \
+         -i {input} \
          -o $TMP_VIZBIN/data.points \
          -k {config[vizbin][kmer]} \
          -p {config[vizbin][perp]}
 
          if [ -f $TMP_VIZBIN/data.points ]
            then
-             paste <(grep "^>" {output[0]} | sed -e 's/>//') \
-              <(cat $TMP_VIZBIN/data.points | sed -e 's/,/\t/') > {output[1]}
+             paste <(grep "^>" {input} | sed -e 's/>//') \
+              <(cat $TMP_VIZBIN/data.points | sed -e 's/,/\t/') > {output}
            fi
         rm -rf $TMP_VIZBIN
         """
