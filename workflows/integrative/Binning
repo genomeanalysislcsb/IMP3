@@ -6,23 +6,26 @@ include:
 
 ## MaxBin
 include:
-    '../../rules/Binning/MaxBin/maxbin.rule'
+    '../../rules/Binning/MaxBin/maxbin.rules'
 include:
-    '../../rules/Binning/MaxBin/maxbin_get_depth.rule'
+    '../../rules/Binning/MaxBin/maxbin_get_depth.rules'
 include:
-    '../../rules/Binning/MaxBin/get_contig2bin.rule'
+    '../../rules/Binning/MaxBin/get_contig2bin.rules'
 ## MetaBAT
 include:
-    '../../rules/Binning/MetaBAT/metabat.rule'
+    '../../rules/Binning/MetaBAT/metabat.rules'
 ## binny
 include:
-    '../../rules/Binning/binny/binny.rule'
+   '../../rules/Binning/binny/vizbin.rules'
+include:
+    '../../rules/Binning/binny/binny.rules'
 include:
     '../../rules/Binning/binny/binny2dastool.rules'
 
 ## GRiD
 include:
-    '../../rules/Binning/GRiD/grid.rule'
+    'rules/Binning/GRiD/grid_dynamic.rules'
+#    '../../rules/Binning/GRiD/grid.rules'
 
 
 ## master command

@@ -1,0 +1,24 @@
+# include rules for the Taxonomy part of the workflow
+
+include:
+    "../../rules/Taxonomy/mOTUlink.rules"
+include:
+        "../../rules/Taxonomy/mOTUs.rule"
+include:
+       "../../rules/Taxonomy/kraken_reads.rule"
+include:
+       "../../rules/Taxonomy/kraken_contigs.rule"
+
+# master command
+rule TAXONOMY:
+    input:
+        expand("Analysis/taxonomy/kraken/{type}.kraken.output",type=TYPES),
+        expand("Analysis/taxonomy/kraken/{type}.kraken.report",type=TYPES),
+        "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS,
+        "Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS,
+        "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS,
+        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv",type=TYPES,measure=["abundances","counts"]),
+        "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",
+        "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
+    output:
+        touch('taxonomy.done')

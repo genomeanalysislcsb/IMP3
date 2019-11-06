@@ -1,41 +1,29 @@
 # include rules for the Analysis part of the workflow
 
 include:
-    '../../rules/Analysis/assembly.contig-length.rule'
+    '../../rules/Analysis/assembly.contig-length.rules'
 include:
-    '../../rules/Analysis/contig-depth.rule'
+    '../../rules/Analysis/contig-depth.rules'
 include:
-    '../../rules/Analysis/gene-depth.rule'
+    '../../rules/Analysis/gene-depth.rules'
 include:
-    '../../rules/Analysis/prokkaC.rule'
+    '../../rules/Analysis/prokkaC.rules'
 include:
-    '../../rules/Analysis/reads-count.rule'
+    '../../rules/Analysis/reads-count.rules'
 include:
-    '../../rules/Analysis/variant.rule'
-include:
-    '../../rules/Analysis/visualize.rules'
-include:
-    '../../rules/Analysis/vizbin.rule'
+    '../../rules/Analysis/variant.rules'
+#include:
+#    '../../rules/Analysis/visualize.rules'
 include:
     '../../rules/Analysis/annotate.rules'
 include:
-    '../../rules/Analysis/featureCount.rule'
-include:
-    '../../rules/Analysis/Taxonomy/mOTUs.rule'
-include:
-    "../../rules/Analysis/Taxonomy/kraken_reads.rule"
-include:
-    "../../rules/Analysis/Taxonomy/kraken_contigs.rule"
-include:
-    "../../rules/Analysis/Taxonomy/mOTUlink.rules"
+    '../../rules/Analysis/featureCount.rules'
 
 # master command
 rule ANALYSIS:
     input:
         "Stats/%s/%s.assembly.length.txt" % ASS,
         "Stats/%s/%s.assembly.gc_content.txt" % ASS,
-        "Analysis/%s.vizbin.filtered.fa" %ASS,
-        "Analysis/%s.vizbin.with-contig-names.points" % ASS,
         expand("Stats/{type}/annotation/{type}.annotation.bed", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.hist", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
@@ -44,19 +32,11 @@ rule ANALYSIS:
         expand("Stats/{type}/annotation/{type}.read_counts.txt", type=TYPES),
         expand("Stats/{type}/{type}.read_counts.txt", type=TYPES),
         expand("Analysis/snps/{type}.variants.samtools.vcf.gz", type=TYPES),
-        expand("Analysis/taxonomy/kraken/{type}.kraken.output",type=TYPES),
-        expand("Analysis/taxonomy/kraken/{type}.kraken.report",type=TYPES),
-        "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS,
-        "Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS,
-        "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS,
-        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv",type=TYPES,measure=["abundances","counts"]),
         expand("Stats/{type}/{type}.assembly.contig_coverage.txt",type=TYPES),
         expand("Stats/{type}/{type}.assembly.contig_depth.txt",type=TYPES),
         expand("Stats/{type}/{type}.assembly.contig_flagstat.txt",type=TYPES),
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
-        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmmdbs"]),
-        "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",
-        "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
+        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmmdbs"])
     output:
         touch('analysis.done')

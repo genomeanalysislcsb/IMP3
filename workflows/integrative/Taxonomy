@@ -1,24 +1,25 @@
-# include rules for the Analysis part of the workflow
+# include rules for the Taxonomy part of the workflow
 
 include:
-        "/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMP/rules/Analysis/Taxonomy/mOTUs.rule"
+    "../../rules/Taxonomy/mOTUlink.rules"
 include:
-       "/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMP/rules/Analysis/Taxonomy/kraken_reads.rule"
+        "../../rules/Taxonomy/mOTUs.rules"
 include:
-       "/work/projects/ecosystem_biology/local_tools/IMPPatrick/IMP/rules/Analysis/Taxonomy/kraken_contigs.rule"
+       "../../rules/Taxonomy/kraken_reads.rules"
+include:
+       "../../rules/Taxonomy/kraken_contigs.rules"
 
 # master command
+tax_ctrl = expand("Analysis/taxonomy/kraken/{type}.kraken.{outfile}",type=TYPES,outfile=["output","report"])
+tax_ctrl.append(expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{measure}.tsv",type=TYPES,measure=["abundances","counts"]))
+if "assembly" in IMP_STEPS:
+    tax_ctrl.append("Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS)
+    tax_ctrl.append("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")
+if "binning" in IMP_STEPS:
+    tax_ctrl.append("Analysis/taxonomy/GTDBtk.done")
+
 rule TAXONOMY:
     input:
-        "Analysis/taxonomy/mOTUs/mg.mOTU.abundances.tsv",
-	"Analysis/taxonomy/mOTUs/mt.mOTU.abundances.tsv",
-	"Analysis/taxonomy/mOTUs/mg.mOTU.counts.tsv",
-	"Analysis/taxonomy/mOTUs/mt.mOTU.counts.tsv",
-        "Analysis/kraken/mg.GTDBkraken.output",
-	"Analysis/kraken/mt.GTDBkraken.output",
-	"Analysis/kraken/mg.GTDBkraken.report",
-	"Analysis/kraken/mt.GTDBkraken.output",
-	"mgmt.GTDBkraken.contig.output",
-	"mgmt.GTDBkraken.contig.report"
+        tax_ctrl
     output:
         touch('taxonomy.done')

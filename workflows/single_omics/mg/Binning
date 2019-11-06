@@ -1,6 +1,37 @@
 # include rules for the Binning part of the workflow
-# This step is (or should be) common for all the omic analyses. So just include the same workflow
-# for the integrative analyses
 
+## DAStool
 include:
-    '../../integrative/Binning'
+    '../../rules/Binning/DAStool/dastool.rules'
+
+## MaxBin
+include:
+    '../../rules/Binning/MaxBin/maxbin.rules'
+include:
+    '../../rules/Binning/MaxBin/maxbin_get_depth.rules'
+include:
+    '../../rules/Binning/MaxBin/get_contig2bin.rules'
+## MetaBAT
+include:
+    '../../rules/Binning/MetaBAT/metabat.rules'
+## binny
+include:
+    '../../rules/Binning/binny/binny.rules'
+include:
+    '../../rules/Binning/binny/binny2dastool.rules'
+
+## GRiD
+include:
+    '../../rules/Binning/GRiD/grid_dynamic.rules'
+
+
+## master command
+rule BINNING:
+    input:
+        "Binning/MaxBin/maxbin_res.log",
+	"Binning/MetaBAT/metabat_res",
+	"Binning/binny/scaffold2bin.tsv",
+	"Binning/selected_DASTool_summary.txt",
+	"Binning/GRiD.done"
+    output:
+        touch('binning.done')
