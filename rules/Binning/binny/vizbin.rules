@@ -4,7 +4,7 @@ rule cut_rRNA:
         "Analysis/annotation/annotation.filt.gff"
     output:
         "Binning/binny/{ASS}.assembly.merged.cut.fa"
-    log: "logs/binning_rRNAcutting.log"
+    log: "logs/binning_rRNAcutting.{ASS}.log"
     params:
         runtime = "12:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
@@ -26,7 +26,7 @@ rule vizbin:
         partition = "-p bigmem --qos qos-bigmem -N 1",
         mem = "--mem=" + str(BIGMEMTOTAL) + "G"
     threads: 1
-    log: "logs/binning_vizbin.log"
+    log: "logs/binning_vizbin.{ass}.log"
     message: "Running VizBin."
     shell:
         """
