@@ -1,6 +1,6 @@
 localrules: prepare_binny
 
-prepare_binny:
+rule prepare_binny:
     input:
        mgdepth='Stats/mg/mg.assembly.contig_depth.txt',
        vizbin='Binning/binny/%s.vizbin.with-contig-names.points' % ASS,
