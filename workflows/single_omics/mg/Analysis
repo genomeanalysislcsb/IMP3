@@ -29,7 +29,6 @@ rule ANALYSIS:
         expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene.len", type=TYPES),
         expand("Stats/{type}/annotation/{type}.prokkaID2ec.txt", type=TYPES),
-        expand("Stats/{type}/annotation/{type}.read_counts.txt", type=TYPES),
         expand("Stats/{type}/{type}.read_counts.txt", type=TYPES),
         expand("Analysis/snps/{type}.variants.samtools.vcf.gz", type=TYPES),
         expand("Stats/{type}/{type}.assembly.contig_coverage.txt",type=TYPES),
