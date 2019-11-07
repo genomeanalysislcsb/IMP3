@@ -24,7 +24,7 @@ include:
 
 ## GRiD
 include:
-    'rules/Binning/GRiD/grid_dynamic.rules'
+    '../../rules/Binning/GRiD/grid_dynamic.rules'
 #    '../../rules/Binning/GRiD/grid.rules'
 
 

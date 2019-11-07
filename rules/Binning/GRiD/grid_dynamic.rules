@@ -1,7 +1,7 @@
 import pandas as pd
 
 def gather_bins(wildcards):
-    checkpoint.getBins.get(**wildcards).output[0]
+    checkpoint_output = checkpoint.getBins.get(**wildcards).output[0]
     return expand("Binning/selected_DASTool_bins/{i}/grid",
            i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
 
@@ -10,7 +10,10 @@ rule grid_all:
         gather_bins
     output:
         "grid.done"
-    shell("touch {output}")
+    shell:
+        """
+        touch {output}
+        """
 
 checkpoint getBins:
     input: 
