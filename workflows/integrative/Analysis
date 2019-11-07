@@ -22,8 +22,8 @@ include:
 # master command
 rule ANALYSIS:
     input:
-        "Stats/%s/%s.assembly.length.txt" % ASS,
-        "Stats/%s/%s.assembly.gc_content.txt" % ASS,
+        "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
+        "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS),
         expand("Stats/{type}/annotation/{type}.annotation.bed", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.hist", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
