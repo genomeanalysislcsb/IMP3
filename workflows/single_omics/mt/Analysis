@@ -24,7 +24,7 @@ rule ANALYSIS:
     input:
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
         "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS),
-        expand("Stats/{type}/annotation/{type}.annotation.bed", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.annotation_cov.bed", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.hist", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene.len", type=TYPES),
