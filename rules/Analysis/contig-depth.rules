@@ -15,7 +15,7 @@ rule call_contig_depth:
     threads: 1
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/analysis_contigDepth.{type}.log"
-    message: "Getting data on assembly coverage with {type} reads."
+    message: "Getting data on assembly coverage with {wildcards.type} reads."
     shell:
         """
         coverageBed -abam {input[0]} -b {input[3]} > {output[0]}
