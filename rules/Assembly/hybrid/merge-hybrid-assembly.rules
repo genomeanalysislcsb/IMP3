@@ -6,8 +6,7 @@ rule collapse_hybrid_assemblies:
         'Assembly/mgmt.assembly.merged.fa'
     params:
         runtime = "72:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMCORE
+        mem = BIGMEMCORE
     threads: 1
 #    conda: "IMP_assembly.yaml"
     log: "logs/assembly_hybrid_cap3.log"

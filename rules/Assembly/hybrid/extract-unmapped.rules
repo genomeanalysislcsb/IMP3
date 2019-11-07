@@ -37,8 +37,7 @@ rule extract_unmapped_from_megahit:
         'Assembly/{type}.se.unmapped.fq'
     params:
         runtime = "12:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/assembly_extractUnmapped_megahit.{type}.log"
@@ -63,8 +62,7 @@ rule extract_unmapped_from_hybrid_assembly:
         'Assembly/mgmt.se.{assembler}_hybrid.{type}.unmapped.fq'
     params:
         runtime = "12:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/assembly_extractUnmapped_hybrid_{assembler}.{type}.log"

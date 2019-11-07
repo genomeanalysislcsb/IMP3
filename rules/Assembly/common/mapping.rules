@@ -9,8 +9,7 @@ rule mapping_on_assembly:
         'Assembly/{type}.reads.sorted.bam.bai',
     params:
         runtime = "12:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/assembly_mappingAssembly.{type}.log"

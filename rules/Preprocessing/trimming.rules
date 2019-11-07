@@ -10,8 +10,7 @@ rule trimming:
         'Preprocessing/{type}.se2.trimmed.fq'
     params:
         runtime="12:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch -N 1"
+        mem = MEMCORE
     conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
     log: "logs/preprocessing_trimmomatic.{type}.log"
     message: "Trimmming {wildcards.type} reads."
@@ -36,8 +35,7 @@ rule cat_se_trimmed:
     threads: 1
     params:
         runtime="12:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     log: "logs/preprocessing_concatSEs.{type}.log"
     message: "Concatenating trimmed single end {wildcards.type} reads"
     shell:

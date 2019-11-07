@@ -39,8 +39,7 @@ rule reads_count:
         'Stats/{type}/{type}.read_counts.txt'
     params:
         runtime = "8:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
     log: "logs/analysis_read_numbers.{type}.log"
     message: "Getting length of {wildcards.type} fastq files."

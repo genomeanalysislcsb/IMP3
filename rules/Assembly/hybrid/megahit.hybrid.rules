@@ -14,8 +14,7 @@ rule megahit_hybrid_assembly_1:
         directory('Assembly/mgmt.megahit_hybrid.1')
     params:
         runtime = "120:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
     log: "logs/assembly_hybrid1.log"
@@ -53,8 +52,7 @@ rule megahit_hybrid_assembly_2:
         directory('Assembly/mgmt.megahit_hybrid.2')
     params:
         runtime = "120:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
     log: "logs/assembly_hybrid2.log"

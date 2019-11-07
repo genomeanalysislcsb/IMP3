@@ -10,8 +10,7 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.prokkaID2ec.txt"
     params:
         runtime = "8:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
     log: "logs/analysis_genes.{type}_lengthGC.log"
     message: "Getting data on gene coverage with {wildcards.type} reads."

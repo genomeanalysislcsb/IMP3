@@ -6,8 +6,7 @@ rule allmotulinks:
     threads: 1
     params:
         runtime = "2:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     log: "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
     message: "Extracting phylogeny for best mOTU hits."
     shell:
@@ -18,39 +17,35 @@ rule allmotulinks:
 rule fetchmg:
     input:
         "Analysis/annotation/prokka.ffn",
-        "Analysis/annotation/prokka.faa",
-        "Analysis/taxonomy/mOTU_links"
+        "Analysis/annotation/prokka.faa"
     output:
-        directory("Analysis/taxonomy/mOTU_links/marker_genes"),
         expand("Analysis/taxonomy/mOTU_links/marker_genes/{COG}.fna",COG=config["COGS"])
     threads: 6
     params:
         runtime = "12:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE,
+        outdir = "Analysis/taxonomy/mOTU_links/marker_genes"
     log: "logs/analysis_mOTU_extractMarkerGenes.log"
     message: "Finding mOTU marker genes in open reading frames."
     shell:
         """
-        {BINDIR}/fetchMG/fetchMG.pl -o {output[0]} -t {threads} -d {input[0]}  -m extraction {input[1]}
+        {BINDIR}/fetchMG/fetchMG.pl -o {params.outdir} -t {threads} -d {input[0]}  -m extraction {input[1]} >> {log} 2>&1
         """
 	
 rule get_present_mOTUs:
     input:
         expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",type=TYPES)
     output:
-        directory("Analysis/taxonomy/mOTU_links"),		
         "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
     threads: 1
     params:
-        runtime = "2:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        runtime = "1:00:00",
+        mem = MEMCORE
     log: "logs/analysis_mOTU_getPresent.log"
     message: "Extracting identity of present mOTUs."
     shell:
         """
-        grep "motus.processing" -v {input} -h | cut -f 1 | sort | uniq > {output[1]}
+        grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output}
 	"""
 
 #I don't think this can work - AHB:
@@ -58,20 +53,21 @@ rule extract_mOTU_db_genes:
     input:
         "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
     output:
-        "Analysis/taxonomy/mOTU_links/{COG}.present.mOTU.DBgenenames.txt",
-        "Analysis/taxonomy/mOTU_links/{COG}.present.DBgenes.fna"
+        expand("Analysis/taxonomy/mOTU_links/{COG}.present.DBgenes.fna",COG=config["COGS"])
     threads: 1
     params:
         runtime = "12:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE,
+        outdir = "Analysis/taxonomy/mOTU_links",
+        outname = "present.DBgenes"
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
     log: "logs/analysis_getting_presentCOGgenes.log"
     message: "Extracting gene names for present mOTUs."
     shell:
         """
-        Rscript {SRCDIR}/mergeMOTUgeneInfo.R {wildcards.COG} {input} {output[0]}
-        {SRCDIR}/fastaExtract.pl $imp_lib/motus_linking/{wildcards.COG}/{wildcards.COG}.mOTU.v1.padded {output[0]} > {output[1]}
+        {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {ROOT_DIR}/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta \
+         -l {ROOT_DIR}/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv \
+         -m {input} -c {config[COGS]} -o {params.outdir} -n {params.outname} 
         """
 
 rule blast_mOTU_db_genes:
@@ -84,11 +80,10 @@ rule blast_mOTU_db_genes:
     threads: 1
     params:
         runtime = "12:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
-    log: "logs/analysis_blast.log"
-    message: "Blasting {wildcars.COG} genes to present mOTUs."
+    log: "logs/analysis_blast.{COG}.log"
+    message: "Blasting {wildcards.COG} genes to present mOTUs."
     shell:
         """
         makeblastdb -in {input[0]} -dbtype nucl -parse_seqids

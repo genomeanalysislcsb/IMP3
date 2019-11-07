@@ -7,13 +7,12 @@ rule cut_rRNA:
     log: "logs/binning_rRNAcutting.{ASS}.log"
     params:
         runtime = "12:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
     message: "Cutting contigs for vizbin."
     shell:
         """
-        fastaExtractCutRibosomal1000.pl -f {input[0]} -g {input[1]} -l {log} -o {output} -c {config[vizbin][cutoff]}
+        {SRCDIR}/fastaExtractCutRibosomal1000.pl -f {input[0]} -g {input[1]} -l {log} -o {output} -c {config[vizbin][cutoff]}
         """
 
 rule vizbin:
@@ -23,8 +22,7 @@ rule vizbin:
         "Binning/binny/{ass}.vizbin.with-contig-names.points"
     params:
         runtime = "24:00:00",
-        partition = "-p bigmem --qos qos-bigmem -N 1",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: 1
     log: "logs/binning_vizbin.{ass}.log"
     message: "Running VizBin."

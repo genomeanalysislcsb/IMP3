@@ -1,15 +1,17 @@
 import pandas as pd
 
 def gather_bins(wildcards):
-    checkpoint_output = checkpoint.getBins.get(**wildcards).output[0]
+    checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
     return expand("Binning/selected_DASTool_bins/{i}/grid",
            i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
+
+localrules: grid_all
 
 rule grid_all:
     input: 
         gather_bins
     output:
-        "grid.done"
+        "Binning/GRiD.done"
     shell:
         """
         touch {output}
@@ -20,6 +22,12 @@ checkpoint getBins:
         "Binning/selected_DASTool_summary.txt"
     output:
         "Binning/GRiD.prepped"
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: 1
+    log: "logs/binning_prepareGRiD.log"
+    message: "Copying DAStool bins to single directories."
     run:
         selected_bins=pd.read_table(input)['bin']
         for BIN in selected_bins:
@@ -32,7 +40,13 @@ rule grid:
     output:
         directory("Binning/selected_DASTool_bins/{clusterID}/grid")
     params:
-        clusterInput="Binning/selected_DASTool_bins/{wildcards.clusterID}"
+        clusterInput="Binning/selected_DASTool_bins/{wildcards.clusterID}",
+        runtime = "24:00:00",
+        mem = BIGMEMCORE
+    threads: 1
+    conda: ROOT_DIR + "/envs/IMP_bining.yaml"
+    log: "logs/binning_GRiD.{clusterID}.log"
+    message: "Running GRiD on {wildcards.clusterID}."
     shell:
         """
         grid single -r {params.clusterInput} -o {output} -g {input[0]}
@@ -43,6 +57,12 @@ rule prepare_gridBed:
         "Binning/selected_DASTool_bins/{clusterID}/contigs.fa"
     output:
         "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
+    params:
+        runtime = "2:00:00",
+        mem = MEMCORE
+    threads: 1
+    log: "logs/binning_prepareGRiDbed.{clusterID}.log"
+    message: "Preparing .bed file for GRiD - {wildcards.clusterID}."
     shell:
         """
         {SRCDIR}/fastaBed.pl {input} >> {output}
@@ -54,6 +74,12 @@ rule prepare_gridReads:
         "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
     output:
         "Binning/selected_DASTool_bins/{clusterID}/reads.fastq"
+    params:
+        runtime = "12:00:00",
+        mem = BIGMEMCORE
+    threads: 1
+    log: "logs/binning_prepareGRiDfastq.{clusterID}.log"
+    message: "Preparing fastq file for GRiD - {wildcards.clusterID}."
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     shell:
         """

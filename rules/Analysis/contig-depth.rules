@@ -5,13 +5,12 @@ rule call_contig_depth:
         "Assembly/%s.assembly.merged.fa.fai" % ASS,
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
     output:
-        "Stats/{type}/{type}.assembly.contig_coverage.txt",
-        "Stats/{type}/{type}.assembly.contig_depth.txt",
-        "Stats/{type}/{type}.assembly.contig_flagstat.txt",
+        "Stats/{type}/%s.assembly.contig_coverage.txt" % ASS,
+        "Stats/{type}/%s.assembly.contig_depth.txt" % ASS,
+        "Stats/{type}/%s.assembly.contig_flagstat.txt" % ASS
     params:
         runtime = "12:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     log: "logs/analysis_contigDepth.{type}.log"

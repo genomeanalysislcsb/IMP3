@@ -1,7 +1,7 @@
 # include rules for the Preprocessing part of the workflow
 
 include:
-    "../../rules/Preprocessing/fastqc.rules"
+    "../../../rules/Preprocessing/fastqc.rules"
 
 
 # include only if user don't skip preprocessing

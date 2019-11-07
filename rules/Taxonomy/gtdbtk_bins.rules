@@ -1,0 +1,35 @@
+rule GTDBtk_bins_single:
+    input:
+        "Binning/selected_DASTool_bins/{clusterID}"
+    output:
+        directory("Binning/selected_DASTool_bins/{clusterID}/GTDB"),
+    params:
+        runtime = "12:00:00",
+        mem = BIGMEMCORE
+    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    log: "logs/taxonomy_GTDBtk.{clusterID}.log"
+    message: "Classifiying {wildcards.clusterID} using GTDBtk."
+    threads: BIGCORENO
+    shell:
+        """
+        gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads}
+        """
+
+def gather_GTDB_bins(wildcards):
+    checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
+    return expand("Binning/selected_DASTool_bins/{i}/GTDB",
+           i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
+
+localrules: GTDB_all
+
+rule GTDB_all:
+    input:
+        gather_GTDB_bins
+    output:
+        "Analysis/taxonomy/GTDBtk.done"
+    shell:
+        """
+        touch {output}
+        """
+
+

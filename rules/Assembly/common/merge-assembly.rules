@@ -6,8 +6,7 @@ rule cap3:
         'Assembly/%s.assembly.merged.fa' % ASS,
     params:
         runtime = "72:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMCORE
+        mem = BIGMEMCORE
     threads: 1
 #    conda: "IMP_assembly.yaml"
     log: "logs/assembly_cap3.log"

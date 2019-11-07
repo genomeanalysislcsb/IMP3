@@ -10,8 +10,7 @@ rule fastqc_raw:
     threads: 2
     params:
         runtime = "1:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch",
+        mem = MEMCORE,
         outputdir = 'Stats/{type}'
     conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
     log: "logs/preprocessing_fastqc_raw.{type}.log"
@@ -38,8 +37,7 @@ rule fastqc_preprocessed:
     threads: 3
     params:
         runtime = "1:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch",
+        mem = MEMCORE,
         outputdir = 'Stats/{type}'
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
     message: "Running fastqc on preprocessed {wildcards.type} reads."

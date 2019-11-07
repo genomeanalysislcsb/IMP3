@@ -28,8 +28,7 @@ rule megahit_assembly_from_preprocessing:
         'Assembly/{type}.megahit_preprocessed.1.fa'
     params:
         runtime = "120:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
     log: "logs/assembly_fromPreprocessing.{type}.log"
@@ -48,8 +47,7 @@ rule megahit_assembly_from_unmapped:
         'Assembly/{type}.megahit_unmapped.2.fa'
     params:
         runtime = "120:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
     log: "logs/assembly_fromUnmapped.{type}.log"

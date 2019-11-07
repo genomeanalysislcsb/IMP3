@@ -10,8 +10,7 @@ rule kraken_reads:
     params:
         "Analysis/taxonomy/kraken/{type}.kraken#.fq",
         runtime = "8:00:00",
-        partition = "-p bigmem --qos qos-bigmem -N 1",
-        mem = "--mem-per-cpu " + BIGMEMCORE
+        mem = BIGMEMCORE
     threads: 2
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken2_reads.{type}.log"

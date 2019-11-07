@@ -2,21 +2,20 @@ rule run_DAS_tool:
     input:
         contigs="Assembly/%s.assembly.merged.fa" % ASS,
         proteins="Binning/prokka.renamed.faa", 
-        tabs=expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"])
+        tabs=expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"]["binners"])
     output:
         "Binning/selected_DASTool_summary.txt",
-        "Binning/selected_DASTool_bins"
+        directory("Binning/selected_DASTool_bins")
     threads: 4
     params:
         runtime = "24:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem-per-cpu " + BIGMEMCORE       
+        mem = BIGMEMCORE       
     conda: ROOT_DIR + "/envs/IMP_binning.yaml"
     log: "logs/binning_DAStool.log"
     message: "Running DAS_Tool."
     run:
         bintabs = ",".join(map(str, input.tabs))
-        binnames = ",".join(map(str, config["binning"]))
+        binnames = ",".join(map(str, config["binning"]["binners"]))
         shell("DAS_Tool -i {bintabs} \
          -l {binnames} \
          -c {input.contigs} \
@@ -33,8 +32,7 @@ rule format_protein_names:
         "Binning/prokka.renamed.faa"
     params:
         runtime = "4:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
     log: "logs/binning_dastool_formatProteinNames.log"
     message: "Preparing protein sequences for DAS tool."

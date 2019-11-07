@@ -39,8 +39,7 @@ rule filter_rna:
         ref = REF,
         sortmernamem = str(config["sortmerna"]["mem"]),
         runtime = "48:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
     log: "logs/preprocessing_sortmeRNA.log"
     shell:

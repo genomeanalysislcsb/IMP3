@@ -21,11 +21,11 @@ include:
 
 # master command
 rule ASSEMBLY:
-	input:
-		'Assembly/mt.assembly.merged.fa',
-		'Assembly/mt.assembly.merged.fa.fai',
-		'Assembly/mt.assembly.merged.fa.bed3',
-        	'Assembly/mt.reads.sorted.bam',
-		'Assembly/mt.reads.sorted.bam.bai'
-    	output:
-        	touch('assembly.done')
+    input:
+        'Assembly/mt.assembly.merged.fa',
+        'Assembly/mt.assembly.merged.fa.fai',
+        'Assembly/mt.assembly.merged.fa.bed3',
+        'Assembly/mt.reads.sorted.bam',
+	'Assembly/mt.reads.sorted.bam.bai'
+    output:
+        touch('assembly.done')

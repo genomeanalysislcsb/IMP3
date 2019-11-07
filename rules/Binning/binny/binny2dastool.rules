@@ -5,8 +5,7 @@ rule binny_pgol_table:
         "Binning/binny/scaffold2bin.tsv"
     params:
         runtime = "2:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
     log: "logs/binning_binny.log"
     message: "Preparing table for DAStool from binny output."

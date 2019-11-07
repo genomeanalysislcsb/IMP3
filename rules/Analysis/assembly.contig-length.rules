@@ -6,8 +6,7 @@ rule assembly_contig_length:
         "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS)
     params:
         runtime = "8:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
     log: "logs/analysis_assembly_lengthGC.log"
     message: "Getting data on assembly length and GC content."

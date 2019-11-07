@@ -25,8 +25,7 @@ rule no_filtering:
         'Preprocessing/{type}.se.preprocessed.fq'
     params:
         runtime = "1:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
     log: "logs/preprocessing_noFiltering.{type}.log"
     message: "not filtering {wildcards.type} reads."

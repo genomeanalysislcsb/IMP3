@@ -1,15 +1,14 @@
 rule metabat:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS,
-        "Analysis/mg.assembly.contig_depth.txt"
+        "Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
         "Binning/MetaBAT/metabat_res",
 	"Binning/MetaBAT/scaffold2bin.tsv"
     threads: 4
     params:
         runtime = "24:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem-per-cpu " + BIGMEMCORE
+        mem = BIGMEMCORE
     conda: ROOT_DIR + "/envs/IMP_binning.yaml"
     log: "logs/binning_MetaBAT.log"
     message: "Running MetaBAT."

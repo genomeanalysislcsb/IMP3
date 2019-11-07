@@ -7,8 +7,7 @@ rule maxbin_contig2bin:
     threads: 1
     params:
         runtime = "3:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch",
+        mem = MEMCORE
     log: "logs/binning_contigToBinMapping.log"
     message: "Getting contig to bin mapping."
     shell:

@@ -1,6 +1,5 @@
 rule feature_count:
     input:
-        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         "Assembly/{type}.reads.sorted.bam",
         "Analysis/annotation/annotation.CDS.RNA.{db}.gff"
     output:
@@ -8,15 +7,14 @@ rule feature_count:
     params:
         lambda wildcards: config["featureCountsStranding"][wildcards.type],
         runtime = "8:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 8
     conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
     log: "logs/analysis_merge_featurecounts.{type}.{db}.log"
     message: "Quantifying {wildcards.db} with {wildcards.type} reads."
     shell:
         """
-	featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params[0]} -a {input[2]} -T {threads} {input[1]}
+	featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params[0]} -a {input[1]} -T {threads} {input[0]}
 	"""
 
 rule feature_count_gene:
@@ -29,8 +27,7 @@ rule feature_count_gene:
     params:
         lambda wildcards: config["featureCountsStranding"][wildcards.type],
         runtime = "8:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 8
     conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
     log: "logs/analysis_merge_featurecounts.{type}.genes.log"

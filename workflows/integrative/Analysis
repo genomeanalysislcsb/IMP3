@@ -31,9 +31,9 @@ rule ANALYSIS:
         expand("Stats/{type}/annotation/{type}.prokkaID2ec.txt", type=TYPES),
         expand("Stats/{type}/{type}.read_counts.txt", type=TYPES),
         expand("Analysis/snps/{type}.variants.samtools.vcf.gz", type=TYPES),
-        expand("Stats/{type}/{type}.assembly.contig_coverage.txt",type=TYPES),
-        expand("Stats/{type}/{type}.assembly.contig_depth.txt",type=TYPES),
-        expand("Stats/{type}/{type}.assembly.contig_flagstat.txt",type=TYPES),
+        expand("Stats/{type}/{ass}.assembly.contig_coverage.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.contig_depth.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.contig_flagstat.txt",type=TYPES,ass=ASS),
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
         expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmmdbs"])

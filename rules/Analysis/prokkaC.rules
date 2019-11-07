@@ -12,8 +12,7 @@ rule annotate:
     threads: 8
     params:
         runtime = "8:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     log: "logs/analysis_prokka.log"
     conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
     message: "Running prokkaC."

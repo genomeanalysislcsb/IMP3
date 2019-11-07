@@ -2,7 +2,7 @@ localrules: prepare_binny
 
 rule prepare_binny:
     input:
-       mgdepth='Stats/mg/mg.assembly.contig_depth.txt',
+       mgdepth='Stats/mg/%s.assembly.contig_depth.txt' % ASS,
        vizbin='Binning/binny/%s.vizbin.with-contig-names.points' % ASS,
        gff='Analysis/annotation/annotation_CDS_RNA_hmms.gff'
     output:
@@ -17,8 +17,8 @@ rule prepare_binny:
 rule binny:
     input:
        outdir="Binning/binny/clusterFiles",
-       mgdepth='Stats/mg/mg.assembly.contig_depth.txt',
-       vizbin="Analysis/%s.vizbin.with-contig-names.points" % ASS,
+       mgdepth='Stats/mg/%s.assembly.contig_depth.txt' % ASS,
+       vizbin="Binning/binny/%s.vizbin.with-contig-names.points" % ASS,
        gff="Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         expand("Binning/binny/reachabilityDistanceEstimates.{pk}.{nn}.tsv \
@@ -33,9 +33,9 @@ rule binny:
         plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",
         binnydir="Binning/binny",
         runtime = "24:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     threads: 1
+    conda: ROOT_DIR + "/envs/IMP_binning.yaml" 
     log: "logs/binning_binny.log"
     message: "Running Binny."
     script:

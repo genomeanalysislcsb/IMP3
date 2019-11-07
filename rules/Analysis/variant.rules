@@ -6,8 +6,7 @@ rule variant_calling:
         "Analysis/snps/{type}.variants.samtools.vcf.gz",
     params:
         runtime = "48:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     threads: 1
     log: "logs/analysis_variants.{type}.log"
