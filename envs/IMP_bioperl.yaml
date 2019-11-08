@@ -1,0 +1,8 @@
+name: IMP_bioperl
+channels:
+  - conda-forge/label/cf201901
+  - bioconda/label/cf201901
+  - defaults
+  - r
+prefix: /home/heintzbu/.conda/envs/IMP_bioperl
+

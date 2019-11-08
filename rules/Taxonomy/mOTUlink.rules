@@ -60,7 +60,7 @@ rule extract_mOTU_db_genes:
         mem = MEMCORE,
         outdir = "Analysis/taxonomy/mOTU_links",
         outname = "present.DBgenes"
-    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    conda: ROOT_DIR + "/envs/IMP_bioperl.yaml"
     log: "logs/analysis_getting_presentCOGgenes.log"
     message: "Extracting gene names for present mOTUs."
     shell:
