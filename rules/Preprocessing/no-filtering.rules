@@ -27,8 +27,8 @@ rule no_filtering:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1
-    log: "logs/preprocessing_noFiltering.{type}.log"
-    message: "not filtering {wildcards.type} reads."
+#    log: "logs/preprocessing_no_filtering.{type}.log"
+    message: "no_filtering: not filtering {wildcards.type} reads."
     shell:
         """
         R1=`echo {input[0]} | sed 's/Preprocessing\///g'`

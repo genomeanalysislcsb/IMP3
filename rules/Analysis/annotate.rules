@@ -5,18 +5,18 @@ rule hmmer:
     output:
         "Analysis/annotation/prokka.faa.{db}.hmmscan"
     params: 
-        "/work/projects/ecosystem_biology/data/hmm/{db}",
-        lambda wildcards: config["hmmdbs"][wildcards.db]["cutoff"],
+        lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
+        dbs = DBPATH + "/hmm/{db}",
         runtime = "48:00:00",
         mem = MEMCORE
-    conda: ROOT_DIR + "/envs/IMP_annotate.yaml"
+    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
     threads: 12
     log: "logs/analysis_hmmer.{db}.log"
-    message: "Running HMMER for {wildcards.db}."
+    message: "hmmer: Running HMMER for {wildcards.db}."
     shell:
         """
-         hmmsearch --cpu {threads} {params[1]} --noali --notextw \
-          --tblout {output} {params[0]}/*.hmm {input} >/dev/null
+         hmmsearch --cpu {threads} {params[0]} --noali --notextw \
+          --tblout {output} {params.dbs}/*.hmm {input} >/dev/null 2> {log}
         """
 
 rule makegff:
@@ -28,31 +28,31 @@ rule makegff:
         "Analysis/annotation/annotation.CDS.RNA.{db}.gff"
     params:
         "{db}",
-        lambda wildcards: config["hmmdbs"][wildcards.db]["trim"],
+        lambda wildcards: config["hmm_settings"][wildcards.db]["trim"],
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1
-    log: "logs/analysis_add_hmmer_results.{db}.log"
-    message: "Adding hmmer results of {wildcards.db} to gff."
+    log: "logs/analysis_makegff.{db}.log"
+    message: "makegff: Adding hmmer results of {wildcards.db} to gff."
     shell:
         """
         {SRCDIR}/hmmscan_addBest2gff.pl -i {input[0]} -a {input[1]} \
-         -n {params[0]} {params[1]} -o {output} -g $(grep ">" {input[2]} | wc -l)
+         -n {params[0]} {params[1]} -o {output} -g $(grep ">" {input[2]} | wc -l) > {log} 2>&1
         """
 
 rule mergegff:
     input:
-        expand("Analysis/annotation/annotation.CDS.RNA.{db}.gff",db=config["hmmdbs"])
+        expand("Analysis/annotation/annotation.CDS.RNA.{db}.gff",db=config["hmm_DBs"].split())
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     params:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
-    log: "logs/analysis_merge_hmmer_results.log"
-    message: "Merging gffs with hmmer results."
+    log: "logs/analysis_mergegff.log"
+    message: "mergegff: Merging gffs with hmmer results."
     shell:
         """
-        {SRCDIR}/mergegffs.pl {output} {input}
+        {SRCDIR}/mergegffs.pl {output} {input} > {log} 2>&1
         """
 

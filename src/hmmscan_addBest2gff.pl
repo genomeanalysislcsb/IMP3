@@ -89,9 +89,9 @@ while (@all) {
 			$addarg .= ";".$namearg."="."$hmmgene"
 		}
 		print RESULT "$line".$addarg."\n";
-	}else{
-		print RESULT "$line\n";
-	}
+	}#else{
+	#	print RESULT "$line\n";
+	#}
 } 
 close(FH);
 close(RESULT);

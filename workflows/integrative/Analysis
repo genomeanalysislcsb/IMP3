@@ -36,6 +36,6 @@ rule ANALYSIS:
         expand("Stats/{type}/{ass}.assembly.contig_flagstat.txt",type=TYPES,ass=ASS),
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
-        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmmdbs"])
+        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split())
     output:
         touch('analysis.done')

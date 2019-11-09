@@ -8,11 +8,11 @@ rule contig_fasta_indexing:
         mem = MEMCORE
     threads: 1
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
-    log: "logs/assembly_fastaindex.log"
-    message: "Indexing assembly."
+    log: "logs/assembly_contig_fasta_indexing.log"
+    message: "contig_fasta_indexing: Indexing assembly."
     shell:
         """
-        samtools faidx {input[0]}
+        samtools faidx {input[0]} > {log} 2>&1
         """
 
 rule contig_fasta2bed_conversion:
@@ -25,10 +25,9 @@ rule contig_fasta2bed_conversion:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
-    log: "logs/assembly_fastabed.log"
-    message: "Writing bed file for assembly."
+#    log: "logs/assembly_fastabed.log"
+    message: "contig_fasta2bed_conversion: Writing bed file for assembly."
     shell:
         """
-#       	cat {input[0]}.fai | perl -ane '@F=split(/[\\t\\s]+/,$_); print "$F[0]\\t0\\t$F[1]\\n";' > {input[1]}.bed3
         cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output}
         """

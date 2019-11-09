@@ -8,8 +8,8 @@ rule maxbin_get_depth:
     params:
         runtime = "3:00:00",
         mem = MEMCORE
-    log: "logs/binning_depthPrepMaxbin.log"
-    message: "Getting depth in Maxbin format."
+#    log: "logs/binning_maxbin_get_depth.log"
+    message: "maxbin_get_depth: Getting depth in Maxbin format."
     shell:
         """
         cat {input[0]} \

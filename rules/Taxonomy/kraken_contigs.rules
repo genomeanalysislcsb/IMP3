@@ -11,12 +11,12 @@ rule kraken_contigs:
         mem = BIGMEMCORE
     threads: 2
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
-    log: "logs/analysis_kraken2_contigs.log"
-    message: "Running kraken2 on contigs against {config[krakendb]}."
+    log: "logs/analysis_kraken_contigs.log"
+    message: "kraken_contigs: Running kraken2 on contigs against {config[krakendb]}."
     shell:	
         """
         kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names \
-         --output {output[0]} --report {output[1]} --classified-out {output[2]} {input}
+         --output {output[0]} --report {output[1]} --classified-out {output[2]} {input} > {log} 2>&1
         """
 
 rule kraken_parse:
@@ -29,11 +29,11 @@ rule kraken_parse:
         runtime = "2:00:00",
         mem = MEMCORE
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
-    log: "logs/analysis_kraken2parsing_contigs.log"
-    message: "Parsing kraken2 output for contigs."
+    log: "logs/analysis_kraken_parse.log"
+    message: "kraken_parse: Parsing kraken2 output for contigs."
     shell:
         """
-        {SRCDIR}/krakenContigEntropy_GTDB.py -d {DBPATH}/GTDB_kraken_parse_taxonomy -e 0.1 -o {output} {input}
+        {SRCDIR}/krakenContigEntropy_GTDB.py -d {DBPATH}/GTDB_kraken_parse_taxonomy -e 0.1 -o {output} {input} > {log} 2>&1
         """
 
 

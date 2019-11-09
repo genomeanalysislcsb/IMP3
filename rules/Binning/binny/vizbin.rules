@@ -4,13 +4,13 @@ rule cut_rRNA:
         "Analysis/annotation/annotation.filt.gff"
     output:
         "Binning/binny/{ASS}.assembly.merged.cut.fa"
-    log: "logs/binning_rRNAcutting.{ASS}.log"
+    log: "logs/binning_cut_rRNA.{ASS}.log"
     params:
         runtime = "12:00:00",
         mem = MEMCORE
     threads: 1
     conda: ROOT_DIR + "/envs/IMP_bioperl.yaml" 
-    message: "Cutting contigs for vizbin."
+    message: "cut_rRNA: Cutting contigs for vizbin."
     shell:
         """
         {SRCDIR}/fastaExtractCutRibosomal1000.pl -f {input[0]} -g {input[1]} -l {log} -o {output} -c {config[vizbin][cutoff]}
@@ -26,7 +26,7 @@ rule vizbin:
         mem = BIGMEMCORE
     threads: 1
     log: "logs/binning_vizbin.{ass}.log"
-    message: "Running VizBin."
+    message: "vizbin: Running VizBin."
     shell:
         """
         TMP_VIZBIN=$(mktemp --tmpdir=Analysis -dt "VIZBIN_XXXXXX")
@@ -36,7 +36,7 @@ rule vizbin:
          -i {input} \
          -o $TMP_VIZBIN/data.points \
          -k {config[vizbin][kmer]} \
-         -p {config[vizbin][perp]}
+         -p {config[vizbin][perp]} > {log} 2>&1
 
          if [ -f $TMP_VIZBIN/data.points ]
            then

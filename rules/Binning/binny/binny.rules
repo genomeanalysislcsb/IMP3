@@ -37,7 +37,7 @@ rule binny:
     threads: 1
     conda: ROOT_DIR + "/envs/IMP_binning.yaml" 
     log: "logs/binning_binny.log"
-    message: "Running Binny."
+    message: "binny: Running Binny."
     script:
         SRCDIR + "/binny_only.R"
 

@@ -43,7 +43,8 @@
         "maxk": 99,
         "step": 4
     },
-    "hmmdbs": {
+    "hmm_DBs": "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM",
+    "hmm_settings": {
        "KEGG":{
                "cutoff": "",
                "trim": "--trimall"
@@ -60,7 +61,7 @@
                "cutoff": "",
                "trim": ""
        },
-       "Pfam-A":{
+       "Pfam_A":{
                "cutoff": "--cut_tc",
                "trim": ""
        },
@@ -146,8 +147,7 @@
         "binny":{
            "pk": 10,
            "nn": 4,
-           "cutoff": 1000,
-           "Rlibs": "/work/projects/ecosystem_biology/local_tools/minicondaESB/envs/IMP_binning/lib/R/library"
+           "cutoff": 1000
         }
     },
     "checkm": {

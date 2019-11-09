@@ -7,8 +7,8 @@ rule allmotulinks:
     params:
         runtime = "2:00:00",
         mem = MEMCORE
-    log: "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
-    message: "Extracting phylogeny for best mOTU hits."
+#    log: "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
+    message: "allmotulinks: Extracting phylogeny for best mOTU hits."
     shell:
         """
         cat <(head -n 1 {input} | tail -n 1) <(cat {input} | grep -v queryID ) > {output}
@@ -25,8 +25,8 @@ rule fetchmg:
         runtime = "12:00:00",
         mem = MEMCORE,
         outdir = "Analysis/taxonomy/mOTU_links/marker_genes"
-    log: "logs/analysis_mOTU_extractMarkerGenes.log"
-    message: "Finding mOTU marker genes in open reading frames."
+    log: "logs/analysis_fetchmg.log"
+    message: "fetchmg: Finding mOTU marker genes in open reading frames."
     shell:
         """
         {BINDIR}/fetchMG/fetchMG.pl -o {params.outdir} -t {threads} -d {input[0]}  -m extraction {input[1]} >> {log} 2>&1
@@ -41,14 +41,13 @@ rule get_present_mOTUs:
     params:
         runtime = "1:00:00",
         mem = MEMCORE
-    log: "logs/analysis_mOTU_getPresent.log"
-    message: "Extracting identity of present mOTUs."
+#    log: "logs/analysis_get_present_mOTUs.log"
+    message: "get_present_mOTUs: Extracting identity of present mOTUs."
     shell:
         """
         grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output}
 	"""
 
-#I don't think this can work - AHB:
 rule extract_mOTU_db_genes:
     input:
         "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
@@ -59,15 +58,16 @@ rule extract_mOTU_db_genes:
         runtime = "12:00:00",
         mem = MEMCORE,
         outdir = "Analysis/taxonomy/mOTU_links",
-        outname = "present.DBgenes"
+        outname = "present.DBgenes",
+        coglist = ",".join(map(str, config["COGS"]))
     conda: ROOT_DIR + "/envs/IMP_bioperl.yaml"
-    log: "logs/analysis_getting_presentCOGgenes.log"
-    message: "Extracting gene names for present mOTUs."
+    log: "logs/analysis_extract_mOTU_db_genes.log"
+    message: "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
         """
         {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {ROOT_DIR}/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta \
          -l {ROOT_DIR}/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv \
-         -m {input} -c {config[COGS]} -o {params.outdir} -n {params.outname} 
+         -m {input} -c {params.coglist} -o {params.outdir} -n {params.outname} > {log} 2>&1 
         """
 
 rule blast_mOTU_db_genes:
@@ -82,13 +82,13 @@ rule blast_mOTU_db_genes:
         runtime = "12:00:00",
         mem = MEMCORE
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
-    log: "logs/analysis_blast.{COG}.log"
-    message: "Blasting {wildcards.COG} genes to present mOTUs."
+    log: "logs/analysis_blast_mOTU_db_genes.{COG}.log"
+    message: "blast_mOTU_db_genes: Blasting {wildcards.COG} genes to present mOTUs."
     shell:
         """
-        makeblastdb -in {input[0]} -dbtype nucl -parse_seqids
-        blastn -db {input[0]} -query {input[1]} -outfmt 7 -out {output[0]} -max_target_seqs 1
-        Rscript {SRCDIR}/mergeMOTUblast.R {wildcards.COG} {output[0]} {output[1]}
+        makeblastdb -in {input[0]} -dbtype nucl -parse_seqids > {log} 2>&1
+        blastn -db {input[0]} -query {input[1]} -outfmt 7 -out {output[0]} -max_target_seqs 1 > {log} 2>&1
+        Rscript {SRCDIR}/mergeMOTUblast.R {wildcards.COG} {output[0]} {output[1]} > {log} 2>&1
         """
 
 

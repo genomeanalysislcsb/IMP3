@@ -244,6 +244,7 @@ dependencies:
   - perl-tie-ixhash=1.23=pl526_2
   - perl-time-hires=1.9760=pl526h14c3975_1
   - perl-time-local=1.28=pl526_1
+  - perl-time-piece=1.27=pl526_1
   - perl-timedate=2.30=pl526_1
   - perl-tree-dag_node=1.31=pl526_0
   - perl-try-tiny=0.30=pl526_1

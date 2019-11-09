@@ -6,8 +6,8 @@ sink(log, type="message")
 ###################################################################################################
 ## Load required packages
 ###################################################################################################
-
-.libPaths(snakemake@config[["binning"]][["binny"]][["Rlibs"]])
+libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
+.libPaths(libs)
 
 print("Loading required R libraries")
 library(genomeIntervals)

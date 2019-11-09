@@ -7,12 +7,12 @@ rule GTDBtk_bins_single:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
-    log: "logs/taxonomy_GTDBtk.{clusterID}.log"
-    message: "Classifiying {wildcards.clusterID} using GTDBtk."
+    log: "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
+    message: "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
     threads: BIGCORENO
     shell:
         """
-        gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads}
+        gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
         """
 
 def gather_GTDB_bins(wildcards):

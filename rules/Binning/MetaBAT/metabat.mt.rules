@@ -9,8 +9,8 @@ rule metabat:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     conda: ROOT_DIR + "/envs/IMP_binning.yaml"
-    log: "logs/binning_MetaBAT.log"
-    message: "Running MetaBAT."
+    log: "logs/binning_metabat.log"
+    message: "metabat: Running MetaBAT."
     shell:
         """
         ## Create MetaBat dir
@@ -20,7 +20,7 @@ rule metabat:
 	 --saveCls \
          -o {output[0]} \
          -t {threads} \
-         -m {config[binning][MetaBAT][cutoff]}
+         -m {config[binning][MetaBAT][cutoff]} > {log} 2>&1
 	ln -s ../../{output[0]} {output[1]}
 	rm $TMP_FILE
         """

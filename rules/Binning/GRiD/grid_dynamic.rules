@@ -26,8 +26,8 @@ checkpoint getBins:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
-    log: "logs/binning_prepareGRiD.log"
-    message: "Copying DAStool bins to single directories."
+#    log: "logs/binning_prepareGRiD.log"
+    message: "getBins: Copying DAStool bins to single directories."
     run:
         selected_bins=pd.read_table(input)['bin']
         for BIN in selected_bins:
@@ -45,11 +45,11 @@ rule grid:
         mem = BIGMEMCORE
     threads: 1
     conda: ROOT_DIR + "/envs/IMP_bining.yaml"
-    log: "logs/binning_GRiD.{clusterID}.log"
-    message: "Running GRiD on {wildcards.clusterID}."
+    log: "logs/binning_grid.{clusterID}.log"
+    message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput} -o {output} -g {input[0]}
+        grid single -r {params.clusterInput} -o {output} -g {input[0]} > {log} 2>&1
         """
 
 rule prepare_gridBed:
@@ -61,11 +61,11 @@ rule prepare_gridBed:
         runtime = "2:00:00",
         mem = MEMCORE
     threads: 1
-    log: "logs/binning_prepareGRiDbed.{clusterID}.log"
-    message: "Preparing .bed file for GRiD - {wildcards.clusterID}."
+    log: "logs/binning_prepare_gridBed.{clusterID}.log"
+    message: "prepare_gridBed: Preparing .bed file for GRiD - {wildcards.clusterID}."
     shell:
         """
-        {SRCDIR}/fastaBed.pl {input} >> {output}
+        {SRCDIR}/fastaBed.pl {input} >> {output} 2> {log}
         """
 
 rule prepare_gridReads:
@@ -78,12 +78,12 @@ rule prepare_gridReads:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: 1
-    log: "logs/binning_prepareGRiDfastq.{clusterID}.log"
-    message: "Preparing fastq file for GRiD - {wildcards.clusterID}."
+    log: "logs/binning_prepare_gridReads.{clusterID}.log"
+    message: "prepare_gridReads: Preparing fastq file for GRiD - {wildcards.clusterID}."
     conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
     shell:
         """
-        samtools view -b -F 5 -L {output[1]} {input[0]} | samtools bam2fq -n - > {output} 
-        samtools view -b -f 65 -F 4 -L {output[1]} {input[0]}  | samtools bam2fq -n - >> {output}
-        samtools view -b -f 129 -F 4 -L {output[1]} {input[0]}  | samtools bam2fq -n - >> {output}
+        samtools view -b -F 5 -L {output[1]} {input[0]} 2> {log} | samtools bam2fq -n - > {output} 2> {log} 
+        samtools view -b -f 65 -F 4 -L {output[1]} {input[0]} 2> {log} | samtools bam2fq -n - >> {output} 2> {log}
+        samtools view -b -f 129 -F 4 -L {output[1]} {input[0]} 2> {log} | samtools bam2fq -n - >> {output} 2> {log}
         """

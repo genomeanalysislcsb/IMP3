@@ -10,8 +10,8 @@ rule maxbin:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     conda: ROOT_DIR + "/envs/IMP_binning.yaml"
-    log: "logs/binning_MaxBin.log"
-    message: "Running MaxBin."
+    log: "logs/binning_maxbin.log"
+    message: "maxbin: Running MaxBin."
     shell:
         """
 	## Create MaxBin dir
@@ -22,5 +22,5 @@ rule maxbin:
          -abund {input[1]} \
          -out Binning/MaxBin/maxbin_res \
          -thread {threads} \
-         -min_contig_length {config[binning][MaxBin][cutoff]}
+         -min_contig_length {config[binning][MaxBin][cutoff]} > {log} 2>&1
         """
