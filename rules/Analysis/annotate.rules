@@ -1,4 +1,3 @@
-#probably doesn't work anymore for snakemake:
 rule hmmer:
     input:
         "Analysis/annotation/prokka.faa"
@@ -32,10 +31,12 @@ rule makegff:
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1
+    conda: ROOT_DIR + "/envs/IMP_bioperl.yaml"
     log: "logs/analysis_makegff.{db}.log"
     message: "makegff: Adding hmmer results of {wildcards.db} to gff."
     shell:
         """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         {SRCDIR}/hmmscan_addBest2gff.pl -i {input[0]} -a {input[1]} \
          -n {params[0]} {params[1]} -o {output} -g $(grep ">" {input[2]} | wc -l) > {log} 2>&1
         """

@@ -1,8 +1,11 @@
+bintabs = ",".join(map(str, expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"]["binners"].split())))
+binnames = ",".join(map(str, config["binning"]["binners"].split()))
+
 rule DAS_tool:
     input:
         contigs="Assembly/%s.assembly.merged.fa" % ASS,
         proteins="Binning/prokka.renamed.faa", 
-        tabs=expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"]["binners"])
+        tabs=expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"]["binners"].split())
     output:
         "Binning/selected_DASTool_summary.txt",
         directory("Binning/selected_DASTool_bins")
@@ -13,15 +16,15 @@ rule DAS_tool:
     conda: ROOT_DIR + "/envs/IMP_binning.yaml"
     log: "logs/binning_DAS_tool.log"
     message: "DAS_tool: Running DAS_Tool."
-    run:
-        bintabs = ",".join(map(str, input.tabs))
-        binnames = ",".join(map(str, config["binning"]["binners"]))
-        shell("DAS_Tool -i {bintabs} \
+    shell:
+        """
+        DAS_Tool -i {bintabs} \
          -l {binnames} \
          -c {input.contigs} \
          --proteins {input.proteins} --score_threshold 0.3 \
          --threads {threads} --write_bins 1 \
-         -o Binning/selected > {log} 2>&1")
+         -o Binning/selected > {log} 2>&1
+        """
 
 rule format_protein_names:
     input:

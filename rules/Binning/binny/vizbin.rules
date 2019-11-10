@@ -13,6 +13,7 @@ rule cut_rRNA:
     message: "cut_rRNA: Cutting contigs for vizbin."
     shell:
         """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         {SRCDIR}/fastaExtractCutRibosomal1000.pl -f {input[0]} -g {input[1]} -l {log} -o {output} -c {config[vizbin][cutoff]}
         """
 

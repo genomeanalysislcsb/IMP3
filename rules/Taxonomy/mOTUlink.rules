@@ -26,9 +26,11 @@ rule fetchmg:
         mem = MEMCORE,
         outdir = "Analysis/taxonomy/mOTU_links/marker_genes"
     log: "logs/analysis_fetchmg.log"
+    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
     message: "fetchmg: Finding mOTU marker genes in open reading frames."
     shell:
         """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         {BINDIR}/fetchMG/fetchMG.pl -o {params.outdir} -t {threads} -d {input[0]}  -m extraction {input[1]} >> {log} 2>&1
         """
 	
@@ -65,6 +67,7 @@ rule extract_mOTU_db_genes:
     message: "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
         """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {ROOT_DIR}/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta \
          -l {ROOT_DIR}/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv \
          -m {input} -c {params.coglist} -o {params.outdir} -n {params.outname} > {log} 2>&1 
