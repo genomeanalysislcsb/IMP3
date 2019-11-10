@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 
 ## Help text in perldoc format
 =head1 SYNOPSIS

@@ -9,7 +9,7 @@ include:
 include:
        "../../rules/Taxonomy/kraken_contigs.rules"
 include:
-       "../../rules/Taxonomy/gtdbtk_bins.rule"
+       "../../rules/Taxonomy/gtdbtk_bins.rules"
 
 
 # master command

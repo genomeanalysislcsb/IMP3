@@ -15,13 +15,14 @@ rule kraken_contigs:
     message: "kraken_contigs: Running kraken2 on contigs against {config[krakendb]}."
     shell:	
         """
-        kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names \
+        kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names --report-zero-counts \
          --output {output[0]} --report {output[1]} --classified-out {output[2]} {input} > {log} 2>&1
         """
 
 rule kraken_parse:
     input:
-        "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS
+        "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS,
+        "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS
     output:
         "Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS
     threads: 1
@@ -33,7 +34,7 @@ rule kraken_parse:
     message: "kraken_parse: Parsing kraken2 output for contigs."
     shell:
         """
-        {SRCDIR}/krakenContigEntropy_GTDB.py -d {DBPATH}/GTDB_kraken_parse_taxonomy -e 0.1 -o {output} {input} > {log} 2>&1
+        {SRCDIR}/krakenContigEntropy_dynamic.py -c {input[0]} -e 0.1 -o {output} -r {input[1]} > {log} 2>&1
         """
 
 

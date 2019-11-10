@@ -45,7 +45,7 @@ rule grid:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1
-    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
+    conda: ROOT_DIR + "/envs/IMP_grid.yaml"
     log: "logs/binning_grid.{clusterID}.log"
     message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:

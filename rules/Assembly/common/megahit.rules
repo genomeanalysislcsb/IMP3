@@ -13,7 +13,7 @@ megahit -1 {input[0]} \
  --bubble-level 0 \
  -t {threads} --cpu-only \
  -m "${{MAX_MEM}}" \
- --mem-flag 1 > {log} 2&>1
+ --mem-flag 1 > {log} 2>&1
 ln -fs $(echo {output[1]} | cut -f 2,3 -d /) {output[2]} && touch -h {output[2]}
 """
 

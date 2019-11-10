@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 ####################################################################################################
 ### Get GC Content                                                                               ###
 ### Usage: get_gc_content.pl <fasta file> <outputname>                                           ###

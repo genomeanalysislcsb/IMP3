@@ -61,15 +61,17 @@ rule extract_mOTU_db_genes:
         mem = MEMCORE,
         outdir = "Analysis/taxonomy/mOTU_links",
         outname = "present.DBgenes",
-        coglist = ",".join(map(str, config["COGS"]))
+        coglist = ",".join(map(str, config["COGS"])),
+        fasta = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta",
+        coordinates = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
     conda: ROOT_DIR + "/envs/IMP_bioperl.yaml"
     log: "logs/analysis_extract_mOTU_db_genes.log"
     message: "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {ROOT_DIR}/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta \
-         -l {ROOT_DIR}/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv \
+        {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {params.fasta} \
+         -l {params.coordinates} \
          -m {input} -c {params.coglist} -o {params.outdir} -n {params.outname} > {log} 2>&1 
         """
 
@@ -79,7 +81,6 @@ rule blast_mOTU_db_genes:
         "Analysis/taxonomy/mOTU_links/marker_genes/{COG}.fna"
     output:
         "Analysis/taxonomy/mOTU_links/{COG}.bestPresentHits.tsv",
-        "Analysis/taxonomy/mOTU_links/{COG}.bestPresentHitPhylogeny.tsv"
     threads: 1
     params:
         runtime = "12:00:00",
@@ -90,8 +91,26 @@ rule blast_mOTU_db_genes:
     shell:
         """
         makeblastdb -in {input[0]} -dbtype nucl -parse_seqids > {log} 2>&1
-        blastn -db {input[0]} -query {input[1]} -outfmt 7 -out {output[0]} -max_target_seqs 1 > {log} 2>&1
-        Rscript {SRCDIR}/mergeMOTUblast.R {wildcards.COG} {output[0]} {output[1]} > {log} 2>&1
+        blastn -db {input[0]} -query {input[1]} -outfmt 7 -out {output} -max_target_seqs 1 > {log} 2>&1
         """
+
+rule parse_blast_mOTU:
+    input:
+        "Analysis/taxonomy/mOTU_links/{COG}.bestPresentHits.tsv"
+    output:
+        "Analysis/taxonomy/mOTU_links/{COG}.bestPresentHitPhylogeny.tsv"
+    threads: 1
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE,
+        metaphy = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
+        refphy = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
+    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    log: "logs/analysis_parse_blast_mOTU.{COG}.log"
+    message: "parse_blast_mOTU: Parsing blast results of {wildcards.COG} genes."
+    script:
+        SRCDIR + "/mergeMOTUblast.R"
+
+
 
 

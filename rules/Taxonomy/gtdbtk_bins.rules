@@ -12,6 +12,13 @@ rule GTDBtk_bins_single:
     threads: BIGCORENO
     shell:
         """
+        export PYTHONPATH=$CONDA_PREFIX/lib/python2.7/site-packages
+        ln -s {DBPATH}/fastani $CONDA_PREFIX/share/gtdbtk-0.1.5/db/fastani
+        ln -s {DBPATH}/pplacer $CONDA_PREFIX/share/gtdbtk-0.1.5/db/pplacer
+        ln -s {DBPATH}/msa $CONDA_PREFIX/share/gtdbtk-0.1.5/db/msa
+        ln -s {DBPATH}/markers $CONDA_PREFIX/share/gtdbtk-0.1.5/db/markers
+        ln -s {DBPATH}/taxonomy $CONDA_PREFIX/share/gtdbtk-0.1.5/db/taxonomy
+        ln -s {DBPATH}/masks $CONDA_PREFIX/share/gtdbtk-0.1.5/db/masks
         gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
         """
 
