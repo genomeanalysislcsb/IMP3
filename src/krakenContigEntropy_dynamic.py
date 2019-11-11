@@ -100,7 +100,7 @@ while 1:
     rank, tax_id, indentName = tab[3], tab[4], tab[5]      # Assign tax_id and name ...
     name = indentName.lstrip(' ')
     ilevel = int((len(indentName) - len(name))/2)     # get level from indentation
-    print(ilevel)
+#    print(ilevel)
     parentList[ilevel] = tax_id
     if ilevel > 0:
         tax_id_parent = parentList[ilevel-1]
@@ -281,37 +281,47 @@ while 1:
             out_file1.write(tabk[1] + "\t"+ tabk[3] +"\t"+ "NA" + "\t"+ "not annotated" + "\t"+ "\t".join(["NA"] * len(ranklist)) +"\n")
         ucnt += 1
     else:
+#        print(tabk[0])
         cotak = tabk[4].split(" ")
         orgs = {}
         for i in cotak:
             orgID = i.split(":")[0]
             orgCount = i.split(":")[1]
-            if orgID not in orgs:
-                orgs[orgID] = int(orgCount)
-            else:
-                orgs[orgID] += int(orgCount)
-            if orgID in name_dict and orgID != "A" and orgID != "0":
-                for anc in name_object[orgID].genealogy(): #should return taxids
-                    if anc not in orgs:
-                        orgs[anc] = int(orgCount)
-                    else:
-                        orgs[anc] += int(orgCount)
+            if orgID != "A" and orgID != "0":
+#                if orgID not in orgs:
+#                    orgs[orgID] = int(orgCount)
+#                else:
+#                    orgs[orgID] += int(orgCount)
+                if orgID in name_dict:
+                    for anc in name_object[orgID].genealogy(): #should return taxids
+#                        print(rank_dict[anc] + " " + anc)
+                        if anc not in orgs:
+                            orgs[anc] = int(orgCount)
+                        else:
+                            orgs[anc] += int(orgCount)
+                else:
+                    print("Unknown tax ID " + orgID + " !")
         ranksum_dict = {}
         rank_orgs = {}
         for ctax in orgs.keys():
+#            print(rank_dict[ctax] + " " + ctax)
+#            print(rank_dict[ctax])
             if rank_dict[ctax] not in ranksum_dict:
-                ranksum_dict[rank_dict[ctax]] = orgs[ctax]
+                ranksum_dict[rank_dict[ctax]] = [orgs[ctax],len(ranklist)-ranklist.index(rank_dict[ctax])]
                 rank_orgs[rank_dict[ctax]] = {ctax: orgs[ctax]}
             else:
-                ranksum_dict[rank_dict[ctax]] += orgs[ctax]
+                ranksum_dict[rank_dict[ctax]][0] += orgs[ctax]
                 rank_orgs[rank_dict[ctax]][ctax] = orgs[ctax]
-        cranks = sorted(ranksum_dict.items(), key=operator.itemgetter(1), reverse = True)
+        print(ranksum_dict)
+        cranks = sorted(ranksum_dict.items(), key=lambda x:(x[1][0],x[1][1]), reverse = True)
         rankwin_dict = {}
         winnerList = []
         first = True
         for rank in cranks:
-            cdiv = shannonDiv(rank_orgs[rank],ranksum_dict[rank])
-            if cdiv <= divthr:
+            print(rank)
+            rank = rank[0]
+            cdiv = shannonDiv(rank_orgs[rank],ranksum_dict[rank][0])
+            if cdiv <= divthresh and cdiv >= 0:
                 cwin = max(rank_orgs[rank].items(), key=operator.itemgetter(1))[0]
                 winancs = name_object[cwin].genealogy()
                 if first:
@@ -330,12 +340,12 @@ while 1:
         for crank in ranklist:
             if crank in rankwin_dict:
                 ranked_winner_list.append(name_dict[rankwin_dict[crank]])
-                went = shannonDiv(rank_orgs[crank],ranksum_dict[crank])
+                went = shannonDiv(rank_orgs[crank],ranksum_dict[crank][0])
                 wrank = crank
             else:
                 ranked_winner_list.append("NA")
         if went != "NA" or args.unknown:
-            out_file1.write(tabk[1] + "\t"+ tabk[3] +"\t"+ went + "\t"+ wrank + "\t"+ "\t".join(ranked_winner_list) +"\n")        
+            out_file1.write(tabk[1] + "\t"+ tabk[3] +"\t"+ str(went) + "\t"+ wrank + "\t"+ "\t".join(ranked_winner_list) +"\n")        
 krak_file.close()
 out_file1.close()
 
