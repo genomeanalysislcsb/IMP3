@@ -13,13 +13,14 @@ rule GTDBtk_bins_single:
     shell:
         """
         export PYTHONPATH=$CONDA_PREFIX/lib/python2.7/site-packages
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         if [ ! -e $CONDA_PREFIX/share/gtdbtk-0.1.5/db/fastani ] 
         then
-          ln -s {DBPATH}/fastani $CONDA_PREFIX/share/gtdbtk-0.1.5/db/fastani
-          ln -s {DBPATH}/pplacer $CONDA_PREFIX/share/gtdbtk-0.1.5/db/pplacer
-          ln -s {DBPATH}/msa $CONDA_PREFIX/share/gtdbtk-0.1.5/db/msa
-          ln -s {DBPATH}/markers $CONDA_PREFIX/share/gtdbtk-0.1.5/db/markers
-          ln -s {DBPATH}/taxonomy $CONDA_PREFIX/share/gtdbtk-0.1.5/db/taxonomy
+          ln -s {DBPATH}/GTDB_tk/fastani $CONDA_PREFIX/share/gtdbtk-0.1.5/db/fastani
+          ln -s {DBPATH}/GTDB_tk/pplacer $CONDA_PREFIX/share/gtdbtk-0.1.5/db/pplacer
+          ln -s {DBPATH}/GTDB_tk/msa $CONDA_PREFIX/share/gtdbtk-0.1.5/db/msa
+          ln -s {DBPATH}/GTDB_tk/markers $CONDA_PREFIX/share/gtdbtk-0.1.5/db/markers
+          ln -s {DBPATH}/GTDB_tk/taxonomy $CONDA_PREFIX/share/gtdbtk-0.1.5/db/taxonomy
           ln -s {DBPATH}/masks $CONDA_PREFIX/share/gtdbtk-0.1.5/db/masks
         fi
         gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
