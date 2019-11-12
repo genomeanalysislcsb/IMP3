@@ -65,7 +65,7 @@ def common_ancestor(node_list):
             if i in list2:                         # Identify common nodes between the two genealogy
                 ancestral_list.append(i)                 
         list1 = ancestral_list                     # Reassing ancestral_list to list 1.
-    common_ancestor = ancestral_list[0]            # Finally, the first node of the ancestra_list is the common ancestor of all nodes.
+    common_ancestor = ancestral_list[0]            # Finally, the first node of the ancestral_list is the common ancestor of all nodes.
     return common_ancestor                         # Return a node
 
 
