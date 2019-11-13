@@ -35,9 +35,6 @@
         "strictness": 0.5,
         "target_length": 40,
     },
-    "tbl2asn": {
-        "url": "https://webdav-r3lab.uni.lu/public/R3lab/IMP/linux64.tbl2asn.gz"
-    },
     "assembly": {
         "mink": 25,
         "maxk": 99,
@@ -129,13 +126,6 @@
             "kingdom/Archaea/sprot.phr"
         ]
     },
-    "kegg": {
-        "db_ec2pthy": "http://rest.kegg.jp/link/ec/pathway",
-        "db_hierarchy": "http://rest.kegg.jp/list/pathway"
-    },
-    "metaquast": {
-        "max_genomes": 20
-    },
     "binning": {
         "binners": "MaxBin MetaBAT binny",
         "MaxBin":{
@@ -149,9 +139,6 @@
            "nn": 4,
            "cutoff": 1000
         }
-    },
-    "checkm": {
-        "data_url": "https://webdav-r3lab.uni.lu/public/R3lab/IMP/checkm_data_v1.0.6.tar.gz"
     },
     "krakendb": "minikraken2",
     "featureCountsStranding":{
