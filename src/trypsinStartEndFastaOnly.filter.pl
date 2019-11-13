@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # script to remove non-tryptic peptides from incomplete gene predictions
 # takes 1 input: - the fasta file with the genes, as output by fixed MOCAT aux script;

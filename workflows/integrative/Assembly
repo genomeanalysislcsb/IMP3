@@ -2,7 +2,7 @@
 
 # include needed rules
 include:
-    '../../rules/Assembly/common/bwa.index.rule'
+    '../../rules/Assembly/common/bwa.index.rules'
 
 include:
     '../../rules/Assembly/common/megahit.rules'

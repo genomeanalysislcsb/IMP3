@@ -1,6 +1,4 @@
-#!/bin/R 
-
-.libPaths("/work/projects/ecosystem_biology/local_tools/minicondaESB/envs/IMP_binning/lib/R/library")
+#!/bin/R
 
 ###################################################################################################
 ## Load required packages

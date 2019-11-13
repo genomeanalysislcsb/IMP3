@@ -1,0 +1,32 @@
+localrules: allmotu
+
+rule allmotu:
+    input:
+        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv", type=TYPES)
+    output:
+        "Analysis/mOTUs.done"
+    threads: 1
+#    log: "logs/analysis_taxonomy_checkMotus.log"
+    message: "allmotu: mOTUs done?"
+    shell:
+        """touch {output}"""
+
+rule motus:
+    input:
+        "Preprocessing/{type}.r1.preprocessed.fq",
+        "Preprocessing/{type}.r2.preprocessed.fq",
+        "Preprocessing/{type}.se.preprocessed.fq"
+    output:
+        "Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv"
+    threads: 6
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    log: "logs/analysis_motus.{type}.log"
+    message: "motus: Running mOTUs on {wildcards.type} reads."
+    shell:
+        """
+        motus profile -f {input[0]} -r {input[1]} -s {input[2]} -A -c -t {threads} -o {output} >& {log}
+        """
+

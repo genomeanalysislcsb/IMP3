@@ -6,21 +6,20 @@ rule collapse_hybrid_assemblies:
         'Assembly/mgmt.assembly.merged.fa'
     params:
         runtime = "72:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMCORE
+        mem = BIGMEMCORE
     threads: 1
 #    conda: "IMP_assembly.yaml"
-    log: "logs/assembly_hybrid_cap3.log"
-    message: "Merging hybrid assemblies."
+    log: "logs/assembly_collapse_hybrid_assemblies.log"
+    message: "collapse_hybrid_assemblies: Merging hybrid assemblies."
     shell:
         """
         NAME=Assembly/mgmt.assembly
         cat {input} > $NAME.cat.fa
 
         # Options should be after input file!
-        {BINDIR}/cap3 $NAME.cat.fa -p {config[cap3][identity]} -o {config[cap3][overlap]}
+        {BINDIR}/cap3 $NAME.cat.fa -p {config[cap3][identity]} -o {config[cap3][overlap]} > {log} 2>&1
 
         # Concatenate assembled contigs, singletons and rename the contigs
         cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \
-        awk '/^>/{{print \">contig_\" ++i; next}}{{print}}' > $NAME.merged.fa
+         awk '/^>/{{print \">contig_\" ++i; next}}{{print}}' > $NAME.merged.fa
         """

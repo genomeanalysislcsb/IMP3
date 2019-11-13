@@ -35,6 +35,10 @@ if MG and MT:
         include:
             "workflows/integrative/Analysis"
 
+    if 'taxonomy' in IMP_STEPS:
+        include:
+            "workflows/integrative/Taxonomy"
+
     if 'binning' in IMP_STEPS:
         include:
             "workflows/integrative/Binning"
@@ -53,6 +57,10 @@ elif MG:
         include:
             "workflows/single_omics/mg/Analysis"
 
+    if 'taxonomy' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Taxonomy"
+
     if 'binning' in IMP_STEPS:
         include:
             "workflows/single_omics/mg/Binning"
@@ -70,6 +78,10 @@ elif MT:
         include:
             "workflows/single_omics/mt/Analysis"
 
+    if 'taxonomy' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Taxonomy"
+
     if 'binning' in IMP_STEPS:
         include:
             "workflows/single_omics/mt/Binning"
@@ -84,6 +96,8 @@ if 'assembly' in IMP_STEPS:
     inputs.append('assembly.done')
 if 'analysis' in IMP_STEPS:
     inputs.append('analysis.done')
+if 'taxonomy' in IMP_STEPS:
+    inputs.append('taxonomy.done')
 if 'binning' in IMP_STEPS:
     inputs.append('binning.done')
 

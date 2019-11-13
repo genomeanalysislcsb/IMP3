@@ -6,21 +6,20 @@ rule cap3:
         'Assembly/%s.assembly.merged.fa' % ASS,
     params:
         runtime = "72:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + BIGMEMCORE
+        mem = BIGMEMCORE
     threads: 1
 #    conda: "IMP_assembly.yaml"
     log: "logs/assembly_cap3.log"
-    message: "Merging assemblies."
+    message: "cap3: Merging assemblies."
     shell:
         """
         NAME=Assembly/%s.assembly
         cat {input} > $NAME.cat.fa
         
         # Run cap3 
-        {BINDIR}/cap3 $NAME.cat.fa -p {config[cap3][identity]} -o {config[cap3][overlap]}
+        {BINDIR}/cap3 $NAME.cat.fa -p {config[cap3][identity]} -o {config[cap3][overlap]} > {log} 2>&1
         
         # Concatenate assembled contigs, singletons and rename the contigs
         cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \
-        awk '/^>/{{print \">contig_\" ++i; next}}{{print}}' > $NAME.merged.fa
+         awk '/^>/{{print \">contig_\" ++i; next}}{{print}}' > $NAME.merged.fa
         """ % ASS

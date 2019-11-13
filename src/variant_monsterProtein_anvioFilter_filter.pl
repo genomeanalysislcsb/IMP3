@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 
 # script to include variant proteins in protein database
 # takes 6 inputs: -a, a table with the gene positions, starts and stops (like the filtered .gff output of IMP);

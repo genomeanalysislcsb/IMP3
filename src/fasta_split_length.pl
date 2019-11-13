@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 ## split_by_length.pl
 #AHB, Feb 2019
 #

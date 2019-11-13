@@ -14,12 +14,11 @@ rule megahit_hybrid_assembly_1:
         directory('Assembly/mgmt.megahit_hybrid.1')
     params:
         runtime = "120:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
-    log: "logs/assembly_hybrid1.log"
-    message: "Performing hybrid assembly 1 from preprocessed reads using MEGAHIT"
+    log: "logs/assembly_megahit_hybrid_assembly_1.log"
+    message: "megahit_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using MEGAHIT"
     shell:
         """
         if [ -d "{output[2]}" ]; then
@@ -35,7 +34,7 @@ rule megahit_hybrid_assembly_1:
          --k-step {config[assembly][step]} \
          -t {threads} --cpu-only \
          -m "${{MAX_MEM}}" \
-         --mem-flag 1
+         --mem-flag 1 > {log} 2>&1
         ln -fs $(echo {output[0]} | cut -f 2,3 -d /) {output[1]} && touch -h {output[1]}
         """
 
@@ -53,12 +52,11 @@ rule megahit_hybrid_assembly_2:
         directory('Assembly/mgmt.megahit_hybrid.2')
     params:
         runtime = "120:00:00",
-        partition = "-p bigmem --qos qos-bigmem ",
-        mem = "--mem=" + str(BIGMEMTOTAL) + "G"
+        mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
-    log: "logs/assembly_hybrid2.log"
-    message: "Performing hybrid assembly 2 from preprocessed reads using MEGAHIT"
+    log: "logs/assembly_megahit_hybrid_assembly_2.log"
+    message: "megahit_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using MEGAHIT"
     shell:
         """
         if [ -d "{output[2]}" ]; then
@@ -77,6 +75,6 @@ rule megahit_hybrid_assembly_2:
          --k-step {config[assembly][step]} \
          -t {threads} --cpu-only \
          -m ${{MAX_MEM}} \
-         --mem-flag 1
+         --mem-flag 1 > {log} 2>&1
         ln -fs $(echo {output[0]} | cut -f 2,3 -d /) {output[1]} && touch -h {output[1]}
         """

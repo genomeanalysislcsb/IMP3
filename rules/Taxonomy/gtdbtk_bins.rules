@@ -1,0 +1,49 @@
+rule GTDBtk_bins_single:
+    input:
+        "Binning/selected_DASTool_bins/{clusterID}"
+    output:
+        directory("Binning/selected_DASTool_bins/{clusterID}/GTDB"),
+    params:
+        runtime = "12:00:00",
+        mem = BIGMEMCORE
+    conda: ROOT_DIR + "/envs/IMP_gtdbtk.yaml"
+    log: "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
+    message: "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
+    threads: BIGCORENO
+    shell:
+        """
+        export PYTHONPATH=$CONDA_PREFIX/lib/python2.7/site-packages
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        if [ ! -e $CONDA_PREFIX/share/gtdbtk-0.3.2/db/fastani ] 
+        then
+          ln -s {DBPATH}/GTDB_tk/fastani $CONDA_PREFIX/share/gtdbtk-0.3.2/db/fastani
+          ln -s {DBPATH}/GTDB_tk/pplacer $CONDA_PREFIX/share/gtdbtk-0.3.2/db/pplacer
+          ln -s {DBPATH}/GTDB_tk/msa $CONDA_PREFIX/share/gtdbtk-0.3.2/db/msa
+          ln -s {DBPATH}/GTDB_tk/markers $CONDA_PREFIX/share/gtdbtk-0.3.2/db/markers
+          ln -s {DBPATH}/GTDB_tk/taxonomy $CONDA_PREFIX/share/gtdbtk-0.3.2/db/taxonomy
+          ln -s {DBPATH}/GTDB_tk/masks $CONDA_PREFIX/share/gtdbtk-0.3.2/db/masks
+          ln -s {DBPATH}/GTDB_tk/radii $CONDA_PREFIX/share/gtdbtk-0.3.2/db/radii
+          ln -s {DBPATH}/GTDB_tk/metadata $CONDA_PREFIX/share/gtdbtk-0.3.2/db/metadata
+          ln -s {DBPATH}/GTDB_tk/mrca_red $CONDA_PREFIX/share/gtdbtk-0.3.2/db/mrca_red
+        fi
+        gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
+        """
+
+def gather_GTDB_bins(wildcards):
+    checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
+    return expand("Binning/selected_DASTool_bins/{i}/GTDB",
+           i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
+
+localrules: GTDB_all
+
+rule GTDB_all:
+    input:
+        gather_GTDB_bins
+    output:
+        "Analysis/taxonomy/GTDBtk.done"
+    shell:
+        """
+        touch {output}
+        """
+
+

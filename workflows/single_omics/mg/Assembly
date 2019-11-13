@@ -2,7 +2,7 @@
 
 # include needed rules
 include:
-    '../../../rules/Assembly/common/bwa.index.rule'
+    '../../../rules/Assembly/common/bwa.index.rules'
 
 include:
     '../../../rules/Assembly/common/%s.rules' % IMP_ASSEMBLER
@@ -21,11 +21,11 @@ include:
 
 # master command
 rule ASSEMBLY:
-	input:
-		'Assembly/mg.assembly.merged.fa',
-		'Assembly/mg.assembly.merged.fa.fai',
-		'Assembly/mg.assembly.merged.fa.bed3',
-		'Assembly/mg.reads.sorted.bam',
-		'Assembly/mg.reads.sorted.bam.bai',
+    input:
+        'Assembly/mg.assembly.merged.fa',
+        'Assembly/mg.assembly.merged.fa.fai',
+        'Assembly/mg.assembly.merged.fa.bed3',
+        'Assembly/mg.reads.sorted.bam',
+        'Assembly/mg.reads.sorted.bam.bai',
     output:
-        	touch('assembly.done')
+        touch('assembly.done')

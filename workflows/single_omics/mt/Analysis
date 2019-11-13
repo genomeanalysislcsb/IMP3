@@ -1,47 +1,41 @@
 # include rules for the Analysis part of the workflow
 
 include:
-    '../../../rules/Analysis/assembly.contig-length.rule'
+    '../../../rules/Analysis/assembly.contig-length.rules'
 include:
-    '../../../rules/Analysis/contig-depth.rule'
+    '../../../rules/Analysis/contig-depth.rules'
 include:
-    '../../../rules/Analysis/contig-length.rule'
+    '../../../rules/Analysis/gene-depth.rules'
 include:
-    '../../../rules/Analysis/fastqc.rules'
+    '../../../rules/Analysis/prokkaC.rules'
 include:
-    '../../../rules/Analysis/gene-depth.rule'
+    '../../../rules/Analysis/reads-count.rules'
 include:
-    '../../../rules/Analysis/prokka.rule'
-include:
-    '../../../rules/Analysis/reads-count.rule'
+    '../../../rules/Analysis/variant.rules'
 #include:
-#    '../../../rules/Analysis/stat-output.rename.rule'
+#    '../../rules/Analysis/visualize.rules'
 include:
-    '../../../rules/Analysis/variant.rule'
+    '../../../rules/Analysis/annotate.rules'
 include:
-    '../../../rules/Analysis/visualize_mt.rules'
-include:
-    '../../../rules/Analysis/vizbin.rule'
-
+    '../../../rules/Analysis/featureCount.rules'
 
 # master command
 rule ANALYSIS:
     input:
-        "Stats/mt/mt.assembly.length.txt",
-        "Stats/mt/mt.assembly.gc_content.txt",
-        "Stats/mt/annotation/mt.annotation.bed",
-        "Stats/mt/annotation/mt.gene_depth.hist",
-        "Stats/mt/annotation/mt.gene_depth.avg",
-        "Stats/mt/annotation/mt.gene.len",
-        "Stats/mt/annotation/mt.prokkaID2ec.txt",
-        "Stats/mt/mt.read_counts.txt",
-        "Analysis/snps/mt.variants.samtools.vcf.gz",
-        "Analysis/mt.assembly.contig_coverage.txt",
-        "Analysis/mt.assembly.contig_depth.txt",
-        "Analysis/mt.assembly.contig_flagstat.txt",
-        "Analysis/mt.vizbin.filtered.fa",
-        "Analysis/mt.vizbin.with-contig-names.points",
-        "Analysis/results/mt_results.Rdat",
-
+        "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
+        "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS),
+        expand("Stats/{type}/annotation/{type}.annotation_cov.bed", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.gene_depth.hist", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.gene.len", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.prokkaID2ec.txt", type=TYPES),
+        expand("Stats/{type}/{type}.read_counts.txt", type=TYPES),
+        expand("Analysis/snps/{type}.variants.samtools.vcf.gz", type=TYPES),
+        expand("Stats/{type}/{type}.assembly.contig_coverage.txt",type=TYPES),
+        expand("Stats/{type}/{type}.assembly.contig_depth.txt",type=TYPES),
+        expand("Stats/{type}/{type}.assembly.contig_flagstat.txt",type=TYPES),
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+        "Analysis/annotation/mt.CDS_counts.tsv",
+        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split())
     output:
         touch('analysis.done')
