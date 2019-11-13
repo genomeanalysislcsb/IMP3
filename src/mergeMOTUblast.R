@@ -19,8 +19,10 @@ sink(log, type="message")
 COG <- snakemake@wildcards[["COG"]]
 blastoutput <- snakemake@input[[1]]
 outfile <- snakemake@output[[1]]
-ref_phylo <- snakemake@params[["refphy"]]
-meta_phylo <- snakemake@params[["metaphy"]]
+CONDA <- Sys.getenv("CONDA_PREFIX")
+ref_phylo <- paste0(CONDA,snakemake@params[["refphy"]])
+meta_phylo <- paste0(CONDA,snakemake@params[["metaphy"]])
+
 
 refphy <- read.delim(ref_phylo,stringsAsFactors=F)
 metaphy <- read.delim(meta_phylo,stringsAsFactors=F)

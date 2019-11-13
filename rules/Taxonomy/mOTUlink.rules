@@ -103,8 +103,8 @@ rule parse_blast_mOTU:
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        metaphy = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
-        refphy = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
+        metaphy = "/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
+        refphy = "/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
     log: "logs/analysis_parse_blast_mOTU.{COG}.log"
     message: "parse_blast_mOTU: Parsing blast results of {wildcards.COG} genes."
