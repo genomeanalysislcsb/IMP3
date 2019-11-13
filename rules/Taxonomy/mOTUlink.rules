@@ -62,7 +62,7 @@ rule extract_mOTU_db_genes:
         outdir = "Analysis/taxonomy/mOTU_links",
         outname = "present.DBgenes",
         coglist = ",".join(map(str, config["COGS"])),
-        fasta = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta",
+        fasta = "share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta",
         coordinates = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
     conda: ROOT_DIR + "/envs/IMP_bioperl.yaml"
     log: "logs/analysis_extract_mOTU_db_genes.log"
@@ -70,7 +70,7 @@ rule extract_mOTU_db_genes:
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {params.fasta} \
+        {SRCDIR}/fastaExtractCoords_mOTUs.pl -f $CONDA_PREFIX/{params.fasta} \
          -l {params.coordinates} \
          -m {input} -c {params.coglist} -o {params.outdir} -n {params.outname} > {log} 2>&1 
         """
