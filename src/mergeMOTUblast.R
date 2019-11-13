@@ -23,18 +23,21 @@ CONDA <- Sys.getenv("CONDA_PREFIX")
 ref_phylo <- paste0(CONDA,snakemake@params[["refphy"]])
 meta_phylo <- paste0(CONDA,snakemake@params[["metaphy"]])
 
-
-refphy <- read.delim(ref_phylo,stringsAsFactors=F)
-metaphy <- read.delim(meta_phylo,stringsAsFactors=F)
-phys <- data.frame("motuID"=c(refphy$ref.mOTU_v2_ID,metaphy$meta.mOTU_v2_ID),
+if(file.info(blastoutput)$size[1]!=0){
+ refphy <- read.delim(ref_phylo,stringsAsFactors=F)
+ metaphy <- read.delim(meta_phylo,stringsAsFactors=F)
+ phys <- data.frame("motuID"=c(refphy$ref.mOTU_v2_ID,metaphy$meta.mOTU_v2_ID),
                    rbind(refphy[,-c(1:2)],metaphy[,-1]),
                    stringsAsFactors=F)
 
-bh <- read.delim(blastoutput,header=F,comment.char="#",stringsAsFactors=F)
-colnames(bh) <- c("queryID", "subjectID", "percIdentity", "alignmentLength", "mismatches", "gapOpens", "q.start", "q.end", "s.start", "s.end", "evalue", "bitScore")
+ bh <- read.delim(blastoutput,header=F,comment.char="#",stringsAsFactors=F)
+ colnames(bh) <- c("queryID", "subjectID", "percIdentity", "alignmentLength", "mismatches", "gapOpens", "q.start", "q.end", "s.start", "s.end", "evalue", "bitScore")
 
-bh$subjectID <- sapply(bh$subjectID,function(x) unlist(strsplit(x,split=".",fixed=T))[1])
-bh <- merge(bh,phys,by.x="subjectID",by.y="motuID",all.x=T)
-write.table(bh,outfile,quote=F,sep="\t",row.names=F)
-
+ bh$subjectID <- sapply(bh$subjectID,function(x) unlist(strsplit(x,split=".",fixed=T))[1])
+ bh <- merge(bh,phys,by.x="subjectID",by.y="motuID",all.x=T)
+ write.table(bh,outfile,quote=F,sep="\t",row.names=F)
+}else{
+ print(paste0("Nothing in input ",blastoutput," . Writing empty output."))
+ file.create(outfile)
+}
 
