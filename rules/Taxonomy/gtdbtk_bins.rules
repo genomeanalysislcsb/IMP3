@@ -6,7 +6,7 @@ rule GTDBtk_bins_single:
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    conda: ROOT_DIR + "/envs/IMP_gtfbtk.yaml"
+    conda: ROOT_DIR + "/envs/IMP_gtdbtk.yaml"
     log: "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
     message: "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
     threads: BIGCORENO
@@ -14,14 +14,17 @@ rule GTDBtk_bins_single:
         """
         export PYTHONPATH=$CONDA_PREFIX/lib/python2.7/site-packages
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        if [ ! -e $CONDA_PREFIX/share/gtdbtk-0.1.5/db/fastani ] 
+        if [ ! -e $CONDA_PREFIX/share/gtdbtk-0.3.2/db/fastani ] 
         then
-          ln -s {DBPATH}/GTDB_tk/fastani $CONDA_PREFIX/share/gtdbtk-0.1.5/db/fastani
-          ln -s {DBPATH}/GTDB_tk/pplacer $CONDA_PREFIX/share/gtdbtk-0.1.5/db/pplacer
-          ln -s {DBPATH}/GTDB_tk/msa $CONDA_PREFIX/share/gtdbtk-0.1.5/db/msa
-          ln -s {DBPATH}/GTDB_tk/markers $CONDA_PREFIX/share/gtdbtk-0.1.5/db/markers
-          ln -s {DBPATH}/GTDB_tk/taxonomy $CONDA_PREFIX/share/gtdbtk-0.1.5/db/taxonomy
-          ln -s {DBPATH}/masks $CONDA_PREFIX/share/gtdbtk-0.1.5/db/masks
+          ln -s {DBPATH}/GTDB_tk/fastani $CONDA_PREFIX/share/gtdbtk-0.3.2/db/fastani
+          ln -s {DBPATH}/GTDB_tk/pplacer $CONDA_PREFIX/share/gtdbtk-0.3.2/db/pplacer
+          ln -s {DBPATH}/GTDB_tk/msa $CONDA_PREFIX/share/gtdbtk-0.3.2/db/msa
+          ln -s {DBPATH}/GTDB_tk/markers $CONDA_PREFIX/share/gtdbtk-0.3.2/db/markers
+          ln -s {DBPATH}/GTDB_tk/taxonomy $CONDA_PREFIX/share/gtdbtk-0.3.2/db/taxonomy
+          ln -s {DBPATH}/GTDB_tk/masks $CONDA_PREFIX/share/gtdbtk-0.3.2/db/masks
+          ln -s {DBPATH}/GTDB_tk/radii $CONDA_PREFIX/share/gtdbtk-0.3.2/db/radii
+          ln -s {DBPATH}/GTDB_tk/metadata $CONDA_PREFIX/share/gtdbtk-0.3.2/db/metadata
+          ln -s {DBPATH}/GTDB_tk/mrca_red $CONDA_PREFIX/share/gtdbtk-0.3.2/db/mrca_red
         fi
         gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
         """
