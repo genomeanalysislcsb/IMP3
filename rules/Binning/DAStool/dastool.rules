@@ -21,6 +21,7 @@ rule DAS_tool:
         DAS_Tool -i {bintabs} \
          -l {binnames} \
          -c {input.contigs} \
+         --search_engine diamond \
          --proteins {input.proteins} --score_threshold 0.3 \
          --threads {threads} --write_bins 1 \
          -o Binning/selected > {log} 2>&1
