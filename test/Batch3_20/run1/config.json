@@ -1,21 +1,15 @@
 {
-    "steps": "preprocessing assembly analysis binning",
-    "normal_mem_per_core_gb": 4,
-    "big_mem_total_gb": 32, 
-    "big_mem_cores": 8,
-    "big_mem_per_core_gb": 4,
+    "threads": 8,
+    "memory_total_gb": 1600,
+    "memory_per_core_gb": 200,
     "assembler": "megahit",
     "raws": {
-      "Metagenomics": "/work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/Reads/MG.R1.fq /work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/Reads/MG.R2.fq",
-      "Metatranscriptomics": "/work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/Reads/MT.R1.fq /work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/Reads/MT.R2.fq"
-   },
-    "outputdir": "/work/projects/ecosystem_biology/local_tools/IMP3/test/Batch3_20/run1",
-    "imp_lib": "/work/projects/ecosystem_biology/local_tools/IMP3/lib",
-    "tmp_dir": "tmp",
-    "imp_root": "/work/projects/ecosystem_biology/local_tools/IMP3",
-    "imp_src": "/work/projects/ecosystem_biology/local_tools/IMP3/src",
-    "db_path": "/work/projects/ecosystem_biology/local_tools/IMP3/databases",
-    "hmmdbs": {
+      "Metagenomics": "/scratch/projects/ecosystem_biology/mibipa/mgmt/Batch3_20/Reads/MG.R1.fq /scratch/projects/ecosystem_biology/mibipa/mgmt/Batch3_20/Reads/MG.R2.fq",
+      "Metatranscriptomics": "/scratch/projects/ecosystem_biology/mibipa/mgmt/Batch3_20/Reads/MT.R1.fq /scratch/projects/ecosystem_biology/mibipa/mgmt/Batch3_20/Reads/MT.R2.fq"
+   },	
+    "outputdir": "/scratch/projects/ecosystem_biology/mibipa/mgmt/Batch3_20/run1",
+    "imp_lib": "$imp_lib",
+        "hmmdbs": {
        "KEGG":{
                "cutoff": "",
                "trim": "--trimall"

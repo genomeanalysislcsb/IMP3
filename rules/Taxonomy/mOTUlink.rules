@@ -64,7 +64,7 @@ rule extract_mOTU_db_genes:
         coglist = ",".join(map(str, config["COGS"])),
         fasta = "share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta",
         coordinates = ROOT_DIR + "/conda/IMP_taxonomy/share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
-    conda: ROOT_DIR + "/envs/IMP_bioperl.yaml"
+    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
     log: "logs/analysis_extract_mOTU_db_genes.log"
     message: "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
