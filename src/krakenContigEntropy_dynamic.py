@@ -146,6 +146,7 @@ tax_file.close()
 # reconstruct taxonomy #
 #                      #
 ########################
+convention = ["R","D","K","P","C","O","F","G","S"]
 
 ranklist = [rank_dict["1"]]
 while 1:
@@ -189,7 +190,11 @@ while 1:
                     if len(keep_letter) == 1:            
                         ranklist.append(keep_letter[0])
                     else:                                # if there's more than one candidate, we're dead
-                        sys.exit("Taxonomy cannot be inferred based on the data.")
+                        startletter = [startletter[0] for startletter in keep_letter]
+                        startindex = [convention.index(checkletter) for checkletter in startletter]
+                        appendletters = [x for _, x in sorted(zip(startindex,keep_letter))]
+                        ranklist.append(appendletters[0])
+                        print(" ".join(ranklist))
             else:                                  #we have no more options to establish order based on relationships
                 print(" ".join(keep_child))
                 keep_letter = []                   # we try based on the letter
@@ -201,8 +206,12 @@ while 1:
                 if len(keep_letter) == 1:            
                     ranklist.append(keep_letter[0])
                 else:                                # if there's more than one candidate, we're dead
-                    sys.exit("Taxonomy cannot be inferred based on the data.")
-                        
+                    startletter = [startletter[0] for startletter in keep_letter]
+                    startindex = [convention.index(checkletter) for checkletter in startletter]
+                    appendletters = [x for _, x in sorted(zip(startindex,keep_letter))]
+                    ranklist.append(appendletters[0])
+                    print(" ".join(ranklist))
+ 
     else:                                            # if there are no more children, we've reached the end             
         break                                        # we still need to add more branches for the in-between ranks
 i = 0

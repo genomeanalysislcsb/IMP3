@@ -1,3 +1,8 @@
+from os.path import getsize
+KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['krakendb'] + "/hash.k2d" )) / 1000000000
+KRAKTHREADS = round( (KRAKSIZE / float(BIGMEMCORE[:-1])) + 0.5)
+
+
 rule kraken_reads:
     input:
         "Preprocessing/{type}.r1.preprocessed.fq",
@@ -11,7 +16,7 @@ rule kraken_reads:
         "Analysis/taxonomy/kraken/{type}.kraken#.fq",
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: 2
+    threads: KRAKTHREADS 
     conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_reads.{type}.log"
     message: "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."
