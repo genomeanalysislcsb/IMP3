@@ -1,0 +1,144 @@
+import os
+import shutil
+
+
+def prepare_input_files(input, type):
+    """
+    Prepare file names from input.
+    Will copy and/or ungzip paired input files into output directory named as '{type}.R1.fq' and '{type}.R2.fq'.
+    If user provides R1, R2 and SE file, we rname the file as there were already preprocessed.
+    input: input names from the user
+    type: MG or MT
+    """
+    if len(input) < 2:
+        raise OSError("//[IMP] %s files must be at least two paired files or two paired file and single end." % type)
+    if len(input) >= 2:
+        r1 = input[0]
+        r2 = input[1]
+        _, fname1 = os.path.split(r1)
+        _, fname2 = os.path.split(r2)
+        out1 = "Preprocessing/{type}.r1.fq".format(type=type)
+        out2 = "Preprocessing/{type}.r2.fq".format(type=type)
+        _process_file(fname1, r1, out1)
+        _process_file(fname2, r2, out2)
+
+    if len(input) == 3:
+        se = input[2]
+        _, fname3 = os.path.split(se)
+        out3 = "Preprocessing/{type}.se.fq".format(type=type)
+        _process_file(fname3, se, out3)
+        # symlink to the preprocessing output directory
+        link1 = 'Preprocessing/{type}.r1.preprocessed.fq'.format(type=type)
+        link2 = 'Preprocessing/{type}.r2.preprocessed.fq'.format(type=type)
+        link3 = 'Preprocessing/{type}.se.preprocessed.fq'.format(type=type)
+        print('symlink',  out1, '=>', link1)
+        os.symlink("{type}.r1.fq".format(type=type), link1)
+        print('symlink',  out2, '=>', link2)
+        os.symlink("{type}.r2.fq".format(type=type), link2)
+        print('symlink',  out3, '=>', link3)
+        os.symlink("{type}.se.fq".format(type=type), link3)
+
+CHUNK_SIZE = 1024
+
+def _process_file(fname, inp, outfilename):
+    """
+    Write the input to the output. Handle raw, zip, or bzip input files.
+    """
+    print(inp, '=>', outfilename)
+    import bz2
+    # ungunzip
+    if os.path.splitext(fname)[-1] in ['.gz', '.gzip']:
+        with open(outfilename, 'wb') as whandle, gzip.open(inp, 'rb') as rhandle:
+            whandle.write(rhandle.read())
+    # unbzip2
+    elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
+        shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
+        #dec = bz2.BZ2Decompressor()
+        #with open(outfilename, 'wb') as whandle, bz2.open(inp, 'rb') as rhandle:
+            #whandle.write(bz2.decompress(rhandle.read()))
+        #    whandle.write(rhandle.read())
+            # for data in iter(lambda: rhandle.read(CHUNK_SIZE), b''):
+            #     whandle.write(bz2.decompress(data))
+    # copy
+    else:
+        shutil.copy(inp, outfilename)
+
+data_input = {
+    'mg': MG,
+    'mt': MT
+}
+
+localrules: prepare_mg_data, rule prepare_mt_data
+
+if config['skip_preprocessing']:
+    if MG:
+        rule prepare_mg_data:
+            input:
+                MG
+            output:
+                "Preprocessing/mg.r1.fq",
+                "Preprocessing/mg.r2.fq",
+                "Preprocessing/mg.se.fq",
+                "Preprocessing/mg.r1.preprocessed.fq",
+                "Preprocessing/mg.r2.preprocessed.fq",
+                "Preprocessing/mg.se.preprocessed.fq",
+            threads: 1
+            params:
+                runtime = "4:00:00",
+                mem = "--mem-per-cpu " + MEMCORE,
+                partition = "-p batch --qos qos-batch"
+                message: "Preparing mg reads."
+            run:
+                prepare_input_files(input, 'mg')
+    if MT:
+        rule prepare_mt_data:
+            input:
+                MT
+            output:
+                "Preprocessing/mt.r1.fq",
+                "Preprocessing/mt.r2.fq",
+                "Preprocessing/mt.se.fq",
+                "Preprocessing/mt.r1.preprocessed.fq",
+                "Preprocessing/mt.r2.preprocessed.fq",
+                "Preprocessing/mt.se.preprocessed.fq",
+            threads: 1
+            params:
+                runtime = "4:00:00",
+                mem = "--mem-per-cpu " + MEMCORE,
+                partition = "-p batch --qos qos-batch"
+                message: "Preparing mt reads."
+            run:
+                prepare_input_files(input, 'mt')
+
+
+else:
+    if MG:
+        rule prepare_mg_data:
+            input:
+                MG
+            output:
+                "Preprocessing/mg.r1.fq",
+                "Preprocessing/mg.r2.fq"
+            threads: 1
+            params:
+                runtime = "4:00:00",
+                mem = "--mem-per-cpu " + MEMCORE,
+                partition = "-p batch --qos qos-batch"
+                message: "Preparing mg reads."
+            run:
+                prepare_input_files(input, 'mg')
+    if MT:
+        rule prepare_mt_data:
+            input:
+                MT
+            output:
+                "Preprocessing/mt.r1.fq",
+                "Preprocessing/mt.r2.fq"
+            threads: 1
+            params:
+                runtime = "4:00:00",
+                mem = "--mem-per-cpu " + MEMCORE,
+                partition = "-p batch --qos qos-batch"
+                message: "Preparing mt reads."
+            run:
+                prepare_input_files(input, 'mt')

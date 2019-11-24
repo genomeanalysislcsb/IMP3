@@ -1,0 +1,41 @@
+
+rule kraken_contigs:
+    input:
+        "Assembly/%s.assembly.merged.fa" % ASS
+    output:
+        "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS,
+        "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS,
+        "Analysis/taxonomy/kraken/%s.kraken.fa" % ASS
+    params:
+        runtime = "8:00:00",
+        partition = "-p bigmem --qos qos-bigmem -N 1",
+        mem = "--mem-per-cpu " + BIGMEMCORE
+    threads: 2
+    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    log: "logs/analysis_kraken2_contigs.log"
+    message: "Running kraken2 on contigs against {config[krakendb]}."
+    shell:	
+        """
+        kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names \
+         --output {output[0]} --report {output[1]} --classified-out {output[2]} {input}
+        """
+
+rule kraken_parse:
+    input:
+        "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS
+    output:
+        "Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS
+    threads: 1
+    params:
+        runtime = "2:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    log: "logs/analysis_kraken2parsing_contigs.log"
+    message: "Parsing kraken2 output for contigs."
+    shell:
+        """
+        {SRCDIR}/krakenContigEntropy_GTDB.py -d {DBPATH}/GTDB_kraken_parse_taxonomy -e 0.1 -o {output} {input}
+        """
+
+

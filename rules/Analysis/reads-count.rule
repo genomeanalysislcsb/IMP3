@@ -1,0 +1,52 @@
+raw_fq_files = [
+    'Preprocessing/{type}.r1.fq',
+    'Preprocessing/{type}.r2.fq'
+]
+preprocessed_fq_files = [
+    'Preprocessing/{type}.r1.preprocessed.fq',
+    'Preprocessing/{type}.r2.preprocessed.fq',
+    'Preprocessing/{type}.se.preprocessed.fq',
+]
+trimmed_fq_files = [
+    'Preprocessing/{type}.r1.trimmed.fq',
+    'Preprocessing/{type}.r2.trimmed.fq',
+    'Preprocessing/{type}.se.trimmed.fq'
+]
+rna_filtered_fq_mt_files = [
+    'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
+    'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
+    'Preprocessing/mt.se.trimmed.rna_filtered.fq',
+]
+
+def reads_input_files(wildcards):
+    if wildcards.type not in TYPES:
+        return 'reads_input_files-no-file-here'
+    base = raw_fq_files
+    if 'preprocessing' in IMP_STEPS:
+        base += preprocessed_fq_files
+        if PREPROCESSING_FILTERING:
+            base += trimmed_fq_files
+    if wildcards.type == 'mt' and 'preprocessing' in IMP_STEPS:
+        base += rna_filtered_fq_mt_files
+    return expand(base, type=wildcards.type)
+
+#"Analysis/mg.read_counts.txt",
+
+rule reads_count:
+    input:
+        reads_input_files
+    output:
+        'Stats/{type}/{type}.read_counts.txt'
+    params:
+        runtime = "8:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    threads: 1
+    log: "logs/analysis_read_numbers.{type}.log"
+    message: "Getting length of {wildcards.type} fastq files."
+    run:
+        for idx, f in enumerate({input}):
+            if idx == 0:
+                shell("wc -l {f} > {output}")
+            else:
+                shell("wc -l {f} >> {output}")
