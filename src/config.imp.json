@@ -35,6 +35,7 @@
         "strictness": 0.5,
         "target_length": 40,
     },
+    "nextseq": false,
     "assembly": {
         "mink": 25,
         "maxk": 99,
