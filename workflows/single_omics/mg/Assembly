@@ -19,13 +19,19 @@ include:
 include:
     '../../../rules/Assembly/common/mapping.rules'
 
-# master command
-rule ASSEMBLY:
-    input:
-        'Assembly/mg.assembly.merged.fa',
+
+master_ass_input = ['Assembly/mg.assembly.merged.fa',
         'Assembly/mg.assembly.merged.fa.fai',
         'Assembly/mg.assembly.merged.fa.bed3',
         'Assembly/mg.reads.sorted.bam',
-        'Assembly/mg.reads.sorted.bam.bai',
+        'Assembly/mg.reads.sorted.bam.bai']
+
+if MT:
+    master_ass_input.append('Assembly/mt.reads.sorted.bam.bai')
+
+# master command
+rule ASSEMBLY:
+    input:
+        master_ass_input
     output:
         touch('assembly.done')

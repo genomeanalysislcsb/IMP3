@@ -3,9 +3,12 @@ include:
     "rules/ini/config"
 
 # define the data types used and the assembly
-if MG and MT:
+if MG and MT and config['assembly']['hybrid']:
     TYPES = ['mg', 'mt']
     ASS = 'mgmt'
+elif MG and MT:
+    TYPES = ['mg', 'mt']
+    ASS = 'mg'
 elif MG:
     TYPES = ['mg']
     ASS = 'mg'
@@ -28,8 +31,12 @@ if MG and MT:
             "workflows/integrative/Preprocessing"
 
     if 'assembly' in IMP_STEPS:
-        include:
-            "workflows/integrative/Assembly"
+        if config['assembly']['hybrid']:
+            include:
+                "workflows/integrative/Assembly"
+        else:
+            include:
+                "workflows/single_omics/mg/Assembly"
 
     if 'analysis' in IMP_STEPS:
         include:

@@ -37,6 +37,7 @@
     },
     "nextseq": false,
     "assembly": {
+        "hybrid": true,
         "mink": 25,
         "maxk": 99,
         "step": 4
