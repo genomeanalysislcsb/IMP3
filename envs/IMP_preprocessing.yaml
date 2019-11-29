@@ -7,6 +7,11 @@ channels:
 dependencies:
   - _libgcc_mutex=0.1=main
   - alsa-lib=1.1.5=h516909a_1001
+  - bzip2=1.0.8=h516909a_1
+  - ca-certificates=2019.11.28=hecc5488_0
+  - certifi=2019.11.28=py37_0
+  - cutadapt=2.7=py37h516909a_0
+  - dnaio=0.4.1=py37h516909a_0
   - fastqc=0.11.8=1
   - font-ttf-dejavu-sans-mono=2.37=hab24e00_0
   - fontconfig=2.13.1=h86ecdb6_1001
@@ -15,6 +20,7 @@ dependencies:
   - icu=64.2=he1b5a44_1
   - jpeg=9c=h14c3975_1001
   - lcms2=2.9=h2e4bb80_0
+  - libffi=3.2.1=he1b5a44_1006
   - libgcc-ng=9.1.0=hdf63c60_0
   - libiconv=1.15=h516909a_1005
   - libpng=1.6.37=hed695b0_0
@@ -24,11 +30,22 @@ dependencies:
   - libxcb=1.13=h14c3975_1002
   - libxml2=2.9.9=hee79883_5
   - lz4-c=1.8.3=he1b5a44_1001
+  - ncurses=6.1=hf484d3e_1002
   - openjdk=11.0.1=h46a85a0_1017
+  - openssl=1.1.1d=h516909a_0
   - perl=5.26.2=h516909a_1006
+  - pigz=2.3.4=0
+  - pip=19.3.1=py37_0
   - pthread-stubs=0.4=h14c3975_1001
+  - python=3.7.3=h33d41f4_1
+  - readline=8.0=hf8c457e_0
+  - setuptools=42.0.1=py37_0
   - sortmerna=2.1b=he860b03_4
+  - sqlite=3.30.1=hcee41ef_0
+  - tk=8.6.10=hed695b0_0
   - trimmomatic=0.32=0
+  - wheel=0.33.6=py37_0
+  - xopen=0.8.4=py37_0
   - xorg-fixesproto=5.0=h14c3975_1002
   - xorg-inputproto=2.3.2=h14c3975_1002
   - xorg-kbproto=1.0.7=h14c3975_1002
