@@ -6,7 +6,7 @@ rule GTDBtk_bins_single:
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    conda: ROOT_DIR + "/envs/IMP_gtdbtk.yaml"
     log: "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
     message: "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
     threads: BIGCORENO
