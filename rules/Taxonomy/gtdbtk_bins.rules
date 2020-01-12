@@ -13,17 +13,17 @@ rule GTDBtk_bins_single:
     shell:
         """
         export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
-        if [ ! -e $CONDA_PREFIX/share/gtdbtk-1.0.1/db/fastani ] 
+        if [ ! -e $CONDA_PREFIX/share/gtdbtk-1.0.2/db/fastani ] 
         then
-          ln -s {DBPATH}/GTDB_tk/fastani $CONDA_PREFIX/share/gtdbtk-1.0.1/db/fastani
-          ln -s {DBPATH}/GTDB_tk/pplacer $CONDA_PREFIX/share/gtdbtk-1.0.1/db/pplacer
-          ln -s {DBPATH}/GTDB_tk/msa $CONDA_PREFIX/share/gtdbtk-1.0.1/db/msa
-          ln -s {DBPATH}/GTDB_tk/markers $CONDA_PREFIX/share/gtdbtk-1.0.1/db/markers
-          ln -s {DBPATH}/GTDB_tk/taxonomy $CONDA_PREFIX/share/gtdbtk-1.0.1/db/taxonomy
-          ln -s {DBPATH}/GTDB_tk/masks $CONDA_PREFIX/share/gtdbtk-1.0.1/db/masks
-          ln -s {DBPATH}/GTDB_tk/radii $CONDA_PREFIX/share/gtdbtk-1.0.1/db/radii
-          ln -s {DBPATH}/GTDB_tk/metadata $CONDA_PREFIX/share/gtdbtk-1.0.1/db/metadata
-          ln -s {DBPATH}/GTDB_tk/mrca_red $CONDA_PREFIX/share/gtdbtk-1.0.1/db/mrca_red
+          ln -s {DBPATH}/GTDB_tk/fastani $CONDA_PREFIX/share/gtdbtk-1.0.2/db/fastani
+          ln -s {DBPATH}/GTDB_tk/pplacer $CONDA_PREFIX/share/gtdbtk-1.0.2/db/pplacer
+          ln -s {DBPATH}/GTDB_tk/msa $CONDA_PREFIX/share/gtdbtk-1.0.2/db/msa
+          ln -s {DBPATH}/GTDB_tk/markers $CONDA_PREFIX/share/gtdbtk-1.0.2/db/markers
+          ln -s {DBPATH}/GTDB_tk/taxonomy $CONDA_PREFIX/share/gtdbtk-1.0.2/db/taxonomy
+          ln -s {DBPATH}/GTDB_tk/masks $CONDA_PREFIX/share/gtdbtk-1.0.2/db/masks
+          ln -s {DBPATH}/GTDB_tk/radii $CONDA_PREFIX/share/gtdbtk-1.0.2/db/radii
+          ln -s {DBPATH}/GTDB_tk/metadata $CONDA_PREFIX/share/gtdbtk-1.0.2/db/metadata
+          ln -s {DBPATH}/GTDB_tk/mrca_red $CONDA_PREFIX/share/gtdbtk-1.0.2/db/mrca_red
         fi
         gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
         """
