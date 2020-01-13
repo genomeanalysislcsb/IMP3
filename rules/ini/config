@@ -66,7 +66,6 @@ PREPROCESSING_FILTERING = os.environ.get("PREPROCESSING_FILTERING", config['prep
 FILTER = os.environ.get("FILTER", config['filtering']['filter'])
 
 # Get general parameters
-#THREADS = os.environ.get("THREADS", config['threads'])
 BIGCORENO = os.environ.get("BIGCORENO", config['big_mem_cores'])
 BIGMEMTOTAL = os.environ.get("BIGMEMTOTAL", config['big_mem_total_gb'])
 MEMCORE = os.environ.get("MEMCORE", str(config['normal_mem_per_core_gb']) + "G")

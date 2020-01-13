@@ -27,6 +27,11 @@ rule motus:
     message: "motus: Running mOTUs on {wildcards.type} reads."
     shell:
         """
-        motus profile -f {input[0]} -r {input[1]} -s {input[2]} -A -c -t {threads} -o {output} >& {log}
+	a=`stat -c %A $CONDA_PREFIX//share/motus-2.5.1/db_mOTU/db_mOTU_versions`
+        if [ $a == "-rw-------" ]
+	then
+		chmod 666 $CONDA_PREFIX//share/motus-2.5.1/db_mOTU/*
+	fi
+	motus profile -f {input[0]} -r {input[1]} -s {input[2]} -A -c -t {threads} -o {output} >& {log}
         """
 
