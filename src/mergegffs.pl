@@ -38,7 +38,7 @@ foreach my $infile (@ARGV){
 		}
 		if(exists($data{$tabstr})){
 			if($data{$tabstr}{'id'} eq $id){
-				push $data{$tabstr}{'att'},@tmpattr;
+				push @{$data{$tabstr}{'att'}},@tmpattr;
 			}else{
 				die "two different IDs for the same locus.";
 			}
