@@ -23,7 +23,7 @@ CONDA <- Sys.getenv("CONDA_PREFIX")
 ref_phylo <- paste0(CONDA,snakemake@params[["refphy"]])
 meta_phylo <- paste0(CONDA,snakemake@params[["metaphy"]])
 
-if(file.info(blastoutput)$size[1]!=0){
+if(file.info(blastoutput)$size[1]!=0 & length(scan(blastoutput,comment.char = "#",what="character"))>0){
  refphy <- read.delim(ref_phylo,stringsAsFactors=F)
  metaphy <- read.delim(meta_phylo,stringsAsFactors=F)
  phys <- data.frame("motuID"=c(refphy$ref.mOTU_v2_ID,metaphy$meta.mOTU_v2_ID),

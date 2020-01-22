@@ -18,3 +18,4 @@ dependencies/*
 READMEconda
 conda/
 test/*
+IMP2to3/*
