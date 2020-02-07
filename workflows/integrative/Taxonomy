@@ -19,8 +19,8 @@ if MG or MT:
 if "assembly" in IMP_STEPS:
     tax_ctrl.append("Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS)
     tax_ctrl.append("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")
-elif CONTIGS:
-    tax_ctrl.append("Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS)
+if CONTIGS:
+    tax_ctrl = ["Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS]
     if MG or MT:
         tax_ctrl.append("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")
 if "binning" in IMP_STEPS:

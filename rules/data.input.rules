@@ -115,15 +115,15 @@ if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in I
         inputs.append(CONTIGS)
         outputs.append("Assembly/%s.assembly.merged.fa" %ASS)
         include:
-            '../Assembly/common/contig.rules'
+            'Assembly/common/contig.rules'
         include:
-            '../Assembly/common/mapping.rules'
+            'Assembly/common/mapping.rules'
         if MGaln:
             inputs.append(MGaln)
             outputs.append("Assembly/mg.reads.sorted.bam")
         else:
             include:
-                '../Assembly/common/bwa.index.rules'
+                'Assembly/common/bwa.index.rules'
             if MG and len(MG) == 3 and not 'taxonomy' in IMP_STEPS:
                 inputs.append(MG)
                 outputs.append("Preprocessing/mg.r1.fq")
@@ -151,7 +151,7 @@ if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in I
             outputs.append("Assembly/mt.reads.sorted.bam")
         else:
             include:
-                '../Assembly/common/bwa.index.rules'
+                'Assembly/common/bwa.index.rules'
             if MT and len(MT) == 3 and not 'taxonomy' in IMP_STEPS:
                 inputs.append(MT)
                 outputs.append("Preprocessing/mt.r1.fq")
