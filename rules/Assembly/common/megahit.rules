@@ -30,7 +30,7 @@ rule megahit_assembly_from_preprocessing:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
-    conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
+    conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_megahit_assembly_from_preprocessing.{type}.log"
     message: "megahit_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MEGAHIT"
     shell:
@@ -49,7 +49,7 @@ rule megahit_assembly_from_unmapped:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
-    conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
+    conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_megahit_assembly_from_unmapped.{type}.log"
     message: "megahit_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using MEGAHIT"
     shell:

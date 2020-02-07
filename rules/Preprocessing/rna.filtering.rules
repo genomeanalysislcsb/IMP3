@@ -4,16 +4,17 @@ FASTAINDEXED = expand("{path}/idx/{files}", files=config["sortmerna"]["files"], 
 
 REF = ':'.join('%s,%s' % (a, b) for a, b in zip(FASTAFILES, FASTAINDEXED))
 
+SORTME_MEM = int(MEMCORE[:-1]) * 1000
 
 FILTER_RNA_SHELL = """
   TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
   merge-paired-reads.sh {input[0]} {input[1]} $TMP_R12.fq > {log} 2>&1
   sortmerna --ref {params.ref} --reads $TMP_R12.fq --fastx --aligned $TMP_R12.rrna \
-   --other $TMP_R12.rrna_filt -a {threads} --paired_in -m {params.sortmernamem} > {log} 2>&1
-  unmerge-paired-reads.sh $TMP_R12.rrna.fq {output[3]} {output[4]} > {log} 2>&1
-  unmerge-paired-reads.sh $TMP_R12.rrna_filt.fq {output[0]} {output[1]} > {log} 2>&1
+   --other $TMP_R12.rrna_filt -a {threads} --paired_in -m {params.sortmernamem} >> {log} 2>&1
+  unmerge-paired-reads.sh $TMP_R12.rrna.fq {output[3]} {output[4]} >> {log} 2>&1
+  unmerge-paired-reads.sh $TMP_R12.rrna_filt.fq {output[0]} {output[1]} >> {log} 2>&1
   sortmerna --ref {params.ref} --reads {input[2]} --fastx --aligned Preprocessing/mt.se.trimmed.rna \
-   --other Preprocessing/mt.se.trimmed.rna_filtered -a {threads} -m {params.sortmernamem} > {log} 2>&1
+   --other Preprocessing/mt.se.trimmed.rna_filtered -a {threads} -m {params.sortmernamem} >> {log} 2>&1
   rm $TMP_R12*
 """
 
@@ -37,10 +38,10 @@ rule filter_rna:
     threads: 1
     params:
         ref = REF,
-        sortmernamem = str(config["sortmerna"]["mem"]),
+        sortmernamem = str(SORTME_MEM),
         runtime = "48:00:00",
         mem = MEMCORE
-    conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
+    conda: ENVDIR + "/IMP_preprocessing.yaml"
     log: "logs/preprocessing_filter_rna.log"
     message: "filter_rna: filtering rRNA from mt reads."
     shell:

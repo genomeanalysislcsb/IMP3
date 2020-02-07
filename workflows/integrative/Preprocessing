@@ -5,7 +5,7 @@ include:
     '../../rules/Preprocessing/fastqc.rules'
 
 # include only if user doesn't skip preprocessing
-if not config['skip_preprocessing']:
+if 'preprocessing' in IMP_STEPS:
     # trimming rules
     include:
         "../../rules/Preprocessing/trimming.rules"

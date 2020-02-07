@@ -1,8 +1,7 @@
 rule annotate:
     input:
         'Assembly/%s.assembly.merged.fa' % ASS,
-        expand("{path}/{db}", path=DBPATH, db=config["prokka"]["databases"]),
-#        'Analysis/tbl2asn.updated'
+        expand("{path}/{db}", path=DBPATH, db=config["prokka"]["databases"])
     output:
         "Analysis/annotation/annotation.filt.gff",
         "Analysis/annotation/{p}.faa".format(p=config['prokka']['prefix']),
@@ -14,7 +13,7 @@ rule annotate:
         runtime = "8:00:00",
         mem = MEMCORE
     log: "logs/analysis_annotate.log"
-    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
+    conda: ENVDIR + "/IMP_annotation.yaml"
     message: "annotate: Running prokkaC."
     shell:
         """

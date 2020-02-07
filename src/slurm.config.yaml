@@ -1,4 +1,5 @@
 __default__: 
+  call: "sbatch"
   nodes: ""
   mem_per_cpu: "--mem-per-cpu "
   partition: "-p batch"

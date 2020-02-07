@@ -44,8 +44,6 @@ rule reads_count:
 #    log: "logs/analysis_read_numbers.{type}.log"
     message: "reads_count: Getting length of {wildcards.type} fastq files."
     run:
-        for idx, f in enumerate({input}):
-            if idx == 0:
-                shell("wc -l {f} > {output}")
-            else:
-                shell("wc -l {f} >> {output}")
+        for fs in {input}:
+            for f in fs:
+                shell('echo -e "{f}\t$(($(wc -l < {f})/4))" >> {output}')

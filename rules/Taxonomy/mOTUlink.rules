@@ -1,6 +1,8 @@
+COGS_LIST = config['COGS'].split()
+
 rule allmotulinks:
     input:
-        expand("Analysis/taxonomy/mOTU_links/{COG}.bestPresentHitPhylogeny.tsv",COG=config["COGS"])
+        expand("Analysis/taxonomy/mOTU_links/{COG}.bestPresentHitPhylogeny.tsv",COG=COGS_LIST)
     output:
         "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
     threads: 1
@@ -19,14 +21,14 @@ rule fetchmg:
         "Analysis/annotation/prokka.ffn",
         "Analysis/annotation/prokka.faa"
     output:
-        expand("Analysis/taxonomy/mOTU_links/marker_genes/{COG}.fna",COG=config["COGS"])
+        expand("Analysis/taxonomy/mOTU_links/marker_genes/{COG}.fna",COG=COGS_LIST)
     threads: 6
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
         outdir = "Analysis/taxonomy/mOTU_links/marker_genes"
     log: "logs/analysis_fetchmg.log"
-    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
+    conda: ENVDIR + "/IMP_annotation.yaml"
     message: "fetchmg: Finding mOTU marker genes in open reading frames."
     shell:
         """
@@ -54,17 +56,17 @@ rule extract_mOTU_db_genes:
     input:
         "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
     output:
-        expand("Analysis/taxonomy/mOTU_links/{COG}.present.DBgenes.fna",COG=config["COGS"])
+        expand("Analysis/taxonomy/mOTU_links/{COG}.present.DBgenes.fna",COG=COGS_LIST)
     threads: 1
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
         outdir = "Analysis/taxonomy/mOTU_links",
         outname = "present.DBgenes",
-        coglist = ",".join(map(str, config["COGS"])),
+        coglist = ",".join(map(str, COGS_LIST)),
         fasta = "share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta",
         coordinates = "share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
-    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_extract_mOTU_db_genes.log"
     message: "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
@@ -85,7 +87,7 @@ rule blast_mOTU_db_genes:
     params:
         runtime = "12:00:00",
         mem = MEMCORE
-    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_blast_mOTU_db_genes.{COG}.log"
     message: "blast_mOTU_db_genes: Blasting {wildcards.COG} genes to present mOTUs."
     shell:
@@ -105,7 +107,7 @@ rule parse_blast_mOTU:
         mem = MEMCORE,
         metaphy = "/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
         refphy = "/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
-    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_parse_blast_mOTU.{COG}.log"
     message: "parse_blast_mOTU: Parsing blast results of {wildcards.COG} genes."
     script:

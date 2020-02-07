@@ -17,7 +17,7 @@ rule cap3:
         cat {input} > $NAME.cat.fa
         
         # Run cap3 
-        {BINDIR}/cap3 $NAME.cat.fa -p {config[cap3][identity]} -o {config[cap3][overlap]} > {log} 2>&1
+        {BINDIR}/cap3 $NAME.cat.fa -p {config[assembly][cap3][identity]} -o {config[assembly][cap3][overlap]} > {log} 2>&1
         
         # Concatenate assembled contigs, singletons and rename the contigs
         cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \

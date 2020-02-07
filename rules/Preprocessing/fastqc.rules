@@ -12,7 +12,7 @@ rule fastqc_raw:
         runtime = "1:00:00",
         mem = MEMCORE,
         outputdir = 'Stats/{type}'
-    conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
+    conda: ENVDIR + "/IMP_preprocessing.yaml"
     log: "logs/preprocessing_fastqc_raw.{type}.log"
     message: "fastqc_raw: Running fastQC on raw {wildcards.type} reads."
     shell:
@@ -41,7 +41,7 @@ rule fastqc_preprocessed:
         outputdir = 'Stats/{type}'
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
     message: "fastqc_preprocessed: Running fastqc on preprocessed {wildcards.type} reads."
-    conda: ROOT_DIR + "/envs/IMP_preprocessing.yaml"
+    conda: ENVDIR + "/IMP_preprocessing.yaml"
     shell:
         """
         if [[ -s {input[2]} ]]
