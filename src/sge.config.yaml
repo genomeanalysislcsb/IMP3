@@ -18,6 +18,9 @@ bwa_index:
 mapping_on_assembly:
   partition: "-l highmem"
 
+bam_index:
+  partition: "-l highmem"
+
 megahit_assembly_from_preprocessing:
   partition: "-l highmem"
 
