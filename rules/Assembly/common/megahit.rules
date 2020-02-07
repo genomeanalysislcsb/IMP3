@@ -23,9 +23,9 @@ rule megahit_assembly_from_preprocessing:
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq'
     output:
-        directory('Assembly/{type}.megahit_preprocessed.1'),
-        'Assembly/{type}.megahit_preprocessed.1/final.contigs.fa',
-        'Assembly/{type}.megahit_preprocessed.1.fa'
+        directory('Assembly/intermediary/{type}.megahit_preprocessed.1'),
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1.fa'
     params:
         runtime = "120:00:00",
         mem = BIGMEMCORE
@@ -38,13 +38,13 @@ rule megahit_assembly_from_preprocessing:
 
 rule megahit_assembly_from_unmapped:
     input:
-        'Assembly/{type}.r1.unmapped.fq',
-        'Assembly/{type}.r2.unmapped.fq',
-        'Assembly/{type}.se.unmapped.fq'
+        'Assembly/intermediary/{type}.r1.unmapped.fq',
+        'Assembly/intermediary/{type}.r2.unmapped.fq',
+        'Assembly/intermediary/{type}.se.unmapped.fq'
     output:
-        directory('Assembly/{type}.megahit_unmapped.2'),
-        'Assembly/{type}.megahit_unmapped.2/final.contigs.fa',
-        'Assembly/{type}.megahit_unmapped.2.fa'
+        directory('Assembly/intermediary/{type}.megahit_unmapped.2'),
+        'Assembly/intermediary/{type}.megahit_unmapped.2/final.contigs.fa',
+        'Assembly/intermediary/{type}.megahit_unmapped.2.fa'
     params:
         runtime = "120:00:00",
         mem = BIGMEMCORE

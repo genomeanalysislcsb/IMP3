@@ -28,16 +28,16 @@ rule extract_unmapped_from_megahit:
         'Preprocessing/{type}.r1.preprocessed.fq',
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
-        'Assembly/{type}.megahit_preprocessed.1/final.contigs.fa',
-        'Assembly/{type}.megahit_preprocessed.1/final.contigs.fa.amb',
-        'Assembly/{type}.megahit_preprocessed.1/final.contigs.fa.bwt',
-        'Assembly/{type}.megahit_preprocessed.1/final.contigs.fa.pac',
-        'Assembly/{type}.megahit_preprocessed.1/final.contigs.fa.sa',
-        'Assembly/{type}.megahit_preprocessed.1/final.contigs.fa.ann',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.amb',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.bwt',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.pac',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.sa',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.ann',
     output:
-        'Assembly/{type}.r1.unmapped.fq',
-        'Assembly/{type}.r2.unmapped.fq',
-        'Assembly/{type}.se.unmapped.fq'
+        'Assembly/intermediary/{type}.r1.unmapped.fq',
+        'Assembly/intermediary/{type}.r2.unmapped.fq',
+        'Assembly/intermediary/{type}.se.unmapped.fq'
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE
@@ -53,16 +53,16 @@ rule extract_unmapped_from_hybrid_assembly:
         'Preprocessing/{type}.r1.preprocessed.fq',
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
-        'Assembly/mgmt.{assembler}_hybrid.1.fa',
-        'Assembly/mgmt.{assembler}_hybrid.1.fa.amb',
-        'Assembly/mgmt.{assembler}_hybrid.1.fa.bwt',
-        'Assembly/mgmt.{assembler}_hybrid.1.fa.pac',
-        'Assembly/mgmt.{assembler}_hybrid.1.fa.sa',
-        'Assembly/mgmt.{assembler}_hybrid.1.fa.ann',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.amb',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.bwt',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.pac',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.sa',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.ann',
     output:
-        'Assembly/mgmt.r1.{assembler}_hybrid.{type}.unmapped.fq',
-        'Assembly/mgmt.r2.{assembler}_hybrid.{type}.unmapped.fq',
-        'Assembly/mgmt.se.{assembler}_hybrid.{type}.unmapped.fq'
+        'Assembly/intermediary/mgmt.r1.{assembler}_hybrid.{type}.unmapped.fq',
+        'Assembly/intermediary/mgmt.r2.{assembler}_hybrid.{type}.unmapped.fq',
+        'Assembly/intermediary/mgmt.se.{assembler}_hybrid.{type}.unmapped.fq'
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE

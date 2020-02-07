@@ -48,7 +48,7 @@ collapse_hybrid_assemblies:
 extract_unmapped:
   partition: "-l highmem"
 
-run_DAS_tool:
+DAS_tool:
   partition: "-l highmem"
 
 prepare_gridReads:

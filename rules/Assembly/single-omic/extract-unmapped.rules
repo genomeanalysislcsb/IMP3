@@ -31,16 +31,16 @@ rule extract_unmapped:
         'Preprocessing/{type}.r1.preprocessed.fq',
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
-        'Assembly/{type}.%s_preprocessed.1.fa' % IMP_ASSEMBLER,
-        'Assembly/{type}.%s_preprocessed.1.fa.amb' % IMP_ASSEMBLER,
-        'Assembly/{type}.%s_preprocessed.1.fa.bwt' % IMP_ASSEMBLER,
-        'Assembly/{type}.%s_preprocessed.1.fa.pac' % IMP_ASSEMBLER,
-        'Assembly/{type}.%s_preprocessed.1.fa.sa' % IMP_ASSEMBLER,
-        'Assembly/{type}.%s_preprocessed.1.fa.ann' % IMP_ASSEMBLER
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.amb' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.bwt' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.pac' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.sa' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.ann' % IMP_ASSEMBLER
     output:
-        'Assembly/{type}.r1.unmapped.fq',
-        'Assembly/{type}.r2.unmapped.fq',
-        'Assembly/{type}.se.unmapped.fq'
+        'Assembly/intermediary/{type}.r1.unmapped.fq',
+        'Assembly/intermediary/{type}.r2.unmapped.fq',
+        'Assembly/intermediary/{type}.se.unmapped.fq'
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE

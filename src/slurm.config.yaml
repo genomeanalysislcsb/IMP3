@@ -73,7 +73,7 @@ extract_unmapped:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
-run_DAS_tool:
+DAS_tool:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
