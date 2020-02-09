@@ -35,7 +35,7 @@ rule megahit_hybrid_assembly_1:
          -t {threads} --cpu-only \
          -m "${{MAX_MEM}}" \
          --mem-flag 1 > {log} 2>&1
-        ln -fs $(echo {output[0]} | cut -f 2,3 -d /) {output[1]} && touch -h {output[1]}
+        ln -fs $(echo {output[0]} | cut -f 3,4 -d /) {output[1]} && touch -h {output[1]}
         """
 
 rule megahit_hybrid_assembly_2:
