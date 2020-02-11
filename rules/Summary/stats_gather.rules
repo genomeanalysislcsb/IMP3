@@ -1,0 +1,24 @@
+# rule to calculate N50
+
+sum_stats_input = ["workflow.done"]
+if not "preprocessing" in IMP_STEPS:
+    sum_stats_input.append("preprocessing.analysed")
+if CONTIGS:
+    sum_stats_input.append("assembly.analysed")
+
+localrules: check_stats_input, ctrl_stats 
+
+rule check_stats_input:
+   input:
+       sum_stats_input
+   output:
+       touch("stats.prepped")
+
+rule ctrl_stats:
+   input:
+       "Stats/all_stats.tsv",
+       "Stats/all_stats.Rdata"
+   output:
+       touch("stats.done")
+
+

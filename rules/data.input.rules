@@ -118,6 +118,10 @@ if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in I
             'Assembly/common/contig.rules'
         include:
             'Assembly/common/mapping.rules'
+        include:
+            'Assembly/common/contig-length.rules'
+        include:
+            'Assembly/common/contig-depth.rules'
         if MGaln:
             inputs.append(MGaln)
             outputs.append("Assembly/mg.reads.sorted.bam")

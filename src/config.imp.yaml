@@ -1,4 +1,4 @@
-steps: "preprocessing assembly analysis binning taxonomy"
+steps: "preprocessing assembly analysis binning taxonomy summary"
 preprocessing_filtering: true
 mem:
   normal_mem_per_core_gb: 4
@@ -16,6 +16,9 @@ raws:
   Alignment_metatranscriptomics: ""
 sample: test
 outputdir: ""
+summarydir: ""
+summary_steps: "stats DB vis"
+compress_level: "mid"
 db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
 trimmomatic:
   adapter: "TruSeq3-PE"

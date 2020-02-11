@@ -1,0 +1,29 @@
+bam_files = [
+    'Assembly/{type}.reads.sorted.bam'
+]
+
+def reads_input_files(wildcards):
+    if wildcards.type not in TYPES:
+        return 'reads_input_files-no-file-here'
+    if not (MG or MT) and (MGaln or MTaln):
+        base = bam_files
+    return expand(base, type=wildcards.type)
+
+
+if not (MG or MT) and (MGaln or MTaln):
+    rule reads_count:
+        input:
+            reads_input_files
+        output:
+            'Stats/{type}/{type}.read_counts.txt'
+        params:
+            runtime = "8:00:00",
+            mem = MEMCORE
+        threads: 1
+        conda: ENVDIR + "/IMP_mapping.yaml"
+#    log: "logs/analysis_read_numbers.{type}.log"
+        message: "reads_count: Getting number of reads from {wildcards.type} bam file."
+        shell:
+             """
+             echo -e "{input}\t$(samtools view -c {input})" >> {output}
+             """

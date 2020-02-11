@@ -17,6 +17,24 @@ rule grid_all:
         touch {output}
         """
 
+if not "taxonomy" in IMP_STEPS:
+    rule GRID_summarize:
+        input:
+            gather_bins
+        output:
+            "Stats/%s/bins.tsv" %ASS
+        params:
+            runtime = "12:00:00",
+            mem = MEMCORE
+        log: "logs/binning_GRID_summarize.log"
+        message: "GRID_summarize: Summarizing binning results."
+        threads: 1
+        conda: ENVDIR + "/IMP_binning.yaml"
+        script:
+            SRCDIR + "/summarize_GRID.R"
+
+
+
 checkpoint getBins:
     input: 
         "Binning/selected_DASTool_summary.txt"

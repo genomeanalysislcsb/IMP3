@@ -3,22 +3,21 @@
 include:
     "../../../rules/Preprocessing/fastqc.rules"
 
+include:
+    '../../../rules/Preprocessing/reads-count.rules'
 
-# include only if user don't skip preprocessing
-if 'preprocessing' in IMP_STEPS:
-    # trimming rules
-    include:
-        "../../../rules/Preprocessing/trimming.rules"
-    include:
-        "../../../rules/Preprocessing/rna.filtering.rules"
+include:
+    "../../../rules/Preprocessing/trimming.rules"
+include:
+    "../../../rules/Preprocessing/rna.filtering.rules"
 
-    # include filtering rule or not
-    if PREPROCESSING_FILTERING:
-        include:
-            "../../../rules/Preprocessing/filtering.rules"
-    else:
-        include:
-            "../../../rules/Preprocessing/no-filtering.rules"
+# include filtering rule or not
+if PREPROCESSING_FILTERING:
+    include:
+        "../../../rules/Preprocessing/filtering.rules"
+else:
+    include:
+        "../../../rules/Preprocessing/no-filtering.rules"
 
 # master command
 rule PREPROCESSING:
@@ -31,7 +30,7 @@ rule PREPROCESSING:
         'Stats/mt/mt.se.preprocessed_fastqc.html',
         'Stats/mt/mt.r1.preprocessed_fastqc.zip',
         'Stats/mt/mt.r2.preprocessed_fastqc.zip',
-        'Stats/mt/mt.se.preprocessed_fastqc.zip'
-
+        'Stats/mt/mt.se.preprocessed_fastqc.zip',
+        'Stats/mt/mt.read_counts.txt'
     output:
         touch('preprocessing.done')

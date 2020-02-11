@@ -72,6 +72,11 @@ if MG and MT:
         include:
             "workflows/integrative/Binning"
 
+    if 'summarize' in IMP_STEPS:
+        include:
+            "workflows/integrative/Summary"
+
+
 # Single omics MG workflow
 elif MG:
     if 'preprocessing' in IMP_STEPS:

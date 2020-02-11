@@ -25,6 +25,11 @@ include:
 include:
     '../../rules/Assembly/common/mapping.rules'
 
+include:
+    '../../rules/Assembly/common/contig-length.rules'
+include:
+    '../../rules/Assembly/common/contig-depth.rules'
+
 
 # master command
 rule ASSEMBLY:
@@ -37,5 +42,10 @@ rule ASSEMBLY:
 	    'Assembly/mt.reads.sorted.bam.bai',
             'Assembly/mg.reads.sorted.bam',
 	    'Assembly/mg.reads.sorted.bam.bai',
+            expand("Stats/{type}/{ass}.assembly.contig_coverage.txt",type=TYPES,ass=ASS),
+            expand("Stats/{type}/{ass}.assembly.contig_depth.txt",type=TYPES,ass=ASS),
+            expand("Stats/{type}/{ass}.assembly.contig_flagstat.txt",type=TYPES,ass=ASS),
+           "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
+           "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS)
     output:
         touch('assembly.done')

@@ -1,0 +1,9 @@
+
+rule visualize_bins_DASTool:
+    input:
+        "Binning/selected_DASTool_summary.txt"
+    output:
+        report("Visualization/Binning_stats_spider.png",caption="report/stats/Binning_stats.rst",category="Binning"),
+        report("Visualization/Binning_comp_score_scatter.png",caption="report/stats/Binning_comp_score.rst",category="Binning")
+
+
