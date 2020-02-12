@@ -1,3 +1,18 @@
+rule sync_final:
+    input:
+        OUTPUTDIR
+    output:
+        SUMDIR
+    threads: 1
+    params:
+        runtime = "24:00:00",
+        mem = MEMCORE
+    message: "Synching {OUTPUTDIR} to {SUMDIR}"
+    shell:
+        """
+        rsync -a --remove-source-files {OUTPUTDIR} {SUMDIR}
+        """
+
 rule gzip:
     input:
         check="workflow.done",
