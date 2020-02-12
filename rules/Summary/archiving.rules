@@ -1,6 +1,7 @@
 rule sync_final:
     input:
-        OUTPUTDIR
+        OUTPUTDIR,
+        "workflow.done"
     output:
         SUMDIR
     threads: 1
@@ -10,7 +11,7 @@ rule sync_final:
     message: "Synching {OUTPUTDIR} to {SUMDIR}"
     shell:
         """
-        rsync -a --remove-source-files {OUTPUTDIR} {SUMDIR}
+        rsync -a --remove-source-files {input[0]} {output}
         """
 
 rule gzip:
