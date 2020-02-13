@@ -1,3 +1,17 @@
+
+arch_inputs = "workflow.done"
+if MG or MT:
+    arch_input.append("reads.compressed")
+
+
+localrules: ARCHIVING
+
+rule ARCHIVING:
+    input:
+        arch_input
+    output:
+        "archiving.done"
+
 rule sync_final:
     input:
         OUTPUTDIR,
@@ -14,10 +28,35 @@ rule sync_final:
         rsync -a --remove-source-files {input[0]} {output}
         """
 
-rule gzip:
+def entry_gz:
+    ctrl = ["workflow.done"]
+    if MG or MT:
+        if not "preprocessing" in IMP_STEPS and "summary" in SUM_STEPS:
+            ctrl.append("stats.done")
+    return ctrl
+    
+def ctrl_readgz(wildcards):
+    checkpoint_output = checkpoints.workflow.get(**wildcards).output[0]
+    pot_reads = expand("Preprocessing/{i}.fq.gz", i=glob_wildcards("Preprocessing/{i}.fq").i)
+    real_reads = list(set(pot_reads).difference([expand("Preprocessing/{type}.{part}.{stage}.fq.gz",
+                  type=TYPES,part=["r1","r2","se"],stage=["preprocessed","filtered"]),
+                                                 expand("Preprocessing/{type}.{part}.fq.gz",
+                  type=TYPES,part=["r1","r2"])]))
+    return real_reads
+
+localrules: compress_reads
+
+rules compress_reads:
+    input: 
+        ctrl_readgz
+    output:
+        touch("reads.compressed")
+
+
+rule gzip_reads:
     input:
-        check="workflow.done",
-        file="{file}"
+        "{file}",
+        entry_gz
     output:
         "{file}.gz"
     threads: 1  
@@ -26,7 +65,7 @@ rule gzip:
         mem = MEMCORE
     message: "gzip: gzipping {wildcards.file}."
     shell:
-        "gzip {input.file}"
+        "gzip {input[0]}"
 
 rule tar_gzip_directory:
     input:

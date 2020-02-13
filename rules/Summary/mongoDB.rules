@@ -1,4 +1,10 @@
 
+rule mongoDB:
+    input:
+    output:
+    
+
+
 db_output = ["DB/contigs.bson"]
 if "binning" in IMP_STEPS:
    db_output.append("DB/bins.bson")

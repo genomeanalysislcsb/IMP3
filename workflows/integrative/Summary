@@ -1,11 +1,5 @@
 # summary takes care of collecting rules and archiving data
 
-def gzdreads:
-# function to list reads that should be gzipped
-#
-
-
-
 # include rules for the Report part of the workflow
 sum_target = []
 if "stats" in SUM_STEPS:
@@ -33,14 +27,17 @@ if "DB" in SUM_STEPS:
 
 if "vis" in SUM_STEPS:
     sum_target.append("visualization.done")
+    vis_targets = []
     if "stats" in SUM_STEPS:
         include:
             '../../rules/Summary/vis_stats.rules'
+        vis_targets.append("stats.visualized")
     if "taxonomy" in IMP_STEPS and (MG or MT):
         include:
             '../../rules/Summary/vis_mOTUs.rules'
         include:
             '../../rules/Summary/vis_kraken_reads.rules'
+        vis_targets.append("taxonomy.visualized")
     if "analysis" in IMP_STEPS:
         include:
             '../../rules/Summary/vis_functions.rules'
@@ -49,10 +46,15 @@ if "vis" in SUM_STEPS:
     if "binning" in IMP_STEPS:
         include:
             '../../rules/Summary/vis_binning.rules'
+    rule VIS:
+        input:
+            vis_targets
+        output:
+            touch('visualization.done')
+            
 
 
 # include rules for archiving:
-arch_entry = sum_target
 arch_ctrl = ['']
 include:
     '../../rules/Summary/archiving.rules'
@@ -60,18 +62,21 @@ if config['compress_level']['none']:
     if SUMDIR:
         arch_ctrl.append(SUMDIR)
 elif config['compress_level']['mid']:
-    arch_ctrl.apprend(gzdreads)
+    arch_ctrl.apprend("reads.compressed")
 elif config['compress_level']['max']:
     arch_ctrl.append('DB_filling.done')
 
 if 
 
 
+localrules: SUMMARY, VIS
+
+
 
 # master command
 rule SUMMARY:
     input:
-        "archiving.done",
-        "REPORT.html"
+        sum_target,
+        "archiving.done"
     output:
         touch('summary.done')
