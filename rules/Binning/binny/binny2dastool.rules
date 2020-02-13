@@ -11,6 +11,6 @@ rule binny_pgol_table:
     message: "binny_pgol_table: Preparing table for DAStool from binny output."
     shell:
         """
-        grep [PGOL] {input} >> {output}
+        grep [PGOL] {input} >> {output} || touch {output}
         """
 

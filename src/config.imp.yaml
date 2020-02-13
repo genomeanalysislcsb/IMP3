@@ -16,7 +16,7 @@ raws:
   Alignment_metatranscriptomics: ""
 sample: test
 outputdir: ""
-db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
+db_path: "/work/projects/ecosystem_biology/local_tools/IMP3/databases"
 trimmomatic:
   adapter: "TruSeq3-PE"
   leading: 20
