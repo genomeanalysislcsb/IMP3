@@ -1,0 +1,18 @@
+
+rule visualize_bins_DASTool:
+    input:
+        "Stats/%s/bins.tsv" %ASS
+    output:
+        report("Visualization/Binning_stats_spider.png",caption="report/stats/Binning_stats.rst",category="Binning"),
+        report("Visualization/Binning_comp_score_scatter.png",caption="report/stats/Binning_comp_score.rst",category="Binning")
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/visualize_bins_DASTool.log"
+    message: "visualize_bins_DASTool: Plotting binning results."
+    threads: 1
+    conda: ENVDIR + "/IMP_vis.yaml"
+    script:
+        SRCDIR + "/visualize_bins.R"
+
+

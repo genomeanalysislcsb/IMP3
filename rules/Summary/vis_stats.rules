@@ -1,3 +1,19 @@
+localrules: vis_stats
+
+stats_figs =[]
+if "preprocessing" in IMP_STEPS or MG or MT:
+    stats_figs.append("Visualization/Preprocessing.png")
+if "assembly" in IMP_STEPS or CONTIGS:
+    stats_figs.append(expand("Visualization/Assembly_{fig}.png", fig=["length_hist","cov_hist","gc_hist","cov_gc_scatter"]))
+if "analysis" in IMP_STEPS:
+    stats_figs.append(expand("Visualization/Analysis_{fig}.png", fig=["length_hist","cov_hist","contigs_cov_snps_scatter","genes_cov_snps_scatter"]))
+
+rule vis_stats:
+    input:
+        stats_figs
+    output:
+        touch("stats.visualized")
+
 rule visualize_read_stats:
     input:
         "Stats/all_stats.Rdata"

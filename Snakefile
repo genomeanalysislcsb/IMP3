@@ -173,9 +173,22 @@ if 'taxonomy' in IMP_STEPS:
 if 'binning' in IMP_STEPS:
     inputs.append('binning.done')
 
-# master command
-rule ALL:
+# master command workflow
+checkpoint workflow:
     input:
         inputs
     output:
         touch('workflow.done')
+
+inputs_all = 'workflow.done'
+if SUM_STEPS:
+    inputs.append('summary.done')
+if config['compress_level'] != "none" and config['compress_level'] != "":
+    inputs.append('archiving.done')
+
+# master command
+rule ALL:
+    input:
+        inputs_all
+    output:
+        touch('all.done')

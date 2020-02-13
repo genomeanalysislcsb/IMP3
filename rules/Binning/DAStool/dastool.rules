@@ -5,7 +5,7 @@ localrules: DAS_tool_check
 
 checkpoint DAS_tool_check:
     input:
-        expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"]["binners"].split())
+        expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS)
     output:
         "Binning/DAS_tool.ready"
     shell:
