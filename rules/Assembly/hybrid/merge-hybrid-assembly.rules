@@ -1,7 +1,7 @@
 rule collapse_hybrid_assemblies:
     input:
-        'Assembly/mgmt.%s_hybrid.1.fa' % IMP_ASSEMBLER,
-        'Assembly/mgmt.%s_hybrid.2.fa' % IMP_ASSEMBLER,
+        'Assembly/intermediary/mgmt.%s_hybrid.1.fa' % IMP_ASSEMBLER,
+        'Assembly/intermediary/mgmt.%s_hybrid.2.fa' % IMP_ASSEMBLER,
     output:
         'Assembly/mgmt.assembly.merged.fa'
     params:
@@ -13,7 +13,8 @@ rule collapse_hybrid_assemblies:
     message: "collapse_hybrid_assemblies: Merging hybrid assemblies."
     shell:
         """
-        NAME=Assembly/mgmt.assembly
+        NAME_fin=Assembly/mgmt.assembly
+        NAME=Assembly/intermediary/mgmt.assembly
         cat {input} > $NAME.cat.fa
 
         # Options should be after input file!
@@ -21,5 +22,5 @@ rule collapse_hybrid_assemblies:
 
         # Concatenate assembled contigs, singletons and rename the contigs
         cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \
-         awk '/^>/{{print \">contig_\" ++i; next}}{{print}}' > $NAME.merged.fa
+         awk '/^>/{{print \">contig_\" ++i; next}}{{print}}' > $NAME_fin.merged.fa
         """

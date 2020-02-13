@@ -18,6 +18,9 @@ bwa_index:
 mapping_on_assembly:
   partition: "-l highmem"
 
+bam_index:
+  partition: "-l highmem"
+
 megahit_assembly_from_preprocessing:
   partition: "-l highmem"
 
@@ -45,7 +48,7 @@ collapse_hybrid_assemblies:
 extract_unmapped:
   partition: "-l highmem"
 
-run_DAS_tool:
+DAS_tool:
   partition: "-l highmem"
 
 prepare_gridReads:

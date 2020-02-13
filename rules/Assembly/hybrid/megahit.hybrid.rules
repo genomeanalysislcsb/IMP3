@@ -6,12 +6,12 @@ rule megahit_hybrid_assembly_1:
         'Preprocessing/mt.r1.preprocessed.fq',
         'Preprocessing/mt.r2.preprocessed.fq',
         'Preprocessing/mt.se.preprocessed.fq',
-        'Assembly/mt.megahit_preprocessed.1/final.contigs.fa',
-        'Assembly/mt.megahit_unmapped.2/final.contigs.fa',
+        'Assembly/intermediary/mt.megahit_preprocessed.1/final.contigs.fa',
+        'Assembly/intermediary/mt.megahit_unmapped.2/final.contigs.fa',
     output:
-        'Assembly/mgmt.megahit_hybrid.1/final.contigs.fa',
-        'Assembly/mgmt.megahit_hybrid.1.fa',
-        directory('Assembly/mgmt.megahit_hybrid.1')
+        'Assembly/intermediary/mgmt.megahit_hybrid.1/final.contigs.fa',
+        'Assembly/intermediary/mgmt.megahit_hybrid.1.fa',
+        directory('Assembly/intermediary/mgmt.megahit_hybrid.1')
     params:
         runtime = "120:00:00",
         mem = BIGMEMCORE
@@ -35,21 +35,21 @@ rule megahit_hybrid_assembly_1:
          -t {threads} --cpu-only \
          -m "${{MAX_MEM}}" \
          --mem-flag 1 > {log} 2>&1
-        ln -fs $(echo {output[0]} | cut -f 2,3 -d /) {output[1]} && touch -h {output[1]}
+        ln -fs $(echo {output[0]} | cut -f 3,4 -d /) {output[1]} && touch -h {output[1]}
         """
 
 rule megahit_hybrid_assembly_2:
     input:
-        'Assembly/mgmt.r1.megahit_hybrid.mt.unmapped.fq',
-        'Assembly/mgmt.r2.megahit_hybrid.mt.unmapped.fq',
-        'Assembly/mgmt.se.megahit_hybrid.mt.unmapped.fq',
-        'Assembly/mgmt.r1.megahit_hybrid.mg.unmapped.fq',
-        'Assembly/mgmt.r2.megahit_hybrid.mg.unmapped.fq',
-        'Assembly/mgmt.se.megahit_hybrid.mg.unmapped.fq',
+        'Assembly/intermediary/mgmt.r1.megahit_hybrid.mt.unmapped.fq',
+        'Assembly/intermediary/mgmt.r2.megahit_hybrid.mt.unmapped.fq',
+        'Assembly/intermediary/mgmt.se.megahit_hybrid.mt.unmapped.fq',
+        'Assembly/intermediary/mgmt.r1.megahit_hybrid.mg.unmapped.fq',
+        'Assembly/intermediary/mgmt.r2.megahit_hybrid.mg.unmapped.fq',
+        'Assembly/intermediary/mgmt.se.megahit_hybrid.mg.unmapped.fq',
     output:
-        'Assembly/mgmt.megahit_hybrid.2/final.contigs.fa',
-        'Assembly/mgmt.megahit_hybrid.2.fa',
-        directory('Assembly/mgmt.megahit_hybrid.2')
+        'Assembly/intermediary/mgmt.megahit_hybrid.2/final.contigs.fa',
+        'Assembly/intermediary/mgmt.megahit_hybrid.2.fa',
+        directory('Assembly/intermediary/mgmt.megahit_hybrid.2')
     params:
         runtime = "120:00:00",
         mem = BIGMEMCORE
@@ -76,5 +76,5 @@ rule megahit_hybrid_assembly_2:
          -t {threads} --cpu-only \
          -m ${{MAX_MEM}} \
          --mem-flag 1 > {log} 2>&1
-        ln -fs $(echo {output[0]} | cut -f 2,3 -d /) {output[1]} && touch -h {output[1]}
+        ln -fs $(echo {output[0]} | cut -f 3,4 -d /) {output[1]} && touch -h {output[1]}
         """

@@ -27,9 +27,9 @@ if LONG:
             'Preprocessing/{type}.se.preprocessed.fq',
             'Assembly/long_reads.fastq'
         output:
-            directory('Assembly/{type}.metaspades_preprocessed.1'),
-            'Assembly/{type}.metaspades_preprocessed.1/contigs.fa',
-            'Assembly/{type}.metaspades_preprocessed.1.fa'
+            directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
+            'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fa',
+            'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
         params:
             runtime = "120:00:00",
             mem = BIGMEMCORE
@@ -46,9 +46,9 @@ else:
             'Preprocessing/{type}.r2.preprocessed.fq',
             'Preprocessing/{type}.se.preprocessed.fq'
         output:
-            directory('Assembly/{type}.metaspades_preprocessed.1'),
-            'Assembly/{type}.metaspades_preprocessed.1/contigs.fa',
-            'Assembly/{type}.metaspades_preprocessed.1.fa'
+            directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
+            'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fa',
+            'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
         params:
             runtime = "120:00:00",
             mem = BIGMEMCORE
@@ -61,13 +61,13 @@ else:
 
 rule metaspades_assembly_from_unmapped:
     input:
-        'Assembly/{type}.r1.unmapped.fq',
-        'Assembly/{type}.r2.unmapped.fq',
-        'Assembly/{type}.se.unmapped.fq'
+        'Assembly/intermediary/{type}.r1.unmapped.fq',
+        'Assembly/intermediary/{type}.r2.unmapped.fq',
+        'Assembly/intermediary/{type}.se.unmapped.fq'
     output:
-        directory('Assembly/{type}.metaspades_unmapped.2'),
-        'Assembly/{type}.metaspades_unmapped.2/contigs.fa',
-        'Assembly/{type}.metaspades_unmapped.2.fa'
+        directory('Assembly/intermediary/{type}.metaspades_unmapped.2'),
+        'Assembly/intermediary/{type}.metaspades_unmapped.2/contigs.fa',
+        'Assembly/intermediary/{type}.metaspades_unmapped.2.fa'
     params:
         runtime = "120:00:00",
         mem = BIGMEMCORE

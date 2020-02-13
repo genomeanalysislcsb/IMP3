@@ -1,0 +1,16 @@
+
+rule visualize_analysis_functions:
+    input:
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
+    output:
+        report("Visualization/Analysis_funcs_upset.png",caption="report/stats/Analysis_funcs.rst",category="Analysis")
+
+
+rule visualize_analysis_funcs_depth:
+    input:
+        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split())
+    output:
+        report("Visualization/Analysis_reads_funcs_hist.png",caption="report/stats/Analysis_reads_funcs.rst",category="Analysis"),
+
+
+

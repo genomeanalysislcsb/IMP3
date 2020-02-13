@@ -50,6 +50,12 @@ ENVDIR = srcdir("../../envs")
 # get parameters from the command line
 # output
 OUTPUTDIR = os.environ.get("OUTPUTDIR", config['outputdir'])
+SUMDIR = os.environ.get("SUMDIR", config['summarydir'])
+if OUTPUTDIR == SUMDIR:
+    if SUMDIR[-1] != "/":
+        SUMDIR += "_final"
+    else:
+        SUMDIR = SUMDIR[:-1] + "_final"
 
 # input
 MG = os.environ.get("MG", config['raws']['Metagenomics']).split()
@@ -69,6 +75,7 @@ PREPROCESSING_FILTERING = os.environ.get("PREPROCESSING_FILTERING", config['prep
 FILTER = os.environ.get("FILTER", config['filtering']['filter'])
 IMP_ASSEMBLER = os.environ.get("IMP_ASSEMBLER", config['assembly']['assembler'])
 IMP_BINNING_METHOD = os.environ.get("IMP_BINNING_METHOD", config['binning']['binners'])
+SUM_STEPS = os.environ.get("SUM_STEPS", config['summary_steps']).split()
 
 # hardware parameters
 BIGCORENO = os.environ.get("BIGCORENO", config['mem']['big_mem_cores'])

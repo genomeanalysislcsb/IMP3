@@ -1,0 +1,13 @@
+
+db_output = ["DB/contigs.bson"]
+if "binning" in IMP_STEPS:
+   db_output.append("DB/bins.bson")
+
+localrules: ctrl_fill_DB
+
+rule ctrl_fill_DB:
+   input:
+       db_output
+   output:
+       touch("DB_filling.done")
+

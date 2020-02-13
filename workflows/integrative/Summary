@@ -1,0 +1,77 @@
+# summary takes care of collecting rules and archiving data
+
+def gzdreads:
+# function to list reads that should be gzipped
+#
+
+
+
+# include rules for the Report part of the workflow
+sum_target = []
+if "stats" in SUM_STEPS:
+    include:
+        '../../rules/Summary/stats_gather.rules'
+    sum_target.append("stats.done")
+    if not "preprocessing" in IMP_STEPS and (MG or MT or MGaln or MTaln):
+        include:
+            '../../rules/Preprocessing/reads-count.rules'
+        include:
+            '../../rules/Summary/stats_preprocessing.rules'
+    if not "assembly" in IMP_STEPS and CONTIGS:
+        include:
+            '../../rules/Assembly/common/contig-length.rules'
+        include:
+            '../../rules/Assembly/common/contig-depth.rules'
+        include:
+            '../../rules/Summary/stats_assembly.rules'
+
+if "DB" in SUM_STEPS:
+    include:
+        '../../rules/Summary/mongoDB.rules'
+    sum_target.append("DB_filling.done")
+
+
+if "vis" in SUM_STEPS:
+    sum_target.append("visualization.done")
+    if "stats" in SUM_STEPS:
+        include:
+            '../../rules/Summary/vis_stats.rules'
+    if "taxonomy" in IMP_STEPS and (MG or MT):
+        include:
+            '../../rules/Summary/vis_mOTUs.rules'
+        include:
+            '../../rules/Summary/vis_kraken_reads.rules'
+    if "analysis" in IMP_STEPS:
+        include:
+            '../../rules/Summary/vis_functions.rules'
+        include:
+            '../../rules/Summary/vis_snps.rules'
+    if "binning" in IMP_STEPS:
+        include:
+            '../../rules/Summary/vis_binning.rules'
+
+
+# include rules for archiving:
+arch_entry = sum_target
+arch_ctrl = ['']
+include:
+    '../../rules/Summary/archiving.rules'
+if config['compress_level']['none']:
+    if SUMDIR:
+        arch_ctrl.append(SUMDIR)
+elif config['compress_level']['mid']:
+    arch_ctrl.apprend(gzdreads)
+elif config['compress_level']['max']:
+    arch_ctrl.append('DB_filling.done')
+
+if 
+
+
+
+# master command
+rule SUMMARY:
+    input:
+        "archiving.done",
+        "REPORT.html"
+    output:
+        touch('summary.done')

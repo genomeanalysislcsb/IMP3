@@ -1,0 +1,25 @@
+rule visualize_read_stats:
+    input:
+        "Stats/all_stats.Rdata"
+    output:
+        report("Visualization/Preprocessing.png",caption="report/stats/Preprocessing.rst",category="Preprocessing")
+
+rule visualize_assembly_stats:
+    input:
+        "Stats/all_stats.Rdata"
+    output:
+        report("Visualization/Assembly_length_hist.png",caption="report/stats/Assembly_length.rst",category="Assembly"),
+        report("Visualization/Assembly_cov_hist.png",caption="report/stats/Assembly_cov.rst",category="Assembly"),
+        report("Visualization/Assembly_gc_hist.png",caption="report/stats/Assembly_gc.rst",category="Assembly"),
+        report("Visualization/Assembly_cov_gc_scatter.png",caption="report/stats/Assembly_cov_gc.rst",category="Assembly")
+
+rule visualize_analysis_stats:
+    input:
+        "Stats/all_stats.Rdata"
+    output:
+        report("Visualization/Analysis_length_hist.png",caption="report/stats/Analysis_length.rst",category="Analysis"),
+        report("Visualization/Analysis_cov_hist.png",caption="report/stats/Analysis_cov.rst",category="Analysis"),
+        report("Visualization/Analysis_contigs_cov_snps_scatter.png",caption="report/stats/Analysis_contigs_cov_snps.rst",category="Analysis"),
+        report("Visualization/Analysis_genes_cov_snps_scatter.png",caption="report/stats/Analysis_genes_cov_snps.rst",category="Analysis")
+
+

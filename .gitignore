@@ -17,3 +17,4 @@ docker/*
 conda/*
 test/*
 dependencies/*
+rules/Archiving/*

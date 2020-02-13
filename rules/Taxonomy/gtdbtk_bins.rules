@@ -34,4 +34,18 @@ rule GTDB_all:
         touch {output}
         """
 
+rule GTDBtk_summarize:
+    input:
+        gather_GTDB_bins
+    output:
+        "Stats/%s/bins.tsv" %ASS
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/taxonomy_GTDBtk_summarize.log"
+    message: "GTDBtk_summarize: Summarizing binning results."
+    threads: 1
+    conda: ENVDIR + "/IMP_binning.yaml"
+    script:
+        SRCDIR + "/summarize_GTDBtk.R"
 

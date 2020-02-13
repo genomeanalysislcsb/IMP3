@@ -1,0 +1,51 @@
+# include rules to archive results
+
+arch_ctrl = ['workflow.done']
+if config['archiving']['keep_all']:
+    include:
+        '../../rules/Archiving/archiving.rules'
+    arch_ctrl.append()
+elif config['archiving']['reduce']:
+
+elif config['archiving']['maxReduce_addDB']:
+
+
+include:
+    '../../rules/Analysis/assembly.contig-length.rules'
+include:
+    '../../rules/Analysis/contig-depth.rules'
+include:
+    '../../rules/Analysis/gene-depth.rules'
+include:
+    '../../rules/Analysis/prokkaC.rules'
+include:
+    '../../rules/Analysis/reads-count.rules'
+include:
+    '../../rules/Analysis/variant.rules'
+#include:
+#    '../../rules/Analysis/visualize.rules'
+include:
+    '../../rules/Analysis/annotate.rules'
+include:
+    '../../rules/Analysis/featureCount.rules'
+
+# master command
+rule ANALYSIS:
+    input:
+        "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
+        "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS),
+        expand("Stats/{type}/annotation/{type}.annotation_cov.bed", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.gene_depth.hist", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.gene.len", type=TYPES),
+        expand("Stats/{type}/annotation/{type}.prokkaID2ec.txt", type=TYPES),
+        expand("Stats/{type}/{type}.read_counts.txt", type=TYPES),
+        expand("Analysis/snps/{type}.variants.samtools.vcf.gz", type=TYPES),
+        expand("Stats/{type}/{ass}.assembly.contig_coverage.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.contig_depth.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.contig_flagstat.txt",type=TYPES,ass=ASS),
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+        expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
+        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split())
+    output:
+        touch('analysis.done')
