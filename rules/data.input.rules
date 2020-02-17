@@ -90,7 +90,7 @@ rule prepare_input_data:
         prepare_input_files(input, input_files_list)
         if fake_output:
             touch_fake_output(fake_output)
-        if symlinks:
+        if symlinks_list:
             symlink_input_files(symlinks_list)
 
 
