@@ -131,10 +131,13 @@ def reads_input_files(wildcards):
 # for archiving checkpoint:
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_count.get(**wildcards).output[0]
-    pot_reads = expand("Preprocessing/{wildcards.type}.{i}.fq",
-           i=glob_wildcards("Preprocessing/{wildcards.type}.{i}.fq").i)
+    type=wildcards.type
+    pot_reads = expand("Preprocessing/{type}.{i}.fq",
+           type=type,
+           i=glob_wildcards("Preprocessing/"+ type + ".{i}.fq").i)
+#    print(pot_reads)
     final_reads = [os.readlink(l) for l in expand("Preprocessing/{type}.{read}.preprocessed.fq",
-                                                   type={wildcards.type},read=["r1","r2","se"])]
+                                                   type=type,read=["r1","r2","se"])]
     return(list(set(pot_reads).difference(final_reads)))
 
 	

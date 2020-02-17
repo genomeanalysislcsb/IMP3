@@ -1,6 +1,6 @@
 checkpoint reads_count:
     input:
-        reads_input_files
+        reads=reads_input_files
     output:
         'Stats/{type}/{type}.read_counts.txt'
     params:
@@ -10,13 +10,14 @@ checkpoint reads_count:
 #    log: "logs/analysis_read_numbers.{type}.log"
     message: "reads_count: Getting length of {wildcards.type} fastq files."
     run:
-        for fs in {input}:
+        for fs in {input.reads}:
             for f in fs:
                 shell('echo -e "{f}\t$(($(wc -l < {f})/4))" >> {output}')
 
 rule reads_gzip:
     input:
-        gather_reads
+        ctrl='Stats/{type}/{type}.read_counts.txt',
+        reads=gather_reads
     output:
         "Preprocessing/{type}.reads.compressed"
     params:
@@ -26,5 +27,5 @@ rule reads_gzip:
     message: "reads_gzip: Gzipping fastq files."
     shell:
         """
-        gzip -q {input} 
+        gzip -q {input.reads} && touch {output} 
         """
