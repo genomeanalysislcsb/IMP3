@@ -26,5 +26,5 @@ rule reads_gzip:
     message: "reads_gzip: Gzipping fastq files."
     shell:
         """
-        gzip -q {input} 
+        gzip -q {input} && touch {output} 
         """
