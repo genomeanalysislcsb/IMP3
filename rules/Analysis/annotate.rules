@@ -59,7 +59,8 @@ rule mergegff:
 
 rule tar_annotation:
     input:
-        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split())
     output:
         "Analysis/annotation/intermediary.tar.gz"
     threads: 1
