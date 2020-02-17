@@ -1,4 +1,4 @@
-checkpoint reads_count:
+rule reads_count:
     input:
         reads=reads_input_files
     output:
@@ -16,16 +16,59 @@ checkpoint reads_count:
 
 rule reads_gzip:
     input:
-        ctrl='Stats/{type}/{type}.read_counts.txt',
-        reads=gather_reads
+        togz=gather_reads
     output:
         "Preprocessing/{type}.reads.compressed"
     params:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
-    message: "reads_gzip: Gzipping fastq files."
+    message: "reads_gzip: Gzipped fastq files {input}."
     shell:
         """
-        gzip -q {input.reads} && touch {output} 
+        touch {output}
         """
+
+rule gzip_ori_files:
+    input:
+        'Preprocessing/{type}.{read}.fq'
+    output:
+        'Preprocessing/{type}.{read}.fq.gz'
+    wildcard_constraints:
+        read="r.",
+        type="m."
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: 1
+    message: "gzip_ori_files: Gzipping fastq files {input}."
+    run:
+        shell("gzip -q {input} || touch {input}")
+
+
+rule gzip_files:
+    input:
+        'Preprocessing/{type}.{read}.{stage}.fq'
+    output:
+        "Preprocessing/{type}.{read}.{stage}.fq.gz"
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: 1
+    message: "gzip_files: Gzipping fastq files {input}."
+    run:
+        shell("gzip -q {input}")                             
+
+checkpoint reads_gziped:
+    input:
+        'Stats/{type}/{type}.read_counts.txt'
+    output:
+        "Preprocessing/{type}.reads.detected"
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: 1
+    message: "reads_gziped: Collecting reads for compression."
+    run:
+        shell("touch {output}")
+        

@@ -61,7 +61,7 @@ rule extract_mOTU_db_genes:
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        outdir = "Analysis/taxonomy/mOTU_links",
+        outdir = "Analysis/taxonomy/mOTU_links/intermediary",
         outname = "present.DBgenes",
         coglist = ",".join(map(str, COGS_LIST)),
         fasta = "share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta",

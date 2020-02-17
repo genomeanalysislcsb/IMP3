@@ -85,4 +85,7 @@ rule cat_se_trimmed:
 #    log: "logs/preprocessing_cat_se_trimmed.{type}.log"
     message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
     shell:
-        "cat {input[0]} {input[1]} > {output}"
+        """
+        cat {input[0]} {input[1]} > {output}
+#        gzip {input}
+        """
