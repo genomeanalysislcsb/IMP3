@@ -34,6 +34,8 @@ if "binny" in BIN_STEPS:
 include:
     '../../../rules/Binning/GRiD/grid_dynamic.rules'
 
+if not 'taxonomy' in IMP_steps:
+    inputs_binning.append("Binning/selected_DASTool_bins/per_bin_results.tar.gz")
 
 
 ## master command

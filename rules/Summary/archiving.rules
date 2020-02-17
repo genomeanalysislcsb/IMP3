@@ -29,10 +29,14 @@ rule sync_final:
         """
 
 def entry_gz:
-    ctrl = ["workflow.done"]
-    if MG or MT:
-        if not "preprocessing" in IMP_STEPS and "summary" in SUM_STEPS:
-            ctrl.append("stats.done")
+    if "preprocessing" in IMP_STEPS:
+        ctrl.append("preprocessing.done")
+    elif "summary" in SUM_STEPS:
+        ctrl.append("stats.done")
+    if "assembly" in IMP_STEPS and (not MGaln and not MTaln):
+        ctrl.append("assembly.done")
+    if "taxonomy" in IMP_STEPS:
+        ctrl.append("taxonomy.done")
     return ctrl
     
 def ctrl_readgz(wildcards):
@@ -52,20 +56,20 @@ rules compress_reads:
     output:
         touch("reads.compressed")
 
-
-rule gzip_reads:
-    input:
-        "{file}",
-        entry_gz
-    output:
-        "{file}.gz"
-    threads: 1  
-    params:
-        runtime = "24:00:00",
-        mem = MEMCORE
-    message: "gzip: gzipping {wildcards.file}."
-    shell:
-        "gzip {input[0]}"
+if MG or MT:
+    rule gzip_reads:
+        input:
+            "{file}",
+            entry_gz
+        output:
+            "{file}.gz"
+        threads: 1  
+        params:
+            runtime = "24:00:00",
+            mem = MEMCORE
+        message: "gzip: gzipping {wildcards.file}."
+        shell:
+            "gzip {input[0]}"
 
 rule tar_gzip_directory:
     input:

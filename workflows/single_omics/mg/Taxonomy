@@ -17,13 +17,16 @@ tax_ctrl = expand("Analysis/taxonomy/kraken/{type}.kraken.{outfile}",type=TYPES,
 tax_ctrl.append(expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",type=TYPES))
 if "assembly" in IMP_STEPS:
     tax_ctrl.append("Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS)
-    tax_ctrl.append("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")
+    tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
+if CONTIGS:
+    tax_ctrl = ["Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS]
+    if MG or MT:
+        tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
 if "binning" in IMP_STEPS:
     tax_ctrl.append("Analysis/taxonomy/GTDBtk.done")
 
 rule TAXONOMY:
     input:
         tax_ctrl
-
     output:
         touch('taxonomy.done')

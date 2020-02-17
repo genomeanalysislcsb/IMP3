@@ -1,20 +1,3 @@
-input_no_filtering = {
-    'mg': [
-        'Preprocessing/mg.r1.trimmed.fq',
-        'Preprocessing/mg.r2.trimmed.fq',
-        'Preprocessing/mg.se.trimmed.fq'
-    ],
-    'mt': [
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq'
-    ]
-}
-
-def no_filtering_input(wildcards):
-    if wildcards.type in TYPES:
-        return input_no_filtering[wildcards.type]
-    return 'no_filtering_input_no_file_here'
 
 rule no_filtering:
     input:

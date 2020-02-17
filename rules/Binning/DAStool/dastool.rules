@@ -1,6 +1,3 @@
-#bintabs = ",".join(map(str, expand("Binning/{binner}/scaffold2bin.tsv",binner=config["binning"]["binners"].split())))
-#binnames = ",".join(map(str, config["binning"]["binners"].split()))
-
 localrules: DAS_tool_check
 
 checkpoint DAS_tool_check:
@@ -10,15 +7,6 @@ checkpoint DAS_tool_check:
         "Binning/DAS_tool.ready"
     shell:
         "touch {output}"
-
-def check_bintabs(wildcards):
-    checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
-    binners = config["binning"]["binners"].split()
-    valid_binners = []
-    for binner in binners:
-        if os.stat(OUTPUTDIR + "/Binning/" + binner + "/scaffold2bin.tsv").st_size > 0:
-            valid_binners.append(binner)
-    return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
 
 rule DAS_tool:
     input:
@@ -64,7 +52,7 @@ rule format_protein_names:
         """
         TMP_PROT=$(mktemp --tmpdir={TMPDIR} -t "proteins_XXXXXX.faa")
         cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
-	sed 's/ .*//' {input[0]} >> $TMP_PROT
-        {SRCDIR}/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} >{output[1]} 2> {log}
+	    sed 's/ .*//' {input[0]} >> $TMP_PROT
+        {SRCDIR}/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} > {output[1]} 2> {log}
 	"""
 

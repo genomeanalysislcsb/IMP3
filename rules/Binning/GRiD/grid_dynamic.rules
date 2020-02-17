@@ -1,10 +1,5 @@
 import pandas as pd
 
-def gather_bins(wildcards):
-    checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    return expand("Binning/selected_DASTool_bins/{i}/grid",
-           i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
-
 localrules: grid_all
 
 rule grid_all:
@@ -32,6 +27,23 @@ if not "taxonomy" in IMP_STEPS:
         conda: ENVDIR + "/IMP_binning.yaml"
         script:
             SRCDIR + "/summarize_GRID.R"
+    
+    rule bins_tar:
+        input:
+            ctrl="Stats/%s/bins.tsv" %ASS,
+            bins=gather_bins
+        output:
+            "Binning/selected_DASTool_bins/per_bin_results.tar.gz"
+        threads: 1
+        params:
+            runtime = "8:00:00",
+            mem = MEMCORE
+        log: "logs/binning_bins_tar.log"
+        message: "bins_tar: Compressing per-bin results of GRiD."
+        shell:
+            """
+            tar cvzf {output} {input.bins} && rm -r {input.bins} >> {log} 2>&1
+            """
 
 
 

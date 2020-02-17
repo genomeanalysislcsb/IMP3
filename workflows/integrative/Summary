@@ -8,7 +8,7 @@ if "stats" in SUM_STEPS:
     sum_target.append("stats.done")
     if not "preprocessing" in IMP_STEPS and (MG or MT or MGaln or MTaln):
         include:
-            '../../rules/Preprocessing/reads-count.rules'
+            '../../rules/Summary/reads-count.rules'
         include:
             '../../rules/Summary/stats_preprocessing.rules'
     if not "assembly" in IMP_STEPS and CONTIGS:
@@ -55,18 +55,18 @@ if "vis" in SUM_STEPS:
 
 
 # include rules for archiving:
-arch_ctrl = ['']
-include:
-    '../../rules/Summary/archiving.rules'
-if config['compress_level']['none']:
-    if SUMDIR:
-        arch_ctrl.append(SUMDIR)
-elif config['compress_level']['mid']:
-    arch_ctrl.apprend("reads.compressed")
-elif config['compress_level']['max']:
-    arch_ctrl.append('DB_filling.done')
+#arch_ctrl = ['']
+#include:
+#    '../../rules/Summary/archiving.rules'
+#if config['compress_level']['none']:
+#    if SUMDIR:
+#        arch_ctrl.append(SUMDIR)
+#elif config['compress_level']['mid']:
+#    arch_ctrl.apprend("reads.compressed")
+#elif config['compress_level']['max']:
+#    arch_ctrl.append('DB_filling.done')
 
-if 
+#if 
 
 
 localrules: SUMMARY, VIS
@@ -76,7 +76,6 @@ localrules: SUMMARY, VIS
 # master command
 rule SUMMARY:
     input:
-        sum_target,
-        "archiving.done"
+        sum_target
     output:
         touch('summary.done')

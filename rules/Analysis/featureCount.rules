@@ -1,7 +1,7 @@
 rule feature_count:
     input:
         "Assembly/{type}.reads.sorted.bam",
-        "Analysis/annotation/annotation.CDS.RNA.{db}.gff"
+        "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     output:
         "Analysis/annotation/{type}.{db}.counts.tsv"
     params:

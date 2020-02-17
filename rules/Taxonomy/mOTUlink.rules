@@ -2,7 +2,7 @@ COGS_LIST = config['COGS'].split()
 
 rule allmotulinks:
     input:
-        expand("Analysis/taxonomy/mOTU_links/{COG}.bestPresentHitPhylogeny.tsv",COG=COGS_LIST)
+        expand("Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHitPhylogeny.tsv",COG=COGS_LIST)
     output:
         "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
     threads: 1
@@ -21,12 +21,12 @@ rule fetchmg:
         "Analysis/annotation/prokka.ffn",
         "Analysis/annotation/prokka.faa"
     output:
-        expand("Analysis/taxonomy/mOTU_links/marker_genes/{COG}.fna",COG=COGS_LIST)
+        expand("Analysis/taxonomy/mOTU_links/intermediary/marker_genes/{COG}.fna",COG=COGS_LIST)
     threads: 6
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        outdir = "Analysis/taxonomy/mOTU_links/marker_genes"
+        outdir = "Analysis/taxonomy/mOTU_links/intermediary/marker_genes"
     log: "logs/analysis_fetchmg.log"
     conda: ENVDIR + "/IMP_annotation.yaml"
     message: "fetchmg: Finding mOTU marker genes in open reading frames."
@@ -40,7 +40,7 @@ rule get_present_mOTUs:
     input:
         expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",type=TYPES)
     output:
-        "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
+        "Analysis/taxonomy/mOTU_links/intermediary/all.mOTUs.present"
     threads: 1
     params:
         runtime = "1:00:00",
@@ -54,9 +54,9 @@ rule get_present_mOTUs:
 
 rule extract_mOTU_db_genes:
     input:
-        "Analysis/taxonomy/mOTU_links/all.mOTUs.present"
+        "Analysis/taxonomy/mOTU_links/intermediary/all.mOTUs.present"
     output:
-        expand("Analysis/taxonomy/mOTU_links/{COG}.present.DBgenes.fna",COG=COGS_LIST)
+        expand("Analysis/taxonomy/mOTU_links/intermediary/{COG}.present.DBgenes.fna",COG=COGS_LIST)
     threads: 1
     params:
         runtime = "12:00:00",
@@ -79,10 +79,10 @@ rule extract_mOTU_db_genes:
 
 rule blast_mOTU_db_genes:
     input:
-        "Analysis/taxonomy/mOTU_links/{COG}.present.DBgenes.fna",
-        "Analysis/taxonomy/mOTU_links/marker_genes/{COG}.fna"
+        "Analysis/taxonomy/mOTU_links/intermediary/{COG}.present.DBgenes.fna",
+        "Analysis/taxonomy/mOTU_links/intermediary/marker_genes/{COG}.fna"
     output:
-        "Analysis/taxonomy/mOTU_links/{COG}.bestPresentHits.tsv",
+        "Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHits.tsv",
     threads: 1
     params:
         runtime = "12:00:00",
@@ -98,9 +98,9 @@ rule blast_mOTU_db_genes:
 
 rule parse_blast_mOTU:
     input:
-        "Analysis/taxonomy/mOTU_links/{COG}.bestPresentHits.tsv"
+        "Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHits.tsv"
     output:
-        "Analysis/taxonomy/mOTU_links/{COG}.bestPresentHitPhylogeny.tsv"
+        "Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHitPhylogeny.tsv"
     threads: 1
     params:
         runtime = "12:00:00",
@@ -113,6 +113,22 @@ rule parse_blast_mOTU:
     script:
         SRCDIR + "/mergeMOTUblast.R"
 
+rule tar_intermediary_mOTU:
+    input:
+        "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
+    output:
+        "Analysis/taxonomy/mOTU_links/intermediary.tar.gz"
+    threads: 1
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE,
+        intermediary = "Analysis/taxonomy/mOTU_links/intermediary/"
+    log: "logs/mOTUlinks_tar_intermediary.log"
+    message: "tar_intermediary_mOTU: Compressing intermediary steps of mOTU linking."
+    shell:
+       """
+       tar cvzf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1
+       """
 
 
 
