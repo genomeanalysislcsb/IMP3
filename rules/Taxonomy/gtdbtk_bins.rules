@@ -46,9 +46,10 @@ rule GTDBtk_summarize:
     
 rule bins_tar:
     input:
+        dir="Binning/selected_DASTool_bins",
         ctrl="Stats/%s/bins.tsv" %ASS,
         gridbins=gather_bins,
-        gtdbbins=gather_GTDB_bins,
+        gtdbbins=gather_GTDB_bins
     output:
         "Binning/selected_DASTool_bins/per_bin_results.tar.gz"
     threads: 1

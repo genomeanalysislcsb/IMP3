@@ -6,13 +6,13 @@ from pathlib import Path
 # Snakefile
 def open_output(filename):
     return(open(OUTPUTDIR+'/'+filename, 'w+'))
-	
-def workflow_ctrl:
+
+def workflow_ctrl(wildcards):
     return([s + ".done" for s in IMP_STEPS])
 
 # data input
 # inputs (original files) to use
-def get_ori_files:
+def get_ori_files(wildcards):
     inputs = []
     if MG:
         inputs.append(MG)
@@ -26,68 +26,9 @@ def get_ori_files:
             inputs.append(MTaln)
     if "assembly" in IMP_STEPS and LONG:
         inputs.append(LONG)
+    if any(isinstance(i, list) for i in inputs):
+        return([item for sublist in inputs for item in sublist])
     return(inputs)
-
-# outputs (input for workflow) to be generated (in rule)
-def list_input_files:
-    outputs = []
-    if MG and len(MG) == 2:
-        outputs.append("Preprocessing/mg.r1.fq")
-        outputs.append("Preprocessing/mg.r2.fq")
-    elif MG and len(MG) == 3:
-        outputs.append("Preprocessing/mg.r1.fq")
-        outputs.append("Preprocessing/mg.r2.fq")
-        outputs.append("Preprocessing/mg.se.fq")
-    if MT and len(MT) == 2:
-        outputs.append("Preprocessing/mt.r1.fq")
-        outputs.append("Preprocessing/mt.r2.fq")
-    elif MT and len(MT) == 3:
-        outputs.append("Preprocessing/mt.r1.fq")
-        outputs.append("Preprocessing/mt.r2.fq")
-        outputs.append("Preprocessing/mt.se.fq")
-    if CONTIGS and not "assembly" in IMP_STEPS:
-            outputs.append("Assembly/%s.assembly.merged.fa" %ASS)
-            if MGaln:
-                outputs.append("Assembly/mg.reads.sorted.bam")
-            if MTaln:
-                inputs.append(MTaln)
-                outputs.append("Assembly/mt.reads.sorted.bam")
-    if "assembly" in IMP_STEPS and LONG:
-        outputs.append("Assembly/long_reads.fastq")
-    return(outputs)
-
-# symlinks to be generated (from , to)
-def list_symlinks:
-    symlinks = []
-    if not 'preprocessing' in IMP_STEPS and MG:
-        symlinks.append(("mg.r1.fq", "Preprocessing/mg.r1.preprocessed.fq"))
-        symlinks.append(("mg.r2.fq", "Preprocessing/mg.r2.preprocessed.fq"))
-        symlinks.append(("mg.se.fq", "Preprocessing/mg.se.preprocessed.fq"))
-    if not 'preprocessing' in IMP_STEPS and MT:
-        symlinks.append(("mt.r1.fq", "Preprocessing/mt.r1.preprocessed.fq"))
-        symlinks.append(("mt.r2.fq", "Preprocessing/mt.r2.preprocessed.fq"))
-        symlinks.append(("mt.se.fq", "Preprocessing/mt.se.preprocessed.fq"))
-    return(symlinks)
-
-# symlinks to output to be generated (in rule)
-def list_symlinked_input:
-    symlinked_output = []
-    if not 'preprocessing' in IMP_STEPS and MG:
-        symlinked_output.append("Preprocessing/mg.r1.preprocessed.fq")
-        symlinked_output.append("Preprocessing/mg.r2.preprocessed.fq")
-        symlinked_output.append("Preprocessing/mg.se.preprocessed.fq")
-    if not 'preprocessing' in IMP_STEPS and MT:
-        symlinked_output.append("Preprocessing/mt.r1.preprocessed.fq")
-        symlinked_output.append("Preprocessing/mt.r2.preprocessed.fq")
-        symlinked_output.append("Preprocessing/mt.se.preprocessed.fq")
-
-# empty se files to be touched
-def list_fake_input:
-    fake_output = []
-    if not 'preprocessing' in IMP_STEPS and MG and len(MG) == 2:
-        fake_output.append("Preprocessing/mg.se.fq")
-    if not 'preprocessing' in IMP_STEPS and MT and len(MT) == 2:
-        fake_output.append("Preprocessing/mt.se.fq")
 		
 def prepare_input_files(inputs, outputs):
     """
@@ -126,7 +67,7 @@ def _process_file(fname, inp, outfilename):
     # copy
     else:
         shutil.copy(inp, outfilename)
-		
+
 # PREPROCESSING:
 def no_filtering_input(wildcards):
     input_no_filtering = {
@@ -176,25 +117,25 @@ def reads_input_files(wildcards):
             base += preprocessed_fq_files
             if PREPROCESSING_FILTERING:
                 base += trimmed_fq_files
-	        if wildcards.type == 'mt':
-                base += rna_filtered_fq_mt_files
-		else:
-		    if len(MG) == 3 and wildcards.type == 'mg':
-		        base += ["mg.se.fq"]
-		    if len(MT) == 3 and wildcards.type == 'mt':
-		        base += ["mt.se.fq"]		
+                if wildcards.type == 'mt':
+                    base += rna_filtered_fq_mt_files
+        else:
+            if len(MG) == 3 and wildcards.type == 'mg':
+                base += ["mg.se.fq"]
+            if len(MT) == 3 and wildcards.type == 'mt':
+                base += ["mt.se.fq"]		
     elif MGaln or MTaln:
         base = bam_files
     return expand(base, type=wildcards.type)
-	
+
 # for archiving checkpoint:
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_count.get(**wildcards).output[0]
     pot_reads = expand("Preprocessing/{wildcards.type}.{i}.fq",
            i=glob_wildcards("Preprocessing/{wildcards.type}.{i}.fq").i)
-	final_reads = [os.readlink(l) for l in expand("Preprocessing/{type}.{read}.preprocessed.fq",
-	                                               type={wildcards.type},read=["r1","r2","se"])]
-	return(list(set(pot_reads).difference(final_reads)))
+    final_reads = [os.readlink(l) for l in expand("Preprocessing/{type}.{read}.preprocessed.fq",
+                                                   type={wildcards.type},read=["r1","r2","se"])]
+    return(list(set(pot_reads).difference(final_reads)))
 
 	
 # BINNING:		

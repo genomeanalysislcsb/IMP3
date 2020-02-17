@@ -141,8 +141,8 @@ checkpoint workflow:
         touch('workflow.done')
 
 # master command summary and archiving
-inputs_all = 'workflow.done'
-if SUM_STEPS:
+inputs_all = ['workflow.done']
+if "summary" in IMP_STEPS:
     inputs_all.append('summary.done')
     include:
         "workflows/common/Summary"
