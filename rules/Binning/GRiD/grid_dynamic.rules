@@ -72,7 +72,7 @@ rule grid:
     output:
         directory("Binning/selected_DASTool_bins/{clusterID}/grid")
     params:
-        clusterInput="Binning/selected_DASTool_bins/{wildcards.clusterID}",
+        clusterInput="Binning/selected_DASTool_bins/",
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1
@@ -81,7 +81,7 @@ rule grid:
     message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput} -o {output} -g {input[0]} > {log} 2>&1
+        grid single -r {params.clusterInput}{wildcards.clusterID} -o {output} -g {input[0]} > {log} 2>&1
         """
 
 rule prepare_gridBed:
