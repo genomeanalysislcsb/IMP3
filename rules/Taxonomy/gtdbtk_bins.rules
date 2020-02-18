@@ -21,7 +21,7 @@ localrules: GTDB_all
 
 rule GTDB_all:
     input:
-        "Binning/selected_DASTool_bins/per_bin_results.tar.gz"
+        "Binning/per_bin_results.tar.gz"
     output:
         "Analysis/taxonomy/GTDBtk.done"
     shell:
@@ -33,7 +33,7 @@ rule GTDBtk_summarize:
     input:
         gather_GTDB_bins
     output:
-        "Stats/%s/bins.tsv" %ASS
+        "Stats/%s/%s.bins.tsv" % (ASS,ASS)
     params:
         runtime = "12:00:00",
         mem = MEMCORE
@@ -47,11 +47,11 @@ rule GTDBtk_summarize:
 rule bins_tar:
     input:
         dir="Binning/selected_DASTool_bins",
-        ctrl="Stats/%s/bins.tsv" %ASS,
+        ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS),
         gridbins=gather_bins,
         gtdbbins=gather_GTDB_bins
     output:
-        "Binning/selected_DASTool_bins/per_bin_results.tar.gz"
+        "Binning/per_bin_results.tar.gz"
     threads: 1
     params:
         runtime = "8:00:00",

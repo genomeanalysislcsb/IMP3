@@ -15,8 +15,9 @@ libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
 ###################################################################################################
 
 cluster_dirs        <- snakemake@input #"Binning/selected_DASTool_bins/{i}/GTDB"
-out_file            <- snakemake@output #"Stats/%s/bins.tsv" %ASS
+out_file            <- as.character(snakemake@output) #"Stats/%s/bins.tsv" %ASS
 binners             <- unlist(strsplit(snakemake@config[["binning"]][["binners"]],split=" "))
+
 
 ###################################################################################################
 ## Read DAStool output for all bins
@@ -80,9 +81,11 @@ binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool",by.y="bin",all=T)
 ###################################################################################################
 print("Reading GTDBtk results.")
 for(bin in setdiff(binTab$selected_by_DASTool,"")){
-  tfile <- list.files(path=paste0("Binning/selected_DASTool_bins/",
+  tfile <- paste0("Binning/selected_DASTool_bins/",
+                   bin,"/GTDB/classify/",
+                   list.files(path=paste0("Binning/selected_DASTool_bins/",
                                   bin,"/GTDB/classify/"),
-                      pattern=".*summary.tsv")
+                      pattern=".*summary.tsv"))
   if(!"gtdbTab" %in% ls()){
     gtdbTab <- data.frame("bin"=bin,
                           read.delim(tfile,
@@ -103,8 +106,10 @@ binTab <- merge(binTab,gtdbTab,by.x="selected_by_DASTool",by.y="bin",all=T)
 ## Save concatenated output
 ###################################################################################################
 
-print("Writing concatenated bin table.")
-write.table(binTab,out_file,sep="\t",quote=F,row.names=F)
+print(paste("Writing concatenated bin table with",nrow(binTab),"x",ncol(binTab),"to",dirname(out_file),"."))
+
+
+write.table(binTab,file=out_file,sep="\t",quote=F,row.names=F)
 
 
 
