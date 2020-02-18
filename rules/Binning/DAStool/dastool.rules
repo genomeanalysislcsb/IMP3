@@ -26,8 +26,11 @@ rule DAS_tool:
     shell:
         """
         TABS="{input.tabs}"
+        TAB_tmp=${TABS//Binning\//}
+        TAB_tmp2=${TAB_tmp2//\/scaffold2bin.tsv/}
+        TABSl=${TAB_tmp2// /,}}
         DAS_Tool -i ${{TABS// /,}} \
-         -l $(echo $TABS | cut -f 2 -d "/" -) \
+         -l $TABSl \
          -c {input.contigs} \
          --search_engine diamond \
          --proteins {input.proteins} --score_threshold 0.3 \
