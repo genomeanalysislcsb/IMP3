@@ -102,7 +102,7 @@ elif CONTIGS and MT:
     ASS = 'mg'
 
 # settings
-IMP_STEPS = os.environ.get("IMP_STEPS", config['steps']).split()
+IMP_STEPS = sorted(os.environ.get("IMP_STEPS", config['steps']).split())
 PREPROCESSING_FILTERING = os.environ.get("PREPROCESSING_FILTERING", config['preprocessing_filtering'])
 FILTER = os.environ.get("FILTER", config['filtering']['filter'])
 IMP_ASSEMBLER = os.environ.get("IMP_ASSEMBLER", config['assembly']['assembler'])
