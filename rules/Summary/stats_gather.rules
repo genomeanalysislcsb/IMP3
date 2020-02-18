@@ -9,16 +9,40 @@ if CONTIGS:
 localrules: check_stats_input, ctrl_stats 
 
 rule check_stats_input:
-   input:
-       sum_stats_input
-   output:
-       touch("stats.prepped")
+    input:
+        sum_stats_input
+    output:
+        touch("Stats/stats.prepped")
 
-rule ctrl_stats:
-   input:
-       "Stats/all_stats.tsv",
-       "Stats/all_stats.Rdata"
-   output:
-       touch("stats.done")
+steps4gather=IMP_steps
+if CONTIGS:
+    steps4gather.append("assembly")
+RSCRIPT_gather = ".".join(sorted(list(set(steps4gather).difference(["preprocessing","summary"]))))
+rule gather_stats:
+    input:
+        "Stats/stats.prepped"
+    output:
+        "Stats/all_stats.tsv",
+        "Stats/all_stats.Rdata"
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE,
+        ass = ASS,
+        types = TYPES
+    log: "logs/stats_gather_stats.log"
+    message: "gather_stats: Summarizing stats."
+    threads: 1
+    conda: ENVDIR + "/IMP_binning.yaml"
+    script:
+        SRCDIR + "/summarize_" + RSCRIPT_gather + ".R"
+         
+        
+
+rule ALL_stats:
+    input:
+        "Stats/all_stats.tsv",
+        "Stats/all_stats.Rdata"
+    output:
+        touch("stats.done")
 
 
