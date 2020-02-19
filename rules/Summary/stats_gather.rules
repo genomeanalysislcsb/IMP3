@@ -15,7 +15,7 @@ rule gather_stats:
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        steps = IMP_STEPS
+        steps = IMP_STEPS,
         ass = ASS,
         types = TYPES,
         dbs = config["hmm_DBs"]
