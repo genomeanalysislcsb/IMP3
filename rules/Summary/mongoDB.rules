@@ -1,14 +1,66 @@
-rule mongoDB_bins:
+db_output = ["DB","DB/contigs.bson"]
+if "binning" in IMP_STEPS:
+    db_output.append("DB/bins.bson")
+
+localrules: prep_mongo, shut_mongo, mongo_server
+
+rule mongo_server:
+    input:
+        db_output
+    output:
+        touch("DB/DB_filling.done")
+    threads: 1
+    params:
+        port = config["mongo_port"],
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/summary_mongo_server.log"
+    message: "mongoDB_server: Running mongo."
+    threads: 1
+    conda: ENVDIR + "/IMP_multi.yaml"
+    shell:
+        """
+        numactl --interleave=all mongod --dbpath {input[0]} --port {params.port} --auth --logpath {log}
+        """
+
+rule shut_mongo:
+    input:
+        db_output
+    output:
+        touch("DB_filling.done")
+    params:
+        port = config["mongo_port"],
+    message: "shut_mongo: killing mongod on config["mongo_port"]."
+    shell:
+        """
+        mongod --dbpath {input[0]} --port {params.port} --shutdown
+        """
+
+rule prep_mongo:
     input:
         "workflow.done"
     output:
-        "DB/bins.bson"
+        directory("DB")
+    message: "prep_mongo: making DB directoy."
+    shell:
+        """
+        mkdir {output}
+        """
+
+rule mongoDB_bins:
+    input:
+        "DB"
+    output:
+        pipe("DB/bins.bson")
     threads: 1
     params:
         ass = ASS,
         sample = sample_name,
-        binners = config["Binning"]["Binners"]
-        dbs = config["hmm_DBs"]
+        binners = config["Binning"]["Binners"],
+        dbs = config["hmm_DBs"],
+        user = config["mongo_user"],
+        password = config["mongo_password"],
+        port = config["mongo_port"],
         runtime = "12:00:00",
         mem = MEMCORE
     log: "logs/summary_mongoDB_bins.log"
@@ -20,15 +72,18 @@ rule mongoDB_bins:
          
 rule mongoDB_contigs:
     input:
-        "workflow.done"
+        "DB"
     output:
-        "DB/contigs.bson"
+        pipe("DB/contigs.bson")
     threads: 1
     params:
         ass = ASS,
         sample = sample_name,
-        binners = config["Binning"]["Binners"]
-        dbs = config["hmm_DBs"]
+        binners = config["Binning"]["Binners"],
+        dbs = config["hmm_DBs"],
+        user = config["mongo_user"],
+        password = config["mongo_password"],
+        port = config["mongo_port"],
         runtime = "12:00:00",
         mem = MEMCORE
     log: "logs/summary_mongoDB_contigs.log"
@@ -39,15 +94,5 @@ rule mongoDB_contigs:
         SRCDIR + "/mongify_contigs_single_IMP3.py"
 
 
-db_output = ["DB/contigs.bson"]
-if "binning" in IMP_STEPS:
-    db_output.append("DB/bins.bson")
-
-localrules: ctrl_fill_DB
-
-rule ctrl_fill_DB:
-    input:
-        db_output
-    output:
-        touch("DB_filling.done")
+        
 

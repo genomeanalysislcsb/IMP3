@@ -12,22 +12,9 @@ LIB = snakemake.params.sample
 ASS = snakemake.params.ass
 BINNERS = snakemake.params.binners.split()
 DBS = snakemake.params.dbs.split()
-#SDIR = should be current working directory
-
-#function to be used to simplify lists of taxa
-def enumerateTaxa(taxList):
-    kp = collections.Counter(taxList).most_common()
-    init = 1
-    taxString = ""
-    for tax,occ in kp:
-        if init == 1:
-            init = 0
-            taxString = tax + "(" + str(occ) + ");"
-        else:
-            taxString += tax + "(" + str(occ) + ");"
-    taxString = taxString.rstrip(";")
-    return taxString
-
+USER = snakemake.params.user
+PASSW = snakemake.params.password
+PORT = snakemake.params.port
 
 # read file with selected MAG information
 ## here we want to have the MAG name, taxonomy, quality and GRiD result + sample of origin and method;
@@ -69,9 +56,10 @@ print("Read MAG summary information")
 
 
 #insert contig dictionaries into MongoDB
-client = MongoClient()
+MongoClient('mongodb://'+ USER + ':' + PASSW + '@localhost:' + PORT + '/admin')
 db = client[LIB]
 print("Filling MAG information into the database.")
+collection = db.bins
 oldCollSize = db.bins.count()
 for bin in magdict:
     magdict[bin]['bin'] = bin
@@ -79,3 +67,4 @@ for bin in magdict:
 newCollSize = db.bins.count()
 print("MAGS inserted into database:", newCollSize - oldCollSize)
 print("there are now", newCollSize, "documents in the MAG collection.")
+client.close()

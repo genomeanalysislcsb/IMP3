@@ -12,6 +12,9 @@ LIB = snakemake.params.sample
 ASS = snakemake.params.ass
 BINNERS = snakemake.params.binners.split()
 DBS = snakemake.params.dbs.split()
+USER = snakemake.params.user
+PASSW = snakemake.params.password
+PORT = snakemake.params.port
 
 
 # read file of contig information and make dictionary with all contigs
@@ -349,9 +352,10 @@ else:
 
 
 #insert contig dictionaries into MongoDB
-client = MongoClient()
+MongoClient('mongodb://'+ USER + ':' + PASSW + '@localhost:' + PORT + '/admin')
 db = client[LIB]
 print("Filling contig information into the database.")
+collection = db.contigs
 oldCollSize = db.contigs.count()
 for cont in contig_dict:
     contig_dict[cont]['contig'] = cont
@@ -359,3 +363,4 @@ for cont in contig_dict:
 newCollSize = db.contigs.count()
 print("contigs inserted into database:", newCollSize - oldCollSize)
 print("there are now", newCollSize, "documents in the contig collection.")
+client.close()

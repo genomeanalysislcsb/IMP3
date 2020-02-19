@@ -18,6 +18,9 @@ sample: test
 outputdir: ""
 summarydir: ""
 summary_steps: "stats DB vis"
+mongo_user: "myUserAdmin"
+mongo_port: 16626
+mongo_password: "testMongo"
 compress_level: "mid"
 db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
 trimmomatic:
