@@ -1,5 +1,3 @@
-# rule to calculate N50
-
 sum_stats_input = ["workflow.done"]
 if not "preprocessing" in IMP_STEPS:
     sum_stats_input.append("preprocessing.analysed")
