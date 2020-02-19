@@ -2,7 +2,7 @@ localrules: vis_stats
 
 stats_figs =[]
 if "preprocessing" in IMP_STEPS or MG or MT:
-    stats_figs.append("Visualization/Preprocessing.png")
+    stats_figs.append("Visualization/Reads.png")
 if "assembly" in IMP_STEPS or CONTIGS:
     stats_figs.append(expand("Visualization/Assembly_{fig}.png", fig=["length_hist","cov_hist","gc_hist","cov_gc_scatter"]))
 if "analysis" in IMP_STEPS:
@@ -18,7 +18,17 @@ rule visualize_read_stats:
     input:
         "Stats/all_stats.Rdata"
     output:
-        report("Visualization/Preprocessing.png",caption="report/stats/Preprocessing.rst",category="Preprocessing")
+        report(expand("Visualization/{types}.reads.png",types=TYPES),
+               caption="report/stats/Preprocessing.rst",category="Preprocessing")
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/visualize_read_stats.log"
+    message: "visualize_read_stats: Plotting reads figure."
+    threads: 1
+    conda: ENVDIR + "/IMP_binning.yaml"
+    script:
+        SRCDIR + "/visualize_reads.R"
 
 rule visualize_assembly_stats:
     input:
