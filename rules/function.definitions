@@ -162,5 +162,9 @@ def check_bintabs(wildcards):
             valid_binners.append(binner)
     return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
 
-
+def sample_name():
+    if config["sample"] == "":
+        return(os.path.basename(OUTPUTDIR))
+    else:
+        return(config["sample"])
 		

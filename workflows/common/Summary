@@ -41,8 +41,8 @@ if "vis" in SUM_STEPS:
     if "analysis" in IMP_STEPS:
         include:
             '../../rules/Summary/vis_functions.rules'
-        include:
-            '../../rules/Summary/vis_snps.rules'
+#        include:
+#            '../../rules/Summary/vis_snps.rules'
     if "binning" in IMP_STEPS:
         include:
             '../../rules/Summary/vis_binning.rules'

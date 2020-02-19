@@ -1,19 +1,53 @@
-
-rule mongoDB:
+rule mongoDB_bins:
     input:
+        "workflow.done"
     output:
-    
+        "DB/bins.bson"
+    threads: 1
+    params:
+        ass = ASS,
+        sample = sample_name,
+        binners = config["Binning"]["Binners"]
+        dbs = config["hmm_DBs"]
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/summary_mongoDB_bins.log"
+    message: "mongoDB_bins: Filling bin documents."
+    threads: 1
+    conda: ENVDIR + "/IMP_multi.yaml"
+    script:
+        SRCDIR + "/mongify_bins_single_IMP3.py"
+         
+rule mongoDB_contigs:
+    input:
+        "workflow.done"
+    output:
+        "DB/contigs.bson"
+    threads: 1
+    params:
+        ass = ASS,
+        sample = sample_name,
+        binners = config["Binning"]["Binners"]
+        dbs = config["hmm_DBs"]
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/summary_mongoDB_contigs.log"
+    message: "mongoDB_bins: Filling contig documents."
+    threads: 1
+    conda: ENVDIR + "/IMP_multi.yaml"
+    script:
+        SRCDIR + "/mongify_contigs_single_IMP3.py"
 
 
 db_output = ["DB/contigs.bson"]
 if "binning" in IMP_STEPS:
-   db_output.append("DB/bins.bson")
+    db_output.append("DB/bins.bson")
 
 localrules: ctrl_fill_DB
 
 rule ctrl_fill_DB:
-   input:
-       db_output
-   output:
-       touch("DB_filling.done")
+    input:
+        db_output
+    output:
+        touch("DB_filling.done")
 

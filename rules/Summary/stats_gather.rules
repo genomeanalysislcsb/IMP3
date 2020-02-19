@@ -4,7 +4,7 @@ if not "preprocessing" in IMP_STEPS:
 if CONTIGS:
     sum_stats_input.append("assembly.analysed")
 
-localrules: ctrl_stats 
+localrules: ALL_stats 
 
 rule gather_stats:
     input:
