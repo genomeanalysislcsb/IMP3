@@ -132,9 +132,25 @@ elif MTaln:
 else:
     raise Exception('No input data.')
 
+# master command summary and archiving
+inputs_all = ['workflow.done']
+if "summary" in IMP_STEPS:
+    inputs_all.append('summary.done')
+    include:
+        "workflows/common/Summary"
+#                 #if config['compress_level'] != "none" and config['compress_level'] != "":
+#                 #    inputs_all.append('archiving.done')
+
+localrules: workflow, ALL
+# master command
+rule ALL:
+    input:
+        inputs_all
+    output:
+        touch('all.done')
 
 # master command workflow
-checkpoint workflow:
+rule workflow:
     input:
         workflow_ctrl
     output:
@@ -149,9 +165,3 @@ if "summary" in IMP_STEPS:
 #if config['compress_level'] != "none" and config['compress_level'] != "":
 #    inputs_all.append('archiving.done')
 
-# master command
-rule ALL:
-    input:
-        inputs_all
-    output:
-        touch('all.done')

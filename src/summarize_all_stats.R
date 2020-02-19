@@ -35,7 +35,7 @@ out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
 ###################################################################################################
 ## Read Preprocessing stats
 ###################################################################################################
-if(file.exists(paste0("Stats/",type,"/",types[1],".read_counts.txt"))){
+if(file.exists(paste0("Stats/",types[0],"/",types[1],".read_counts.txt"))){
   readStats_files <- list()
   for(type in types){
     readStats_files[[type]] <- paste0("Stats/",type,"/",type,".read_counts.txt")
