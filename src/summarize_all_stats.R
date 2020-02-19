@@ -1,5 +1,5 @@
-#!/bin/R
-log <- file(snakemake@log[[1]], open="wt")
+	#!/bin/R
+	log <- file(snakemake@log[[1]], open="wt")
 sink(log)
 sink(log, type="message")
 
@@ -29,8 +29,8 @@ steps               <- snakemake@params[["steps"]]
 ass                 <- snakemake@params[["ass"]] 
 types               <- snakemake@params[["types"]] 
 dbs                 <- unlist(strsplit(snakemake@params[["dbs"]],split=" "))
-out_file_tsv        <- snakemake@output[[0]] #"Stats/all_stats.tsv"
-out_file_rdat       <- snakemake@output[[1]] #"Stats/all_stats.Rdata"
+out_file_tsv        <- snakemake@output[[1]] #"Stats/all_stats.tsv"
+out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
 
 ###################################################################################################
 ## Read Preprocessing stats

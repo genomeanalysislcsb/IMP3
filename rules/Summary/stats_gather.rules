@@ -4,24 +4,18 @@ if not "preprocessing" in IMP_STEPS:
 if CONTIGS:
     sum_stats_input.append("assembly.analysed")
 
-localrules: check_stats_input, ctrl_stats 
-
-rule check_stats_input:
-    input:
-        sum_stats_input
-    output:
-        touch("Stats/stats.prepped")
+localrules: ctrl_stats 
 
 rule gather_stats:
     input:
-        "Stats/stats.prepped"
+        sum_stats_input
     output:
         "Stats/all_stats.tsv",
         "Stats/all_stats.Rdata"
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        steps = IMP_STEPS
+        steps = IMP_STEPS,
         ass = ASS,
         types = TYPES,
         dbs = config["hmm_DBs"]
