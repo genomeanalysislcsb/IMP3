@@ -19,9 +19,9 @@ rule visualize_read_stats:
         "Stats/all_stats.Rdata"
     output:
         report(expand("Visualization/{types}.reads.png",types=TYPES),
-               caption="report/stats/Preprocessing.rst",category="Preprocessing")
+               caption="report/stats/Reads.rst",category="Preprocessing")
     params:
-        runtime = "12:00:00",
+        runtime = "1:00:00",
         mem = MEMCORE
     log: "logs/visualize_read_stats.log"
     message: "visualize_read_stats: Plotting reads figure."
@@ -38,6 +38,15 @@ rule visualize_assembly_stats:
         report("Visualization/Assembly_cov_hist.png",caption="report/stats/Assembly_cov.rst",category="Assembly"),
         report("Visualization/Assembly_gc_hist.png",caption="report/stats/Assembly_gc.rst",category="Assembly"),
         report("Visualization/Assembly_cov_gc_scatter.png",caption="report/stats/Assembly_cov_gc.rst",category="Assembly")
+    params:
+        runtime = "1:00:00",
+        mem = MEMCORE
+    log: "logs/visualize_read_stats.log"
+    message: "visualize_read_stats: Plotting reads figure."
+    threads: 1
+    conda: ENVDIR + "/IMP_binning.yaml"
+    script:
+        SRCDIR + "/visualize_reads.R"
 
 rule visualize_analysis_stats:
     input:

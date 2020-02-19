@@ -9,6 +9,7 @@ sink(log, type="message")
 libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
 .libPaths(libs)
 .libPaths()
+library(RColorBrewer)
 
 ###################################################################################################
 ## Files from snakemake
