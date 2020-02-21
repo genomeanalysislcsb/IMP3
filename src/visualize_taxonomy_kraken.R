@@ -14,13 +14,40 @@ library(igraph)
 library(ape)
 library(phytools)
 
+
+min0 <- function(x){
+  min(x[x>0])
+}
+
+expand_hist_mids <- function(hist){
+  binsize <- abs(hist$mids[2]-hist$mids[1])
+  mids <- c(hist$mids-binsize,hist$mids[length(hist$mids)],hist$mids[length(hist$mids)]+binsize)
+  return(mids)
+}
+
+expand_hist_counts <- function(hist){
+  binsize <- abs(hist$mids[2]-hist$mids[1])
+  counts <- c(0,hist$counts,0)
+  return(counts)
+}
+
+plotdim <- function(x){
+  if(x>1){
+    xl <- round(sqrt(x)+0.5)
+    yl <- ifelse(sqrt(x) %% 1<0.5,xl-1,xl)
+    return(c(xl,yl))
+  }else{
+    return(c(1,1))
+  }
+}
+
 countSpaces <- function(string){
   nchar(string) - nchar( sub(" *", "", string))
 }
 
 #graph_to_newick function by Christian Koenig
 #https://gist.github.com/ChrKoenig
-graph_to_newick = function(graph, root){
+graph_to_newick <- function(graph, root){
   ##### Define callback functions for DFS
   # 1. function to be called whenever a vertex is visited
   f.in <- function(graph, data, extra) {
@@ -625,7 +652,7 @@ outplot             <- snakemake@output #
 print("Loading data.")
 load(stats_image)
 
-names(outplot) <- types
+names(outplot) <- c(types,"sum")
 
 krakRep <- list()
 tax_tab <- list()
@@ -673,7 +700,7 @@ df_tree = collapse.singles(read.newick(text = graph_to_newick(gra,"R__root")))
 df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
 
 ###################################################################################################
-## plot
+## plot tree
 ###################################################################################################
 
 relReads <- list()
@@ -693,3 +720,90 @@ for(type in types){
          bg=col,pch=21,cex=0.75*(1+relReads[[type]])+ifelse(relReads[[type]]==-1,0,0.4))
   dev.off()
 }
+
+###################################################################################################
+## plot mg vs mt for every level or histogram of mg or mt
+###################################################################################################
+plotfile <- outplot[3]
+png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
+par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5,mfrow=plotdim(length(unique(unlist(c(sapply(tax_tab,names)))))),cex=1)
+if(length(types)>1){
+  for(rank in unique(unlist(c(sapply(tax_tab,names))))){
+    if(rank %in% names(tax_tab[[1]]) & rank %in% names(tax_tab[[2]])){
+      perTaxM <-merge(tax_tab[[1]][[rank]],tax_tab[[2]][[rank]],by=1,all=T,suffixes=paste0(".",types))
+      perTaxM[is.na(perTaxM)] <- 0
+      if(nrow(perTaxM)>0){
+        plot(perTaxM$reads.mg,perTaxM$reads.mt,
+             pch=16,cex=0.3,log="xy",las=1,
+             xlim=c(0.09,max(sapply(tax_tab,function(x) max(x[[rank]][,2])))*1.2),xaxs="i",
+             ylim=c(0.09,max(sapply(tax_tab,function(x) max(x[[rank]][,2])))*1.2),yaxs="i",
+             ylab="",
+             xlab="counts (metaG)",cex.lab=9/7,axes=F,
+             col=brewer.pal(9,"Set1")[8])
+        points(perTaxM$reads.mg[perTaxM$reads.mt==0],
+               rep(0.1,length(which(perTaxM$reads.mt==0))),
+               pch=16,cex=0.2,
+               col=brewer.pal(9,"Set1")[8])
+        points(rep(0.1,length(which(perTaxM$reads.mg==0))),
+               perTaxM$reads.mt[perTaxM$reads.mg==0],
+               pch=16,cex=0.2,
+               col=brewer.pal(9,"Set1")[8])
+        mtext("counts (metaT)",2,2.8,cex=9/7)
+        mtext(paste0(rank,"__"),3,-1,cex=9/7)
+        axis(1,
+             at=c(0.09,10^c(0:10)),
+             labels=c(0,format(10^c(0:10),scientific=T,digits = 2)),lwd=0.5,las=1)
+        axis(2,at=c(0.09,10^c(0:10)),
+             labels=c(0,format(10^c(0:10),scientific=T,digits = 2)),lwd=0.5,las=1)
+        box(bty="o")
+      }
+    }else{
+      ttyp <- ifelse(rank %in% names(tax_tab[[1]]),1,2)
+      if(nrow(tax_tab[[ttyp]][[rank]])>0){
+        depth_hist_log <- hist(log10(tax_tab[[ttyp]][[rank]][,2]),
+                               breaks=seq(from=0,
+                                          to=log10(max(tax_tab[[ttyp]][[rank]][,2])*1.2),
+                                          length.out = 100),plot=F)
+        plot(expand_hist_mids(depth_hist_log),
+             expand_hist_counts(depth_hist_log),
+             type="l",axes=F,ylab="",xlab=paste0("read counts ",ifelse(ttyp=="mg","(metaG)","(metaT)")),
+             cex.lab=9/7,col=brewer.pal(9,"Set1")[8],
+             xlim=c(expand_hist_mids(depth_hist_log)[1]-1.03,
+                    max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
+             ylim=c(0,max(c(max(depth_hist_log$counts),
+                            length(which(tax_tab[[ttyp]][[rank]][,2]==0))))*1.1),yaxs="i")
+        mtext("counts",2,2.8,cex=9/7)
+        mtext(paste0(rank,"__"),3,-1,cex=9/7)
+        axis(1,at=c(0:10),
+             labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
+        axis(2,lwd=0.5,las=1)
+        box(bty="o")
+      }
+    }
+  }
+}else{
+  for(rank in unique(unlist(c(sapply(tax_tab,names))))){
+    if(nrow(tax_tab[[1]][[rank]])>0){
+      depth_hist_log <- hist(log10(tax_tab[[1]][[rank]][,2]),
+                             breaks=seq(from=0,
+                                        to=log10(max(tax_tab[[1]][[rank]][,2])*1.2),
+                                        length.out = 100),plot=F)
+      plot(expand_hist_mids(depth_hist_log),
+           expand_hist_counts(depth_hist_log),
+           type="l",axes=F,ylab="",xlab=paste0("read counts ",ifelse(types[1]=="mg","(metaG)","(metaT)")),
+           cex.lab=9/7,col=brewer.pal(9,"Set1")[8],
+           xlim=c(expand_hist_mids(depth_hist_log)[1]-1.03,
+                  max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
+           ylim=c(0,max(c(max(depth_hist_log$counts),
+                          length(which(tax_tab[[1]][[rank]][,2]==0))))*1.1),yaxs="i")
+      mtext("counts",2,2.8,cex=9/7)
+      mtext(paste0(rank,"__"),3,-1,cex=9/7)
+      axis(1,at=c(0:10),
+           labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
+      axis(2,lwd=0.5,las=1)
+      box(bty="o")
+    }
+  }
+}
+dev.off()
+
