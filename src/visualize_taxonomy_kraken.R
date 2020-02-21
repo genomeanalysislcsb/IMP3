@@ -726,7 +726,7 @@ for(type in types){
 ###################################################################################################
 plotfile <- outplot[3]
 png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
-par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5,mfrow=plotdim(length(unique(unlist(c(sapply(tax_tab,names)))))),cex=1)
+par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5,mfrow=plotdim(length(unique(unlist(c(sapply(tax_tab,names)))))),cex=0.8)
 if(length(types)>1){
   for(rank in unique(unlist(c(sapply(tax_tab,names))))){
     if(rank %in% names(tax_tab[[1]]) & rank %in% names(tax_tab[[2]])){
@@ -748,8 +748,8 @@ if(length(types)>1){
                perTaxM$reads.mt[perTaxM$reads.mg==0],
                pch=16,cex=0.2,
                col=brewer.pal(9,"Set1")[8])
-        mtext("counts (metaT)",2,2.8,cex=9/7)
-        mtext(paste0(rank,"__"),3,-1,cex=9/7)
+        mtext("counts (metaT)",2,2.8,cex=0.8*9/7)
+        mtext(paste0(rank,"__"),3,-1,cex=0.8*9/7)
         axis(1,
              at=c(0.09,10^c(0:10)),
              labels=c(0,format(10^c(0:10),scientific=T,digits = 2)),lwd=0.5,las=1)
@@ -772,8 +772,8 @@ if(length(types)>1){
                     max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
              ylim=c(0,max(c(max(depth_hist_log$counts),
                             length(which(tax_tab[[ttyp]][[rank]][,2]==0))))*1.1),yaxs="i")
-        mtext("counts",2,2.8,cex=9/7)
-        mtext(paste0(rank,"__"),3,-1,cex=9/7)
+        mtext("taxa",2,2.8,cex=0.8*9/7)
+        mtext(paste0(rank,"__"),3,-1,cex=0.8*9/7)
         axis(1,at=c(0:10),
              labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
         axis(2,lwd=0.5,las=1)
@@ -783,7 +783,7 @@ if(length(types)>1){
   }
 }else{
   for(rank in unique(unlist(c(sapply(tax_tab,names))))){
-    if(nrow(tax_tab[[1]][[rank]])>0){
+    if(!is.null(tax_tab[[1]][[rank]])){
       depth_hist_log <- hist(log10(tax_tab[[1]][[rank]][,2]),
                              breaks=seq(from=0,
                                         to=log10(max(tax_tab[[1]][[rank]][,2])*1.2),
@@ -796,8 +796,8 @@ if(length(types)>1){
                   max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
            ylim=c(0,max(c(max(depth_hist_log$counts),
                           length(which(tax_tab[[1]][[rank]][,2]==0))))*1.1),yaxs="i")
-      mtext("counts",2,2.8,cex=9/7)
-      mtext(paste0(rank,"__"),3,-1,cex=9/7)
+      mtext("taxa",2,2.8,cex=0.8*9/7)
+      mtext(paste0(rank,"__"),3,-1,cex=0.8*9/7)
       axis(1,at=c(0:10),
            labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
       axis(2,lwd=0.5,las=1)

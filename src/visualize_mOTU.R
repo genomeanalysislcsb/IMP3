@@ -766,7 +766,7 @@ if(length(types)>1){
                     max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
              ylim=c(0,max(c(max(depth_hist_log$counts),
                             length(which(tax_tab[[ttyp]][[rank]][,2]==0))))*1.1),yaxs="i")
-        mtext("counts",2,2.8,cex=9/7)
+        mtext("mOTUs",2,2.8,cex=9/7)
         mtext(paste0(rank,"__"),3,-1,cex=9/7)
         axis(1,at=c(0:10),
              labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
@@ -790,7 +790,7 @@ if(length(types)>1){
                   max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
            ylim=c(0,max(c(max(depth_hist_log$counts),
                           length(which(tax_tab[[1]][[rank]][,2]==0))))*1.1),yaxs="i")
-      mtext("counts",2,2.8,cex=9/7)
+      mtext("mOTUs",2,2.8,cex=9/7)
       mtext(paste0(rank,"__"),3,-1,cex=9/7)
       axis(1,at=c(0:10),
            labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)

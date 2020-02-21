@@ -26,7 +26,7 @@ rule visualize_read_stats:
     log: "logs/visualize_read_stats.log"
     message: "visualize_read_stats: Plotting reads figure."
     threads: 1
-    conda: ENVDIR + "/IMP_binning.yaml"
+    conda: ENVDIR + "/IMP_visualize.yaml"
     script:
         SRCDIR + "/visualize_reads.R"
 
@@ -44,7 +44,7 @@ rule visualize_assembly_stats:
     log: "logs/visualize_assembly_stats.log"
     message: "visualize_assembly_stats: Plotting figures for contigs."
     threads: 1
-    conda: ENVDIR + "/IMP_binning.yaml"
+    conda: ENVDIR + "/IMP_visualize.yaml"
     script:
         SRCDIR + "/visualize_assembly.R"
 
@@ -64,8 +64,26 @@ rule visualize_analysis_stats:
     log: "logs/visualize_analysis_stats.log"
     message: "visualize_analysis_stats: Plotting gene figures."
     threads: 1
-    conda: ENVDIR + "/IMP_binning.yaml"
+    conda: ENVDIR + "/IMP_visualize.yaml"
     script:
         SRCDIR + "/visualize_analysis.R"
+        
+rule visualize_taxonomy_stats:
+    input:
+        "Stats/all_stats.Rdata"
+    output:
+        report(expand("Visualization/Taxonomy_{type}_kraken_tree.png",type=TYPES),caption="report/stats/Taxonomy_kraken.rst",category="Taxonomy"),
+        report("Visualization/Taxonomy_kraken_plot.png",caption="report/stats/Taxonomy_kraken.rst",category="Taxonomy"),
+        report(expand("Visualization/Taxonomy_{type}_mOTU_tree.png",type=TYPES),caption="report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
+        report("Visualization/Taxonomy_mOTU_plot.png",caption="report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
+    params:
+        runtime = "2:00:00",
+        mem = MEMCORE
+    log: "logs/visualize_taxonomy_stats.log"
+    message: "visualize_taxonomy_stats: Plotting taxonomy results."
+    threads: 1
+    conda: ENVDIR + "/IMP_visualize.yaml"
+    script:
+        SRCDIR + "/visualize_taxonomy.R"
 
 
