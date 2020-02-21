@@ -39,14 +39,14 @@ rule visualize_assembly_stats:
         report("Visualization/Assembly_gc_hist.png",caption="report/stats/Assembly_gc.rst",category="Assembly"),
         report("Visualization/Assembly_cov_gc_scatter.png",caption="report/stats/Assembly_cov_gc.rst",category="Assembly")
     params:
-        runtime = "1:00:00",
+        runtime = "2:00:00",
         mem = MEMCORE
-    log: "logs/visualize_read_stats.log"
-    message: "visualize_read_stats: Plotting reads figure."
+    log: "logs/visualize_assembly_stats.log"
+    message: "visualize_assembly_stats: Plotting figures for contigs."
     threads: 1
     conda: ENVDIR + "/IMP_binning.yaml"
     script:
-        SRCDIR + "/visualize_reads.R"
+        SRCDIR + "/visualize_assembly.R"
 
 rule visualize_analysis_stats:
     input:
@@ -54,7 +54,18 @@ rule visualize_analysis_stats:
     output:
         report("Visualization/Analysis_length_hist.png",caption="report/stats/Analysis_length.rst",category="Analysis"),
         report("Visualization/Analysis_cov_hist.png",caption="report/stats/Analysis_cov.rst",category="Analysis"),
-        report("Visualization/Analysis_contigs_cov_snps_scatter.png",caption="report/stats/Analysis_contigs_cov_snps.rst",category="Analysis"),
-        report("Visualization/Analysis_genes_cov_snps_scatter.png",caption="report/stats/Analysis_genes_cov_snps.rst",category="Analysis")
+        report("Visualization/Analysis_cov_scatter.png",caption="report/stats/Analysis_cov_scat.rst",category="Analysis"),
+        report("Visualization/Analysis_func_sets.png",caption="report/stats/Analysis_func.rst",category="Analysis"),
+#        report("Visualization/Analysis_contigs_cov_snps_scatter.png",caption="report/stats/Analysis_contigs_cov_snps.rst",category="Analysis"),
+#        report("Visualization/Analysis_genes_cov_snps_scatter.png",caption="report/stats/Analysis_genes_cov_snps.rst",category="Analysis")
+    params:
+        runtime = "2:00:00",
+        mem = MEMCORE
+    log: "logs/visualize_analysis_stats.log"
+    message: "visualize_analysis_stats: Plotting gene figures."
+    threads: 1
+    conda: ENVDIR + "/IMP_binning.yaml"
+    script:
+        SRCDIR + "/visualize_analysis.R"
 
 
