@@ -10,12 +10,16 @@ libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
 .libPaths(libs)
 .libPaths()
 library(RColorBrewer)
+library(alluvial)
+library(data.table)
 
 ###################################################################################################
 ## Files from snakemake
 ###################################################################################################
 
-stats_image         <- snakemake@input #"Stats/all_stats.Rdata"
+stats_image         <- snakemake@input[["stats"]] #"Stats/all_stats.Rdata"
+bin_memberships     <- snakemake@input[["bins"]]  # Binning/*/scaffold2bin.tsv
+mag_memberships     <- snakemake@input[["dastool"]]  # Binning/selected_DASTool_scaffolds2bin.tsv
 outplot             <- snakemake@output # "Visualization/Assembly_length_hist.png"
 #                                         Visualization/Assembly_cov_hist.png"
                                         #"Visualization/Assembly_gc_hist.png"
@@ -27,125 +31,42 @@ outplot             <- snakemake@output # "Visualization/Assembly_length_hist.pn
 print("Loading data.")
 load(stats_image)
 
+binners <- unique(binTab$binner)
+
 ###################################################################################################
 ## plot
 ###################################################################################################
-print("Plotting assembly stats.")
+print("Plotting alluvial diagram.")
 dir.create("Visualization", showWarnings = FALSE)
+
 plotfile <- outplot[[1]]
-length_hist_log <- hist(log10(contig_length$length),breaks=100,plot=F)
-png(plotfile,width=5.7,height=4.6,units = "cm",res=300,pointsize=7)
-par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
-plot(length_hist_log$mids,length_hist_log$counts,type="l",
-          las=1,xlim=c(2,max(length_hist_log$mids)*1.03),xaxs="i",
-          ylim=c(0,max(length_hist_log$counts)*1.04),yaxs="i",
-          ylab="",col= brewer.pal(9,"Purples")[7],
-          xlab=expression("log"["2"]*" contig length"),cex.lab=9/7,axes=F,lwd=0.8)
-abline(v=log10(statsTab$number[statsTab$step=="N50"]),lty=3)
-text(log10(statsTab$number[statsTab$step=="N50"]),
-     max(length_hist_log$counts)*0.95,
-     "labels"=paste("N50 =",statsTab$number[statsTab$step=="N50"]),pos = 4)
-mtext("counts",2,2.8,cex=9/7)
-axis(1,at = 2:6,lwd=0.5,las=1)
-axis(2,lwd=0.5,las=1)
-box(bty="o")
-dev.off()
-
-plotfile <- outplot[[2]]
-png(plotfile,width=5.7,height=4.6,units = "cm",res=300,pointsize=7)
-par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
-depth_hist_log <- list()
-for(type in types){
-  depth_hist_log[[type]] <- hist(log10(depthAssStat[[type]]$depth),
-                         breaks=seq(from=log10(min(sapply(depthAssStat,function(x) min(x$depth)))),
-                                    to=log10(max(sapply(depthAssStat,function(x) max(x$depth)))),
-                                    length.out = 100),plot=F)
+cont2bin <- list()
+for(binner in binners){
+  cont2bin[[binner]] <- read.delim(grep(binner,bin_memberships,value=T),stringsAsFactors = F,header=F)
+  colnames(cont2bin[[binner]]) <- c("contig","bin")
 }
-plot(1,type="n",axes=F,ylab="",xlab=expression("log"["2"]*" contig coverage depth"),cex.lab=9/7,
-     xlim=c(min(depth_hist_log[[1]]$mids)*ifelse(min(depth_hist_log[[1]]$mids)<0,1.03,0.97),
-            max(depth_hist_log[[1]]$mids)*1.03),xaxs="i",
-     ylim=c(0,max(sapply(depth_hist_log,function(x) max(x$counts)))))
-mtext("counts",2,2.8,cex=9/7)
-axis(1,lwd=0.5,las=1)
-axis(2,lwd=0.5,las=1)
-box(bty="o")
-for(type in types){
-  lines(depth_hist_log[[type]]$mids,depth_hist_log[[type]]$counts,type="l",
-        col =ifelse(type=="mg",brewer.pal(9,"Reds")[7],brewer.pal(9,"Blues")[7]),
-        lwd=0.8)
-}
-dev.off()
+cont2bin[["DASTool"]] <- read.delim(mag_memberships,stringsAsFactors = F,header=F)
+colnames(cont2bin[["DASTool"]]) <- c("contig","bin")
 
-plotfile <- outplot[[3]]
-gc_hist <- hist(contig_gc$GC,breaks=100,plot=F)
-png(plotfile,width=5.7,height=4.6,units = "cm",res=300,pointsize=7)
-par("mar"=c(2.9,4,0.5,0.65),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
-plot(gc_hist$mids,gc_hist$counts,type="l",
-     las=1,xlim=c(0,100),xaxs="i",
-     ylim=c(0,max(gc_hist$counts)*1.04),yaxs="i",
-     ylab="",col= brewer.pal(9,"Purples")[7],
-     xlab="contig %GC",cex.lab=9/7,axes=F,lwd=0.8)
-mtext("counts",2,2.8,cex=9/7)
-axis(1,lwd=0.5,las=1)
-axis(2,lwd=0.5,las=1)
-box(bty="o")
-dev.off()
-
-plotfile <- outplot[[4]]
-if(length(types)>1){
-  spec <- colorRampPalette(rainbow(9)[9:1])
-  plotcol <- spec(length(unique(perContM$GC)))[as.numeric(as.factor(perContM$GC))]
-  
-  perContM <-merge(depthAssStat[[1]],depthAssStat[[2]],by=1,all=T,suffixes=paste0(".",types))
-  perContM <-merge(perContM,contig_gc,by=1,all=T)
-  perContM[is.na(perContM)] <- 0
-  png(plotfile,width=8.5,height=8.5,units = "cm",res=300,pointsize=7)
-  par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
-  plot(perContM$depth.mg,perContM$depth.mt,
-       pch=16,cex=0.2,log="xy",
-       las=1,xlim=c(min(depthAssStat[["mg"]]$depth)/11,max(depthAssStat[["mg"]]$depth)/1.2),xaxs="i",
-       ylim=c(min(depthAssStat[["mt"]]$depth)/11,max(depthAssStat[["mt"]]$depth)/1.2),yaxs="i",
-       ylab="",
-       xlab="contig coverage depth (metaG)",cex.lab=9/7,axes=F,
-       col=plotcol)
-  points(perContM$depth.mg[perContM$depth.mt==0],
-         rep(min(depthAssStat[["mt"]]$depth)/10,length(which(perContM$depth.mt==0))),
-         pch=16,cex=0.2,
-         col=plotcol[perContM$depth.mt==0])
-  points(rep(min(depthAssStat[["mg"]]$depth)/10,length(which(perContM$depth.mg==0))),
-         perContM$depth.mt[perContM$depth.mg==0],
-         pch=16,cex=0.2,
-         col=plotcol[perContM$depth.mg==0])
-  mtext("contig coverage depth (metaT)",2,2.8,cex=9/7)
-  axis(1,
-       at=c(min(depthAssStat[["mg"]]$depth)/10,10^c(-3:8)),
-       labels=c(0,format(10^c(-3:8),scientific=T,digits = 2)),lwd=0.5,las=1)
-  axis(2,at=c(min(depthAssStat[["mt"]]$depth)/10,10^c(-3:8)),
-       labels=c(0,format(10^c(-3:8),scientific=T,digits = 2)),lwd=0.5,las=1)
-  box(bty="o")
-  dev.off()
-}else{
-  perContM <-merge(depthAssStat[[1]],contig_gc,by=1,all=T)
-  perContM[is.na(perContM)] <- 0
-  png(plotfile,width=8.5,height=8.5,units = "cm",res=300,pointsize=7)
-  par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
-  plot(perContM$GC,perContM$depth,
-       pch=16,cex=0.2,log="y",
-       las=1,ylim=c(min(depthAssStat[[1]]$depth)/11,max(depthAssStat[[1]]$depth)/1.2),yaxs="i",
-       xlim=c(0,100),xaxs="i",
-       ylab="",
-       xlab="contig %GC",cex.lab=9/7,axes=F,
-       col=brewer.pal(9,"Purples")[7])
-  if(any(perContM$depth==0)){
-    points(perContM$GC[perContM$depth==0],
-           rep(min(depthAssStat[[1]]$depth)/10,length(which(perContM$depth==0))),
-           pch=16,cex=0.2,
-           col=brewer.pal(9,"Purples")[7])
-  }
-  mtext(paste0("contig coverage depth (meta",ifelse(types[1]=="mg","G","T"),")"),
-        2,2.8,cex=9/7)
-  axis(1,lwd=0.5,las=1)
-  axis(2,lwd=0.5,las=1)
-  box(bty="o")
-  dev.off()
+cont2bin <- rbindlist(lapply(1:length(cont2bin),function(x) data.frame(cont2bin[[x]],
+                                                                       "tool"=names(cont2bin)[x],
+                                                                       stringsAsFactors = F)))
+tools <- levels(as.factor(cont2bin$tool))
+cont2bin <- apply(tapply(cont2bin$bin,list(cont2bin$contig,cont2bin$tool),paste),1,function(x)paste(x,sep="|",collapse="|"))
+cont2bin <- merge(cont2bin,contig_length,by.x=0,by.y=1,all.x=T)
+cont2bin <- aggregate(cont2bin$length,list(cont2bin$x),sum)
+cont2bin$Group.1 <- as.character(cont2bin$Group.1)
+cont2bin <- data.frame(t(sapply(cont2bin$Group.1,function(x) unlist(strsplit(x,split="|",fixed=T)))),
+                       "freq"=cont2bin$x,stringsAsFactors = F)
+colnames(cont2bin)[1:length(tools)] <- tools
+if("MaxBin" %in% colnames(cont2bin)){
+  cont2bin$MaxBin <- gsub("maxbin_res.","",gsub(".fasta","",cont2bin$MaxBin))
+  cont2bin$DASTool <- gsub("maxbin_res.","",gsub(".fasta","",cont2bin$DASTool))
 }
+
+png(plotfile,width=17,height=12,units = "cm",res=300,pointsize=7)
+par("mar"=c(0.2,0.2,0.2,0.2),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
+alluvial(cont2bin[,c(binners,"DASTool")],freq = cont2bin$freq,
+         col=colorRampPalette(brewer.pal(11,"Spectral"))(length(unique(cont2bin$DASTool)))[as.numeric(as.factor(cont2bin$DASTool))],
+         border=NA)
+dev.off()
