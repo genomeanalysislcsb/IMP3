@@ -279,7 +279,8 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
                            stringsAsFactors=F,header = F)
   }
   colnames(gene_gff) <- c("contig","source","feature","start","end","score","strand","frame","attribute")
-  
+  c2g <- data.frame("contig"=gene_gff$contig,
+                    "gene"=gsub("ID=([^;]+);.+","\\1",gene_gff$attribute))
   depthGeneStats_files <- list()
   for(type in types){
     depthGeneStats_files[[type]] <- paste0("Stats/",type,"/annotation/",type,".gene_depth.avg")
