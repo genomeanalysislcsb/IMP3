@@ -39,18 +39,6 @@ if "vis" in SUM_STEPS:
         include:
             '../../rules/Summary/vis_stats.rules'
         vis_targets.append("stats.visualized")
-    if "taxonomy" in IMP_STEPS and (MG or MT):
-        include:
-            '../../rules/Summary/vis_mOTUs.rules'
-        include:
-            '../../rules/Summary/vis_kraken_reads.rules'
-        vis_targets.append("taxonomy.visualized")
-    if "analysis" in IMP_STEPS:
-        include:
-            '../../rules/Summary/vis_functions.rules'
-    if "binning" in IMP_STEPS:
-        include:
-            '../../rules/Summary/vis_binning.rules'
     rule VIS:
         input:
             vis_targets

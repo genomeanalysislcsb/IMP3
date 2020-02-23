@@ -13,10 +13,10 @@ if "taxonomy" in IMP_STEPS:
     stats_figs.append(expand("Visualization/Taxonomy_{type}_mOTU_tree.png", type=TYPES))
     stats_figs.append("Visualization/Taxonomy_mOTU_plot.png")
 if "binning" in IMP_STEPS:    
-    stats_figs.append("Visualization/Binning_alluvial.png",
+    stats_figs.append("Visualization/Binning_alluvial.png")
     stats_figs.append(expand("Visualization/Binning_{type}_depth.png",type=TYPES))
     if "binny" in BIN_STEPS:
-        stats_figs.append("Visualization/Binning_vizbin.png"
+        stats_figs.append("Visualization/Binning_vizbin.png")
     
 rule vis_stats:
     input:
@@ -28,8 +28,7 @@ rule visualize_read_stats:
     input:
         "Stats/all_stats.Rdata"
     output:
-        report(expand("Visualization/{types}.reads.png",types=TYPES),
-               caption="report/stats/Reads.rst",category="Preprocessing")
+        report( expand("Visualization/{types}.reads.png",types=TYPES),caption="report/stats/Reads.rst",category="Preprocessing")
     params:
         runtime = "1:00:00",
         mem = MEMCORE
@@ -114,7 +113,7 @@ if "analysis" in IMP_STEPS:
     rule visualize_mOTU_reads:
         input:
             "Stats/all_stats.Rdata",
-            Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv
+            "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
         output:
             report(expand("Visualization/Taxonomy_{type}_mOTU_tree.png",type=TYPES),caption="report/stats/Taxonomy_mOTU_withAnalysis.rst",category="Taxonomy"),
             report("Visualization/Taxonomy_mOTU_plot.png",caption="report/stats/Taxonomy_mOTU_withAnalysis.rst",category="Taxonomy"),
