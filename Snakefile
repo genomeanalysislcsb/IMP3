@@ -10,6 +10,8 @@ include:
 workdir:
     OUTPUTDIR
 
+yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
+yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
 yaml.dump(config, open_output('full.config.yaml'), allow_unicode=True,default_flow_style=False)
 
 # include rules for the workflow based on the input parameters

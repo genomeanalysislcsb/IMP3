@@ -18,13 +18,19 @@ bwa_index:
 mapping_on_assembly:
   partition: "-l highmem"
 
-bam_index:
+index_bam:
   partition: "-l highmem"
 
 megahit_assembly_from_preprocessing:
   partition: "-l highmem"
 
 megahit_assembly_from_unmapped:
+  partition: "-l highmem"
+
+metaspades_assembly_from_preprocessing:
+  partition: "-l highmem"
+
+metaspades_assembly_from_unmapped:
   partition: "-l highmem"
 
 cap3:
@@ -40,6 +46,12 @@ megahit_hybrid_assembly_1:
   partition: "-l highmem"
 
 megahit_hybrid_assembly_2:
+  partition: "-l highmem"
+
+metaspades_hybrid_assembly_1:
+  partition: "-l highmem"
+
+metaspades_hybrid_assembly_2:
   partition: "-l highmem"
 
 collapse_hybrid_assemblies:
@@ -64,6 +76,9 @@ metabat:
   partition: "-l highmem"
 
 vizbin:
+  partition: "-l highmem"
+
+vizbin_mt:
   partition: "-l highmem"
 
 kraken_contigs:
