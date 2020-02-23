@@ -648,7 +648,7 @@ outplot             <- snakemake@output #
 print("Loading data.")
 load(stats_image)
 
-names(outplot) <- types
+names(outplot) <- c(types,"sum")
 
 motuc <- list()
 tax_tab <- list()
@@ -720,7 +720,7 @@ for(type in types){
 ###################################################################################################
 ## plot mg vs mt for every level or histogram of mg or mt
 ###################################################################################################
-plotfile <- outplot[3]
+plotfile <- outplot[["sum"]]
 png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
 par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5,mfrow=plotdim(length(unique(unlist(c(sapply(tax_tab,names)))))),cex=1)
 if(length(types)>1){

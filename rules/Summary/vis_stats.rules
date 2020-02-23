@@ -7,6 +7,12 @@ if "assembly" in IMP_STEPS or CONTIGS:
     stats_figs.append(expand("Visualization/Assembly_{fig}.png", fig=["length_hist","cov_hist","gc_hist","cov_gc_scatter"]))
 if "analysis" in IMP_STEPS:
     stats_figs.append(expand("Visualization/Analysis_{fig}.png", fig=["length_hist","cov_hist","cov_scatter","func_sets"]))
+if "taxonomy" in IMP_STEPS:
+    stats_figs.append(expand("Visualization/Taxonomy_{type}_kraken_tree.png", type=TYPES))
+    stats_figs.append("Visualization/Taxonomy_kraken_plot.png")
+    stats_figs.append(expand("Visualization/Taxonomy_{type}_mOTU_tree.png", type=TYPES))
+    stats_figs.append("Visualization/Taxonomy_mOTU_plot.png")
+if "binning" in IMP_STEPS:    
 
 rule vis_stats:
     input:
@@ -133,5 +139,44 @@ else:
         conda: ENVDIR + "/IMP_visualize.yaml"
         script:
             SRCDIR + "/visualize_mOTU.R"
+
+if "binny" in BIN_STEPS:
+    rule visualize_bins:
+        input:
+            stats="Stats/all_stats.Rdata",
+            bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
+            dastool="Binning/selected_DASTool_scaffolds2bin.txt",
+            vizbin="Binning/binny/%s.vizbin.with-contig-names.points" %ASS
+        output:
+            report("Visualization/Binning_alluvial.png",caption="report/stats/Binning_alluvial.rst",category="Binning"),
+            report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="report/stats/Binning_depth.rst",category="Binning"),
+            report("Visualization/Binning_vizbin.png",caption="report/stats/Binning_vizbin.rst",category="Binning")
+        params:
+            runtime = "2:00:00",
+            mem = MEMCORE
+        log: "logs/visualize_bins.log"
+        message: "visualize_bins: Plotting binning results."
+        threads: 1
+        conda: ENVDIR + "/IMP_visualize.yaml"
+        script:
+            SRCDIR + "/visualize_binning.R"
+else:
+    rule visualize_bins:
+        input:
+            stats="Stats/all_stats.Rdata",
+            bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
+            dastool="Binning/selected_DASTool_scaffolds2bin.txt"
+        output:
+            report("Visualization/Binning_alluvial.png",caption="report/stats/Binning_alluvial.rst",category="Binning"),
+            report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="report/stats/Binning_depth.rst",category="Binning")
+        params:
+            runtime = "2:00:00",
+            mem = MEMCORE
+        log: "logs/visualize_bins.log"
+        message: "visualize_bins: Plotting binning results."
+        threads: 1
+        conda: ENVDIR + "/IMP_visualize.yaml"
+        script:
+            SRCDIR + "/visualize_binning.R"
 
 

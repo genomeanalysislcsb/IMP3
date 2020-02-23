@@ -707,7 +707,7 @@ dir.create("Visualization", showWarnings = FALSE)
 
 relReads <- list()
 for(type in types){
-  plotfile <- outplot[type]
+  plotfile <- outplot[[type]]
   relReads[[type]] <- log10(0.1 + sapply(c(df_tree$tip.label,df_tree$node.label)[reorder(df_tree, order = "postorder")$edge[,2]],
                                          function(x){
                                            if(x %in% krakRep[[type]]$newName){
@@ -726,7 +726,7 @@ for(type in types){
 ###################################################################################################
 ## plot mg vs mt for every level or histogram of mg or mt
 ###################################################################################################
-plotfile <- outplot[3]
+plotfile <- outplot[["sum"]]
 png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
 par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5,mfrow=plotdim(length(unique(unlist(c(sapply(tax_tab,names)))))),cex=0.8)
 if(length(types)>1){
