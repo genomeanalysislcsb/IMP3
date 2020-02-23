@@ -71,12 +71,12 @@ foi <- data.frame(
 ## plot
 ###################################################################################################
 print("Plotting reads stats.")
+dir.create("Visualization", showWarnings = FALSE)
 for(type in types){
   readM <- merge(statsTab[statsTab$type==type&
                             statsTab$step %in% c(foi$steps),],
                  foi,all.x=T,by.x="step",by.y="steps")
   readM <- readM[order(readM$rank),]
-  dir.create("Visualization", showWarnings = FALSE)
   plotfile <- grep(paste0("/",type,"."),fixed=T,unlist(outplot),value = T)
   png(plotfile,width=8.5,height=7,units = "cm",res=300,pointsize=7)
   par("mar"=c(10,5,0.5,0.5),tcl="-0.3",mgp=c(3.5,0.5,0),lwd=0.5)

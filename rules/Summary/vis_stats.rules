@@ -2,7 +2,7 @@ localrules: vis_stats
 
 stats_figs =[]
 if "preprocessing" in IMP_STEPS or MG or MT:
-    stats_figs.append("Visualization/Reads.png")
+    stats_figs.append(expand("Visualization/{types}.reads.png",types=TYPES))
 if "assembly" in IMP_STEPS or CONTIGS:
     stats_figs.append(expand("Visualization/Assembly_{fig}.png", fig=["length_hist","cov_hist","gc_hist","cov_gc_scatter"]))
 if "analysis" in IMP_STEPS:
@@ -55,9 +55,7 @@ rule visualize_analysis_stats:
         report("Visualization/Analysis_length_hist.png",caption="report/stats/Analysis_length.rst",category="Analysis"),
         report("Visualization/Analysis_cov_hist.png",caption="report/stats/Analysis_cov.rst",category="Analysis"),
         report("Visualization/Analysis_cov_scatter.png",caption="report/stats/Analysis_cov_scat.rst",category="Analysis"),
-        report("Visualization/Analysis_func_sets.png",caption="report/stats/Analysis_func.rst",category="Analysis"),
-#        report("Visualization/Analysis_contigs_cov_snps_scatter.png",caption="report/stats/Analysis_contigs_cov_snps.rst",category="Analysis"),
-#        report("Visualization/Analysis_genes_cov_snps_scatter.png",caption="report/stats/Analysis_genes_cov_snps.rst",category="Analysis")
+        report("Visualization/Analysis_func_sets.png",caption="report/stats/Analysis_func.rst",category="Analysis")
     params:
         runtime = "2:00:00",
         mem = MEMCORE
@@ -67,6 +65,7 @@ rule visualize_analysis_stats:
     conda: ENVDIR + "/IMP_visualize.yaml"
     script:
         SRCDIR + "/visualize_analysis.R"
+         
         
 rule visualize_taxonomy_stats:
     input:
