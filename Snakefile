@@ -144,13 +144,6 @@ if "summary" in IMP_STEPS:
 #                 #    inputs_all.append('archiving.done')
 
 localrules: workflow, ALL
-# master command
-rule ALL:
-    input:
-        inputs_all
-    output:
-        touch('all.done')
-
 # master command workflow
 rule workflow:
     input:
@@ -166,4 +159,12 @@ if "summary" in IMP_STEPS:
         "workflows/common/Summary"
 #if config['compress_level'] != "none" and config['compress_level'] != "":
 #    inputs_all.append('archiving.done')
+
+# master command
+rule ALL:
+    input:
+        inputs_all
+    output:
+        touch('all.done')
+
 

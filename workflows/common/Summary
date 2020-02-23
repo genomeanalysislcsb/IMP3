@@ -1,4 +1,5 @@
 # summary takes care of collecting rules and archiving data
+localrules: SUMMARY, VIS
 
 # include rules for the Report part of the workflow
 sum_target = []
@@ -47,8 +48,6 @@ if "vis" in SUM_STEPS:
     if "analysis" in IMP_STEPS:
         include:
             '../../rules/Summary/vis_functions.rules'
-#        include:
-#            '../../rules/Summary/vis_snps.rules'
     if "binning" in IMP_STEPS:
         include:
             '../../rules/Summary/vis_binning.rules'
@@ -57,26 +56,6 @@ if "vis" in SUM_STEPS:
             vis_targets
         output:
             touch('visualization.done')
-            
-
-
-# include rules for archiving:
-#arch_ctrl = ['']
-#include:
-#    '../../rules/Summary/archiving.rules'
-#if config['compress_level']['none']:
-#    if SUMDIR:
-#        arch_ctrl.append(SUMDIR)
-#elif config['compress_level']['mid']:
-#    arch_ctrl.apprend("reads.compressed")
-#elif config['compress_level']['max']:
-#    arch_ctrl.append('DB_filling.done')
-
-#if 
-
-
-localrules: SUMMARY, VIS
-
 
 
 # master command
