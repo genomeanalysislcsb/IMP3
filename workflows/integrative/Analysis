@@ -6,8 +6,6 @@ include:
     '../../rules/Analysis/prokkaC.rules'
 include:
     '../../rules/Analysis/variant.rules'
-#include:
-#    '../../rules/Analysis/visualize.rules'
 include:
     '../../rules/Analysis/annotate.rules'
 include:
@@ -20,7 +18,6 @@ rule ANALYSIS:
         expand("Stats/{type}/annotation/{type}.gene_depth.hist", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene.len", type=TYPES),
-        expand("Stats/{type}/annotation/{type}.prokkaID2ec.txt", type=TYPES),
         expand("Analysis/snps/{type}.variants.samtools.vcf.gz", type=TYPES),
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),

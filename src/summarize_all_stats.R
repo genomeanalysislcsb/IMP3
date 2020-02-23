@@ -31,6 +31,7 @@ types               <- snakemake@params[["types"]]
 dbs                 <- unlist(strsplit(snakemake@params[["dbs"]],split=" "))
 out_file_tsv        <- snakemake@output[[1]] #"Stats/all_stats.tsv"
 out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
+out_file_bins       <- snakemake@output[[3]] #"Stats/all_bin_stats.tsv"
 
 ###################################################################################################
 ## Read Preprocessing stats
@@ -279,7 +280,8 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
                            stringsAsFactors=F,header = F)
   }
   colnames(gene_gff) <- c("contig","source","feature","start","end","score","strand","frame","attribute")
-  
+  c2g <- data.frame("contig"=gene_gff$contig,
+                    "gene"=gsub("ID=([^;]+);.+","\\1",gene_gff$attribute))
   depthGeneStats_files <- list()
   for(type in types){
     depthGeneStats_files[[type]] <- paste0("Stats/",type,"/annotation/",type,".gene_depth.avg")
@@ -343,10 +345,12 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
                        stringsAsFactors=F,header = T)
   
   rnas_bin_tab <- matrix(0,nrow=length(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]),
-                         ncol=6,
+                         ncol=14,
                          dimnames=list(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""],
                                        c("complete_16S","partial_16S","complete_23S","partial_23S",
-                                         "any_5S","tRNAs")))
+                                         "any_5S","tRNAs","mean_coverage_depth","genes",
+                                         "expressed_genes","essential_genes","unique_essential_genes",
+                                         "mOTU_phyla","mOTU_genera","mOTUs")))
   for(bin in binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]){
     contigs_temp <- read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"),
                                stringsAsFactors=F,header = F)[,1]
@@ -363,8 +367,46 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
       rnas_bin_tab[rownames(rnas_bin_tab)==bin,5] <- length(which(grepl("5S ribosomal RNA",products_bin)))
       rnas_bin_tab[rownames(rnas_bin_tab)==bin,6] <- length(unique(grep("tRNA",products_bin,value = T)))
     }
-    rm(contigs_temp)
     rm(products_bin)
+    if("mg" %in% types){
+      bin_depth <- merge(contigs_temp,depthAssStat[["mg"]],by=1,all.x=T)
+      bin_depth$depth[is.na(bin_depth$depth)] <- 0
+      bin_depth <- weighted.mean(bin_depth$depth,sapply(bin_depth$x,function(x)contig_length$length[contig_length$contig==x]))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,7] <- bin_depth
+      rm(bin_depth)
+    }
+    cds_bin <- gsub("ID=([^;]+);.+","\\1",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9])
+    rnas_bin_tab[rownames(rnas_bin_tab)==bin,8] <- length(cds_bin)
+    if("mt" %in% types){
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,9] <- length(which(depthGeneStat[["mt"]]$depth[depthGeneStat[["mt"]]$gene %in% cds_bin]>0))
+    }
+    if("essential" %in% dbs){
+      ess_bin <- gsub(".+;essential=([^;]+);*","\\1",
+                      grep("essential=",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9],value=T))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(ess_bin)
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,11] <- length(unique(ess_bin))
+      rm(ess_bin)
+    }
+    if(file.exists("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")){
+      mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F)
+      mgenes <- mgenes[mgenes$queryID %in% cds_bin,]
+      if(nrow(mgenes)>0){
+        taxtp <- sort(table(sub("[0-9NA]+ ","",mgenes$phylum)),decreasing=T)
+        if(length(taxtp)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,12] <- paste(paste0(names(taxtp),
+                                                                                         "(",taxtp,")"),
+                                                                                  sep=";",collapse=";")
+        taxtg <- sort(table(sub("[0-9NA]+ ","",mgenes$genus)),decreasing=T)
+        if(length(taxtg)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,13] <- paste(paste0(names(taxtg),
+                                                                                         "(",taxtg,")"),
+                                                                                  sep=";",collapse=";")
+        taxtm <- sort(table(sub("[0-9NA]+ ","",mgenes$mOTU)),decreasing=T)
+        if(length(taxtm)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,14] <- paste(paste0(names(taxtm),
+                                                                                         "(",taxtm,")"),
+                                                                                  sep=";",collapse=";")
+        rm(taxtm,taxtg,taxtp,cds_bin,mgenes)
+      }
+    }
+    rm(contigs_temp)
   }
   
   binTab <- merge(binTab,rnas_bin_tab,by.x="selected_by_DASTool",by.y=0,all.x=T)
@@ -422,5 +464,8 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
 
 print("Writing concatenated read table.")
 write.table(statsTab,out_file_tsv,sep="\t",quote=F,row.names=F)
+if(binTab %in% ls()){
+  write.table(binTab,out_file_bins,sep="\t",quote=F,row.names=F)
+}
 save.image(out_file_rdat)
 

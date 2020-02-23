@@ -6,8 +6,7 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.annotation_cov.bed",
         "Stats/{type}/annotation/{type}.gene_depth.hist",
         "Stats/{type}/annotation/{type}.gene_depth.avg",
-        "Stats/{type}/annotation/{type}.gene.len",
-        "Stats/{type}/annotation/{type}.prokkaID2ec.txt"
+        "Stats/{type}/annotation/{type}.gene.len"
     params:
         runtime = "8:00:00",
         mem = MEMCORE
@@ -37,16 +36,4 @@ rule call_gene_depth:
 
         # Record gene length file
         cut -f 1,4 {output[1]} | uniq > {output[3]}
-        
-        # AHB: if grep -q 'eC_number' {output[1]}
-        if grep -q 'eC_number' {input[0]}
-        then
-	    echo 'EC annotations available' >> {log}
-            echo 'Creating file {output[4]}' >> {log}
-            grep "eC_number=" {input[0]} | cut -f9 | cut -f1,2 -d ';'| sed 's/ID=//g'| sed 's/;eC_number=/\t/g' > {output[4]}
-        else
-	    echo 'No EC annotations available' >> {log}
-            echo 'Creating empty file {output[4]}' >> {log}
-            touch {output[4]}
-        fi
         """

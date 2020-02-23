@@ -20,7 +20,6 @@ if "MetaBAT" in BIN_STEPS:
     inputs_binning.append("Binning/MetaBAT/metabat_res")
     include:
         '../../rules/Binning/MetaBAT/metabat.rules'
-
 ## binny
 if "binny" in BIN_STEPS:
     inputs_binning.append("Binning/binny/scaffold2bin.tsv")
@@ -30,14 +29,12 @@ if "binny" in BIN_STEPS:
         '../../rules/Binning/binny/binny.rules'
     include:
         '../../rules/Binning/binny/binny2dastool.rules'
-
 ## GRiD
 include:
     '../../rules/Binning/GRiD/grid_dynamic.rules'
 
 if not 'taxonomy' in IMP_STEPS:
     inputs_binning.append("Binning/selected_DASTool_bins/per_bin_results.tar.gz")
-
 
 
 ## master command
