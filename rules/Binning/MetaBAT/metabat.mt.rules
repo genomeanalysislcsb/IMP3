@@ -8,7 +8,7 @@ rule metabat:
     params:
         runtime = "24:00:00",
         mem = BIGMEMCORE
-    conda: ROOT_DIR + "/envs/IMP_binning.yaml"
+    conda: ENVDIR + "/IMP_binning.yaml"
     log: "logs/binning_metabat.log"
     message: "metabat: Running MetaBAT."
     shell:

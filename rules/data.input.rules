@@ -1,66 +1,28 @@
 import os
 import shutil
-
-# outputs to be generated (in rule)
-outputs = []
-# symlinks to be generated (from , to)
-symlinks = []
-# symlinks to output to be generated (in rule)
-symlinked_output = []
-
-if 'preprocessing' in IMP_STEPS:
-    if MG:
-        outputs.append("Preprocessing/mg.r1.fq")
-        outputs.append("Preprocessing/mg.r2.fq")
-    if MT:
-        outputs.append("Preprocessing/mt.r1.fq")
-        outputs.append("Preprocessing/mt.r2.fq")
-
-elif 'assembly' in IMP_STEPS:
-    # here there are no preprocessing
-    # we take the pipeline directly to the assembly part.
-    if MG:
-        outputs.append("Preprocessing/mg.r1.fq")
-        outputs.append("Preprocessing/mg.r2.fq")
-        outputs.append("Preprocessing/mg.se.fq")
-        symlinked_output.append("Preprocessing/mg.r1.preprocessed.fq")
-        symlinked_output.append("Preprocessing/mg.r2.preprocessed.fq")
-        symlinked_output.append("Preprocessing/mg.se.preprocessed.fq")
-        symlinks.append(("mg.r1.fq", "Preprocessing/mg.r1.preprocessed.fq"))
-        symlinks.append(("mg.r2.fq", "Preprocessing/mg.r2.preprocessed.fq"))
-        symlinks.append(("mg.se.fq", "Preprocessing/mg.se.preprocessed.fq"))
-    if MT:
-        outputs.append("Preprocessing/mt.r1.fq")
-        outputs.append("Preprocessing/mt.r2.fq")
-        outputs.append("Preprocessing/mt.se.fq")
-        symlinked_output.append("Preprocessing/mt.r1.preprocessed.fq")
-        symlinked_output.append("Preprocessing/mt.r2.preprocessed.fq")
-        symlinked_output.append("Preprocessing/mt.se.preprocessed.fq")
-        symlinks.append(("mt.r1.fq", "Preprocessing/mt.r1.preprocessed.fq"))
-        symlinks.append(("mt.r2.fq", "Preprocessing/mt.r2.preprocessed.fq"))
-        symlinks.append(("mt.se.fq", "Preprocessing/mt.se.preprocessed.fq"))
+from pathlib import Path
 
 
+# functions
 def prepare_input_files(inputs, outputs):
     """
     Prepare file names from input into snakemake pipeline.
     """
     if len(inputs) != len(outputs):
         raise OSError("//Inputs and outputs are not of the same length: %s <> %s" % (', '.join(inputs), ', '.join(outputs)))
-
     for infilename, outfilename in zip(inputs, outputs):
         _, fname1 = os.path.split(infilename)
         _process_file(fname1, infilename, outfilename)
 
-
 def symlink_input_files(data):
     for infilename, outfilename in data:
-        _, fname1 = os.path.split(infilename)
         print('symlink',  infilename, '=>', outfilename)
         os.symlink(infilename, outfilename)
 
-
-CHUNK_SIZE = 1024
+def touch_fake_output(files):
+    for outfile in files:
+        print('touching', outfile)
+        Path(outfile).touch()
 
 def _process_file(fname, inp, outfilename):
     """
@@ -76,31 +38,169 @@ def _process_file(fname, inp, outfilename):
     elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
         shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
 
-        # dec = bz2.BZ2Decompressor()
-        # with open(outfilename, 'wb') as whandle, bz2.open(inp, 'rb') as rhandle:
-        # whandle.write(bz2.decompress(rhandle.read()))
-        # whandle.write(rhandle.read())
-        # for data in iter(lambda: rhandle.read(CHUNK_SIZE), b''):
-        # whandle.write(bz2.decompress(data))
     # copy
     else:
         shutil.copy(inp, outfilename)
+
+
+# inputs to use
+inputs = []
+# outputs to be generated (in rule)
+outputs = []
+# symlinks to be generated (from , to)
+symlinks = []
+# symlinks to output to be generated (in rule)
+symlinked_output = []
+# empty se files
+fake_output = []
+
+if 'preprocessing' in IMP_STEPS:
+    if MG:
+        outputs.append("Preprocessing/mg.r1.fq")
+        outputs.append("Preprocessing/mg.r2.fq")
+        inputs.append(MG)
+    if MT:
+        outputs.append("Preprocessing/mt.r1.fq")
+        outputs.append("Preprocessing/mt.r2.fq")
+        inputs.append(MT) 
+
+elif 'assembly' in IMP_STEPS or 'taxonomy' in IMP_STEPS:
+    if MG and len(MG) == 3:
+        inputs.append(MG)
+        outputs.append("Preprocessing/mg.r1.fq")
+        outputs.append("Preprocessing/mg.r2.fq")
+        outputs.append("Preprocessing/mg.se.fq")
+        symlinked_output.append("Preprocessing/mg.r1.preprocessed.fq")
+        symlinked_output.append("Preprocessing/mg.r2.preprocessed.fq")
+        symlinked_output.append("Preprocessing/mg.se.preprocessed.fq")
+        symlinks.append(("mg.r1.fq", "Preprocessing/mg.r1.preprocessed.fq"))
+        symlinks.append(("mg.r2.fq", "Preprocessing/mg.r2.preprocessed.fq"))
+        symlinks.append(("mg.se.fq", "Preprocessing/mg.se.preprocessed.fq"))
+    if MG and len(MG) == 2:
+        inputs.append(MG)
+        outputs.append("Preprocessing/mg.r1.fq")
+        outputs.append("Preprocessing/mg.r2.fq")
+        fake_output.append("Preprocessing/mg.se.fq")
+        symlinked_output.append("Preprocessing/mg.r1.preprocessed.fq")
+        symlinked_output.append("Preprocessing/mg.r2.preprocessed.fq")
+        symlinked_output.append("Preprocessing/mg.se.preprocessed.fq")
+        symlinks.append(("mg.r1.fq", "Preprocessing/mg.r1.preprocessed.fq"))
+        symlinks.append(("mg.r2.fq", "Preprocessing/mg.r2.preprocessed.fq"))
+        symlinks.append(("mg.se.fq", "Preprocessing/mg.se.preprocessed.fq"))
+    if MT and len(MT) == 3:
+        inputs.append(MT)
+        outputs.append("Preprocessing/mt.r1.fq")
+        outputs.append("Preprocessing/mt.r2.fq")
+        outputs.append("Preprocessing/mt.se.fq")
+        symlinked_output.append("Preprocessing/mt.r1.preprocessed.fq")
+        symlinked_output.append("Preprocessing/mt.r2.preprocessed.fq")
+        symlinked_output.append("Preprocessing/mt.se.preprocessed.fq")
+        symlinks.append(("mt.r1.fq", "Preprocessing/mt.r1.preprocessed.fq"))
+        symlinks.append(("mt.r2.fq", "Preprocessing/mt.r2.preprocessed.fq"))
+        symlinks.append(("mt.se.fq", "Preprocessing/mt.se.preprocessed.fq"))
+    if MT and len(MT) == 2:
+        inputs.append(MT)
+        outputs.append("Preprocessing/mt.r1.fq")
+        outputs.append("Preprocessing/mt.r2.fq")
+        fake_output.append("Preprocessing/mt.se.fq")
+        symlinked_output.append("Preprocessing/mt.r1.preprocessed.fq")
+        symlinked_output.append("Preprocessing/mt.r2.preprocessed.fq")
+        symlinked_output.append("Preprocessing/mt.se.preprocessed.fq")
+        symlinks.append(("mt.r1.fq", "Preprocessing/mt.r1.preprocessed.fq"))
+        symlinks.append(("mt.r2.fq", "Preprocessing/mt.r2.preprocessed.fq"))
+        symlinks.append(("mt.se.fq", "Preprocessing/mt.se.preprocessed.fq"))
+
+if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in IMP_STEPS):
+    if CONTIGS:
+        inputs.append(CONTIGS)
+        outputs.append("Assembly/%s.assembly.merged.fa" %ASS)
+        include:
+            'Assembly/common/contig.rules'
+        include:
+            'Assembly/common/mapping.rules'
+        if MGaln:
+            inputs.append(MGaln)
+            outputs.append("Assembly/mg.reads.sorted.bam")
+        else:
+            include:
+                'Assembly/common/bwa.index.rules'
+            if MG and len(MG) == 3 and not 'taxonomy' in IMP_STEPS:
+                inputs.append(MG)
+                outputs.append("Preprocessing/mg.r1.fq")
+                outputs.append("Preprocessing/mg.r2.fq")
+                outputs.append("Preprocessing/mg.se.fq")
+                symlinked_output.append("Preprocessing/mg.r1.preprocessed.fq")
+                symlinked_output.append("Preprocessing/mg.r2.preprocessed.fq")
+                symlinked_output.append("Preprocessing/mg.se.preprocessed.fq")
+                symlinks.append(("mg.r1.fq", "Preprocessing/mg.r1.preprocessed.fq"))
+                symlinks.append(("mg.r2.fq", "Preprocessing/mg.r2.preprocessed.fq"))
+                symlinks.append(("mg.se.fq", "Preprocessing/mg.se.preprocessed.fq"))
+            elif MG and len(MG) == 2 and not 'taxonomy' in IMP_STEPS:
+                inputs.append(MG)
+                outputs.append("Preprocessing/mg.r1.fq")
+                outputs.append("Preprocessing/mg.r2.fq")
+                fake_output.append("Preprocessing/mg.se.fq")
+                symlinked_output.append("Preprocessing/mg.r1.preprocessed.fq")
+                symlinked_output.append("Preprocessing/mg.r2.preprocessed.fq")
+                symlinked_output.append("Preprocessing/mg.se.preprocessed.fq")
+                symlinks.append(("mg.r1.fq", "Preprocessing/mg.r1.preprocessed.fq"))
+                symlinks.append(("mg.r2.fq", "Preprocessing/mg.r2.preprocessed.fq"))
+                symlinks.append(("mg.se.fq", "Preprocessing/mg.se.preprocessed.fq"))
+        if MTaln:
+            inputs.append(MTaln)
+            outputs.append("Assembly/mt.reads.sorted.bam")
+        else:
+            include:
+                'Assembly/common/bwa.index.rules'
+            if MT and len(MT) == 3 and not 'taxonomy' in IMP_STEPS:
+                inputs.append(MT)
+                outputs.append("Preprocessing/mt.r1.fq")
+                outputs.append("Preprocessing/mt.r2.fq")
+                outputs.append("Preprocessing/mt.se.fq")
+                symlinked_output.append("Preprocessing/mt.r1.preprocessed.fq")
+                symlinked_output.append("Preprocessing/mt.r2.preprocessed.fq")
+                symlinked_output.append("Preprocessing/mt.se.preprocessed.fq")
+                symlinks.append(("mt.r1.fq", "Preprocessing/mt.r1.preprocessed.fq"))
+                symlinks.append(("mt.r2.fq", "Preprocessing/mt.r2.preprocessed.fq"))
+                symlinks.append(("mt.se.fq", "Preprocessing/mt.se.preprocessed.fq"))
+            elif MT and len(MT) == 2 and not 'taxonomy' in IMP_STEPS:
+                inputs.append(MT)
+                outputs.append("Preprocessing/mt.r1.fq")
+                outputs.append("Preprocessing/mt.r2.fq")
+                fake_output.append("Preprocessing/mt.se.fq")
+                symlinked_output.append("Preprocessing/mt.r1.preprocessed.fq")
+                symlinked_output.append("Preprocessing/mt.r2.preprocessed.fq")
+                symlinked_output.append("Preprocessing/mt.se.preprocessed.fq")
+                symlinks.append(("mt.r1.fq", "Preprocessing/mt.r1.preprocessed.fq"))
+                symlinks.append(("mt.r2.fq", "Preprocessing/mt.r2.preprocessed.fq"))
+                symlinks.append(("mt.se.fq", "Preprocessing/mt.se.preprocessed.fq"))
+
+if "assembly" in IMP_STEPS and LONG:
+    inputs.append(LONG)
+    outputs.append("Assembly/long_reads.fastq")
+
+#CHUNK_SIZE = 1024
 
 localrules: prepare_input_data
 
 rule prepare_input_data:
     input:
-        MG, MT
+        inputs
     output:
         outputs,
+        fake_output,     
         symlinked_output
     threads: 1
     params:
         runtime = "4:00:00",
         mem = "--mem-per-cpu " + MEMCORE,
         partition = "-p batch --qos qos-batch"
-    message: "Preparing reads."
+    message: "Preparing input."
     run:
         prepare_input_files(input, outputs)
+        if fake_output:
+            touch_fake_output(fake_output)
         if symlinks:
             symlink_input_files(symlinks)
+
+

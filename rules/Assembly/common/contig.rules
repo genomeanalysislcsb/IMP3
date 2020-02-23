@@ -1,3 +1,20 @@
+rule tar_intermediary:
+    input:
+        "Assembly/%s.assembly.merged.fa" % ASS,
+        "Assembly/intermediary"
+    output:
+        "Assembly/intermediary.tar.gz"
+    threads: 1
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE
+    log: "logs/assembly_tar_intermediary.log"
+    message: "tar_intermediary: Compressing intermediary steps of assembly."
+    shell:
+       """
+       tar cvzf {output} {input[1]} && rm -r {input[1]} > {log} 2>&1
+       """
+
 rule contig_fasta_indexing:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS
@@ -7,7 +24,7 @@ rule contig_fasta_indexing:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
-    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
+    conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_contig_fasta_indexing.log"
     message: "contig_fasta_indexing: Indexing assembly."
     shell:

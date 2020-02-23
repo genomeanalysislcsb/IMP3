@@ -1,18 +1,23 @@
+SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
+
 FILTERING_CMD = """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
-        bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} 2> {log} | samtools view --threads {threads} -bS - > $TMP_FILE 2> {log}
+        bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} 2>> {log} | samtools view --threads {threads} -bS - > $TMP_FILE 2> {log}
         samtools merge --threads {threads} -u - \
-         <(samtools view --threads {threads} -u  -f 4 -F 264 $TMP_FILE 2> {log}) \
-         <(samtools view --threads {threads} -u -f 8 -F 260 $TMP_FILE 2> {log}) \
-         <(samtools view --threads {threads} -u -f 12 -F 256 $TMP_FILE 2> {log}) 2> {log} | \
-         samtools view --threads {threads} -bF 0x800 - 2> {log} | samtools sort --threads {threads} -m {BIGMEMCORE} -n - 2> {log} | \
-         bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]} > {log} 2>&1
+         <(samtools view --threads {threads} -u  -f 4 -F 264 $TMP_FILE 2>> {log}) \
+         <(samtools view --threads {threads} -u -f 8 -F 260 $TMP_FILE 2>> {log}) \
+         <(samtools view --threads {threads} -u -f 12 -F 256 $TMP_FILE 2>> {log}) 2>> {log} | \
+         samtools view --threads {threads} -bF 0x800 - 2> {log} | \
+         samtools sort --threads {threads} -m {SAMTOOLS_MEM} -n - 2> {log} | \
+         bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]} >> {log} 2>&1
         if [[ -s {input[2]} ]]
          then
-         bwa mem -v 1 -t {threads} {input[3]} {input[2]} 2> {log} | samtools view --threads {threads} -bS - 2> {log} | \
-          samtools view --threads {threads} -uf 4 - 2> {log} | bamToFastq -i stdin -fq {output[2]} > {log} 2>&1
+         bwa mem -v 1 -t {threads} {input[3]} {input[2]} 2>> {log} | \
+          samtools view --threads {threads} -bS - 2>> {log} | \
+          samtools view --threads {threads} -uf 4 - 2>> {log} | \
+          bamToFastq -i stdin -fq {output[2]} >> {log} 2>&1
         else
-         echo "{input[2]} is empty, skipping single end human sequence filtering, but creating it anyway..." > {log}
+         echo "{input[2]} is empty, skipping single end human sequence filtering, but creating it anyway..." >> {log}
          touch {output[2]}
         fi
         rm -rf $TMP_FILE
@@ -42,7 +47,7 @@ rule mg_filtering:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
-    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
+    conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/preprocessing_mg_filtering.log"
     message: "mg_filtering: Filtering mg reads against {FILTER}."
     shell:
@@ -65,7 +70,7 @@ rule mt_filtering:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
-    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
+    conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/preprocessing_mt_filtering.log"
     message: "mt_filtering: Filtering mt reads against {FILTER}."
     shell:

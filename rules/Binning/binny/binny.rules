@@ -7,7 +7,7 @@ rule prepare_binny:
        gff='Analysis/annotation/annotation_CDS_RNA_hmms.gff'
     output:
        directory("Binning/binny/clusterFiles")
-    threads: 1
+#    threads: 1
     message: "Prepare binny."
     shell:
        """
@@ -35,7 +35,7 @@ rule binny:
         runtime = "24:00:00",
         mem = MEMCORE
     threads: 1
-    conda: ROOT_DIR + "/envs/IMP_binning.yaml" 
+    conda: ENVDIR + "/IMP_binning.yaml" 
     log: "logs/binning_binny.log"
     message: "binny: Running Binny."
     script:

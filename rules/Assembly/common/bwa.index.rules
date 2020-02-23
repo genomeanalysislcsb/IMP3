@@ -11,7 +11,7 @@ rule bwa_index:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1
-    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
+    conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_bwa_index.{fasta}.log"
     message: "bwa_index: Indexing {wildcards.fasta} for bwa."
     shell:

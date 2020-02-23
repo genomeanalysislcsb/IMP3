@@ -12,6 +12,8 @@ include:
     '../../rules/Analysis/reads-count.rules'
 include:
     '../../rules/Analysis/variant.rules'
+#include:
+#    '../../rules/Analysis/visualize.rules'
 include:
     '../../rules/Analysis/annotate.rules'
 include:

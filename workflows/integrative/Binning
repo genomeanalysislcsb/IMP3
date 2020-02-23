@@ -26,6 +26,7 @@ include:
 include:
     '../../rules/Binning/GRiD/grid_dynamic.rules'
 
+
 ## master command
 rule BINNING:
     input:

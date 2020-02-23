@@ -5,7 +5,7 @@ include:
 
 
 # include only if user don't skip preprocessing
-if not config['skip_preprocessing']:
+if 'preprocessing' in IMP_STEPS:
     # trimming rules
     include:
         "../../../rules/Preprocessing/trimming.rules"

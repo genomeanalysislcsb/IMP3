@@ -8,7 +8,7 @@ rule hmmer:
         dbs = DBPATH + "/hmm/{db}",
         runtime = "48:00:00",
         mem = MEMCORE
-    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
+    conda: ENVDIR + "/IMP_annotation.yaml"
     threads: 12
     log: "logs/analysis_hmmer.{db}.log"
     message: "hmmer: Running HMMER for {wildcards.db}."
@@ -31,7 +31,7 @@ rule makegff:
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1
-    conda: ROOT_DIR + "/envs/IMP_annotation.yaml"
+    conda: ENVDIR + "/IMP_annotation.yaml"
     log: "logs/analysis_makegff.{db}.log"
     message: "makegff: Adding hmmer results of {wildcards.db} to gff."
     shell:

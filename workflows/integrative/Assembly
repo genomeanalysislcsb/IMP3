@@ -25,12 +25,14 @@ include:
 include:
     '../../rules/Assembly/common/mapping.rules'
 
+
 # master command
 rule ASSEMBLY:
     input:
-	    'Assembly/mgmt.assembly.merged.fa',
-	    'Assembly/mgmt.assembly.merged.fa.fai',
-	    'Assembly/mgmt.assembly.merged.fa.bed3',
+#            'Assembly/intermediary.tar.gz',
+	    'Assembly/%s.assembly.merged.fa' %ASS,
+	    'Assembly/%s.assembly.merged.fa.fai' %ASS,
+	    'Assembly/%s.assembly.merged.fa.bed3' %ASS,
             'Assembly/mt.reads.sorted.bam',
 	    'Assembly/mt.reads.sorted.bam.bai',
             'Assembly/mg.reads.sorted.bam',

@@ -41,16 +41,16 @@ rule grid:
     output:
         directory("Binning/selected_DASTool_bins/{clusterID}/grid")
     params:
-        clusterInput="Binning/selected_DASTool_bins" ,
+        clusterInput="Binning/selected_DASTool_bins/{wildcards.clusterID}",
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1
-    conda: ROOT_DIR + "/envs/IMP_grid.yaml"
+    conda: ENVDIR + "/IMP_grid.yaml"
     log: "logs/binning_grid.{clusterID}.log"
     message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput}/{wildcards.clusterID} -o {output} -g {input[0]} > {log} 2>&1
+        grid single -r {params.clusterInput} -o {output} -g {input[0]} > {log} 2>&1
         """
 
 rule prepare_gridBed:
@@ -81,10 +81,10 @@ rule prepare_gridReads:
     threads: 1
     log: "logs/binning_prepare_gridReads.{clusterID}.log"
     message: "prepare_gridReads: Preparing fastq file for GRiD - {wildcards.clusterID}."
-    conda: ROOT_DIR + "/envs/IMP_mapping.yaml"
+    conda: ENVDIR + "/IMP_mapping.yaml"
     shell:
         """
-        samtools view -b -F 5 -L {input[1]} {input[0]} 2> {log} | samtools bam2fq -n - > {output} 2> {log} 
-        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2> {log} | samtools bam2fq -n - >> {output} 2> {log}
-        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2> {log} | samtools bam2fq -n - >> {output} 2> {log}
+        samtools view -b -F 5 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - > {output} 2>> {log} 
+        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - >> {output} 2>> {log}
+        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - >> {output} 2>> {log}
         """

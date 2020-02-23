@@ -5,17 +5,33 @@ include:
     '../../../rules/Binning/DAStool/dastool.rules'
 
 ## MaxBin
+#include:
+#    '../../rules/Binning/MaxBin/maxbin.rule'
+#include:
+#    '../../rules/Binning/MaxBin/maxbin_get_depth.rule'
+#include:
+#    '../../rules/Binning/MaxBin/get_contig2bin.rule'
+## MetaBAT
 include:
     '../../../rules/Binning/MetaBAT/metabat.mt.rules'
+## binny
+#include:
+#    '../../rules/Binning/binny/binny.rule'
+#include:
+#    '../../rules/Binning/binny/binny2dastool.rules'
 
 ## GRiD isn't run, but it contains a rule used by GTDBtk
 include:
     '../../../rules/Binning/GRiD/grid_dynamic.rules'
 
+
 ## master command
 rule BINNING:
     input:
+#        "Binning/MaxBin/maxbin_res.log",
         "Binning/MetaBAT/metabat_res",
+#	"Binning/binny/scaffold2bin.tsv",
         "Binning/selected_DASTool_summary.txt",
+#	"Binning/GRiD.done"
     output:
         touch('binning.done')

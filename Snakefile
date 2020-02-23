@@ -2,6 +2,7 @@
 include:
     "rules/ini/config"
 
+
 # define the data types used and the assembly
 if MG and MT and config['assembly']['hybrid']:
     TYPES = ['mg', 'mt']
@@ -15,10 +16,31 @@ elif MG:
 elif MT:
     TYPES = ['mt']
     ASS = 'mt'
-
+elif MGaln and MTaln:
+    TYPES = ['mg', 'mt']
+    ASS = 'mg'
+elif MGaln:
+    TYPES = ['mg']
+    ASS = 'mg'
+elif MTaln:
+    TYPES = ['mt']
+    ASS = 'mt'
+elif CONTIGS and MG and MT:
+    TYPES = ['mg', 'mt']
+    ASS = 'mg'
+elif CONTIGS and MG:
+    TYPES = ['mg']
+    ASS = 'mg'
+elif CONTIGS and MT:
+    TYPES = ['mt']
+    ASS = 'mg'
 
 workdir:
     OUTPUTDIR
+
+f = open(OUTPUTDIR+'/full.config.yaml', 'w+')
+yaml.dump(config, f, allow_unicode=True,default_flow_style=False)
+
 
 # include rules for the workflow based on the input parameters
 include:
@@ -71,7 +93,7 @@ elif MG:
     if 'binning' in IMP_STEPS:
         include:
             "workflows/single_omics/mg/Binning"
-
+# MT-only workflow
 elif MT:
     if 'preprocessing' in IMP_STEPS:
         include:
@@ -92,7 +114,45 @@ elif MT:
     if 'binning' in IMP_STEPS:
         include:
             "workflows/single_omics/mt/Binning"
+#starting from aligned reads:
+elif MGaln and MTaln:
+    if 'analysis' in IMP_STEPS:
+        include:
+            "workflows/integrative/Analysis"
 
+    if 'taxonomy' in IMP_STEPS:
+        include:
+            "workflows/integrative/Taxonomy"
+
+    if 'binning' in IMP_STEPS:
+        include:
+            "workflows/integrative/Binning"
+
+elif MGaln:
+    if 'analysis' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Analysis"
+
+    if 'taxonomy' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Taxonomy"
+
+    if 'binning' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mg/Binning"
+
+elif MTaln:
+    if 'analysis' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Analysis"
+
+    if 'taxonomy' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Taxonomy"
+
+    if 'binning' in IMP_STEPS:
+        include:
+            "workflows/single_omics/mt/Binning"
 else:
     raise Exception('No input data.')
 

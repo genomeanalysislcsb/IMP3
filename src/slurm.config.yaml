@@ -1,4 +1,5 @@
 __default__: 
+  call: "sbatch"
   nodes: ""
   mem_per_cpu: "--mem-per-cpu "
   partition: "-p batch"
@@ -24,6 +25,11 @@ bwa_index:
   quality: "-qos qos-bigmem"
 
 mapping_on_assembly:
+  nodes: "-N 1"
+  partition: "-p bigmem"
+  quality: "-qos qos-bigmem"
+
+index_bam:
   nodes: "-N 1"
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
@@ -67,7 +73,7 @@ extract_unmapped:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
-run_DAS_tool:
+DAS_tool:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
@@ -105,8 +111,4 @@ GTDBtk_bins_single:
   nodes: "-N 1"
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
-
-
-
-
 

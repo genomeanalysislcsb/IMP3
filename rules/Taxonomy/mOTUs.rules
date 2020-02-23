@@ -22,16 +22,16 @@ rule motus:
     params:
         runtime = "12:00:00",
         mem = MEMCORE
-    conda: ROOT_DIR + "/envs/IMP_taxonomy.yaml"
+    conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_motus.{type}.log"
     message: "motus: Running mOTUs on {wildcards.type} reads."
     shell:
         """
-	a=`stat -c %A $CONDA_PREFIX//share/motus-2.5.1/db_mOTU/db_mOTU_versions`
+        a=`stat -c %A $CONDA_PREFIX/share/motus-*/db_mOTU/db_mOTU_versions`
         if [ $a == "-rw-------" ]
 	then
-		chmod 666 $CONDA_PREFIX//share/motus-2.5.1/db_mOTU/*
+		chmod 666 $CONDA_PREFIX/share/motus-*/db_mOTU/*
 	fi
-	motus profile -f {input[0]} -r {input[1]} -s {input[2]} -A -c -t {threads} -o {output} >& {log}
+        motus profile -f {input[0]} -r {input[1]} -s {input[2]} -A -c -t {threads} -o {output} >& {log}
         """
 
