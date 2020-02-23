@@ -6,13 +6,16 @@ if CONTIGS:
 
 localrules: ALL_stats 
 
+gathered = ["Stats/all_stats.tsv",
+            "Stats/all_stats.Rdata"]
+if "binning" in IMP_STEPS:
+    gathered.append("Stats/all_bin_stats.tsv")
+
 rule gather_stats:
     input:
         sum_stats_input
     output:
-        "Stats/all_stats.tsv",
-        "Stats/all_stats.Rdata",
-        "Stats/all_bin_stats.tsv" # only if binning done
+        gathered
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
@@ -29,8 +32,7 @@ rule gather_stats:
          
 rule ALL_stats:
     input:
-        "Stats/all_stats.tsv",
-        "Stats/all_stats.Rdata"
+        gathered
     output:
         touch("stats.done")
 

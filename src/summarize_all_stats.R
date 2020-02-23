@@ -31,7 +31,7 @@ types               <- snakemake@params[["types"]]
 dbs                 <- unlist(strsplit(snakemake@params[["dbs"]],split=" "))
 out_file_tsv        <- snakemake@output[[1]] #"Stats/all_stats.tsv"
 out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
-out_file_bins       <- snakemake@output[[3]] #"Stats/all_bin_stats.tsv"
+if(length(snakemake@output)>2) out_file_bins <- snakemake@output[[3]] #"Stats/all_bin_stats.tsv"
 
 ###################################################################################################
 ## Read Preprocessing stats
