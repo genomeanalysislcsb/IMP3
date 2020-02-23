@@ -19,8 +19,8 @@ library(UpSetR)
 stats_image         <- snakemake@input #"Stats/all_stats.Rdata"
 outplot             <- snakemake@output # Visualization/Analysis_length_hist.png"
                                         #"Visualization/Analysis_cov_hist.png
-                                        # Visualization/Analysis_cov_func.png 
-                                        # Visualization/Analysis_func_counts.png
+                                        # Visualization/Analysis_cov_scatter.png
+                                        # Visualization/Analysis_func_sets.png
 
 ###################################################################################################
 ## Load image 

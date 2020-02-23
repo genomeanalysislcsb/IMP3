@@ -643,8 +643,9 @@ circular.plot.print <- function (edge, Ntip, Nnode, xx, yy, theta, r, edge.color
 ###################################################################################################
 
 stats_image         <- snakemake@input[[1]] #"Stats/all_stats.Rdata"
-outplot             <- snakemake@output # 
 assLev_file         <- snakemake@input[[2]]# "Analysis/taxonomy/kraken/ASS.kraken.parsed.tsv"
+outplot             <- snakemake@output # 
+
 
 ###################################################################################################
 ## Load image 
@@ -699,13 +700,13 @@ V(gra)$name <- gsub("[,/(/);:]","",V(gra)$name)
 df_tree = collapse.singles(read.newick(text = graph_to_newick(gra,"R__root")))
 df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
 
-
 ass_tab <- read.delim(assLev_file,stringsAsFactors = F)
-
 
 ###################################################################################################
 ## plot tree
 ###################################################################################################
+print("Plotting kraken stats.")
+dir.create("Visualization", showWarnings = FALSE)
 
 relReads <- list()
 for(type in types){

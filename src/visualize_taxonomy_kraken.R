@@ -702,6 +702,8 @@ df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
 ###################################################################################################
 ## plot tree
 ###################################################################################################
+print("Plotting kraken stats.")
+dir.create("Visualization", showWarnings = FALSE)
 
 relReads <- list()
 for(type in types){

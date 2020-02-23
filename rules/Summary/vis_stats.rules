@@ -65,7 +65,42 @@ rule visualize_analysis_stats:
     conda: ENVDIR + "/IMP_visualize.yaml"
     script:
         SRCDIR + "/visualize_analysis.R"
-         
+ 
+if CONTIGS or "assembly" in IMP_STEPS:        
+    rule visualize_kraken_reads:
+        input:
+            "Stats/all_stats.Rdata",
+            "Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" %ASS
+        output:
+            report(expand("Visualization/Taxonomy_{type}_kraken_tree.png",type=TYPES),caption="report/stats/Taxonomy_kraken_withAssembly.rst",category="Taxonomy"),
+            report("Visualization/Taxonomy_kraken_plot.png",caption="report/stats/Taxonomy_kraken_scatter_withAssembly.rst",category="Taxonomy")
+        params:
+            runtime = "2:00:00",
+            mem = MEMCORE
+        log: "logs/visualize_taxonomy_stats.log"
+        message: "visualize_taxonomy_stats: Plotting taxonomy results."
+        threads: 1
+        conda: ENVDIR + "/IMP_visualize.yaml"
+        script:
+            SRCDIR + "/visualize_taxonomy_kraken_withAssembly.R"
+else:
+    rule visualize_kraken_reads:
+        input:
+            "Stats/all_stats.Rdata"
+        output:
+            report(expand("Visualization/Taxonomy_{type}_kraken_tree.png",type=TYPES),caption="report/stats/Taxonomy_kraken.rst",category="Taxonomy"),
+            report("Visualization/Taxonomy_kraken_plot.png",caption="report/stats/Taxonomy_kraken_scatter.rst",category="Taxonomy")
+        params:
+            runtime = "2:00:00",
+            mem = MEMCORE
+        log: "logs/visualize_taxonomy_stats.log"
+        message: "visualize_taxonomy_stats: Plotting taxonomy results."
+        threads: 1
+        conda: ENVDIR + "/IMP_visualize.yaml"
+        script:
+            SRCDIR + "/visualize_taxonomy_kraken.R"
+
+
         
 rule visualize_taxonomy_stats:
     input:
