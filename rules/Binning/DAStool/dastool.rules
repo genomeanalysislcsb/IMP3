@@ -26,9 +26,9 @@ rule DAS_tool:
     shell:
         """
         TABS="{input.tabs}"
-        TAB_tmp=${TABS//Binning\//}
-        TAB_tmp2=${TAB_tmp2//\/scaffold2bin.tsv/}
-        TABSl=${TAB_tmp2// /,}}
+        TAB_tmp=${{TABS//Binning\//}}
+        TAB_tmp2=${{TAB_tmp2//\/scaffold2bin.tsv/}}
+        TABSl=${{TAB_tmp2// /,}}
         DAS_Tool -i ${{TABS// /,}} \
          -l $TABSl \
          -c {input.contigs} \

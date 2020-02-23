@@ -20,9 +20,9 @@ include:
     '../../../rules/Assembly/common/mapping.rules'
 
 include:
-    '../../rules/Assembly/common/contig-length.rules'
+    '../../../rules/Assembly/common/contig-length.rules'
 include:
-    '../../rules/Assembly/common/contig-depth.rules'
+    '../../../rules/Assembly/common/contig-depth.rules'
 
 
 # master command
@@ -33,11 +33,11 @@ rule ASSEMBLY:
         'Assembly/mt.assembly.merged.fa.fai',
         'Assembly/mt.assembly.merged.fa.bed3',
         'Assembly/mt.reads.sorted.bam',
-	    'Assembly/mt.reads.sorted.bam.bai',
+        'Assembly/mt.reads.sorted.bam.bai',
         'Stats/mt/mt.assembly.contig_coverage.txt',
         'Stats/mt/mt.assembly.contig_depth.txt',
         'Stats/mt/mt.assembly.contig_flagstat.txt',
         'Stats/mt/mt.assembly.length.txt',
-        'Stats/mt/mt.assembly.gc_content.txt]
+        'Stats/mt/mt.assembly.gc_content.txt'
     output:
         touch('assembly.done')

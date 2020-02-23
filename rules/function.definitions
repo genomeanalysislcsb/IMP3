@@ -27,8 +27,16 @@ def get_ori_files(wildcards):
     if "assembly" in IMP_STEPS and LONG:
         inputs.append(LONG)
     if any(isinstance(i, list) for i in inputs):
-        return([item for sublist in inputs for item in sublist])
-    return(inputs)
+        out = []
+        for sublist in inputs:
+            if isinstance(sublist, list):
+                for item in sublist:
+                    out.append(item)
+            else:
+                out.append(sublist)
+    else:
+        out = inputs
+    return(out)
 		
 def prepare_input_files(inputs, outputs):
     """

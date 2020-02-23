@@ -6,7 +6,8 @@ rule collapse_hybrid_assemblies:
         'Assembly/mgmt.assembly.merged.fa'
     params:
         runtime = "72:00:00",
-        mem = BIGMEMCORE
+        mem = BIGMEMCORE,
+        sample = SAMPLE
     threads: 1
 #    conda: "IMP_assembly.yaml"
     log: "logs/assembly_collapse_hybrid_assemblies.log"
@@ -22,5 +23,5 @@ rule collapse_hybrid_assemblies:
 
         # Concatenate assembled contigs, singletons and rename the contigs
         cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \
-         awk '/^>/{{print \">contig_\" ++i; next}}{{print}}' > $NAME_fin.merged.fa
+         awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' > $NAME_fin.merged.fa
         """

@@ -13,6 +13,12 @@ if "stats" in SUM_STEPS:
             '../../rules/Summary/stats_preprocessing.rules'
     if not "assembly" in IMP_STEPS and CONTIGS:
         include:
+            '../../rules/Assembly/common/mapping.rules'
+        include:
+            '../../rules/Assembly/common/bwa.index.rules'
+        include:
+            '../../rules/Assembly/common/contig.rules'
+        include:
             '../../rules/Assembly/common/contig-length.rules'
         include:
             '../../rules/Assembly/common/contig-depth.rules'

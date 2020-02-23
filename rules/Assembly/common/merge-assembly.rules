@@ -23,5 +23,5 @@ rule cap3:
         
         # Concatenate assembled contigs, singletons and rename the contigs
         cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \
-         awk '/^>/{{print \">{param.sample}_contig_\" ++i; next}}{{print}}' > $NAME_fin.merged.fa
+         awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' > $NAME_fin.merged.fa
         """ % (ASS,ASS)

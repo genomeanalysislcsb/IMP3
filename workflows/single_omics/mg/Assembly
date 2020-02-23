@@ -20,9 +20,9 @@ include:
     '../../../rules/Assembly/common/mapping.rules'
 
 include:
-    '../../rules/Assembly/common/contig-length.rules'
+    '../../../rules/Assembly/common/contig-length.rules'
 include:
-    '../../rules/Assembly/common/contig-depth.rules'
+    '../../../rules/Assembly/common/contig-depth.rules'
 
 
 master_ass_input = [

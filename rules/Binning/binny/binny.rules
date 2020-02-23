@@ -27,8 +27,7 @@ rule binny:
         Binning/binny/contigs2clusters.{pk}.{nn}.tsv \
         Binning/binny/contigs2clusters.{pk}.{nn}.RDS \
         Binning/binny/clusteringWS.{pk}.{nn}.Rdata".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"]),
-        report(expand("Binning/binny/finalClusterMap.{pk}.{nn}.png",pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"]),
-               caption="report/stats/binny_final_map.rst",category="Binning")
+        report(expand("Binning/binny/finalClusterMap.{pk}.{nn}.png",pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"]),caption="report/stats/binny_final_map.rst",category="Binning"),
         "Binning/binny/binny_WS.Rdata"
     params:
         plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",

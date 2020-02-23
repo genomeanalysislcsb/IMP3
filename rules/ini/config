@@ -112,6 +112,8 @@ PREPROCESSING_FILTERING = os.environ.get("PREPROCESSING_FILTERING", config['prep
 FILTER = os.environ.get("FILTER", config['filtering']['filter'])
 IMP_ASSEMBLER = os.environ.get("IMP_ASSEMBLER", config['assembly']['assembler'])
 BIN_STEPS = os.environ.get("IMP_BINNING_METHOD", config['binning']['binners'].split())
+if not MG and not MGaln:
+    BIN_STEPS = list(set(BIN_STEPS).difference(["MaxBin", "binny"]))
 SUM_STEPS = os.environ.get("SUM_STEPS", config['summary_steps']).split()
 
 # hardware parameters
