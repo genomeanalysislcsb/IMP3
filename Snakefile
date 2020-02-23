@@ -1,51 +1,24 @@
+# include global functions
+include:
+    "rules/function.definitions"
+
 # include configuration file
 include:
     "rules/ini/config"
 
-
-# define the data types used and the assembly
-if MG and MT and config['assembly']['hybrid']:
-    TYPES = ['mg', 'mt']
-    ASS = 'mgmt'
-elif MG and MT:
-    TYPES = ['mg', 'mt']
-    ASS = 'mg'
-elif MG:
-    TYPES = ['mg']
-    ASS = 'mg'
-elif MT:
-    TYPES = ['mt']
-    ASS = 'mt'
-elif MGaln and MTaln:
-    TYPES = ['mg', 'mt']
-    ASS = 'mg'
-elif MGaln:
-    TYPES = ['mg']
-    ASS = 'mg'
-elif MTaln:
-    TYPES = ['mt']
-    ASS = 'mt'
-elif CONTIGS and MG and MT:
-    TYPES = ['mg', 'mt']
-    ASS = 'mg'
-elif CONTIGS and MG:
-    TYPES = ['mg']
-    ASS = 'mg'
-elif CONTIGS and MT:
-    TYPES = ['mt']
-    ASS = 'mg'
-
+# set working directory and dump output
 workdir:
     OUTPUTDIR
 
-f = open(OUTPUTDIR+'/full.config.yaml', 'w+')
-yaml.dump(config, f, allow_unicode=True,default_flow_style=False)
-
+yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
+yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
+yaml.dump(config, open_output('full.config.yaml'), allow_unicode=True,default_flow_style=False)
 
 # include rules for the workflow based on the input parameters
 include:
     "rules/data.input.rules"
 
+# include workflows for preprocessing, assembly, analysis, binning and taxonomy steps
 # INTEGRATIVE MG-MT workflow
 if MG and MT:
     if 'preprocessing' in IMP_STEPS:
@@ -161,30 +134,31 @@ elif MTaln:
 else:
     raise Exception('No input data.')
 
-inputs = []
-if 'preprocessing' in IMP_STEPS:
-    inputs.append('preprocessing.done')
-if 'assembly' in IMP_STEPS:
-    inputs.append('assembly.done')
-if 'analysis' in IMP_STEPS:
-    inputs.append('analysis.done')
-if 'taxonomy' in IMP_STEPS:
-    inputs.append('taxonomy.done')
-if 'binning' in IMP_STEPS:
-    inputs.append('binning.done')
+# master command summary and archiving
+inputs_all = ['workflow.done']
+if "summary" in IMP_STEPS:
+    inputs_all.append('summary.done')
+    include:
+        "workflows/common/Summary"
+#                 #if config['compress_level'] != "none" and config['compress_level'] != "":
+#                 #    inputs_all.append('archiving.done')
 
+localrules: workflow, ALL
 # master command workflow
-checkpoint workflow:
+rule workflow:
     input:
-        inputs
+        workflow_ctrl
     output:
         touch('workflow.done')
 
-inputs_all = 'workflow.done'
-if SUM_STEPS:
-    inputs.append('summary.done')
-if config['compress_level'] != "none" and config['compress_level'] != "":
-    inputs.append('archiving.done')
+# master command summary and archiving
+inputs_all = ['workflow.done']
+if "summary" in IMP_STEPS:
+    inputs_all.append('summary.done')
+    include:
+        "workflows/common/Summary"
+#if config['compress_level'] != "none" and config['compress_level'] != "":
+#    inputs_all.append('archiving.done')
 
 # master command
 rule ALL:
@@ -192,3 +166,5 @@ rule ALL:
         inputs_all
     output:
         touch('all.done')
+
+

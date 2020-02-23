@@ -34,6 +34,7 @@ rule PREPROCESSING:
         "Stats/{type}/{type}.r1.preprocessed_fastqc.html",
         "Stats/{type}/{type}.r2.preprocessed_fastqc.html",
         "Stats/{type}/{type}.se.preprocessed_fastqc.html",
-        "Stats/{type}/{type}.read_counts.txt"], type=TYPES)
+        "Stats/{type}/{type}.read_counts.txt",
+        'Preprocessing/{type}.reads.compressed'], type=TYPES)
     output:
         touch('preprocessing.done')

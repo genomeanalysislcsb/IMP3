@@ -1,4 +1,5 @@
 # summary takes care of collecting rules and archiving data
+localrules: SUMMARY, VIS
 
 # include rules for the Report part of the workflow
 sum_target = []
@@ -8,10 +9,16 @@ if "stats" in SUM_STEPS:
     sum_target.append("stats.done")
     if not "preprocessing" in IMP_STEPS and (MG or MT or MGaln or MTaln):
         include:
-            '../../rules/Preprocessing/reads-count.rules'
+            '../../rules/Summary/reads-count.rules'
         include:
             '../../rules/Summary/stats_preprocessing.rules'
     if not "assembly" in IMP_STEPS and CONTIGS:
+        include:
+            '../../rules/Assembly/common/mapping.rules'
+        include:
+            '../../rules/Assembly/common/bwa.index.rules'
+        include:
+            '../../rules/Assembly/common/contig.rules'
         include:
             '../../rules/Assembly/common/contig-length.rules'
         include:
@@ -41,8 +48,6 @@ if "vis" in SUM_STEPS:
     if "analysis" in IMP_STEPS:
         include:
             '../../rules/Summary/vis_functions.rules'
-        include:
-            '../../rules/Summary/vis_snps.rules'
     if "binning" in IMP_STEPS:
         include:
             '../../rules/Summary/vis_binning.rules'
@@ -51,32 +56,11 @@ if "vis" in SUM_STEPS:
             vis_targets
         output:
             touch('visualization.done')
-            
-
-
-# include rules for archiving:
-arch_ctrl = ['']
-include:
-    '../../rules/Summary/archiving.rules'
-if config['compress_level']['none']:
-    if SUMDIR:
-        arch_ctrl.append(SUMDIR)
-elif config['compress_level']['mid']:
-    arch_ctrl.apprend("reads.compressed")
-elif config['compress_level']['max']:
-    arch_ctrl.append('DB_filling.done')
-
-if 
-
-
-localrules: SUMMARY, VIS
-
 
 
 # master command
 rule SUMMARY:
     input:
-        sum_target,
-        "archiving.done"
+        sum_target
     output:
         touch('summary.done')

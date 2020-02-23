@@ -2,7 +2,7 @@ rule hmmer:
     input:
         "Analysis/annotation/prokka.faa"
     output:
-        "Analysis/annotation/prokka.faa.{db}.hmmscan"
+        "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan"
     params: 
         lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
         dbs = DBPATH + "/hmm/{db}",
@@ -20,11 +20,11 @@ rule hmmer:
 
 rule makegff:
     input:
-        "Analysis/annotation/prokka.faa.{db}.hmmscan",
+        "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan",
         "Analysis/annotation/annotation.filt.gff",
         "Analysis/annotation/prokka.faa"
     output:
-        "Analysis/annotation/annotation.CDS.RNA.{db}.gff"
+        "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     params:
         "{db}",
         lambda wildcards: config["hmm_settings"][wildcards.db]["trim"],
@@ -43,7 +43,8 @@ rule makegff:
 
 rule mergegff:
     input:
-        expand("Analysis/annotation/annotation.CDS.RNA.{db}.gff",db=config["hmm_DBs"].split())
+        "Analysis/annotation/annotation.filt.gff",
+        expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff",db=config["hmm_DBs"].split())
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     params:
@@ -57,3 +58,23 @@ rule mergegff:
         {SRCDIR}/mergegffs.pl {output} {input} > {log} 2>&1
         """
 
+rule tar_annotation:
+    input:
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split())
+    output:
+        "Analysis/annotation/intermediary.tar.gz"
+    threads: 1
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE,
+        intermediary = "Analysis/annotation/intermediary/"
+    log: "logs/annotation_tar_annotation.log"
+    message: "tar_annotation: Compressing intermediary steps of annotation."
+    shell:
+       """
+       tar cvzf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1
+       """
+
+        
+        

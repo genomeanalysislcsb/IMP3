@@ -26,7 +26,7 @@ rule vizbin:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1
-    log: "logs/binning_vizbin.{ass}.log"
+    log: "logs/binning_vizbin.%s.log" %ASS
     message: "vizbin: Running VizBin."
     shell:
         """
@@ -56,7 +56,7 @@ rule vizbin_mt:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1
-    log: "logs/binning_vizbin.{ass}.log"
+    log: "logs/binning_vizbin.mt.log"
     message: "vizbin: Running VizBin."
     shell:
         """
