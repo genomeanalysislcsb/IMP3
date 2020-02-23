@@ -36,4 +36,3 @@ rule ALL_stats:
     output:
         touch("stats.done")
 
-
