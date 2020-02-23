@@ -11,7 +11,8 @@ rule gather_stats:
         sum_stats_input
     output:
         "Stats/all_stats.tsv",
-        "Stats/all_stats.Rdata"
+        "Stats/all_stats.Rdata",
+        "Stats/all_bin_stats.tsv" # only if binning done
     params:
         runtime = "12:00:00",
         mem = MEMCORE,

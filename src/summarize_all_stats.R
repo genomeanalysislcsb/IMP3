@@ -31,6 +31,7 @@ types               <- snakemake@params[["types"]]
 dbs                 <- unlist(strsplit(snakemake@params[["dbs"]],split=" "))
 out_file_tsv        <- snakemake@output[[1]] #"Stats/all_stats.tsv"
 out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
+out_file_bins       <- snakemake@output[[3]] #"Stats/all_bin_stats.tsv"
 
 ###################################################################################################
 ## Read Preprocessing stats
@@ -463,5 +464,8 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
 
 print("Writing concatenated read table.")
 write.table(statsTab,out_file_tsv,sep="\t",quote=F,row.names=F)
+if(binTab %in% ls()){
+  write.table(binTab,out_file_bins,sep="\t",quote=F,row.names=F)
+}
 save.image(out_file_rdat)
 

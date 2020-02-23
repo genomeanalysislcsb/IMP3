@@ -13,6 +13,130 @@ library(RColorBrewer)
 library(alluvial)
 library(data.table)
 
+makeCircosFiles <- function(contigs,genes,col,circos_files){
+  
+  kt <- data.frame("chr"=rep("chr",nrow(contigs)),
+                   "ps"=rep("-",nrow(contigs)),
+                   "ID"=contigs$contig,"LABEL"=contigs$contig,
+                   "START"=rep(0,nrow(contigs)),"END"=contigs$length-1,
+                   "COLOR"=rep(col,nrow(contigs)),stringsAsFactors=F)
+  kt <- kt[order(kt$END,decreasing=T),]
+  write.table(kt,paste0(circos_files,"/data/contigs.ideogram",sep=""),row.names=F,col.names=F,quote=F)
+  kt <- data.frame("chr"=genes$contig[genes$sense=="+"&genes$feature=="CDS"],
+                   "START"=genes$start[genes$sense=="+"&genes$feature=="CDS"],
+                   "END"=genes$end[genes$sense=="+"&genes$feature=="CDS"],
+                   "COLOR"=paste("color=",ifelse(genes$completeness[genes$sense=="+"&feature=="CDS"]=="complete",
+                                                 "complete","incomplete"),sep=""),
+                   stringsAsFactors=F)
+  write.table(kt,paste0(circos_files,"/data/features.forward.txt",sep=""),row.names=F,col.names=F,quote=F)
+  kt <- data.frame("chr"=genes$contig[genes$sense=="-"&genes$feature=="CDS"],
+                   "START"=genes$start[genes$sense=="-"&genes$feature=="CDS"],
+                   "END"=genes$end[genes$sense=="-"&genes$feature=="CDS"],
+                   "COLOR"=paste("color=",ifelse(genes$completeness[genes$sense=="-"&feature=="CDS"]=="complete",
+                                                 "complete","incomplete"),sep=""),
+                   stringsAsFactors=F)
+  write.table(kt,paste0(circos_files,"/data/features.reverse.txt",sep=""),row.names=F,col.names=F,quote=F)
+  if(length(genes$contig[genes$sense=="+"&genes$feature=="rRNA"])>0){
+    kt <- data.frame("chr"=genes$contig[genes$sense=="+"&genes$feature=="rRNA"],
+                     "START"=genes$start[genes$sense=="+"&genes$feature=="rRNA"],
+                     "END"=genes$end[genes$sense=="+"&genes$feature=="rRNA"],
+                     "COLOR"=paste("color=",ifelse(genes$completeness[genes$sense=="+"&genes$feature=="rRNA"]=="complete",
+                                                   "completerrna","incompleterrna"),sep=""),
+                     stringsAsFactors=F)
+  } else {
+    kt <- ""
+  }
+  write.table(kt,paste0(circos_files,"/data/rRNAs.forward.txt",sep=""),row.names=F,col.names=F,quote=F)
+  if(length(genes$contig[genes$sense=="-"&genes$feature=="rRNA"])>0){
+    kt <- data.frame("chr"=genes$contig[genes$sense=="-"&genes$feature=="rRNA"],
+                     "START"=genes$start[genes$sense=="-"&genes$feature=="rRNA"],
+                     "END"=genes$end[genes$sense=="-"&genes$feature=="rRNA"],
+                     "COLOR"=paste("color=",ifelse(genes$completeness[genes$sense=="-"&genes$feature=="rRNA"]=="complete",
+                                                   "completerrna","incompleterrna"),sep=""),
+                     stringsAsFactors=F)
+  } else {
+    kt <- ""
+  }
+  write.table(kt,paste0(circos_files,"/data/rRNAs.reverse.txt",sep=""),row.names=F,col.names=F,quote=F)
+  if("mg" %in% colnames(genes)){
+    kt <- data.frame("chr"=genes$contig,"START"=genes$start,"END"=genes$end,
+                     "value"=log10(0.001+genes$mg),stringsAsFactors=F)
+  }else {
+    kt <- ""
+  }
+  write.table(kt,paste0(circos_files,"/data/features.DNAcovGenes.txt",sep=""),row.names=F,col.names=F,quote=F)
+  
+  if("mt" %in% colnames(genes)){
+    if(any(genes$mt>0)){
+      rnaval <- log10(0.001+genes$mt)
+    }else{
+      rnaval <- rep(0,nrow(genes))
+    }
+  kt <- data.frame("chr"=genes$contig,"START"=genes$start,"END"=genes$end,
+                   "value"=rnaval,stringsAsFactors=F)
+  }else {
+    kt <- ""
+  }
+  write.table(kt,paste0(circos_files,"/data/features.RNAcovGenes.txt",sep=""),row.names=F,col.names=F,quote=F)
+  if("essential" %in% colnames(genes)){
+    kt <- data.frame("chr"=genes$contig[genes$essential!=""],
+                     "START"=genes$start[genes$essential!=""],
+                     "END"=genes$end[genes$essential!=""])
+    tabEss <- table(genes$essentialGene[genes$essential!=""])
+    lt <- data.frame("chr1","START1","END1","chr2","START2","END2",stringsAsFactors=F)[F,]
+    if(any(tabEss>1)){
+      dupEss <- names(tabEss[tabEss>1])
+      for(de in dupEss){
+        dupGe <- genes[genes$essential==de,c("contig","start","end")]
+        for(i in 1:(nrow(dupGe)-1)){
+          for(j in 2:nrow(dupGe)){
+            lt[nrow(lt)+1,] <- c(dupGe[i,1],
+                                 dupGe[i,2:3],
+                                 dupGe[j,1],
+                                 dupGe[j,2:3])
+          }
+        }
+      }
+    }
+  }else {
+    kt <- ""
+  }
+  write.table(kt,paste0(circos_files,"/data/essentialGenes.highlights.txt",sep=""),row.names=F,col.names=F,quote=F)
+  write.table(lt,paste0(circos_files,"/data/essentialGenes.links.txt",sep=""),row.names=F,col.names=F,quote=F)
+}
+
+gffAddComplete <- function(gff){
+  gff$completeness <- sapply(1:nrow(gff), function(x){
+    if(gff$feature[x]=="CDS"){
+      if(gsub(".+partial=([01]{2});.*","\\1",paste0(gff$attribute[x],";"))=="00") "complete" else "incomplete"
+    }else{
+      if(!grepl("partial",gff$attribute[x])) "complete" else "incomplete"
+    }
+  })
+  return(gff)                        
+}
+
+gffAddFunc <- function(gff,func){
+  gff[[func]] <- sapply(1:nrow(gff), function(x){
+    if(gff$feature[x]=="CDS" & grepl(paste0(".+;",func,"=([^;]+)"),gff$attribute)){
+      gsub(paste0(".+;",func,"=([^;]+);.*"),"\\1",paste0(gff$attribute[x],";"))
+    }else{
+      ""
+    }
+  })
+  return(gff) 
+}
+
+min0 <- function(x){
+  min(x[x>0])
+}
+
+spec <- colorRampPalette(brewer.pal(9,"Spectral")[9:1])
+ygb <- colorRampPalette(brewer.pal(8,"YlGnBu")[2:8])
+
+outputfile
+
+
 ###################################################################################################
 ## Files from snakemake
 ###################################################################################################
@@ -74,7 +198,26 @@ alluvial(cont2binM[,c(binners,"DASTool")],freq = cont2binM$freq,
          border=NA)
 dev.off()
 
-
+for(bin in unique(cont2bin[["DASTool"]]$bin)){
+  circ_genes <- gffAddComplete(gene_gff[gene_gff$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],])
+  if("essential" %in% dbs){
+    gffAddFunc(circ_genes,"essential")
+  }
+  if("mg" %in% types){
+    circ_genes <- merge(circ_genes,
+                        depthGeneStat[["mg"]],by="gene",all.x=T)
+    colnames(circ_genes)[ncol(circ_genes)] <- "mg"
+    circ_genes$mg[is.na(circ_genes$mg)] <- 0
+  }
+  if("mt" %in% types){
+    circ_genes <- merge(circ_genes,
+                        depthGeneStat[["mt"]],by="gene",all.x=T)
+    colnames(circ_genes)[ncol(circ_genes)] <- "mt"
+    circ_genes$mg[is.na(circ_genes$mg)] <- 0
+  }
+  makeCircosFiles(contig_length[contig_length$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],],
+                  circ_genes,col,circos_files)
+}
 if("mg" %in% types){
   png(plotfile,width=17,height=12,units = "cm",res=300,pointsize=7)
   par("mar"=c(13,4.5,0.5,0.5),tcl="-0.3",mgp=c(3.2,0.5,0),lwd=0.5)
@@ -129,47 +272,31 @@ if("mt" %in% types){
   dev.off()
 }
 
-if("binny" %in% binners){
+if("binny" %in% binners & "mg" %in% types){
   png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
   par(mar=c(0.5,0.5,0.5,0.5))
-  "Binning/binny/mgmt.vizbin.with-contig-names.points"
-  plotlim <- 1.05*max(abs(c(min(contigInf[,coordCol[1]]),min(contigInf[,coordCol[2]]),
-                            max(contigInf[,coordCol[1]]),max(contigInf[,coordCol[2]]))))
-spec <- colorRampPalette(brewer.pal(9,"Spectral")[9:1])
-if(class(contigInf[,colCol])=="character"){
-  plotcol <- spec(length(unique(contigInf[contigInf[,colCol]!="unknown",colCol])))[as.numeric(as.factor(contigInf[contigInf[,colCol]!="unknown",colCol]))]
-}else{
-  plotcol <- spec(length(unique(contigInf[!is.na(contigInf[,colCol]),colCol])))[as.numeric(as.factor(contigInf[!is.na(contigInf[,colCol]),colCol]))]
+  vizbin <- read.delim("Binning/binny/mgmt.vizbin.with-contig-names.points",stringsAsFactors = F,header=F)
+  colnames(vizbin) <- c("contig","x","y")
+  vizcont <- merge(vizbin,depthAssStat[["mg"]],by="contig",all.x=T)
+  vizcont[is.na(vizcont)] <- 0
+  plotlim <- 1.05*max(abs(c(min(vizcont$x),min(vizcont$y),
+                            max(vizcont$x),max(vizcont$y))))
+  plotcol <- ygb(length(unique(vizcont$depth)))[as.numeric(as.factor(vizcont$depth))]
+  plot(vizcont[,c("x","y")],pch=16,cex=0.3,las=1,col=plotcol,
+       ylim=c(-plotlim,plotlim),xlim=c(-plotlim,plotlim),ann=F,axes=F)
+  box(lwd=0.5)
+  legend("topleft",
+         legend=paste("coverage depth",round(sort(unique(vizcont$depth))[seq(from=1,to=length(unique(vizcont$depth)),
+                                                        length.out=10)])),
+         col=ygb(length(unique(vizcont$depth)))[seq(from=1,to=length(unique(vizcont$depth)),
+                                                 length.out=10)],
+         pch=16,cex=0.8,bty="n",y.intersp=0.8,title=paste(nrow(vizcont),"contigs"))
+  dev.off()
 }
-plot(contigInf[contigInf[,colCol]!="unknown"&!is.na(contigInf[,colCol]),coordCol],pch=16,cex=0.3,las=1,col=plotcol,
-     ylim=c(-plotlim,plotlim),xlim=c(-plotlim,plotlim),ann=F,axes=F)
-points(contigInf[contigInf[,colCol]=="unknown"|is.na(contigInf[,colCol]),coordCol],pch=16,cex=0.3,las=1,col="grey80")
-box(lwd=2)
-if(essHelper){
-  essHelp <- unique(unlist(sapply(c("GrpE","TIGR00115","TIGR01030"),function(x)grep(x,contigInf$essentialGene))))
-  if(length(essHelp)>0){
-    ehCh <- sapply(contigInf$essentialGene[essHelp],function(x) if(any(grepl("GrpE",x))) 8 else if(any(grepl("TIGR00115",x))) 4 else 3)
-    points(contigInf[essHelp,coordCol],pch=ehCh,cex=0.8,col="grey35")
-  }
-}
-if(class(contigInf[,colCol])=="character"){
-  legend("topleft",legend=paste(c(unique(contigInf[contigInf[,colCol]!="unknown",colCol]),"unknown"),sapply(c(unique(contigInf[contigInf[,colCol]!="unknown",colCol]),"unknown"),function(x)(length(which(contigInf[,colCol]==x))))),
-         col=c(unique(plotcol),"grey80"),pch=16,cex=0.4,bty="n",y.intersp=0.8,title=paste(nrow(contigInf),"contigs"))
-}else{
-  legend("topleft",legend=paste(colnames(contigInf)[colCol],sort(unique(contigInf[!is.na(contigInf[,colCol]),colCol]))[seq(from=1,to=length(unique(contigInf[!is.na(contigInf[,colCol]),colCol])),length.out=10)]),
-         col=spec(length(unique(contigInf[!is.na(contigInf[,colCol]),colCol])))[seq(from=1,to=length(unique(contigInf[!is.na(contigInf[,colCol]),colCol])),length.out=10)],pch=16,cex=0.4,bty="n",y.intersp=0.8,title=paste(nrow(contigInf),"contigs"))
-}
-if(essHelper){
-  legend("topright",legend=paste(c("GrpE","TIGR00115","TIGR01030"),"-",
-                                 sapply(c("GrpE","TIGR00115","TIGR01030"),function(x)(length(which(contigInf$essentialGene==x)))),"times"),
-         col="grey35",pch=c(8,4,3),cex=0.4,bty="n",y.intersp=0.8,title="essential Gene markers")
-}
-mtext(sampleID,3,-1.5,font=2,cex=0.8)
-dev.copy(pdf,paste(gsub("-","",sub("20","",Sys.Date())),"_",name,".pdf",sep=""),
-         pointsize=9,width=7,height=7)
-dev.off()
 
 
-}
-# vizbin scatter plot with coverage
+
+
+
+
 #circos prep

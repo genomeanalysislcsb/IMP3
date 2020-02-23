@@ -29,7 +29,6 @@ if "binny" in BIN_STEPS:
         '../../../rules/Binning/binny/binny.rules'
     include:
         '../../../rules/Binning/binny/binny2dastool.rules'
-
 ## GRiD
 include:
     '../../../rules/Binning/GRiD/grid_dynamic.rules'
