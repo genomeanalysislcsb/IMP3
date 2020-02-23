@@ -700,6 +700,8 @@ names(ranks_trans) <- c("k","p","c","o","f","g","s")
 ###################################################################################################
 ## plot
 ###################################################################################################
+print("Plotting mOTU stats.")
+dir.create("Visualization", showWarnings = FALSE)
 
 relReads <- list()
 for(type in types){

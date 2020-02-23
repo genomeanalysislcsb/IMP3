@@ -6,7 +6,7 @@ if "preprocessing" in IMP_STEPS or MG or MT:
 if "assembly" in IMP_STEPS or CONTIGS:
     stats_figs.append(expand("Visualization/Assembly_{fig}.png", fig=["length_hist","cov_hist","gc_hist","cov_gc_scatter"]))
 if "analysis" in IMP_STEPS:
-    stats_figs.append(expand("Visualization/Analysis_{fig}.png", fig=["length_hist","cov_hist","contigs_cov_snps_scatter","genes_cov_snps_scatter"]))
+    stats_figs.append(expand("Visualization/Analysis_{fig}.png", fig=["length_hist","cov_hist","cov_scatter","func_sets"]))
 
 rule vis_stats:
     input:
@@ -77,8 +77,8 @@ if CONTIGS or "assembly" in IMP_STEPS:
         params:
             runtime = "2:00:00",
             mem = MEMCORE
-        log: "logs/visualize_taxonomy_stats.log"
-        message: "visualize_taxonomy_stats: Plotting taxonomy results."
+        log: "logs/visualize_kraken_reads.log"
+        message: "visualize_kraken_reads: Plotting taxonomy results."
         threads: 1
         conda: ENVDIR + "/IMP_visualize.yaml"
         script:
@@ -93,31 +93,45 @@ else:
         params:
             runtime = "2:00:00",
             mem = MEMCORE
-        log: "logs/visualize_taxonomy_stats.log"
-        message: "visualize_taxonomy_stats: Plotting taxonomy results."
+        log: "logs/visualize_kraken_reads.log"
+        message: "visualize_kraken_reads: Plotting taxonomy results."
         threads: 1
         conda: ENVDIR + "/IMP_visualize.yaml"
         script:
             SRCDIR + "/visualize_taxonomy_kraken.R"
 
-
-        
-rule visualize_taxonomy_stats:
-    input:
-        "Stats/all_stats.Rdata"
-    output:
-        report(expand("Visualization/Taxonomy_{type}_kraken_tree.png",type=TYPES),caption="report/stats/Taxonomy_kraken.rst",category="Taxonomy"),
-        report("Visualization/Taxonomy_kraken_plot.png",caption="report/stats/Taxonomy_kraken.rst",category="Taxonomy"),
-        report(expand("Visualization/Taxonomy_{type}_mOTU_tree.png",type=TYPES),caption="report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
-        report("Visualization/Taxonomy_mOTU_plot.png",caption="report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
-    params:
-        runtime = "2:00:00",
-        mem = MEMCORE
-    log: "logs/visualize_taxonomy_stats.log"
-    message: "visualize_taxonomy_stats: Plotting taxonomy results."
-    threads: 1
-    conda: ENVDIR + "/IMP_visualize.yaml"
-    script:
-        SRCDIR + "/visualize_taxonomy.R"
+if "analysis" in IMP_STEPS:
+    rule visualize_mOTU_reads:
+        input:
+            "Stats/all_stats.Rdata",
+            Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv
+        output:
+            report(expand("Visualization/Taxonomy_{type}_mOTU_tree.png",type=TYPES),caption="report/stats/Taxonomy_mOTU_withAnalysis.rst",category="Taxonomy"),
+            report("Visualization/Taxonomy_mOTU_plot.png",caption="report/stats/Taxonomy_mOTU_withAnalysis.rst",category="Taxonomy"),
+        params:
+            runtime = "2:00:00",
+            mem = MEMCORE
+        log: "logs/visualize_mOTU_reads.log"
+        message: "visualize_mOTU_reads: Plotting taxonomy results."
+        threads: 1
+        conda: ENVDIR + "/IMP_visualize.yaml"
+        script:
+            SRCDIR + "/visualize_mOTU_withAnalysis.R"
+else:
+    rule visualize_mOTU_reads:
+        input:
+            "Stats/all_stats.Rdata"
+        output:
+            report(expand("Visualization/Taxonomy_{type}_mOTU_tree.png",type=TYPES),caption="report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
+            report("Visualization/Taxonomy_mOTU_plot.png",caption="report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
+        params:
+            runtime = "2:00:00",
+            mem = MEMCORE
+        log: "logs/visualize_mOTU_reads.log"
+        message: "visualize_mOTU_reads: Plotting taxonomy results."
+        threads: 1
+        conda: ENVDIR + "/IMP_visualize.yaml"
+        script:
+            SRCDIR + "/visualize_mOTU.R"
 
 

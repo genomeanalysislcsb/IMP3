@@ -695,6 +695,8 @@ df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
 ###################################################################################################
 ## plot
 ###################################################################################################
+print("Plotting mOTU stats.")
+dir.create("Visualization", showWarnings = FALSE)
 
 relReads <- list()
 for(type in types){
