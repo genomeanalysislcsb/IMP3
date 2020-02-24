@@ -478,7 +478,7 @@ saveRDS(clusterRes,paste0(binny_dir,paste("/contigs2clusters",pk,nn,"RDS",sep=".
 print("Saved tables. Plotting final map now.")
 #plot final map
 essPal <- colorRampPalette(brewer.pal(11,"Spectral"))(111)[111:1]
-png(paste0(binny_dir,paste("/finalClusterMap",pk,nn,"png",sep=".")),width=17,height=17,pointsize=7,res=300,units = cm)
+png(paste0(binny_dir,paste("/finalClusterMap",pk,nn,"png",sep=".")),width=17,height=17,pointsize=7,res=300,units = "cm")
 layout(matrix(1:2,nrow=1,ncol=2),c(5/6,1/6))
 par(mar=rep(1,4),pty="s")
 plot(contigInfo[,coco],pch=16,cex=0.25,ann=F,axes=F,bty="o")
