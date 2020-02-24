@@ -303,7 +303,7 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
                                    length(which(gene_gff$feature=="tRNA")),
                                    sapply(dbs,function(x){
                                      patt=paste0(";",x,"=")
-                                     length(grep(patt,gene_gff))
+                                     length(grep(patt,gene_gff$attribute))
                                    }),
                                    sapply(dbs,function(x){
                                      fileoi <- featureCount_files[[x]]
