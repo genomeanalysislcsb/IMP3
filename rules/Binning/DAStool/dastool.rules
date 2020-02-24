@@ -28,7 +28,7 @@ rule DAS_tool:
         """
         TABS="{input.tabs}"
         TAB_tmp=${{TABS//Binning\//}}
-        TAB_tmp2=${{TAB_tmp2//\/scaffold2bin.tsv/}}
+        TAB_tmp2=${{TAB_tmp//\/scaffold2bin.tsv/}}
         TABSl=${{TAB_tmp2// /,}}
         DAS_Tool -i ${{TABS// /,}} \
          -l $TABSl \
