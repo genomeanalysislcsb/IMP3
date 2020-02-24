@@ -464,7 +464,7 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
 
 print("Writing concatenated read table.")
 write.table(statsTab,out_file_tsv,sep="\t",quote=F,row.names=F)
-if(binTab %in% ls()){
+if("binTab" %in% ls()){
   write.table(binTab,out_file_bins,sep="\t",quote=F,row.names=F)
 }
 save.image(out_file_rdat)
