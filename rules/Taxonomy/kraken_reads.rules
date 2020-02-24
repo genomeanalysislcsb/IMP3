@@ -9,7 +9,7 @@ rule kraken_reads:
         "Preprocessing/{type}.r2.preprocessed.fq",
     output:
         "Analysis/taxonomy/kraken/{type}.kraken.output",
-        "Analysis/taxonomy/kraken/{type}.kraken.report"
+        report("Analysis/taxonomy/kraken/{type}.kraken.report",category="Taxonomy")
     params:
         runtime = "8:00:00",
         mem = BIGMEMCORE

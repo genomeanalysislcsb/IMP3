@@ -2,7 +2,7 @@ rule reads_count:
     input:
         reads=reads_input_files
     output:
-        'Stats/{type}/{type}.read_counts.txt'
+        report('Stats/{type}/{type}.read_counts.txt',category="Preprocessing")
     params:
         runtime = "8:00:00",
         mem = MEMCORE

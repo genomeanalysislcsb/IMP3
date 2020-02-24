@@ -6,10 +6,10 @@ if CONTIGS:
 
 localrules: ALL_stats 
 
-gathered = ["Stats/all_stats.tsv",
+gathered = [report("Stats/all_stats.tsv",category="Stats"),
             "Stats/all_stats.Rdata"]
 if "binning" in IMP_STEPS:
-    gathered.append("Stats/all_bin_stats.tsv")
+    gathered.append(report("Stats/all_bin_stats.tsv",category="Binning"))
 
 rule gather_stats:
     input:

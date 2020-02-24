@@ -17,7 +17,7 @@ rule motus:
         "Preprocessing/{type}.r2.preprocessed.fq",
         "Preprocessing/{type}.se.preprocessed.fq"
     output:
-        "Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv"
+        report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
     threads: 6
     params:
         runtime = "12:00:00",

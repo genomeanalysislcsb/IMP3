@@ -33,7 +33,7 @@ rule GTDBtk_summarize:
     input:
         gather_GTDB_bins
     output:
-        "Stats/%s/%s.bins.tsv" % (ASS,ASS)
+        report("Stats/%s/%s.bins.tsv" % (ASS,ASS),category="Taxonomy")
     params:
         runtime = "12:00:00",
         mem = MEMCORE
