@@ -15,6 +15,7 @@ rule DAS_tool:
         tabs=check_bintabs
     output:
         "Binning/selected_DASTool_summary.txt",
+        "Binning/selected_DASTool_scaffolds2bin.txt",
         directory("Binning/selected_DASTool_bins")
     threads: 4
     params:
