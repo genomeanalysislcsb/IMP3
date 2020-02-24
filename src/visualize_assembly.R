@@ -93,12 +93,11 @@ dev.off()
 
 plotfile <- outplot[[4]]
 if(length(types)>1){
-  spec <- colorRampPalette(rainbow(9)[9:1])
-  plotcol <- spec(length(unique(perContM$GC)))[as.numeric(as.factor(perContM$GC))]
-  
   perContM <-merge(depthAssStat[[1]],depthAssStat[[2]],by=1,all=T,suffixes=paste0(".",types))
   perContM <-merge(perContM,contig_gc,by=1,all=T)
   perContM[is.na(perContM)] <- 0
+  spec <- colorRampPalette(rainbow(9)[9:1])
+  plotcol <- spec(length(unique(perContM$GC)))[as.numeric(as.factor(perContM$GC))]
   png(plotfile,width=8.5,height=8.5,units = "cm",res=300,pointsize=7)
   par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
   plot(perContM$depth.mg,perContM$depth.mt,

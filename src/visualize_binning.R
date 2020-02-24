@@ -14,7 +14,7 @@ library(alluvial)
 library(data.table)
 
 makeCircosFiles <- function(contigs,genes,col,circos_files){
-  
+ dir.create(paste0(circos_files,"/data"), showWarnings = FALSE) 
   kt <- data.frame("chr"=rep("chr",nrow(contigs)),
                    "ps"=rep("-",nrow(contigs)),
                    "ID"=contigs$contig,"LABEL"=contigs$contig,
@@ -22,36 +22,36 @@ makeCircosFiles <- function(contigs,genes,col,circos_files){
                    "COLOR"=rep(col,nrow(contigs)),stringsAsFactors=F)
   kt <- kt[order(kt$END,decreasing=T),]
   write.table(kt,paste0(circos_files,"/data/contigs.ideogram",sep=""),row.names=F,col.names=F,quote=F)
-  kt <- data.frame("chr"=genes$contig[genes$sense=="+"&genes$feature=="CDS"],
-                   "START"=genes$start[genes$sense=="+"&genes$feature=="CDS"],
-                   "END"=genes$end[genes$sense=="+"&genes$feature=="CDS"],
-                   "COLOR"=paste("color=",ifelse(genes$completeness[genes$sense=="+"&feature=="CDS"]=="complete",
+  kt <- data.frame("chr"=genes$contig[genes$strand=="+"&genes$feature=="CDS"],
+                   "START"=genes$start[genes$strand=="+"&genes$feature=="CDS"],
+                   "END"=genes$end[genes$strand=="+"&genes$feature=="CDS"],
+                   "COLOR"=paste("color=",ifelse(genes$completeness[genes$strand=="+"&genes$feature=="CDS"]=="complete",
                                                  "complete","incomplete"),sep=""),
                    stringsAsFactors=F)
   write.table(kt,paste0(circos_files,"/data/features.forward.txt",sep=""),row.names=F,col.names=F,quote=F)
-  kt <- data.frame("chr"=genes$contig[genes$sense=="-"&genes$feature=="CDS"],
-                   "START"=genes$start[genes$sense=="-"&genes$feature=="CDS"],
-                   "END"=genes$end[genes$sense=="-"&genes$feature=="CDS"],
-                   "COLOR"=paste("color=",ifelse(genes$completeness[genes$sense=="-"&feature=="CDS"]=="complete",
+  kt <- data.frame("chr"=genes$contig[genes$strand=="-"&genes$feature=="CDS"],
+                   "START"=genes$start[genes$strand=="-"&genes$feature=="CDS"],
+                   "END"=genes$end[genes$strand=="-"&genes$feature=="CDS"],
+                   "COLOR"=paste("color=",ifelse(genes$completeness[genes$strand=="-"&genes$feature=="CDS"]=="complete",
                                                  "complete","incomplete"),sep=""),
                    stringsAsFactors=F)
   write.table(kt,paste0(circos_files,"/data/features.reverse.txt",sep=""),row.names=F,col.names=F,quote=F)
-  if(length(genes$contig[genes$sense=="+"&genes$feature=="rRNA"])>0){
-    kt <- data.frame("chr"=genes$contig[genes$sense=="+"&genes$feature=="rRNA"],
-                     "START"=genes$start[genes$sense=="+"&genes$feature=="rRNA"],
-                     "END"=genes$end[genes$sense=="+"&genes$feature=="rRNA"],
-                     "COLOR"=paste("color=",ifelse(genes$completeness[genes$sense=="+"&genes$feature=="rRNA"]=="complete",
+  if(length(genes$contig[genes$strand=="+"&genes$feature=="rRNA"])>0){
+    kt <- data.frame("chr"=genes$contig[genes$strand=="+"&genes$feature=="rRNA"],
+                     "START"=genes$start[genes$strand=="+"&genes$feature=="rRNA"],
+                     "END"=genes$end[genes$strand=="+"&genes$feature=="rRNA"],
+                     "COLOR"=paste("color=",ifelse(genes$completeness[genes$strand=="+"&genes$feature=="rRNA"]=="complete",
                                                    "completerrna","incompleterrna"),sep=""),
                      stringsAsFactors=F)
   } else {
     kt <- ""
   }
   write.table(kt,paste0(circos_files,"/data/rRNAs.forward.txt",sep=""),row.names=F,col.names=F,quote=F)
-  if(length(genes$contig[genes$sense=="-"&genes$feature=="rRNA"])>0){
-    kt <- data.frame("chr"=genes$contig[genes$sense=="-"&genes$feature=="rRNA"],
-                     "START"=genes$start[genes$sense=="-"&genes$feature=="rRNA"],
-                     "END"=genes$end[genes$sense=="-"&genes$feature=="rRNA"],
-                     "COLOR"=paste("color=",ifelse(genes$completeness[genes$sense=="-"&genes$feature=="rRNA"]=="complete",
+  if(length(genes$contig[genes$strand=="-"&genes$feature=="rRNA"])>0){
+    kt <- data.frame("chr"=genes$contig[genes$strand=="-"&genes$feature=="rRNA"],
+                     "START"=genes$start[genes$strand=="-"&genes$feature=="rRNA"],
+                     "END"=genes$end[genes$strand=="-"&genes$feature=="rRNA"],
+                     "COLOR"=paste("color=",ifelse(genes$completeness[genes$strand=="-"&genes$feature=="rRNA"]=="complete",
                                                    "completerrna","incompleterrna"),sep=""),
                      stringsAsFactors=F)
   } else {
@@ -105,6 +105,11 @@ makeCircosFiles <- function(contigs,genes,col,circos_files){
   write.table(lt,paste0(circos_files,"/data/essentialGenes.links.txt",sep=""),row.names=F,col.names=F,quote=F)
 }
 
+gffGetID <- function(gff){
+ gff$gene <- gsub("ID=([^;]+);.+","\\1",gff$attribute)
+  return(gff)
+}
+
 gffAddComplete <- function(gff){
   gff$completeness <- sapply(1:nrow(gff), function(x){
     if(gff$feature[x]=="CDS"){
@@ -118,7 +123,7 @@ gffAddComplete <- function(gff){
 
 gffAddFunc <- function(gff,func){
   gff[[func]] <- sapply(1:nrow(gff), function(x){
-    if(gff$feature[x]=="CDS" & grepl(paste0(".+;",func,"=([^;]+)"),gff$attribute)){
+    if(gff$feature[x]=="CDS" & grepl(paste0(".+;",func,"=([^;]+)"),gff$attribute[x])){
       gsub(paste0(".+;",func,"=([^;]+);.*"),"\\1",paste0(gff$attribute[x],";"))
     }else{
       ""
@@ -177,7 +182,7 @@ cont2binM <- rbindlist(lapply(1:length(cont2bin),function(x) data.frame(cont2bin
                                                                        "tool"=names(cont2bin)[x],
                                                                        stringsAsFactors = F)))
 tools <- levels(as.factor(cont2binM$tool))
-cont2binM <- apply(tapply(cont2bin$bin,list(cont2bin$contig,cont2bin$tool),paste),1,function(x)paste(x,sep="|",collapse="|"))
+cont2binM <- apply(tapply(cont2binM$bin,list(cont2binM$contig,cont2binM$tool),paste),1,function(x)paste(x,sep="|",collapse="|"))
 cont2binM <- merge(cont2binM,contig_length,by.x=0,by.y=1,all.x=T)
 cont2binM <- aggregate(cont2binM$length,list(cont2binM$x),sum)
 cont2binM$Group.1 <- as.character(cont2binM$Group.1)
@@ -200,9 +205,10 @@ alluvial(cont2binM[,c(binners,"DASTool")],freq = cont2binM$freq,
 dev.off()
 
 for(bin in unique(cont2bin[["DASTool"]]$bin)){
-  circ_genes <- gffAddComplete(gene_gff[gene_gff$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],])
+  circ_genes <- gffGetID(gene_gff[gene_gff$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],])
+  circ_genes <- gffAddComplete(circ_genes)
   if("essential" %in% dbs){
-    gffAddFunc(circ_genes,"essential")
+    circ_genes <- gffAddFunc(circ_genes,"essential")
   }
   if("mg" %in% types){
     circ_genes <- merge(circ_genes,
@@ -216,8 +222,9 @@ for(bin in unique(cont2bin[["DASTool"]]$bin)){
     colnames(circ_genes)[ncol(circ_genes)] <- "mt"
     circ_genes$mg[is.na(circ_genes$mg)] <- 0
   }
-  # makeCircosFiles(contig_length[contig_length$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],],
-  #                 circ_genes,col,circos_files)
+  col <- colorRampPalette(brewer.pal(11,"Spectral"))(256)[256:1][1+255*binTab$binScore.DASTool[binTab$selected_by_DASTool==bin]]
+  makeCircosFiles(contig_length[contig_length$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],],
+                   circ_genes,col,circos_files)
 }
 plotfile <- outplot[["mg"]]
 if("mg" %in% types){
