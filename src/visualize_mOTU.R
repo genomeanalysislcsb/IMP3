@@ -639,7 +639,7 @@ circular.plot.print <- function (edge, Ntip, Nnode, xx, yy, theta, r, edge.color
 ## Files from snakemake
 ###################################################################################################
 
-stats_image         <- snakemake@input #"Stats/all_stats.Rdata"
+stats_image         <- snakemake@input[[1]] #"Stats/all_stats.Rdata"
 outplot             <- snakemake@output # 
 
 ###################################################################################################

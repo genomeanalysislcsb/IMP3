@@ -1,4 +1,4 @@
-name: IMP_visalize
+name: IMP_visualize
 channels:
   - bioconda
   - conda-forge/label/cf201901
@@ -104,6 +104,7 @@ dependencies:
   - poppler-data=0.4.9=1
   - pthread-stubs=0.4=h470a237_1
   - python=3.7.1=h5001a0f_0
+  - r-alluvial=0.1_2=r351_1000
   - r-animation=2.6=r351_0
   - r-ape=5.1=r351h9d2a408_2
   - r-assertthat=0.2.0=r351h6115d3f_1001
@@ -191,5 +192,6 @@ dependencies:
   - libstdcxx-ng=9.1.0=hdf63c60_0
   - texlive-core=20180414=hc8d0b01_0
   - tktable=2.10=h14c3975_0
+  - r-data.table=1.11.4=r351h96ca727_0
   - r-igraph=1.2.2=r351h80f5a37_0
 
