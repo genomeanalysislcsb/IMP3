@@ -69,7 +69,7 @@ MTaln = os.environ.get("MTaln", config['raws']['Alignment_metatranscriptomics'])
 SAMPLE = os.environ.get("SAMPLE", config['sample'])
 if SAMPLE == "":
     SAMPLE = "_".join(OUTPUTIDR.split("/")[-2])
-SAMPLE = re.sub('[.-|]','_',SAMPLE)
+SAMPLE = re.sub("_+","_",re.sub("[;|.-]","_",SAMPLE))
 DBPATH = os.environ.get("DBPATH", os.path.expandvars(config['db_path']))
 if not os.path.exists(DBPATH):
     os.makedirs(DBPATH)
