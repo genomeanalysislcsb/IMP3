@@ -356,7 +356,7 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
     contigs_temp <- read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"),
                                stringsAsFactors=F,header = F)[,1]
 }else{
-   contigs_temp <- sub(">","",grep("^>","",read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.fa"), header=F, stringsAsFactors=F)$V1,values=T))
+   contigs_temp <- sub(">","",grep("^>","",read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.fa"), header=F, stringsAsFactors=F)$V1,value=T))
 }
     products_bin <- gsub(".+;product=","",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature != "CDS",9])
     if(length(products_bin)>0){
