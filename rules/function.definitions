@@ -163,7 +163,7 @@ def gather_GTDB_bins(wildcards):
 
 def check_bintabs(wildcards):
     checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
-    binners = config["binning"]["binners"].split()
+    binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
         if os.stat(OUTPUTDIR + "/Binning/" + binner + "/scaffold2bin.tsv").st_size > 0:
