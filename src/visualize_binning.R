@@ -195,7 +195,7 @@ if("MaxBin" %in% colnames(cont2binM)){
   cont2binM$DASTool <- gsub("maxbin_res.","",gsub(".fasta","",cont2binM$DASTool))
 }
 all_col <- colorRampPalette(brewer.pal(11,"Spectral"))(256)[256:1][1+255*sapply(cont2binM$DASTool,function(x) {
-  if(x %in% binTab$selected_by_DASTool) binTab$binScore.DASTool[binTab$selected_by_DASTool==x] else 0
+  if(x %in% binTab$selected_by_DASTool) binTab$binScore.DASTool[which(binTab$selected_by_DASTool==x)] else 0
 })]
 png(plotfile,width=17,height=12,units = "cm",res=300,pointsize=7)
 par("mar"=c(0.2,0.2,0.2,0.2),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
