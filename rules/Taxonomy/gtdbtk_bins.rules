@@ -44,22 +44,41 @@ rule GTDBtk_summarize:
     script:
         SRCDIR + "/summarize_GTDBtk.R"
     
-rule bins_tar:
-    input:
-        dir="Binning/selected_DASTool_bins",
-        ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS),
-        gridbins=gather_bins,
-        gtdbbins=gather_GTDB_bins
-    output:
-        "Binning/per_bin_results.tar.gz"
-    threads: 1
-    params:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    log: "logs/taxonomy_bins_tar.log"
-    message: "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
-    shell:
-        """
-        tar cvzf {output} {input.gridbins} {input.gtdbbins} && rm -r {input.gridbins} {input.gtdbbins} >> {log} 2>&1
-        """
+if MG:
+    rule bins_tar:
+        input:
+            dir="Binning/selected_DASTool_bins",
+            ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS),
+            gridbins=gather_bins,
+            gtdbbins=gather_GTDB_bins
+        output:
+            "Binning/per_bin_results.tar.gz"
+        threads: 1
+        params:
+            runtime = "8:00:00",
+            mem = MEMCORE
+        log: "logs/taxonomy_bins_tar.log"
+        message: "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
+        shell:
+            """
+            tar czf {output} {input.gridbins} {input.gtdbbins} && rm -r {input.gridbins} {input.gtdbbins} >> {log} 2>&1
+            """
+else:
+    rule bins_tar:
+        input:
+            dir="Binning/selected_DASTool_bins",
+            ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS),
+            gtdbbins=gather_GTDB_bins
+        output:
+            "Binning/per_bin_results.tar.gz"
+        threads: 1
+        params:
+            runtime = "8:00:00",
+            mem = MEMCORE
+        log: "logs/taxonomy_bins_tar.log"
+        message: "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
+        shell:
+            """
+            tar czf {output} {input.gridbins} {input.gtdbbins} && rm -r {input.gridbins} {input.gtdbbins} >> {log} 2>&1
+            """
 
