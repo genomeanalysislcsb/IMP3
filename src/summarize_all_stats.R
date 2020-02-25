@@ -393,7 +393,7 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
       rm(ess_bin)
     }
     if(file.exists("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")){
-      if("mg" %in% types){
+      if(!grepl("^=",scan("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",what=character(),n=1))){
       mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F)
       }else{
        mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F,comment.char="=",header=F)

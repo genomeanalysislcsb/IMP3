@@ -693,7 +693,13 @@ V(gra)$name <- gsub("[,/(/)]","",V(gra)$name)
 df_tree = collapse.singles(read.newick(text = graph_to_newick(gra,"r__root")))
 df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
 
-gene_tab <- read.delim(geneLev_file,stringsAsFactors = F)
+if(!grepl("^=",scan(geneLev_file,what=character(),n=1))){
+      mgenes <- read.delim(geneLev_file,stringsAsFactors = F)
+      }else{
+       mgenes <- read.delim(geneLev_file,stringsAsFactors = F,comment.char="=",header=F)
+       colnames(mgenes) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
+      }
+
 ranks_trans <- c("kingdom","phylum","class","order","family","genus","subjectID")
 names(ranks_trans) <- c("k","p","c","o","f","g","s")
 
