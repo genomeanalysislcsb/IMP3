@@ -351,7 +351,7 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
                                          "any_5S","tRNAs","mean_coverage_depth","genes",
                                          "expressed_genes","essential_genes","unique_essential_genes",
                                          "mOTU_phyla","mOTU_genera","mOTUs")))
-  for(bin in binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]){
+  for(bin in binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""&!is.na(binTab$selected_by_DASTool)]){
     if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"))){
     contigs_temp <- read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"),
                                stringsAsFactors=F,header = F)[,1]
