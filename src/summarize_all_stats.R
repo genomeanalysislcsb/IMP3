@@ -393,7 +393,12 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
       rm(ess_bin)
     }
     if(file.exists("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")){
+      if("mg" %in% types){
       mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F)
+      }else{
+       mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F,comment.char="=",header=F)
+       colnames(mgenes) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
+      }
       mgenes <- mgenes[mgenes$queryID %in% cds_bin,]
       if(nrow(mgenes)>0){
         taxtp <- sort(table(sub("[0-9NA]+ ","",mgenes$phylum)),decreasing=T)
