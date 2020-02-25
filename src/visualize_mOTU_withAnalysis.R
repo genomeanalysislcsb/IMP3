@@ -694,10 +694,10 @@ df_tree = collapse.singles(read.newick(text = graph_to_newick(gra,"r__root")))
 df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
 
 if(!grepl("^=",scan(geneLev_file,what=character(),n=1))){
-      mgenes <- read.delim(geneLev_file,stringsAsFactors = F)
+      gene_tab <- read.delim(geneLev_file,stringsAsFactors = F)
       }else{
-       mgenes <- read.delim(geneLev_file,stringsAsFactors = F,comment.char="=",header=F)
-       colnames(mgenes) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
+       gene_tab <- read.delim(geneLev_file,stringsAsFactors = F,comment.char="=",header=F)
+       colnames(gene_tab) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
       }
 
 ranks_trans <- c("kingdom","phylum","class","order","family","genus","subjectID")
