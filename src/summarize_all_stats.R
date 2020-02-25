@@ -352,8 +352,12 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
                                          "expressed_genes","essential_genes","unique_essential_genes",
                                          "mOTU_phyla","mOTU_genera","mOTUs")))
   for(bin in binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]){
+    if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed")){
     contigs_temp <- read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"),
                                stringsAsFactors=F,header = F)[,1]
+}else{
+   contigs_temp <- sub(">","",grep("^>","",read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.fa"), header=F, stringsAsFactors=F)$V1,values=T))
+}
     products_bin <- gsub(".+;product=","",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature != "CDS",9])
     if(length(products_bin)>0){
       rnas_bin_tab[rownames(rnas_bin_tab)==bin,1] <- length(which(grepl("16S ribosomal RNA",products_bin) &
