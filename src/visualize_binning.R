@@ -148,9 +148,8 @@ bin_memberships     <- snakemake@input[["bins"]]  # Binning/*/scaffold2bin.tsv
 mag_memberships     <- snakemake@input[["dastool"]]  # Binning/selected_DASTool_scaffolds2bin.txt
 vizbin_file         <- snakemake@input[["vizbin"]] #"Binning/binny/ASS.vizbin.with-contig-names.points",
 outplot             <- snakemake@output # "Visualization/Binning_alluvial.png"
-#                                         Visualization/Binning_{type}_depth.png"
-                                        #"Visualization/Assembly_gc_hist.png"
-                                         #"Visualization/Assembly_cov_gc_scatter.png"
+                                        #"Visualization/Binning_{type}_depth.png"
+                                       #"Visualization/Binning_vizbin.png" 
 circos_files       <- "Visualization/"
 
 ###################################################################################################
@@ -220,14 +219,14 @@ for(bin in unique(cont2bin[["DASTool"]]$bin)){
     circ_genes <- merge(circ_genes,
                         depthGeneStat[["mt"]],by="gene",all.x=T)
     colnames(circ_genes)[ncol(circ_genes)] <- "mt"
-    circ_genes$mg[is.na(circ_genes$mg)] <- 0
+    circ_genes$mt[is.na(circ_genes$mt)] <- 0
   }
   col <- colorRampPalette(brewer.pal(11,"Spectral"))(256)[256:1][1+255*binTab$binScore.DASTool[binTab$selected_by_DASTool==bin]]
   makeCircosFiles(contig_length[contig_length$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],],
                    circ_genes,col,circos_files)
 }
-plotfile <- outplot[["mg"]]
 if("mg" %in% types){
+  plotfile <- outplot[["mg"]]
   png(plotfile,width=17,height=12,units = "cm",res=300,pointsize=7)
   par("mar"=c(13,4.5,0.5,0.5),tcl="-0.3",mgp=c(3.2,0.5,0),lwd=0.5)
   cont2binC <- merge(cont2bin[["DASTool"]],depthAssStat[["mg"]],by=1,all.x=T)
