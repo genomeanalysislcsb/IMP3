@@ -76,9 +76,9 @@ else:
             runtime = "8:00:00",
             mem = MEMCORE
         log: "logs/taxonomy_bins_tar.log"
-        message: "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
+        message: "bins_tar: Compressing per-bin results of GTDBtk."
         shell:
             """
-            tar czf {output} {input.gridbins} {input.gtdbbins} && rm -r {input.gridbins} {input.gtdbbins} >> {log} 2>&1
+            tar czf {output} {input.gtdbbins} && rm -r {input.gtdbbins} >> {log} 2>&1
             """
 
