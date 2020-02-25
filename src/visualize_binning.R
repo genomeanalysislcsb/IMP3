@@ -232,9 +232,9 @@ if("mg" %in% types){
   cont2binC <- merge(cont2bin[["DASTool"]],depthAssStat[["mg"]],by=1,all.x=T)
   cont2binC[is.na(cont2binC)] <- 0
   plotnames <- sapply(levels(as.factor(cont2binC$bin[cont2binC$depth>0])),
-                      function(x) paste0(x,"\n",gsub(".+;(.__[^;]+).*","\\1",binTab$classification[binTab$selected_by_DASTool==x])))
+                      function(x) paste0(x,"\n",gsub(".+;(.__[^;]+).*","\\1",binTab$classification[which(binTab$selected_by_DASTool==x)])))
   box_col <- colorRampPalette(brewer.pal(11,"Spectral"))(256)[256:1][1+255*sapply(levels(as.factor(cont2binC$bin[cont2binC$depth>0])),
-                                                                           function(x) binTab$binScore.DASTool[binTab$selected_by_DASTool==x] )]
+                                                                           function(x) binTab$binScore.DASTool[which(binTab$selected_by_DASTool==x)] )]
   zeroC <- sapply(levels(as.factor(cont2binC$bin[cont2binC$depth>0])),
                   function(x) length(which(cont2binC$bin[cont2binC$bin==x]==0)))
     a<-boxplot(cont2binC$depth[cont2binC$depth>0]~cont2binC$bin[cont2binC$depth>0],las=2,
@@ -262,9 +262,9 @@ if("mt" %in% types){
   totE <- cont2binT <- merge(tmpMT,cont2binT,by="contig")
   totE <- aggregate(totE$depth,list(totE$bin),function(x) length(which(x>0))/length(x))
   plotnames <- sapply(levels(as.factor(cont2binT$bin)),
-                      function(x) paste0(x,"\n",gsub(".+;(.__[^;]+).*","\\1",binTab$classification[binTab$selected_by_DASTool==x])))
+                      function(x) paste0(x,"\n",gsub(".+;(.__[^;]+).*","\\1",binTab$classification[which(binTab$selected_by_DASTool==x)])))
   box_col <- colorRampPalette(brewer.pal(11,"Spectral"))(256)[256:1][1+255*sapply(levels(as.factor(cont2binT$bin)),
-                                                                                  function(x) binTab$binScore.DASTool[binTab$selected_by_DASTool==x] )]
+                                                                                  function(x) binTab$binScore.DASTool[which(binTab$selected_by_DASTool==x)] )]
   a<-boxplot(100*cont2binT$percExpr~cont2binT$bin,las=2,
              axes=F,ylab="",pch=16,cex=0.5,border=box_col,
              ylim=c(0,100),outline=F)
