@@ -35,7 +35,7 @@ rule filter_rna:
         'Preprocessing/mt.r1.trimmed.rna.fq',
         'Preprocessing/mt.r2.trimmed.rna.fq',
         'Preprocessing/mt.se.trimmed.rna.fq'
-    threads: 1
+    threads: 4
     params:
         ref = REF,
         sortmernamem = str(SORTME_MEM),
