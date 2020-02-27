@@ -1,0 +1,19 @@
+steps: "collate catalogue dereplicate DB visualize"
+mem:
+  normal_mem_per_core_gb: 4
+  big_mem_total_gb: 800
+  big_mem_cores: 8
+  big_mem_per_core_gb: 100
+tmp_dir: tmp
+sample_table: ""
+omes: "mg mt"
+outputdir: ""
+collection:
+  results: "taxonomy features stats"
+  hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
+dereplication:
+  cross_mapping_rebinning: true
+  simple_derep: true
+catalogue:
+  mapping: true
+

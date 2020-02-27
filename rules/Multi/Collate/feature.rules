@@ -1,0 +1,27 @@
+rule collate_featureCounts:
+    input:
+        expand("{raw_directory}/Analysis/annotation/{type}.{db}.counts.tsv",
+                raw_directory=samples.loc[samples.[wildcards.db] == 1 & samples[wildcards.type] == 1,"path"],
+                type=wildcards.type,
+                db=wildcards.db)
+    output:
+        report("Collection/multi_{type}.{db}.tsv",category="Collection"),
+        "Collection/multi_{type}.{db}.Rdata"
+    threads: 1
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/collate_featureCounts_{type}.{db}.log"
+    message: 'collate_featureCounts: collecting {wildcards.db} {wildcards.type} data from " ".join(samples.loc[samples[wildcards.db] == 1 & samples[wildcards.type] == 1,"sample"]).'
+    threads: 1
+    conda: ENVDIR + "/IMP_multi.yaml"
+    script:
+        SRCDIR + "/multi_collect_featureCounts.R"
+
+localrules:  ctrl_featureCounts_collation
+
+rule ctrl_featureCounts_collation:
+    input:
+        expand("Collection/multi_{type}.{db}.tsv",db=config['collection']['hmm_DBs'],type=TYPES)
+    output:
+        touch("features.collated")

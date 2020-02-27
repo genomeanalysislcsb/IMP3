@@ -1,0 +1,15 @@
+include:
+    "../../rules/Collate/features.rules"
+include:
+    "../../rules/Collate/taxonomy.rules"
+include:
+    "../../rules/Collate/stats.rules"
+
+# master command
+rule all_collate:
+    input:
+        expand("{task}.collated",task=config["collection"]["results"].split())
+    output:
+        touch('collate.done')
+
+

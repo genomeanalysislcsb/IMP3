@@ -1,0 +1,15 @@
+include:
+    "../../rules/Catalogue/cluster.rules"
+if config['catalogue']['mapping']:
+    include:
+        "../../rules/Catalogue/map.rules"
+
+
+# master command
+#rule all_cat:
+#    input:
+#        expand("{task}.collated",task=config["collection"]["results"].split())
+#    output:
+#        touch('collate.done')
+
+
