@@ -1,15 +1,22 @@
 include:
     "../../rules/Catalogue/cluster.rules"
-if config['catalogue']['mapping']:
+if config['catalogue']['mapping']['do']:
     include:
-        "../../rules/Catalogue/map.rules"
+        "../../rules/Catalogue/mapping.rules"
+    include:
+        "../../rules/Catalogue/table_extended.rules"
+else:
+    include:
+        "../../rules/Catalogue/table.rules"
 
 
 # master command
-#rule all_cat:
-#    input:
-#        expand("{task}.collated",task=config["collection"]["results"].split())
-#    output:
-#        touch('collate.done')
+rule all_cat:
+    input:
+        'Catalogue/catalogue.faa',
+        'Catalogue/catalogue.fasta',
+        'Catalogue/catalogue.tsv'
+    output:
+        touch('collate.done')
 
 

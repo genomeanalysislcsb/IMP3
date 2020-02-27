@@ -1,15 +1,25 @@
-include:
-    "../../rules/Catalogue/cluster.rules"
-if config['catalogue']['mapping']:
+if config['dereplication']['simple_derep']:
     include:
-        "../../rules/Catalogue/map.rules"
+        "../../rules/Dereplicate/dRep.basic.rules"
+if config['dereplication']['cross_mapping_rebinning']:
+    include:
+        "../../rules/Dereplicate/map.rules"
+    include:
+        "../../rules/Dereplicate/binning.rules"
+    include:
+        "../../rules/Dereplicate/dRep.multi.rules"
+if config['dereplication']['GTDBtk']:
+    include:
+        "../../rules/Dereplicate/GTDBtk.rules"
+include:
+    "../../rules/Dereplicate/bin_stats.rules"
 
 
 # master command
-#rule all_cat:
-#    input:
-#        expand("{task}.collated",task=config["collection"]["results"].split())
-#    output:
-#        touch('collate.done')
+rule all_derep:
+    input:
+        "Dereplication/all_bin_stats.tsv"
+    output:
+        touch('collate.done')
 
 

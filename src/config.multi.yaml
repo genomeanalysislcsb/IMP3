@@ -8,12 +8,26 @@ tmp_dir: tmp
 sample_table: ""
 omes: "mg mt"
 outputdir: ""
+db_path: /data/idiv_biu/heintzbu/EXTDB/IMP_DBs
 collection:
   results: "taxonomy features stats"
   hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
 dereplication:
-  cross_mapping_rebinning: true
+  cross_mapping_rebinning: 
+    do: true
+    binners: "MaxBin MetaBAT"
+    MaxBin:
+      cutoff: 1000
   simple_derep: true
+  GTDBtk: true
 catalogue:
-  mapping: true
+  mapping: 
+    do: true
+    featureCountsStranding:
+      mt: 2
+      mg: 0
+  kraken: 
+    do: true
+    db: kraken2-microbial-fatfree
+
 

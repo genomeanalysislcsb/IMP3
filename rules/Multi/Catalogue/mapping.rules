@@ -1,0 +1,94 @@
+rule bwa_index:
+    input:
+        "{fasta}"
+    output:
+        "{fasta}.amb",
+        "{fasta}.bwt",
+        "{fasta}.pac",
+        "{fasta}.sa",
+        "{fasta}.ann"
+    params:
+        runtime = "24:00:00",
+        mem = BIGMEMCORE
+    threads: 1
+    conda: ENVDIR + "/IMP_mapping.yaml"
+    log: "logs/catalogue_bwa_index.{fasta}.log"
+    message: "bwa_index: Indexing {wildcards.fasta} for bwa."
+    shell:
+        """
+        bwa index {wildcards.fasta} > {log} 2>&1
+        """
+
+SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
+
+rule mapping_on_catalogue:
+    input:
+        expand("{raw_directory}/Preprocessing/{type}.{read}.preprocessed.fq",
+                raw_directory=samples.loc[samples[sample] == wildcards.sample,"path"],
+                type=wildcards.type,
+                read=["r1","r2","se"]),
+        expand("Catalogue/catalogue.{ext}",ext=c("fasta.amb","fasta.bwt","fasta.pac","fasta.sa","fasta.ann","fasta"))
+    output:
+        'Catalogue/{sample}.{type}.reads.sorted.bam'
+    params:
+        runtime = "12:00:00",
+        mem = BIGMEMCORE
+    threads: BIGCORENO
+    conda: ENVDIR + "/IMP_mapping.yaml"
+    log: "logs/catalogue_mapping_on_catalogue.{type}.log"
+    message: "mapping_on_catalogue: Mapping {wildcards.type} reads on catalogue."
+    shell:
+        """
+        SAMHEADER="@RG\\tID:{SAMPLE}\\tSM:MG"
+        PREFIX=Catalogue/{wildcards.sample}.{wildcards.type}.reads
+        # merge paired and se
+        samtools merge --threads {threads} -f $PREFIX.merged.bam \
+         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[0]} {input[1]} 2>> {log}| \
+         samtools view --threads {threads} -bS -) \
+         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[2]} 2> {log}| \
+         samtools view --threads {threads} -bS -) 2>> {log}
+        # sort
+        samtools sort --threads {threads} -m {SAMTOOLS_MEM} $PREFIX.merged.bam > $PREFIX.sorted.bam 2>> {log}
+        rm $PREFIX.merged.bam
+        """
+
+
+rule feature_count_cat:
+    input:
+        gff = "Catalogue/catalogue.gff",
+        bam = expand('Catalogue/{sample}.{type}.reads.sorted.bam',type=wildcards.type,
+        sample=samples.loc[samples[wildcards.type] == 1,"sample"])
+    output:
+        report("Catalogue/{type}.counts.tsv",category="Catalogue")
+    params:
+        lambda wildcards: config["catalogue"]["mapping"]["featureCountsStranding"][wildcards.type],
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: 8
+    conda: ENVDIR + "/IMP_annotation.yaml"
+    log: "logs/catalogue_feature_count_cat.{type}.log"
+    message: "feature_count_cat: Quantifying {wildcards.type} reads on the catalogue."
+    shell:
+        """
+        featureCounts -p -O -t "gene" -g ID -o {output} -s {params[0]} -a {input.gff} -T {threads} {input.bam} > {log} 2>&1
+        """
+
+# get reads per sample per gene or would it be better to use average coverage?
+ #rule mapping_stats_cat:
+ #   input:
+ #       "Catalogue/catalogue.gff",
+ #       expand("Catalogue/{type}.counts.tsv",type=TYPES)
+ #   output:
+ #       "Catalogue/catalogue.gff"
+ #   threads: 1
+ #   params:
+ #       runtime = "12:00:00",
+ #       mem = MEMCORE,
+ #       tmp = TMPDIR
+ #   log: "logs/catalogue_cat_gff.log"
+ #   message: 'collate_cat_gff: getting annotations for representative genes from individual gffs.'
+ #   threads: 1
+ #   script:
+ #       SRCDIR + "/multi_extract_gff.py"
+       
+  

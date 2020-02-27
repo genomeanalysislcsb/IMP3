@@ -8,6 +8,8 @@ import bz2
 import re
 from copy import deepcopy
 import subprocess
+import pandas as pd
+import fnmatch
 
 def dict_merge(a, b):
     """
@@ -62,7 +64,7 @@ except:
     raise
 if samples[['sample']].duplicated().any():
     raise Exception('sample names should be unique.')
-samples = samples.set_index(["path","sample"],drop=False)
+samples = samples.set_index(["sample"],drop=False)
 samples['sample'] = samples['sample'].astype(str)
 for sam in samples['sample']:
     if not re.match(r"[0-9a-zA-Z]",sam):
@@ -96,12 +98,22 @@ if "collate" in MULTI_STEPS:
         samples = samples.reindex(columns = config['collection']['hmm_DBs'].split())
 if "catalogue" in MULTI_STEPS:
     samples = samples.assign(genes=[1 if "analysis" in multi_config[sam]['steps'].split() else 0 for sam in samples['sample']])
+    samples = samples.reindex(columns = ["prokka_prefix"])
+    for sam in samples.sample:
+        if samples.genes[sam] == 1:
+            if os.path.isfile(samples.path[sam] + "/Analysis/annotation/prokka.faa"):
+                with open(samples.path[sam] + "/Analysis/annotation/prokka.faa",'r') as f:
+                    line = f.readline()
+                    samples[sam,"prokka_prefix"] = line.split("_")[0][1:]
 if "dereplicate" in MULTI_STEPS:
     if config['dereplication']['simple_derep']:
         samples = samples.assign(bins=[1 if "binning" in multi_config[sam]['steps'].split() else 0 for sam in samples['sample']])
-    if config['dereplication']['cross_mapping_rebinning']:
+    if config['dereplication']['cross_mapping_rebinning']['do']:
         samples = samples.assign(ass=[1 if ("assembly" in multi_config[sam]['steps'].split() or multi_config[sam]['raws']['Contigs'].split()) else 0 for sam in samples['sample']])
-
+        samples = samples.reindex(columns = ["assembly_type"])
+        for sam in samples.sample:
+            if samples.ass[sam] == 1:
+                samples.assembly_type[sam] = [f.replace(".assembly.merged.fa","") for f in os.listdir(samples.path[sam] + "/Assembly/") if fnmatch.fnmatch(f,"m*.assembly.merged.fa")][0]
 TYPES=config['omes'].split()
 
 yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
