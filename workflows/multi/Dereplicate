@@ -1,11 +1,12 @@
-if config['dereplication']['simple_derep']:
+if config['dereplication']['simple_derep']['do']:
     include:
         "../../rules/Dereplicate/dRep.basic.rules"
-if config['dereplication']['cross_mapping_rebinning']:
+if config['dereplication']['cross_mapping_rebinning']['do']:
     include:
         "../../rules/Dereplicate/map.rules"
     include:
-        "../../rules/Dereplicate/binning.rules"
+        expand("../../rules/Dereplicate/{binner}.rules",
+              binner=config['dereplication']['cross_mapping_rebinning']['binners'].split())
     include:
         "../../rules/Dereplicate/dRep.multi.rules"
 if config['dereplication']['GTDBtk']:

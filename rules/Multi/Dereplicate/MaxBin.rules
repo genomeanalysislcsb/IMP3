@@ -19,15 +19,41 @@ rule maxbin_contig2bin:
         echo "Contig to bin mapping done" > {log}
         """
 
+rule maxbin_get_depth:
+    input:
+        "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.txt",
+        expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
+                raw_directory=samples.path[wildcards.sample],
+                ass=samples.ass_type[wildcards.sample])
+    output:
+        "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.0.txt"
+    threads: 1
+    params:
+        runtime = "3:00:00",
+        mem = MEMCORE
+    message: "maxbin_get_depth: Getting depth of coverage by {wildcards.cross_sample} on {wildcards.sample} contigs in Maxbin format."
+    shell:
+        """
+        cat {input[0]} \
+         <(awk 'BEGIN {{OFS="\t"}}; {{print $0, 0}}' \
+         <(diff --new-line-format="" --unchanged-line-format="" \
+         <(grep "^>" {input[1]} |sed -e 's/>//g' | sort) \
+         <(cut -f1 {input[0]} | sort))) > {output[0]}
+        """
+
+
 localrules: maxbin_prep
 
 rule maxbin_prep:
     input:
-       expand("Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.0.txt",
+        expand("Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.0.txt",
                sample=wildcards.sample,
-               cross_sample=samples.loc[samples.mg == 1,"sample"])
+               cross_sample=samples.loc[samples.mg == 1 & samples.sample != wildcards.sample,"sample"]),
+        expand("{raw_directory}/Stats/mg/{ass}.assembly.contig_depth.0.txt",
+               raw_directory=samples.path[wildcards.sample],
+               ass=samples.ass_type[wildcards.sample])
     output:
-       "Dereplication/cross_mapping/{sample}.contig_depth.0.list"
+        "Dereplication/cross_mapping/{sample}.contig_depth.0.list"
     message: "maxbin_prep: Collecting abundance for {wildcards.sample}."
     shell:
         """

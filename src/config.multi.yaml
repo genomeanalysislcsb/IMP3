@@ -18,6 +18,8 @@ dereplication:
     binners: "MaxBin MetaBAT"
     MaxBin:
       cutoff: 1000
+    MetaBAT:
+      cutoff: 1500
   simple_derep: true
   GTDBtk: true
 catalogue:
