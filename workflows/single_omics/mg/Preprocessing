@@ -3,20 +3,19 @@
 include:
     "../../../rules/Preprocessing/fastqc.rules"
 
+include:
+    '../../../rules/Preprocessing/reads-count.rules'
 
-# include only if user don't skip preprocessing
-if 'preprocessing' in IMP_STEPS:
-    # trimming rules
+include:
+    "../../../rules/Preprocessing/trimming.rules"
+
+# include filtering rule or not
+if PREPROCESSING_FILTERING:
     include:
-        "../../../rules/Preprocessing/trimming.rules"
-
-    # include filtering rule or not
-    if PREPROCESSING_FILTERING:
-        include:
-            "../../../rules/Preprocessing/filtering.rules"
-    else:
-        include:
-            "../../../rules/Preprocessing/no-filtering.rules"
+        "../../../rules/Preprocessing/filtering.rules"
+else:
+    include:
+        "../../../rules/Preprocessing/no-filtering.rules"
 
 # master command
 rule PREPROCESSING:
@@ -25,10 +24,12 @@ rule PREPROCESSING:
         'Preprocessing/mg.r2.preprocessed.fq',
         'Preprocessing/mg.se.preprocessed.fq',
     	'Stats/mg/mg.r1.preprocessed_fastqc.html',
-	'Stats/mg/mg.r2.preprocessed_fastqc.html',
-	'Stats/mg/mg.se.preprocessed_fastqc.html',
-	'Stats/mg/mg.r1.preprocessed_fastqc.zip',
-	'Stats/mg/mg.r2.preprocessed_fastqc.zip',
-	'Stats/mg/mg.se.preprocessed_fastqc.zip'
+        'Stats/mg/mg.r2.preprocessed_fastqc.html',
+        'Stats/mg/mg.se.preprocessed_fastqc.html',
+        'Stats/mg/mg.r1.preprocessed_fastqc.zip',
+        'Stats/mg/mg.r2.preprocessed_fastqc.zip',
+        'Stats/mg/mg.se.preprocessed_fastqc.zip',
+        'Stats/mg/mg.read_counts.txt',
+        'Preprocessing/mg.reads.compressed'
     output:
         touch('preprocessing.done')

@@ -4,37 +4,42 @@
 include:
     '../../../rules/Binning/DAStool/dastool.rules'
 
+inputs_binning = ["Binning/selected_DASTool_summary.txt","Binning/GRiD.done"]
+
 ## MaxBin
-include:
-    '../../../rules/Binning/MaxBin/maxbin.rules'
-include:
-    '../../../rules/Binning/MaxBin/maxbin_get_depth.rules'
-include:
-    '../../../rules/Binning/MaxBin/get_contig2bin.rules'
+if "MaxBin" in BIN_STEPS:
+    inputs_binning.append("Binning/MaxBin/maxbin_res.log")
+    include:
+        '../../../rules/Binning/MaxBin/maxbin.rules'
+    include:
+        '../../../rules/Binning/MaxBin/maxbin_get_depth.rules'
+    include:
+        '../../../rules/Binning/MaxBin/get_contig2bin.rules'
 ## MetaBAT
-include:
-    '../../../rules/Binning/MetaBAT/metabat.rules'
+if "MetaBAT" in BIN_STEPS:
+    inputs_binning.append("Binning/MetaBAT/metabat_res")
+    include:
+        '../../../rules/Binning/MetaBAT/metabat.rules'
 ## binny
-include:
-    '../../../rules/Binning/binny/binny.rules'
-include:
-    '../../../rules/Binning/binny/binny2dastool.rules'
-include:
-   '../../../rules/Binning/binny/vizbin.rules'
-
-
+if "binny" in BIN_STEPS:
+    inputs_binning.append("Binning/binny/scaffold2bin.tsv")
+    include:
+        '../../../rules/Binning/binny/vizbin.rules'
+    include:
+        '../../../rules/Binning/binny/binny.rules'
+    include:
+        '../../../rules/Binning/binny/binny2dastool.rules'
 ## GRiD
 include:
     '../../../rules/Binning/GRiD/grid_dynamic.rules'
+
+if not 'taxonomy' in IMP_STEPS:
+    inputs_binning.append("Binning/selected_DASTool_bins/per_bin_results.tar.gz")
 
 
 ## master command
 rule BINNING:
     input:
-        "Binning/MaxBin/maxbin_res.log",
-	"Binning/MetaBAT/metabat_res",
-	"Binning/binny/scaffold2bin.tsv",
-	"Binning/selected_DASTool_summary.txt",
-	"Binning/GRiD.done"
+        inputs_binning
     output:
         touch('binning.done')

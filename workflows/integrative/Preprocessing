@@ -4,22 +4,22 @@
 include:
     '../../rules/Preprocessing/fastqc.rules'
 
-# include only if user doesn't skip preprocessing
-if 'preprocessing' in IMP_STEPS:
-    # trimming rules
-    include:
-        "../../rules/Preprocessing/trimming.rules"
-    # filtering rna for mt data
-    include:
-        "../../rules/Preprocessing/rna.filtering.rules"
+include:
+    '../../rules/Preprocessing/reads-count.rules'
 
-    # include filtering rule or not
-    if PREPROCESSING_FILTERING:
-        include:
-            "../../rules/Preprocessing/filtering.rules"
-    else:
-        include:
-            "../../rules/Preprocessing/no-filtering.rules"
+# trimming rules
+include:
+    "../../rules/Preprocessing/trimming.rules"
+# filtering rna for mt data
+include:
+    "../../rules/Preprocessing/rna.filtering.rules"
+# include filtering rule or not
+if PREPROCESSING_FILTERING:
+    include:
+        "../../rules/Preprocessing/filtering.rules"
+else:
+    include:
+        "../../rules/Preprocessing/no-filtering.rules"
 
 # master command
 rule PREPROCESSING:
@@ -33,6 +33,8 @@ rule PREPROCESSING:
         "Stats/{type}/{type}.se.preprocessed_fastqc.zip",
         "Stats/{type}/{type}.r1.preprocessed_fastqc.html",
         "Stats/{type}/{type}.r2.preprocessed_fastqc.html",
-        "Stats/{type}/{type}.se.preprocessed_fastqc.html"], type=TYPES)
+        "Stats/{type}/{type}.se.preprocessed_fastqc.html",
+        "Stats/{type}/{type}.read_counts.txt",
+        'Preprocessing/{type}.reads.compressed'], type=TYPES)
     output:
         touch('preprocessing.done')

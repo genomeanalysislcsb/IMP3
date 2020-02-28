@@ -8,7 +8,7 @@ EXTRACT_UNMAPPED_SHELL = """
   <(samtools view --threads {threads} -u  -f 4 -F 264 $TMP_FILE 2>> {log}) \
   <(samtools view --threads {threads} -u -f 8 -F 260 $TMP_FILE 2>> {log}) \
   <(samtools view --threads {threads} -u -f 12 -F 256 $TMP_FILE 2>> {log}) 2>> {log} | \
-  samtools view --threads {threads} -bF 0x800 - 2>> {log} | samtools sort --threads {threads} -m {SAMTOOLS_MEM} -n - 2>> {log}| \
+  samtools view --threads {threads} -bF 0x800 - 2> {log} | samtools sort --threads {threads} -m {SAMTOOLS_MEM} -n - 2>> {log}| \
   bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]} >> {log} 2>&1
 
  if [[ -s {input[2]} ]]

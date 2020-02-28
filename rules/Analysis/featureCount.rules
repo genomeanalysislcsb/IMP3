@@ -1,9 +1,9 @@
 rule feature_count:
     input:
         "Assembly/{type}.reads.sorted.bam",
-        "Analysis/annotation/annotation.CDS.RNA.{db}.gff"
+        "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     output:
-        "Analysis/annotation/{type}.{db}.counts.tsv"
+        report("Analysis/annotation/{type}.{db}.counts.tsv",category="Analysis")
     params:
         lambda wildcards: config["featureCountsStranding"][wildcards.type],
         runtime = "8:00:00",
@@ -22,7 +22,7 @@ rule feature_count_gene:
         "Analysis/annotation/annotation.filt.gff",
         "Assembly/{type}.reads.sorted.bam"
     output:
-        "Analysis/annotation/{type}.{feature}_counts.tsv",
+        report("Analysis/annotation/{type}.{feature}_counts.tsv",category="Analysis")
     params:
         lambda wildcards: config["featureCountsStranding"][wildcards.type],
         runtime = "8:00:00",

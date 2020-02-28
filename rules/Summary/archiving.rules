@@ -1,0 +1,89 @@
+
+arch_inputs = "workflow.done"
+if MG or MT:
+    arch_input.append("reads.compressed")
+
+
+localrules: ARCHIVING
+
+rule ARCHIVING:
+    input:
+        arch_input
+    output:
+        "archiving.done"
+
+rule sync_final:
+    input:
+        OUTPUTDIR,
+        "workflow.done"
+    output:
+        SUMDIR
+    threads: 1
+    params:
+        runtime = "24:00:00",
+        mem = MEMCORE
+    message: "Synching {OUTPUTDIR} to {SUMDIR}"
+    shell:
+        """
+        rsync -a --remove-source-files {input[0]} {output}
+        """
+
+def entry_gz:
+    if "preprocessing" in IMP_STEPS:
+        ctrl.append("preprocessing.done")
+    elif "summary" in SUM_STEPS:
+        ctrl.append("stats.done")
+    if "assembly" in IMP_STEPS and (not MGaln and not MTaln):
+        ctrl.append("assembly.done")
+    if "taxonomy" in IMP_STEPS:
+        ctrl.append("taxonomy.done")
+    return ctrl
+    
+def ctrl_readgz(wildcards):
+    checkpoint_output = checkpoints.workflow.get(**wildcards).output[0]
+    pot_reads = expand("Preprocessing/{i}.fq.gz", i=glob_wildcards("Preprocessing/{i}.fq").i)
+    real_reads = list(set(pot_reads).difference([expand("Preprocessing/{type}.{part}.{stage}.fq.gz",
+                  type=TYPES,part=["r1","r2","se"],stage=["preprocessed","filtered"]),
+                                                 expand("Preprocessing/{type}.{part}.fq.gz",
+                  type=TYPES,part=["r1","r2"])]))
+    return real_reads
+
+localrules: compress_reads
+
+rules compress_reads:
+    input: 
+        ctrl_readgz
+    output:
+        touch("reads.compressed")
+
+if MG or MT:
+    rule gzip_reads:
+        input:
+            "{file}",
+            entry_gz
+        output:
+            "{file}.gz"
+        threads: 1  
+        params:
+            runtime = "24:00:00",
+            mem = MEMCORE
+        message: "gzip: gzipping {wildcards.file}."
+        shell:
+            "gzip {input[0]}"
+
+rule tar_gzip_directory:
+    input:
+        check="workflow.done",
+        directory="{directory}"
+    output:
+        "{directory}.tar.gz"
+    threads: 1
+    params:
+        runtime = "24:00:00",
+        mem = MEMCORE
+    message: "tar_gzip: tarring and gzipping {wildcards.directory}."
+    shell:
+        "tar -cvzf {output} {input.directory} && rm -R {input.directory}"
+
+
+

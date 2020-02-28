@@ -1,4 +1,4 @@
-steps: "preprocessing assembly analysis binning taxonomy"
+steps: "preprocessing assembly analysis binning taxonomy summary"
 preprocessing_filtering: true
 mem:
   normal_mem_per_core_gb: 4
@@ -16,7 +16,13 @@ raws:
   Alignment_metatranscriptomics: ""
 sample: test
 outputdir: ""
-db_path: "/work/projects/ecosystem_biology/local_tools/IMP3/databases"
+summarydir: ""
+summary_steps: "stats DB vis"
+mongo_user: "myUserAdmin"
+mongo_port: 16626
+mongo_password: "testMongo"
+compress_level: "mid"
+db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
 trimmomatic:
   adapter: "TruSeq3-PE"
   leading: 20

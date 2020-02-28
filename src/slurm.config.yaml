@@ -42,6 +42,14 @@ megahit_assembly_from_unmapped:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
+metaspades_assembly_from_preprocessing:
+  partition: "-p bigmem"
+  quality: "-qos qos-bigmem"
+
+metaspades_assembly_from_unmapped:
+  partition: "-p bigmem"
+  quality: "-qos qos-bigmem"
+
 cap3:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
@@ -61,6 +69,14 @@ megahit_hybrid_assembly_1:
   quality: "-qos qos-bigmem"
 
 megahit_hybrid_assembly_2:
+  partition: "-p bigmem"
+  quality: "-qos qos-bigmem"
+
+metaspades_hybrid_assembly_1:
+  partition: "-p bigmem"
+  quality: "-qos qos-bigmem"
+
+metaspades_hybrid_assembly_2:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
@@ -97,6 +113,10 @@ vizbin:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
+vizbin_mt:
+  partition: "-p bigmem"
+  quality: "-qos qos-bigmem"
+
 kraken_contigs:
   nodes: "-N 1"
   partition: "-p bigmem"
@@ -111,4 +131,8 @@ GTDBtk_bins_single:
   nodes: "-N 1"
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
+
+
+
+
 
