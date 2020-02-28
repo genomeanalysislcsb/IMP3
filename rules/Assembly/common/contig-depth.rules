@@ -5,8 +5,8 @@ rule call_contig_depth:
         "Assembly/%s.assembly.merged.fa.fai" % ASS,
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
     output:
-        report("Stats/{type}/%s.assembly.contig_coverage.txt" % ASS,category="Assembly"),
-        report("Stats/{type}/%s.assembly.contig_depth.txt" % ASS,category="Assembly"),
+        "Stats/{type}/%s.assembly.contig_coverage.txt" % ASS,
+        "Stats/{type}/%s.assembly.contig_depth.txt" % ASS,
         report("Stats/{type}/%s.assembly.contig_flagstat.txt" % ASS,category="Assembly")
     params:
         runtime = "12:00:00",

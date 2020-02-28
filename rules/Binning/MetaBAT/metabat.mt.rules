@@ -3,7 +3,7 @@ rule metabat:
         "Assembly/%s.assembly.merged.fa" % ASS
     output:
         "Binning/MetaBAT/metabat_res",
-	"Binning/MetaBAT/scaffold2bin.tsv"
+        "Binning/MetaBAT/scaffold2bin.tsv"
     threads: 4
     params:
         runtime = "24:00:00",

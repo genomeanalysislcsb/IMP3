@@ -46,7 +46,7 @@ rule mergegff:
         "Analysis/annotation/annotation.filt.gff",
         expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff",db=config["hmm_DBs"].split())
     output:
-        report("Analysis/annotation/annotation_CDS_RNA_hmms.gff",category="Analysis")
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     params:
         runtime = "8:00:00",
         mem = MEMCORE

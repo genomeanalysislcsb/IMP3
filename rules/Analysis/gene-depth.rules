@@ -5,8 +5,8 @@ rule call_gene_depth:
     output:
         "Stats/{type}/annotation/{type}.annotation_cov.bed",
         "Stats/{type}/annotation/{type}.gene_depth.hist",
-        report("Stats/{type}/annotation/{type}.gene_depth.avg",category="Analysis"),
-        report("Stats/{type}/annotation/{type}.gene.len",category="Analysis")
+        "Stats/{type}/annotation/{type}.gene_depth.avg",
+        "Stats/{type}/annotation/{type}.gene.len"
     params:
         runtime = "8:00:00",
         mem = MEMCORE

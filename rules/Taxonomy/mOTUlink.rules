@@ -4,7 +4,7 @@ rule allmotulinks:
     input:
         expand("Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHitPhylogeny.tsv",COG=COGS_LIST)
     output:
-        report("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",category="Taxonomy")
+        "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
     threads: 1
     params:
         runtime = "2:00:00",

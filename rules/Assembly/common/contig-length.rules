@@ -2,8 +2,8 @@ rule assembly_contig_length:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS
     output:
-        report("Stats/%s/%s.assembly.length.txt" % (ASS,ASS),category="Assembly"),
-        report("Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS),category="Assembly")
+        "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
+        "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS)
     params:
         runtime = "8:00:00",
         mem = MEMCORE

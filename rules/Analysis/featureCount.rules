@@ -22,7 +22,7 @@ rule feature_count_gene:
         "Analysis/annotation/annotation.filt.gff",
         "Assembly/{type}.reads.sorted.bam"
     output:
-        report("Analysis/annotation/{type}.{feature}_counts.tsv",category="Analysis")
+        "Analysis/annotation/{type}.{feature}_counts.tsv"
     params:
         lambda wildcards: config["featureCountsStranding"][wildcards.type],
         runtime = "8:00:00",

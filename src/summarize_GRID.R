@@ -59,7 +59,7 @@ binTab <- merge(binTab,selTab,by.x="selected_by_DASTool",by.y="bin",all=T,suffix
 ## Read GRiD output for selected bins
 ###################################################################################################
 print("Reading GRiD results.")
-for(bin in setdiff(binTab$selected_by_DASTool,"")){
+for(bin in setdiff(binTab$selected_by_DASTool[!is.na(binTab$selected_by_DASTool)],"")){
   if(!"gridTab" %in% ls()){
     gridTab <- data.frame("bin"=bin,
                          read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
