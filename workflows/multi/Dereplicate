@@ -1,6 +1,6 @@
 if config['dereplication']['simple_derep']['do']:
     include:
-        "../../rules/Dereplicate/dRep.basic.rules"
+        "../../rules/Dereplicate/dRep.simple.rules"
 if config['dereplication']['cross_mapping_rebinning']['do']:
     include:
         "../../rules/Dereplicate/map.rules"

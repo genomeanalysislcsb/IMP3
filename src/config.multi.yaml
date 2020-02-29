@@ -22,6 +22,26 @@ dereplication:
       cutoff: 1500
   simple_derep: true
   GTDBtk: true
+  dRep:
+    length: 50000
+    completeness: 75
+    contamination: 25
+    checkM_method: lineage_wf
+    MASH_sketch: 1000 
+    S_algorithm: ANImf
+    P_ani: 0.9
+    S_ani: 0.99
+    SkipMash: False
+    SkipSecondary: False
+    n_PRESET: normal
+    cov_thresh: 0.1
+    coverage_method: larger
+    clusterAlg: average
+    completeness_weight: 1
+    contamination_weight: 5
+    strain_heterogeneity_weight: 1
+    N50_weight: 0.5
+    size_weight: 0
 catalogue:
   mapping: 
     do: true

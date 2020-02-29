@@ -159,6 +159,11 @@ def gather_bins(wildcards):
     else:
         return ""
 
+# def gather_multi_bins(wildcards):
+#    checkpoint_output = checkpoints.DAS_tool_multi.get(**wildcards).output[0]
+#    return expand("Dereplication/{wildcards.sample}/selected_DASTool_bins/{i}.contigs.fa",
+#           i=glob_wildcards("Dereplication/{wildcards.sample}/selected_DASTool_bins/{i}.contigs.fa").i)
+
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
     return expand("Binning/selected_DASTool_bins/{i}/GTDB",
@@ -172,10 +177,12 @@ def check_bintabs(wildcards):
         if os.stat(OUTPUTDIR + "/Binning/" + binner + "/scaffold2bin.tsv").st_size > 0:
             valid_binners.append(binner)
     return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
-
-def sample_name():
-    if config["sample"] == "":
-        return(os.path.basename(OUTPUTDIR))
-    else:
-        return(config["sample"])
 		
+def check_bintabs_multi(wildcards):
+    checkpoint_output = checkpoints.DASTool_check.get(**wildcards).output[0]
+    binners = config['dereplication']['cross_mapping_rebinning']['binners'].split()
+    valid_binners = []
+    for binner in binners:
+        if os.stat(OUTPUTDIR + "/Dereplication/" + binner + "/" + wildcards.sample + "/scaffold2bin.tsv").st_size > 0:
+            valid_binners.append(binner)
+    return expand("Dereplication/{binner}/{sample}/scaffold2bin.tsv",binner=valid_binners,sample=wildcards.sample)

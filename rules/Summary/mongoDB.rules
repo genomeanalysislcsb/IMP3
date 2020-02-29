@@ -55,7 +55,7 @@ rule mongoDB_bins:
     threads: 1
     params:
         ass = ASS,
-        sample = sample_name,
+        sample = SAMPLE,
         binners = config["Binning"]["Binners"],
         dbs = config["hmm_DBs"],
         user = config["mongo_user"],
@@ -78,7 +78,7 @@ rule mongoDB_contigs:
     threads: 1
     params:
         ass = ASS,
-        sample = sample_name,
+        sample = SAMPLE,
         binners = config["Binning"]["Binners"],
         dbs = config["hmm_DBs"],
         user = config["mongo_user"],

@@ -1,89 +1,143 @@
-rule maxbin_contig2bin:
+localrules: dRep_dir
+
+rule dRep_dir:
     input:
-        "Dereplication/MaxBin/{sample}/maxbin_res.log"
+        "sample_table.tsv"
     output:
-        "Dereplication/MaxBin/{sample}/maxbin_contig2bin.txt",
-        "Dereplication/MaxBin/{sample}/scaffold2bin.tsv"
-    threads: 1
+        directory("Dereplication/dRep_multi")
+    shell:
+        """
+        mkdir {output}
+        """
+
+rule prep_dRep:
+    input:
+        dir="Dereplication/dRep_multi",
+        bins="Dereplication/{sample}/selected_DASTool_summary.txt"
+    output:
+        "Dereplication/{sample}/dRep_multi.prepped"
     params:
-        runtime = "3:00:00",
+        runtime = "8:00:00",
         mem = MEMCORE
-    log: "logs/binning_maxbin_contig2bin.log"
-    message: "maxbin_contig2bin: Getting contig to bin mapping."
-    shell:
-        """
-        for f in $(ls Dereplication/MaxBin/{wildcards.sample}/*.fasta | cut -f3 -d "/"); do 
-         sed -e "s/$/\t$f/g" <(grep "^>" Dereplication/MaxBin/{wildcards.sample}/$f | sed -e 's/>//g') >> {output[0]}
-        done
-        ln -s ../../{output[0]} {output[1]}
-        echo "Contig to bin mapping done" > {log}
-        """
-
-rule maxbin_get_depth:
-    input:
-        "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.txt",
-        expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
-                raw_directory=samples.path[wildcards.sample],
-                ass=samples.ass_type[wildcards.sample])
-    output:
-        "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.0.txt"
     threads: 1
-    params:
-        runtime = "3:00:00",
-        mem = MEMCORE
-    message: "maxbin_get_depth: Getting depth of coverage by {wildcards.cross_sample} on {wildcards.sample} contigs in Maxbin format."
-    shell:
-        """
-        cat {input[0]} \
-         <(awk 'BEGIN {{OFS="\t"}}; {{print $0, 0}}' \
-         <(diff --new-line-format="" --unchanged-line-format="" \
-         <(grep "^>" {input[1]} |sed -e 's/>//g' | sort) \
-         <(cut -f1 {input[0]} | sort))) > {output[0]}
-        """
-
-
-localrules: maxbin_prep
-
-rule maxbin_prep:
-    input:
-        expand("Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.0.txt",
-               sample=wildcards.sample,
-               cross_sample=samples.loc[samples.mg == 1 & samples.sample != wildcards.sample,"sample"]),
-        expand("{raw_directory}/Stats/mg/{ass}.assembly.contig_depth.0.txt",
-               raw_directory=samples.path[wildcards.sample],
-               ass=samples.ass_type[wildcards.sample])
-    output:
-        "Dereplication/cross_mapping/{sample}.contig_depth.0.list"
-    message: "maxbin_prep: Collecting abundance for {wildcards.sample}."
-    shell:
-        """
-        ls {input} >> {output}
-        """
+    message: "prep_dRep: Copying DAStool bins of {wildcards.sample} to common directory."
+    run:
+        selected_bins=pd.read_table(input.bins)['bin']
+        for BIN in selected_bins:
+            shell("cp Dereplication/{wildcards.sample}/selected_DASTool_bins/{BIN}.contigs.fa Dereplication/dRep_multi/{wildcards.sample}.{BIN}.contigs.fa")
+        shell("touch {output}")
         
-rule maxbin:
+rule prep_dRep_ms:
     input:
-       expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
-                raw_directory=samples.path[wildcards.sample],
-                ass=samples.ass_type[wildcards.sample]),
-       "Dereplication/cross_mapping/{sample}.contig_depth.0.list" 
+        dir="Dereplication/dRep_multi",
+        bins="Dereplication/dRep_single_output/dereplicated_genomes"
     output:
-       "Dereplication/MaxBin/{sample}/maxbin_res.log",
-       "Dereplication/MaxBin/{sample}/maxbin_res.summary"
-    threads: 2
+        "Dereplication/dRep_multi-single.prepped"
     params:
-        runtime = "24:00:00",
-        mem = BIGMEMCORE
-    conda: ENVDIR + "/IMP_binning.yaml"
-    log: "logs/dereplication_maxbin.{sample}.log"
-    message: "maxbin: Running MaxBin on {wildcards.sample}."
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: 1
+    message: "prep_dRep: Copying dRep bins to common directory."
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-	## Run MaxBin
-        run_MaxBin.pl -contig {input[0]} \
-         -abund_list {input[1]} \
-         -out Dereplication/MaxBin/{wildcards.sample}/maxbin_res \
-         -thread {threads} \
-         -min_contig_length {config[dereplication][cross_mapping_rebinning][MaxBin][cutoff]} > {log} 2>&1
+        cp {input.bins}/*.contigs.fa {input.dir}/
+        touch {output}
         """
 
+if config['dereplication']['simple_derep']:
+    rule dRep_multi:
+        input:
+            ctrl=expand("Dereplication/{sample}/dRep_multi.prepped",
+             sample=samples.loc[samples.ass == 1,"sample"]),
+            ctrl2="Dereplication/dRep_multi-single.prepped",
+            dir="Dereplication/dRep_multi"
+        output:
+            directory("Dereplication/dRep_multi_out/dereplicated_genomes")
+        threads: BIGCORENO
+        params:
+            runtime = "12:00:00",
+            mem = BIGMEMCORE,
+            out = "Dereplication/dRep_multi_out",
+            length = config['dereplication']['dRep']['length'],
+            completeness = config['dereplication']['dRep']['completeness'],
+            contamination = config['dereplication']['dRep']['contamination'],
+            checkM_method = config['dereplication']['dRep']['checkM_method'],
+            MASH_sketch = config['dereplication']['dRep']['MASH_sketch'],
+            S_algorithm = config['dereplication']['dRep']['S_algorithm'],
+            P_ani = config['dereplication']['dRep']['P_ani'],
+            S_ani = config['dereplication']['dRep']['S_ani'],
+            SkipMash = config['dereplication']['dRep']['SkipMash'],
+            SkipSecondary = config['dereplication']['dRep']['SkipSecondary'],
+            n_PRESET = config['dereplication']['dRep']['n_PRESET'],
+            cov_thresh = config['dereplication']['dRep']['cov_thresh'],
+            coverage_method = config['dereplication']['dRep']['coverage_method'],
+            clusterAlg = config['dereplication']['dRep']['clusterAlg'],
+            completeness_weight = config['dereplication']['dRep']['completeness_weight'],
+            contamination_weight = config['dereplication']['dRep']['contamination_weight'],
+            strain_heterogeneity_weight = config['dereplication']['dRep']['strain_heterogeneity_weight'],
+            N50_weight = config['dereplication']['dRep']['N50_weight'],
+            size_weight = config['dereplication']['dRep']['size_weight']
+        log: "logs/dereplication_dRep_multi.log"
+        message: "dRep_multi: Running dRep on multi-sample bins."
+        shell:
+            """
+            dRep filter {params.out} -p {threads} --length {params.length} --completeness {params.completeness} \
+             --contamination {params.contamination} --checkM_method {params.checkM_method} \
+             -g {input.dir}/*contigs.fa >> {log} 2>&1
+            dRep cluster {params.out} -p {threads} --MASH_sketch {params.MASH_sketch} --S_algorithm {params.S_algorithm} \
+             --P_ani {params.P_ani} --S_ani {params.S_ani} --SkipMash {params.SkipMash} \
+             --SkipSecondary {params.SkipSecondary} --n_PRESET {params.n_PRESET} --cov_thresh {params.cov_thresh} \
+             --coverage_method {params.coverage_method} --clusterAlg {params.clusterAlg} >> {log} 2>&1
+            dRep choose {params.out} -p {threads} --completeness_weight {params.completeness_weight} \
+             --contamination_weight {params.contamination_weight} --strain_heterogeneity_weight {params.strain_heterogeneity_weight} \
+             --N50_weight {params.N50_weight} --size_weight {params.size_weight} --checkM_method {params.checkM_method} >> {log} 2>&1
+    #        dRep evaluate {params.out} -p {threads} >> {log} 2>&1
+            """
+else:
+    rule dRep_multi:
+        input:
+            ctrl=expand("Dereplication/{sample}/dRep_multi.prepped",
+             sample=samples.loc[samples.ass == 1,"sample"]),
+            dir="Dereplication/dRep_multi"
+        output:
+            directory("Dereplication/dRep_multi_out/dereplicated_genomes")
+        threads: BIGCORENO
+        params:
+            runtime = "12:00:00",
+            mem = BIGMEMCORE,
+            out = "Dereplication/dRep_multi_out",
+            length = config['dereplication']['dRep']['length'],
+            completeness = config['dereplication']['dRep']['completeness'],
+            contamination = config['dereplication']['dRep']['contamination'],
+            checkM_method = config['dereplication']['dRep']['checkM_method'],
+            MASH_sketch = config['dereplication']['dRep']['MASH_sketch'],
+            S_algorithm = config['dereplication']['dRep']['S_algorithm'],
+            P_ani = config['dereplication']['dRep']['P_ani'],
+            S_ani = config['dereplication']['dRep']['S_ani'],
+            SkipMash = config['dereplication']['dRep']['SkipMash'],
+            SkipSecondary = config['dereplication']['dRep']['SkipSecondary'],
+            n_PRESET = config['dereplication']['dRep']['n_PRESET'],
+            cov_thresh = config['dereplication']['dRep']['cov_thresh'],
+            coverage_method = config['dereplication']['dRep']['coverage_method'],
+            clusterAlg = config['dereplication']['dRep']['clusterAlg'],
+            completeness_weight = config['dereplication']['dRep']['completeness_weight'],
+            contamination_weight = config['dereplication']['dRep']['contamination_weight'],
+            strain_heterogeneity_weight = config['dereplication']['dRep']['strain_heterogeneity_weight'],
+            N50_weight = config['dereplication']['dRep']['N50_weight'],
+            size_weight = config['dereplication']['dRep']['size_weight']
+        log: "logs/dereplication_dRep_multi.log"
+        message: "dRep_multi: Running dRep on multi-sample bins."
+        shell:
+            """
+            dRep filter {params.out} -p {threads} --length {params.length} --completeness {params.completeness} \
+             --contamination {params.contamination} --checkM_method {params.checkM_method} \
+             -g {input.dir}/*contigs.fa >> {log} 2>&1
+            dRep cluster {params.out} -p {threads} --MASH_sketch {params.MASH_sketch} --S_algorithm {params.S_algorithm} \
+             --P_ani {params.P_ani} --S_ani {params.S_ani} --SkipMash {params.SkipMash} \
+             --SkipSecondary {params.SkipSecondary} --n_PRESET {params.n_PRESET} --cov_thresh {params.cov_thresh} \
+             --coverage_method {params.coverage_method} --clusterAlg {params.clusterAlg} >> {log} 2>&1
+            dRep choose {params.out} -p {threads} --completeness_weight {params.completeness_weight} \
+             --contamination_weight {params.contamination_weight} --strain_heterogeneity_weight {params.strain_heterogeneity_weight} \
+             --N50_weight {params.N50_weight} --size_weight {params.size_weight} --checkM_method {params.checkM_method} >> {log} 2>&1
+    #        dRep evaluate {params.out} -p {threads} >> {log} 2>&1
+            """
