@@ -309,7 +309,7 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
                                      fileoi <- featureCount_files[[x]]
                                      as.numeric(unlist(strsplit(system2("wc",
                                                                         args=c("-l",fileoi),
-                                                                        stdout=T),split=" "))[1])-1
+                                                                        stdout=T),split=" "))[1])-2
                                    })),
                         stringsAsFactors=F)
   

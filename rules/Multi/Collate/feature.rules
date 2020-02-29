@@ -5,12 +5,13 @@ rule collate_featureCounts:
                 type=wildcards.type,
                 db=wildcards.db)
     output:
-        report("Collection/multi_{type}.{db}.tsv",category="Collection"),
-        "Collection/multi_{type}.{db}.Rdata"
+        "Collection/multi_{type}.{db}.tsv",
+        "Collection/multi_{type}.{db}.RDS"
     threads: 1
     params:
         runtime = "12:00:00",
-        mem = MEMCORE
+        mem = MEMCORE,
+        samples = samples.loc[samples.[wildcards.db] == 1 & samples[wildcards.type] == 1,"sample"]
     log: "logs/collate_featureCounts_{type}.{db}.log"
     message: 'collate_featureCounts: collecting {wildcards.db} {wildcards.type} data from " ".join(samples.loc[samples[wildcards.db] == 1 & samples[wildcards.type] == 1,"sample"]).'
     threads: 1
