@@ -37,12 +37,7 @@ rule mmSeqs:
         mmseqs easy-cluster {input} {params.cat} {params.tmp} --min-seq-id 0.95 -c 0.9 --cov-mode 1
         mv {params.cat}_rep_seq.fasta {output[1]}
         """
-
-# rule to make gff from catalogue <- extract lines from all samples's gffs for the rep genes
- # use py script that takes the prokka_prefix from the sample table, reads the representative IDs from the cluster file,
-   # takes the gff from the original sample, replaces start and end with 1 and (end+1-start),
-   # concatenate contig with gene name + sense + original coordinates for 1st column
-   # make all sense +:        
+       
 rule cat_gff:
     input:
         "Catalogue/catalogue_cluster.tsv",

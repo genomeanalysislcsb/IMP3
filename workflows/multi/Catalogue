@@ -1,5 +1,8 @@
 include:
     "../../rules/Catalogue/cluster.rules"
+if config['catalogue']['kraken']['do']:
+    include:
+        "../../rules/Catalogue/kraken_genes.rules"
 if config['catalogue']['mapping']['do']:
     include:
         "../../rules/Catalogue/mapping.rules"
