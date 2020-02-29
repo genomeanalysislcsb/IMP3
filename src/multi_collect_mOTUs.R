@@ -41,7 +41,7 @@ all_mOTU <- rbindlist(lapply(1:length(all_mOTU),function(x) data.frame(all_mOTU[
 
 all_mOTU_ranks <- lapply(c("k","p","c","o","f","g","s"),
                          function(x) all_mOTU[all_mOTU$rank==x,c("sample","taxstring","reads")])
-all_mOTU_ranks <- lapply(all_mOTU_ranks,function(x) tapply(x,list(x$reads,x$sample),sum))
+all_mOTU_ranks <- lapply(all_mOTU_ranks,function(x) tapply(x$reads,list(x$taxstring,x$sample),sum))
 all_mOTU_ranks <- lapply(all_mOTU_ranks,function(x) x[is.na(x)] <- 0)
 
 ###################################################################################################

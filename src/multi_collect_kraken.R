@@ -38,7 +38,7 @@ all_krak <- rbindlist(lapply(1:length(all_krak),function(x) data.frame(all_krak[
                                                                       stringsAsFactors = F)))
 
 all_krak_ranks <- lapply(unique(all_krak$rank),function(x) all_krak[all_krak$rank==x,c("sample","taxon","reads")])
-all_krak_ranks <- lapply(all_krak_ranks,function(x) tapply(x,list(x$reads,x$sample),sum))
+all_krak_ranks <- lapply(all_krak_ranks,function(x) tapply(x$reads,list(x$taxon,x$sample),sum))
 all_krak_ranks <- lapply(all_krak_ranks,function(x) x[is.na(x)] <- 0)
 
 ###################################################################################################

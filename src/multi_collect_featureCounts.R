@@ -34,7 +34,7 @@ for(i in 1:length(input_files)){
 all_feat <- rbindlist(lapply(1:length(all_feat),function(x) data.frame(all_feat[[x]],
                                                                       "sample"=names(all_feat)[x],
                                                                       stringsAsFactors = F)))
-all_feat <- tapply(all_feat,list(all_feat$reads,all_feat$sample),sum)
+all_feat <- tapply(all_feat$reads,list(all_feat$Geneid,all_feat$sample),sum)
 all_feat[is.na(all_feat)] <- 0
 
 ###################################################################################################
