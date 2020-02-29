@@ -661,6 +661,7 @@ for(type in types){
     stax <- motuc[[type]][i,1]
     tax_vec <- unlist(strsplit(stax,split="|",fixed = T))
     r <- sub("__.*","",tax_vec[length(tax_vec)])
+    motuc[[type]]$newName[i] <- gsub("[,/(/)]","",tax_vec[length(tax_vec)])
     if(!"edgel" %in% ls()){
       if(length(tax_vec)==1){
         edgel <- matrix(c("r__root",tax_vec),nrow=1,ncol=2)
@@ -684,7 +685,6 @@ for(type in types){
                                        "reads"=motuc[[type]][i,2],
                                        stringsAsFactors = F))
     }
-    motuc[[type]]$newName[i] <- gsub("[,/(/)]","",tax_vec[length(tax_vec)])
   }
 }
 edgel <- unique(edgel)
@@ -715,7 +715,7 @@ for(type in types){
   relReads[[type]] <- log10(0.1 + sapply(c(df_tree$tip.label,df_tree$node.label)[reorder(df_tree, order = "postorder")$edge[,2]],
                                          function(x){
                                            if(x %in% motuc[[type]]$newName){
-                                             motuc[[type]][motuc[[type]]$newName==x,2]}else{
+                                             sum(motuc[[type]][motuc[[type]]$newName==x,2])}else{
                                                0}})/sum(tax_tab[[type]][["k"]][,2]))
   col <- colorRampPalette(brewer.pal(9,"YlGnBu")[-1])(256)[cut(relReads[[type]],256)]
   sym <- sapply(c(df_tree$tip.label,df_tree$node.label)[reorder(df_tree, order = "postorder")$edge[,2]],
