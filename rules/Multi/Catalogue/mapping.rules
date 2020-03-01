@@ -29,7 +29,6 @@ rule mapping_on_catalogue:
         rm $PREFIX.merged.bam
         """
 
-
 rule feature_count_cat:
     input:
         gff = "Catalogue/catalogue.gff",

@@ -60,17 +60,19 @@ binTab <- merge(binTab,selTab,by.x="selected_by_DASTool",by.y="bin",all=T,suffix
 ###################################################################################################
 print("Reading GRiD results.")
 for(bin in setdiff(binTab$selected_by_DASTool[!is.na(binTab$selected_by_DASTool)],"")){
-  if(!"gridTab" %in% ls()){
-    gridTab <- data.frame("bin"=bin,
-                         read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
-                                    stringsAsFactors=F)[,-1],
-                         stringsAsFactors = F)
-  }else{
-    gridTab <- rbind(gridTab,
-                    data.frame("bin"=bin,
-                               read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
-                                          stringsAsFactors=F)[,-1],
-                               stringsAsFactors = F))
+  if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"))){
+    if(!"gridTab" %in% ls()){
+      gridTab <- data.frame("bin"=bin,
+                            read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
+                                       stringsAsFactors=F)[,-1],
+                            stringsAsFactors = F)
+    }else{
+      gridTab <- rbind(gridTab,
+                       data.frame("bin"=bin,
+                                  read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
+                                             stringsAsFactors=F)[,-1],
+                                  stringsAsFactors = F))
+    }
   }
 }
 
