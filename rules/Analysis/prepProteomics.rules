@@ -1,0 +1,100 @@
+if config['proteomics']['insert_variants']:
+    rule insertVariants:
+        input:
+            annotation="Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+            assembly="Assembly/%s.assembly.merged.fa" %ASS,
+            var=expand("Analysis/snps/{type}.variants.samtools.vcf.gz",type=TYPES)
+        output:
+            predictions="Analysis/annotation/proteomics.proteins.faa",
+            peptideTab="Analysis/annotation/proteomics.pos.tsv",
+            addInfo="Analysis/annotation/proteomics.info"
+        params: 
+            runtime = "48:00:00",
+            mem = MEMCORE,
+            minPep = config['proteomics']['filter_N_peptides'],
+            out = "Analysis/annotation/proteomics"
+        conda: ENVDIR + "/IMP_bioperl.yaml"
+        threads: 1
+        log: "logs/analysis_insertVariants.log"
+        message: "insertVariants: inserting variants in protein predictions."
+        shell:
+            """
+            export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+            variant_monsterProtein_anvioFilter_filter.pl -a {input.annotation} -s {input.assembly} -v {input.var} \
+             -u {params.minPep} -n {params.out} -p -anvio >> {log} 2>&1
+            """
+elif config['proteomics']['filter_N_peptides']:
+    rule cutends:
+        input:
+            "Analysis/annotation/prokka.faa",
+            "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
+        output:
+            "Analysis/annotation/proteomics.proteins.faa"
+        params: 
+            runtime = "4:00:00",
+            mem = MEMCORE,
+            minPep = config['proteomics']['filter_N_peptides']
+        conda: ENVDIR + "/IMP_bioperl.yaml"
+        threads: 1
+        log: "logs/analysis_cutends.log"
+        message: "cutends: removing non-tryptic peptides from protein predictions."
+        shell:
+            """
+            export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+            trypsinStartEnd.filter.pl {input} 6 {params.minPep} >> {output}
+            """
+else:
+    rule renameProteomics:
+        input:
+            "Analysis/annotation/prokka.faa"
+        output:
+            "Analysis/annotation/proteomics.proteins.faa"
+        params: 
+            runtime = "4:00:00",
+            mem = MEMCORE
+        conda: ENVDIR + "/IMP_bioperl.yaml"
+        threads: 1
+        log: "logs/analysis_renameProteomics.log"
+        message: "renameProteomics: renaming protein predictions."
+        shell:
+            """
+            export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+            rename4proteomics.pl {input} >> {output}
+            """
+
+if config['proteomics']['host_proteome'].split():
+    rule mergeProteomicsHost:
+        input:
+            "Analysis/annotation/proteomics.proteins.faa"
+        output:
+            "Analysis/annotation/proteomics.final.faa"
+        params: 
+            runtime = "4:00:00",
+            mem = MEMCORE,
+            host = config['proteomics']['host_proteome'].split()
+        threads: 1
+        conda: ENVDIR + "/IMP_fasta.yaml"
+        log: "logs/analysis_mergeProteomicsHost.log"
+        message: "mergeProteomicsHost: merging metaomics and host protein predictions."
+        shell:
+            """
+            cat {input} {params.host} | fasta_formatter -w 60 >> {output}
+            """
+else:
+    rule formatProteomics:
+        input:
+            "Analysis/annotation/proteomics.proteins.faa"
+        output:
+            "Analysis/annotation/proteomics.final.faa"
+        params: 
+            runtime = "4:00:00",
+            mem = MEMCORE
+        threads: 1
+        conda: ENVDIR + "/IMP_fasta.yaml"
+        log: "logs/analysis_linkProteomics.log"
+        message: "linkProteomics."
+        shell:
+            """
+            cat {input} | fasta_formatter -w 60 >> {output}
+            """
+

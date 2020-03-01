@@ -27,14 +27,14 @@ use Bio::SeqIO;
 my ($ann,$seq,@vcf,$print,$uniqpeps,$minPeplength,$maxPeplength,$anvioheur,$nameout);
 GetOptions('a|ann=s' => \$ann,
 	   's|seq=s' => \$seq,
-	   'v|vcf=s' => \@vcf,
+	   'v|vcf=s{1,2}' => \@vcf,
 	   'n|name=s' => \$nameout,
 	   'p|print' => \$print,
 	   'u|uniqpeps=i' => \$uniqpeps,
 	   'min=i' => \$minPeplength,
 	   'max=i' => \$maxPeplength,
 	   'anvio' => \$anvioheur,);
-$minPeplength = $minPeplength ? $minPeplength : 5;
+$minPeplength = $minPeplength ? $minPeplength : 6;
 $maxPeplength = $maxPeplength ? $maxPeplength : 144;
 $nameout = $nameout ? $nameout : "variants.filtered";
 $uniqpeps = $uniqpeps ? $uniqpeps : 2;
@@ -67,16 +67,11 @@ my $aab_table4 = &loadAA4();
 my $fix = 0;
 my $unfix = 0;
 my $varall = 0;
-#(my $prov_out = $seq) =~ s/\.\w+$/\.$nameout.proteins.faa/;
-#(my $pepv_out = $seq) =~ s/\.\w+$/\.$nameout.addpeptides.faa/;
-#(my $log_out = $seq) =~ s/\.\w+$/\.$nameout.info/;
-#(my $tab_out = $seq) =~ s/\.\w+$/\.$nameout.pos.tsv/;
 my $prov_out = $nameout.".proteins.faa";
-#(my $pepv_out = $seq) =~ s/\.\w+$/\.$nameout.addpeptides.faa/;
 my $log_out = $nameout.".info";
-my $tab_out = $nameout.".pos.tsv";
+my $tab_out = $nameout.".varpos.tsv";
 
-
+my $geneCount = 1;
 
 # Print output files
 my ($o_prov, $o_pepv, $o_log, $o_tab);
@@ -107,7 +102,13 @@ foreach my $k (sort keys %{$annot}) { #for every contig
 				$fpepcnt++;
 			}
 		}
-		print $o_prov qq(\>$id\n$proseq\n) if ($print && $fpepcnt >= $uniqpeps); #print translated protein to output fasta
+        if ($print && $fpepcnt >= $uniqpeps){
+            my $geneNo = sprintf("%07d",$geneCount);
+            $geneCount++;
+            my $batch = "1";
+            my $outID = "generic|$batch$geneNo|$id";
+            print $o_prov qq(\>$outID\n$proseq\n); #print translated protein to output fasta
+        }
 		if ($$feat{'variants'}) { #variants in gene
 			my $vartru = 0;
 			my ($prov,$idv);
@@ -174,7 +175,11 @@ foreach my $k (sort keys %{$annot}) { #for every contig
 					my $stps = $stpcnt >= 1 ? 1 : 0;
 					if($npepcnt + $stps >= $uniqpeps){#only print if we have enough peptides
 						while($stpcnt >0){
-							print $o_prov qq(\>$id.varpep.$varcnt\n$normalpeps$stoppeps[$stpcnt-1]\n) if ($print);
+                            my $geneNo = sprintf("%07d",$geneCount);
+                            $geneCount++;
+                            my $batch = "4";
+                            my $outID = "generic|$batch$geneNo|$id";
+							print $o_prov qq(\>$outID.varpep.$varcnt\n$normalpeps$stoppeps[$stpcnt-1]\n) if ($print);
 							$stpcnt--;
 							$varcnt++;
 							$varall++;
@@ -210,7 +215,11 @@ foreach my $k (sort keys %{$annot}) { #for every contig
 					my $stps = $stpcnt >= 1 ? 1 : 0;
 					if($npepcnt + $stps >= $uniqpeps){#only print if we have enough peptides
 						while($stpcnt >0){
-							print $o_prov qq(\>$id.varpep.$varcnt\n$normalpeps$stoppeps[$stpcnt-1]\n) if ($print);
+                            my $geneNo = sprintf("%07d",$geneCount);
+                            $geneCount++;
+                            my $batch = "4";
+                            my $outID = "generic|$batch$geneNo|$id";
+							print $o_prov qq(\>$outID.varpep.$varcnt\n$normalpeps$stoppeps[$stpcnt-1]\n) if ($print);
 							$stpcnt--;
 							$varcnt++;
 							$varall++;
@@ -237,7 +246,11 @@ foreach my $k (sort keys %{$annot}) { #for every contig
 					my $stps = $stpcnt >= 1 ? 1 : 0;
 					if($npepcnt + $stps >= $uniqpeps){#only print if we have enough peptides
 						while($stpcnt >0){
-							print $o_prov qq(\>$id.varpep.$varcnt\n$normalpeps$stoppeps[$stpcnt-1]\n) if ($print);
+                            my $geneNo = sprintf("%07d",$geneCount);
+                            $geneCount++;
+                            my $batch = "4";
+                            my $outID = "generic|$batch$geneNo|$id";
+							print $o_prov qq(\>$outID.varpep.$varcnt\n$normalpeps$stoppeps[$stpcnt-1]\n) if ($print);
 							$stpcnt--;
 							$varcnt++;
 							$varall++;
@@ -1027,7 +1040,7 @@ sub cutAndChange{
 		}
 		if ($#currvar >= 0) {
 			foreach my $v (@currvar) {
-				if ($cumvar +  $#currseqs > 120000) {
+				if ($cumvar +  $#currseqs > 32000) {s
 					return "too many";
 				}
 				my $chvar = 0;
