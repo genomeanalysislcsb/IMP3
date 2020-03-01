@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # script to rename all genes in a fasta file to MPA-suitable format (>generic|xxxxxxxx| genename)
 # takes 1 input - the fasta file with the genes;
