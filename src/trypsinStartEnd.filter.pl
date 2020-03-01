@@ -21,7 +21,7 @@ while (<IN>) {
     my @f = split(/\t/);
     if ($f[2] eq "CDS") { #0: contig 1:source 2:feature 3:start 4:end 5:. 6:sense 7:score 8:attribute
         my ($seq) = ($f[8] =~ /ID=([^;]+);/);
-        print STDERR $seq;
+        #print STDERR $seq;
         my ($part) = ($f[8] =~ /partial=(\d\d);/);
         if ($f[6] eq "-") {
             $part = reverse($part);
