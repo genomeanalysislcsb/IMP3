@@ -9,6 +9,8 @@ include:
 include:
     '../../../rules/Analysis/annotate.rules'
 include:
+    '../../../rules/Analysis/prepProteomics.rules'
+include:
     '../../../rules/Analysis/featureCount.rules'
 
 # master command
@@ -22,6 +24,7 @@ rule ANALYSIS:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
         expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split()),
-        "Analysis/annotation/intermediary.tar.gz"        
+        "Analysis/annotation/intermediary.tar.gz",
+        "Analysis/annotation/proteomics.final.faa"
     output:
         touch('analysis.done')

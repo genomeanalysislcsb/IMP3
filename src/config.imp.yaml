@@ -99,6 +99,10 @@ prokka:
 featureCountsStranding:
   mt: 2
   mg: 0
+proteomics:
+  filter_N_peptides: 2
+  host_proteome: ""
+  insert_variants: false
 binning:
   binners: "MaxBin MetaBAT binny"
   MaxBin:
