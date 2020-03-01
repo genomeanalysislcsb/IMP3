@@ -29,7 +29,7 @@ rule mmSeqs:
         tmp = TMPDIR,
         cat = "Catalogue/catalogue"
     log: "logs/catalogue_mmSeqs.log"
-    message: 'collate_mmSeqs: clustering coding regions.'
+    message: 'catalogue_mmSeqs: clustering coding regions.'
     threads: 1
     conda: ENVDIR + "/IMP_multi.yaml"
     shell:

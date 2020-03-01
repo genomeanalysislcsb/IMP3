@@ -3,7 +3,7 @@ if config['dereplication']['simple_derep']['do']:
         "../../rules/Multi/Dereplicate/dRep.simple.rules"
 if config['dereplication']['cross_mapping_rebinning']['do']:
     include:
-        "../../rules/Multi/Dereplicate/map.rules"
+        "../../rules/Multi/Dereplicate/cross_mapping.rules"
     include:
         expand("../../rules/Multi/Dereplicate/{binner}.rules",
               binner=config['dereplication']['cross_mapping_rebinning']['binners'].split())
@@ -21,6 +21,6 @@ rule all_derep:
     input:
         "Dereplication/all_bin_stats.tsv"
     output:
-        touch('collate.done')
+        touch('dereplicate.done')
 
 

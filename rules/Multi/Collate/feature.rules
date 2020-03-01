@@ -23,6 +23,6 @@ localrules:  ctrl_featureCounts_collation
 
 rule ctrl_featureCounts_collation:
     input:
-        expand("Collection/multi_{type}.{db}.tsv",db=config['collection']['hmm_DBs'],type=TYPES)
+        expand("Collection/multi_{type}.{db}.tsv",db=config['hmm_DBs'],type=TYPES)
     output:
         touch("features.collated")

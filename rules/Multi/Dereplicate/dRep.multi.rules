@@ -141,3 +141,4 @@ else:
              --N50_weight {params.N50_weight} --size_weight {params.size_weight} --checkM_method {params.checkM_method} >> {log} 2>&1
     #        dRep evaluate {params.out} -p {threads} >> {log} 2>&1
             """
+

@@ -33,9 +33,9 @@ rule feature_count_cat:
     input:
         gff = "Catalogue/catalogue.gff",
         bam = expand('Catalogue/{sample}.{type}.reads.sorted.bam',type=wildcards.type,
-        sample=samples.loc[samples[wildcards.type] == 1,"sample"])
+              sample=samples.loc[samples[wildcards.type] == 1,"sample"])
     output:
-        report("Catalogue/{type}.counts.tsv",category="Catalogue")
+        "Catalogue/{type}.counts.tsv"
     params:
         lambda wildcards: config["catalogue"]["mapping"]["featureCountsStranding"][wildcards.type],
         runtime = "8:00:00",
@@ -48,23 +48,3 @@ rule feature_count_cat:
         """
         featureCounts -p -O -t "gene" -g ID -o {output} -s {params[0]} -a {input.gff} -T {threads} {input.bam} > {log} 2>&1
         """
-
-# get reads per sample per gene or would it be better to use average coverage?
- #rule mapping_stats_cat:
- #   input:
- #       "Catalogue/catalogue.gff",
- #       expand("Catalogue/{type}.counts.tsv",type=TYPES)
- #   output:
- #       "Catalogue/catalogue.gff"
- #   threads: 1
- #   params:
- #       runtime = "12:00:00",
- #       mem = MEMCORE,
- #       tmp = TMPDIR
- #   log: "logs/catalogue_cat_gff.log"
- #   message: 'collate_cat_gff: getting annotations for representative genes from individual gffs.'
- #   threads: 1
- #   script:
- #       SRCDIR + "/multi_extract_gff.py"
-       
-  

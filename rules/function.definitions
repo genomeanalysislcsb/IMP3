@@ -159,11 +159,6 @@ def gather_bins(wildcards):
     else:
         return ""
 
-# def gather_multi_bins(wildcards):
-#    checkpoint_output = checkpoints.DAS_tool_multi.get(**wildcards).output[0]
-#    return expand("Dereplication/{wildcards.sample}/selected_DASTool_bins/{i}.contigs.fa",
-#           i=glob_wildcards("Dereplication/{wildcards.sample}/selected_DASTool_bins/{i}.contigs.fa").i)
-
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
     return expand("Binning/selected_DASTool_bins/{i}/GTDB",
@@ -186,3 +181,23 @@ def check_bintabs_multi(wildcards):
         if os.stat(OUTPUTDIR + "/Dereplication/" + binner + "/" + wildcards.sample + "/scaffold2bin.tsv").st_size > 0:
             valid_binners.append(binner)
     return expand("Dereplication/{binner}/{sample}/scaffold2bin.tsv",binner=valid_binners,sample=wildcards.sample)
+
+# MULTI:
+def getCatIn(wildcards):
+    inputs = ["Catalogue/catalogue_genesPerRep.tsv","Catalogue/catalogue_anno.tsv"]
+    if config['catalogue']['kraken']['do']:
+        inputs.append"Catalogue/catalogue_kraken.parsed.tsv")
+    if config['catalogue']['mapping']['do']:
+        inputs.append(expand("Catalogue/{type}.counts.tsv",type=TYPES))
+    return inputs
+        
+def gather_multi_GTDB_bins(wildcards):
+    checkpoint_output = checkpoints.getBins_multi.get(**wildcards).output[0]
+    return expand("Dereplication/dRep_multi_out/perBin/{i}/GTDB",
+           i=glob_wildcards("Dereplication/dRep_multi_out/perBin/{i}/contigs.fa").i)
+           
+def getBam(wildcards):
+    ori_sample = wildcards.clusterID.split(".")[0]
+    return expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
+                raw_directory=samples.path[ori_sample])
+

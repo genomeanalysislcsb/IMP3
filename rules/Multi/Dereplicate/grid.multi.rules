@@ -47,12 +47,11 @@ checkpoint getBins_multi:
     input: 
         "Dereplication/dRep_multi_out/dereplicated_genomes"
     output:
-        "Dereplication/GRiD.prepped"
+        "Dereplication/GTDBtk.prepped"
     params:
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1
-#    log: "logs/dereplication_getBins_multi.log"
     message: "getBins_multi: Copying dRep bins to single directories."
     shell:
         """

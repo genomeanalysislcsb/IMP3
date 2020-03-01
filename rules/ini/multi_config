@@ -69,6 +69,7 @@ samples['sample'] = samples['sample'].astype(str)
 for sam in samples['sample']:
     if not re.match(r"[0-9a-zA-Z]",sam):
         raise Exception('please start library names with a letter or number')
+    samples.loc[samples['sample'] == sam,'sample'] = re.sub("_+","_",re.sub("[;|.-]","_",samples.loc[samples['sample'] == sam,'sample']))
 if 'path' not in samples.columns:
     raise Exception('You haven't supplied the paths to the data.')
 if samples['path'].duplicated().any():
@@ -95,7 +96,7 @@ if "collate" in MULTI_STEPS:
     if "stats" in COLL_STEPS:
         samples = samples.assign(stats=[1 if "summary" in multi_config[sam]['steps'].split() and "stats" in multi_config[sam]['summary_steps']['mg'].split() else 0 for sam in samples['sample']])
     if "features" in COLL_STEPS:
-        samples = samples.reindex(columns = config['collection']['hmm_DBs'].split())
+        samples = samples.reindex(columns = config['hmm_DBs'].split())
 if "catalogue" in MULTI_STEPS:
     samples = samples.assign(genes=[1 if "analysis" in multi_config[sam]['steps'].split() else 0 for sam in samples['sample']])
     samples = samples.reindex(columns = ["prokka_prefix"])

@@ -6,11 +6,8 @@ if config['catalogue']['kraken']['do']:
 if config['catalogue']['mapping']['do']:
     include:
         "../../rules/Catalogue/mapping.rules"
-    include:
-        "../../rules/Catalogue/table_extended.rules"
-else:
-    include:
-        "../../rules/Catalogue/table.rules"
+include:
+    "../../rules/Catalogue/table.rules"
 
 
 # master command

@@ -30,14 +30,19 @@ for gff in gff_in:
             break
         line = line.rstrip()
         tabs = line.split("\t") #0: contig 1:source 2:feature 3:start 4:end 5:. 6:sense 7:score 8:attribute
-        atts = tabs[8].split(";")
+        attr = tabs[8]
+        atts = attr.split(";")
         prot = [f.replace("ID=","") for f in atts if f.startswith("ID=")][0]
+        parts = [f.replace("partial=","") for f in atts if f.startswith("partial=")][0]
+        if tabs[6] == "-":
+            partsr = parts[1:0]
+            attr = attr.replace("partial=" + parts,"partial=" + partsr, 1)
         if prot in reps:
     # replace start and end with 1 and (end+1-start),
     # concatenate contig with gene name + sense + original coordinates for 1st column
     # make all sense +: 
             nc = tabs[0] + "_" + prot + "_" + tabs[3] + "_" + tabs[4] + "_" + tabs[6]
-            outl = [nc,tabs[1],tabs[2],1,tabs[4]+1-tabs[3] ,tabs[5],"+",tabs[7],tabs[8]]
+            outl = [nc,tabs[1],tabs[2],1,tabs[4]+1-tabs[3] ,tabs[5],"+",tabs[7],attr]
             out_file.write("\t".join(outl) + "\n")
     gff_file.close()
 out_file.close()
