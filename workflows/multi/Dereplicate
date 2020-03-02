@@ -1,17 +1,18 @@
-if config['dereplication']['simple_derep']['do']:
+if config['dereplication']['simple_derep']:
     include:
         "../../rules/Multi/Dereplicate/dRep.simple.rules"
 if config['dereplication']['cross_mapping_rebinning']['do']:
     include:
         "../../rules/Multi/Dereplicate/cross_mapping.rules"
     include:
-        expand("../../rules/Multi/Dereplicate/{binner}.rules",
-              binner=config['dereplication']['cross_mapping_rebinning']['binners'].split())
+        "../../rules/Multi/Dereplicate/MetaBAT.rules"
+    include:
+        "../../rules/Multi/Dereplicate/MaxBin.rules"
     include:
         "../../rules/Multi/Dereplicate/dRep.multi.rules"
 if config['dereplication']['GTDBtk']:
     include:
-        "../../rules/Multi/Dereplicate/GTDBtk.rules"
+        "../../rules/Multi/Dereplicate/gtdbtk_multi.rules"
 include:
     "../../rules/Multi/Dereplicate/bin_stats.rules"
 

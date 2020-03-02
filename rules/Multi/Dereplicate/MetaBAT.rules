@@ -1,9 +1,9 @@
 rule metabat:
     input:
-        expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
+        lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
                 raw_directory=samples.path[wildcards.sample],
                 ass=samples.ass_type[wildcards.sample]),
-       "Dereplication/cross_mapping/{sample}.contig_depth.txt" 
+        "Dereplication/cross_mapping/{sample}.contig_depth.txt" 
     output:
         "Dereplication/MetaBAT/{sample}/metabat_res",
         "Dereplication/MetaBAT/{sample}/scaffold2bin.tsv"
@@ -28,10 +28,9 @@ rule metabat:
 
 rule metabat_prep:
     input:
-        expand("Dereplication/cross_mapping/{cross_sample}.on.{sample}.sorted.bam",
-                cross_sample = samples.loc[samples.mg == 1 & samples.sample != wildcards.sample,"sample"],
-                sample=wildcards.sample),
-        expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
+        lambda wildcards: expand("Dereplication/cross_mapping/{{cross_sample}}.on.{{sample}}.sorted.bam",
+                cross_sample = samples.loc[[a and b for a,b in zip(samples.mg == 1,samples.sample != wildcards.sample)],"sample"]),
+        lambda wildcards: expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
                 raw_directory=samples.path[wildcards.sample])
     output:
         "Dereplication/cross_mapping/{sample}.contig_depth.txt"

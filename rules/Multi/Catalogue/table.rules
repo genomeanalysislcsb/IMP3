@@ -1,4 +1,3 @@
-# gff to table: functions, completeness
 # if done: kraken to table: taxonomy per gene
 # if done: mapping to table: depth of coverage per gene in each sample - normalize by total reads (MG and MT); reads per sample?
 # if mapping done: summarize mapping: % samples with any coverage (MG and MT)s
@@ -17,7 +16,7 @@ rule cluster2tab:
     message: 'catalogue_cluster2tab: checking number of genes represented by each representative.'
     threads: 1
     script:
-        {SRCDIR} + "/cluster2tab.py"
+        SRCDIR + "/cluster2tab.py"
 
 rule gff2tab:
     input:
@@ -33,7 +32,7 @@ rule gff2tab:
     message: 'gff2tab: extracting gff for catalogue info.'
     threads: 1
     script:
-        {SRCDIR} + "/cluster2tab.py"
+        SRCDIR + "/cluster2tab.py"
 
 rule catalogue_tab:
     input:
@@ -48,5 +47,5 @@ rule catalogue_tab:
     conda: ENVDIR + "/IMP_multi.yaml"
     message: "catalogue_tab: Merging results of catalogue."
     script:
-        {SRCDIR} + "/catalogue_merge.R"
+        SRCDIR + "/catalogue_merge.R"
 

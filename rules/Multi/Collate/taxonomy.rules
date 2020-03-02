@@ -1,32 +1,27 @@
 checkpoint collate_kraken:
     input:
-        expand("{raw_directory}/Analysis/taxonomy/kraken/{type}.kraken.report",
-                raw_directory=samples.loc[samples.taxonomy == 1 & samples[wildcards.type] == 1,"path"],
-                type=wildcards.type)
+        lambda wildcards: expand("{raw_directory}/Analysis/taxonomy/kraken/{{type}}.kraken.report",raw_directory=samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"path"])
     output:
         "Collection/multi_{type}.kraken.Rdata"
     threads: 1
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        samples = samples.loc[samples.taxonomy == 1 & samples[wildcards.type] == 1,"sample"],
-        out_prefix = "Collection/multi_{type}.kraken."
+        samples = lambda wildcards: samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"sample"],
+        out_prefix = "Collection/multi_{wildcards.type}.kraken."
     log: "logs/collate_kraken_{type}.kraken.log"
-    message: 'collate_kraken: collecting kraken {wildcards.type} data from " ".join(samples.loc[samples.taxonomy == 1 & samples[wildcards.type] == 1,"sample"]).'
+    message: 'collate_kraken: collecting kraken {wildcards.type} data from " ".join(samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"sample"]).'
     threads: 1
     conda: ENVDIR + "/IMP_multi.yaml"
     script:
         SRCDIR + "/multi_collect_kraken.R"
 
-
-rules collate_mOTUs:
+rule collate_mOTUs:
     input:
-        expand("{raw_directory}/Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",
-                raw_directory=samples.loc[samples.taxonomy == 1 & samples[wildcards.type] == 1,"path"],
-                type=wildcards.type)
+        lambda wildcards: expand("{raw_directory}/Analysis/taxonomy/mOTUs/{{type}}.mOTU.counts.tsv",raw_directory=samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"path"])
     output:
         "Collection/multi_{type}.mOTUs.Rdata",
-        expand("Collection/multi_{type}.mOTUs.{rank}.tsv",rank=["k","p","c","o","f","g","s"])
+        expand("Collection/multi_{{type}}.mOTUs.{rank}.tsv",rank=["k","p","c","o","f","g","s"])
     threads: 1
     params:
         runtime = "12:00:00",
@@ -43,7 +38,7 @@ localrules:  ctrl_tax_collation
 
 rule ctrl_tax_collation:
     input:
-        expand("Collection/multi_{type}.{class}.Rdata",class=c["kraken","mOTUs"],type=TYPES)
+        expand("Collection/multi_{type}.{classifier}.Rdata",type=TYPES,classifier=["kraken","mOTUs"])
     output:
         touch("taxonomy.collated")
 

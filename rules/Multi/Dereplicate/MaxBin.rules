@@ -8,7 +8,7 @@ rule maxbin_contig2bin:
     params:
         runtime = "3:00:00",
         mem = MEMCORE
-    log: "logs/dereplication_maxbin_contig2bin.log"
+    log: "logs/dereplication_maxbin_contig2bin.{sample}.log"
     message: "maxbin_contig2bin: Getting contig to bin mapping."
     shell:
         """
@@ -22,7 +22,7 @@ rule maxbin_contig2bin:
 rule maxbin_get_depth:
     input:
         "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.txt",
-        expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
+        lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
                 raw_directory=samples.path[wildcards.sample],
                 ass=samples.ass_type[wildcards.sample])
     output:
@@ -46,10 +46,9 @@ localrules: maxbin_prep
 
 rule maxbin_prep:
     input:
-        expand("Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.0.txt",
-               sample=wildcards.sample,
-               cross_sample=samples.loc[samples.mg == 1 & samples.sample != wildcards.sample,"sample"]),
-        expand("{raw_directory}/Stats/mg/{ass}.assembly.contig_depth.0.txt",
+        lambda wildcards: expand("Dereplication/cross_mapping/{{sample}}.contig_depth.{cross_sample}.0.txt",
+               cross_sample=samples.loc[[a and b for a,b in zip(samples.mg == 1,samples["sample"] != wildcards.sample)],"sample"]),
+        lambda wildcards: expand("{raw_directory}/Stats/mg/{ass}.assembly.contig_depth.0.txt",
                raw_directory=samples.path[wildcards.sample],
                ass=samples.ass_type[wildcards.sample])
     output:
@@ -62,7 +61,7 @@ rule maxbin_prep:
         
 rule maxbin:
     input:
-       expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
+       lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
                 raw_directory=samples.path[wildcards.sample],
                 ass=samples.ass_type[wildcards.sample]),
        "Dereplication/cross_mapping/{sample}.contig_depth.0.list" 

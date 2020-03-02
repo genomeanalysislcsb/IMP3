@@ -1,10 +1,9 @@
 rule mapping_on_catalogue:
     input:
-        expand("{raw_directory}/Preprocessing/{type}.{read}.preprocessed.fq",
-                raw_directory=samples.loc[samples[sample] == wildcards.sample,"path"],
-                type=wildcards.type,
+        lambda wildcards: expand("{raw_directory}/Preprocessing/{{type}}.{read}.preprocessed.fq",
+                raw_directory=samples.loc[samples["sample"] == wildcards.sample,"path"],
                 read=["r1","r2","se"]),
-        expand("Catalogue/catalogue.{ext}",ext=c("fasta.amb","fasta.bwt","fasta.pac","fasta.sa","fasta.ann","fasta"))
+        expand("Catalogue/catalogue.{ext}",ext=["fasta.amb","fasta.bwt","fasta.pac","fasta.sa","fasta.ann","fasta"])
     output:
         'Catalogue/{sample}.{type}.reads.sorted.bam'
     params:
@@ -12,11 +11,11 @@ rule mapping_on_catalogue:
         mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/catalogue_mapping_on_catalogue.{type}.log"
+    log: "logs/catalogue_mapping_on_catalogue.{type}.{sample}.log"
     message: "mapping_on_catalogue: Mapping {wildcards.type} reads on catalogue."
     shell:
         """
-        SAMHEADER="@RG\\tID:{SAMPLE}\\tSM:MG"
+        SAMHEADER="@RG\\tID:{wildcards.sample}\\tSM:MG"
         PREFIX=Catalogue/{wildcards.sample}.{wildcards.type}.reads
         # merge paired and se
         samtools merge --threads {threads} -f $PREFIX.merged.bam \
@@ -32,7 +31,7 @@ rule mapping_on_catalogue:
 rule feature_count_cat:
     input:
         gff = "Catalogue/catalogue.gff",
-        bam = expand('Catalogue/{sample}.{type}.reads.sorted.bam',type=wildcards.type,
+        bam = lambda wildcards: expand('Catalogue/{sample}.{{type}}.reads.sorted.bam',
               sample=samples.loc[samples[wildcards.type] == 1,"sample"])
     output:
         "Catalogue/{type}.counts.tsv"

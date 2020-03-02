@@ -13,9 +13,9 @@ rule dRep_simple_dir:
 rule prep_dRep_single:
     input:
         dir="Dereplication/dRep_single",
-        bins=expand("{raw_directory}/Binning/selected_DASTool_summary.txt",
+        bins= lambda wildcards: expand("{raw_directory}/Binning/selected_DASTool_summary.txt",
                 raw_directory=samples.path[wildcards.sample]),
-        indir=expand("{raw_directory}/Binning/selected_DASTool_selected",
+        indir= lambda wildcards: expand("{raw_directory}/Binning/selected_DASTool_selected",
                 raw_directory=samples.path[wildcards.sample])
     output:
         "Dereplication/{sample}/dRep_single.prepped"

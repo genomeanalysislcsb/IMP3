@@ -1,5 +1,5 @@
 from os.path import getsize
-KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['krakendb'] + "/hash.k2d" )) / 1000000000
+KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['catalogue']['kraken']['db'] + "/hash.k2d" )) / 1000000000
 KRAKTHREADS = round( (KRAKSIZE / float(BIGMEMCORE[:-1])) + 0.5)
 
 rule kraken_cat:
@@ -14,10 +14,10 @@ rule kraken_cat:
     threads: KRAKTHREADS
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_cat"
-    message: "kraken_cat: Running kraken2 on genes from catalog against {config[krakendb]}."
+    message: "kraken_cat: Running kraken2 on genes from catalog against {config[catalogue][kraken][db]}."
     shell:	
         """
-        kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names --report-zero-counts \
+        kraken2 -db {DBPATH}/{config[catalogue][kraken][db]} --threads {threads} --use-names --report-zero-counts \
          --output {output[0]} --report {output[1]} {input} >> {log} 2>&1
         """
 

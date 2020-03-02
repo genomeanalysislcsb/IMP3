@@ -1,13 +1,13 @@
 include:
-    "../../rules/Catalogue/cluster.rules"
+    "../../rules/Multi/Catalogue/cluster.rules"
 if config['catalogue']['kraken']['do']:
     include:
-        "../../rules/Catalogue/kraken_genes.rules"
+        "../../rules/Multi/Catalogue/kraken_genes.rules"
 if config['catalogue']['mapping']['do']:
     include:
-        "../../rules/Catalogue/mapping.rules"
+        "../../rules/Multi/Catalogue/mapping.rules"
 include:
-    "../../rules/Catalogue/table.rules"
+    "../../rules/Multi/Catalogue/table.rules"
 
 
 # master command
@@ -17,6 +17,6 @@ rule all_cat:
         'Catalogue/catalogue.fasta',
         'Catalogue/catalogue.tsv'
     output:
-        touch('collate.done')
+        touch('catalogue.done')
 
 

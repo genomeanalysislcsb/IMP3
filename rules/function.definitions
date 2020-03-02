@@ -186,9 +186,10 @@ def check_bintabs_multi(wildcards):
 def getCatIn(wildcards):
     inputs = ["Catalogue/catalogue_genesPerRep.tsv","Catalogue/catalogue_anno.tsv"]
     if config['catalogue']['kraken']['do']:
-        inputs.append"Catalogue/catalogue_kraken.parsed.tsv")
+        inputs.append("Catalogue/catalogue_kraken.parsed.tsv")
     if config['catalogue']['mapping']['do']:
-        inputs.append(expand("Catalogue/{type}.counts.tsv",type=TYPES))
+        for type in TYPES:
+            inputs.append("Catalogue/" + type + ".counts.tsv")
     return inputs
         
 def gather_multi_GTDB_bins(wildcards):

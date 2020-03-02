@@ -1,12 +1,12 @@
 rule cross_mapping:
     input:
-        expand("{raw_directory}/Preprocessing/mg.{read}.preprocessed.fq",
+        lambda wildcards: expand("{raw_directory}/Preprocessing/mg.{read}.preprocessed.fq",
                 raw_directory=samples.path[wildcards.cross_sample],
                 read=["r1","r2","se"]),
-        expand("{raw_directory}/Assembly/{ass}.assembly.merged.{ext}",
+        lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.{ext}",
                 raw_directory=samples.path[wildcards.sample],
-                ass=samples.assembly_type[wildcards.sample]
-                ext=c("fa.amb","fa.bwt","fa.pac","fa.sa","fa.ann","fa"))
+                ass=samples.assembly_type[wildcards.sample],
+                ext=["fa.amb","fa.bwt","fa.pac","fa.sa","fa.ann","fa"])
     output:
         "Dereplication/cross_mapping/{sample}.on.{cross_sample}.bam"
     params:
@@ -34,10 +34,10 @@ rule cross_mapping:
 rule call_contig_depth:
     input:
         "Dereplication/cross_mapping/{sample}.on.{cross_sample}.bam",
-        expand("{raw_directory}/Assembly/{ass}.assembly.merged.{ext}",
+        lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.{ext}",
                 raw_directory=samples.path[wildcards.sample],
-                ass=samples.assembly_type[wildcards.sample]
-                ext=c("fa","fa.fai","fa.bed3"))
+                ass=samples.assembly_type[wildcards.sample],
+                ext=["fa","fa.fai","fa.bed3"])
     output:
         "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.txt",
         "Dereplication/cross_mapping/{sample}.contig_flagstat.{cross_sample}.txt"
@@ -46,7 +46,7 @@ rule call_contig_depth:
         mem = MEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/analysis_call_contig_depth.{type}.log"
+    log: "logs/analysis_call_contig_depth.{cross_sample}.on.{sample}.log"
     message: "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
     shell:
         """

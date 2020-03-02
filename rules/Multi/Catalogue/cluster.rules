@@ -1,7 +1,7 @@
 rule cat:
     input:
         expand("{raw_directory}/Analysis/annotation/prokka.ffn",
-                raw_directory=samples.loc[samples.analysis == 1 ,"path"])
+                raw_directory=samples.loc[samples.genes == 1 ,"path"])
     output:
         "Catalogue/multi_prokka.ffn"
     threads: 1
@@ -9,7 +9,7 @@ rule cat:
         runtime = "12:00:00",
         mem = MEMCORE
 #    log: "logs/catalogue_cat.log"
-    message: 'catalogue_cat: concatenating coding regions from " ".join(samples.loc[samples.analysis == 1 ,"sample"]).'
+    message: 'catalogue_cat: concatenating coding regions from " ".join(samples.loc[samples.genes == 1 ,"sample"]).'
     threads: 1
     shell:
         """
@@ -42,7 +42,7 @@ rule cat_gff:
     input:
         "Catalogue/catalogue_cluster.tsv",
         expand("{raw_directory}/Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-                raw_directory=samples.loc[samples.analysis == 1 ,"path"])
+                raw_directory=samples.loc[samples.genes == 1 ,"path"])
     output:
         "Catalogue/catalogue.gff"
     threads: 1
@@ -58,7 +58,7 @@ rule cat_gff:
        
 rule extract_representative:
     input:
-        expand("{raw_directory}/Analysis/annotation/prokka.faa",
+        lambda wildcards: expand("{raw_directory}/Analysis/annotation/prokka.faa",
                 raw_directory=samples.path[wildcards.sample]),
         "Catalogue/catalogue_cluster.tsv"
     output:
@@ -69,7 +69,7 @@ rule extract_representative:
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        prok_p = samples.prokka_prefix[wildcards.sample] + "_"
+        prok_p = lambda wildcards: samples.prokka_prefix[wildcards.sample] + "_"
     threads: 1
     conda: ENVDIR + "/IMP_bioperl.yaml"
     log: "logs/catalogue_extract_representative.{sample}.log"
@@ -84,7 +84,7 @@ rule extract_representative:
 rule concat_reprentatitves:
     input:
         expand("Catalogue/{sample}.prokka.faa",
-                samples=samples.loc[samples.prokka_prefix == samples.prokka_prefix,"samples"])
+                sample=samples.loc[samples.prokka_prefix == samples.prokka_prefix,"sample"])
     output:
         'Catalogue/catalogue.faa'
     params:
