@@ -1,6 +1,6 @@
 rule collate_stats:
     input:
-        expand("{raw_directory}/Stats/all_stats.Rdata", raw_directory=samples.path[samples.stats == 1])
+        expand("{raw_directory}/Stats/all_stats.tsv", raw_directory=samples.path[samples.stats == 1])
     output:
         report("Collection/multi_stats.tsv",category="Collection"),
         "Collection/multi_stats.RDS"
@@ -10,7 +10,7 @@ rule collate_stats:
         mem = MEMCORE,
         samples = samples.loc[samples.stats == 1,"sample"]
     log: "logs/collate_stats.log"
-    message: 'collate_stats: stats from " ".join(samples.loc[samples.stats == 1,"sample"]).'
+    message: 'collate_stats: stats from ' + " ".join(samples.loc[samples.stats == 1,"sample"])+ '.'
     threads: 1
     conda: ENVDIR + "/IMP_multi.yaml"
     script:

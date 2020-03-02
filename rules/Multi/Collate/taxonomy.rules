@@ -10,7 +10,7 @@ checkpoint collate_kraken:
         samples = lambda wildcards: samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"sample"],
         out_prefix = "Collection/multi_{wildcards.type}.kraken."
     log: "logs/collate_kraken_{type}.kraken.log"
-    message: 'collate_kraken: collecting kraken {wildcards.type} data from " ".join(samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"sample"]).'
+    message: 'collate_kraken: collecting kraken {wildcards.type} data.'
     threads: 1
     conda: ENVDIR + "/IMP_multi.yaml"
     script:
@@ -25,9 +25,10 @@ rule collate_mOTUs:
     threads: 1
     params:
         runtime = "12:00:00",
-        mem = MEMCORE
+        mem = MEMCORE,
+        samples = lambda wildcards: samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"sample"]
     log: "logs/collate_mOTUs_{type}.mOTUs.log"
-    message: 'collate_mOTUs: collecting mOTUs {wildcards.type} data from " ".join(samples.loc[samples.taxonomy == 1 & samples[wildcards.type] == 1,"sample"]).'
+    message: 'collate_mOTUs: collecting mOTUs {wildcards.type} data.'
     threads: 1
     conda: ENVDIR + "/IMP_multi.yaml"
     script:

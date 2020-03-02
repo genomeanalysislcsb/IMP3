@@ -41,7 +41,7 @@ CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "../../conf/userconf.multi.yam
 if os.path.exists(CUSTOM_CONFIG_PATH):
     print("reading configuration from "+CUSTOM_CONFIG_PATH)
     with open(CUSTOM_CONFIG_PATH, 'r') as rhandle:
-        data = yaml.load(rhandle)
+        data = yaml.load(rhandle, Loader=yaml.SafeLoader)
         config = dict_merge(config, data)
 
 
@@ -83,7 +83,7 @@ for sam in samples['sample']:
     if os.path.exists(spath):
         print("reading configuration from "+ spath)
         with open(spath, 'r') as rhandle:
-            multi_config[sam] = yaml.load(rhandle)
+            multi_config[sam] = yaml.load(rhandle,Loader=yaml.SafeLoader)
     
 samples = samples.assign(mg=[1 if (multi_config[sam]['raws']['Metagenomics'].split() or multi_config[sam]['raws']['Alignment_metagenomics'].split() ) else 0 for sam in samples['sample']])
 samples = samples.assign(mt=[1 if (multi_config[sam]['raws']['Metatranscriptomics'].split() or multi_config[sam]['raws']['Alignment_metatranscriptomics'].split()) else 0 for sam in samples['sample']])
@@ -96,6 +96,7 @@ if "collate" in MULTI_STEPS:
     if "features" in COLL_STEPS:
         for db in config['hmm_DBs'].split():        
             samples[db] = 0
+            samples[db] = [1 if "analysis" in multi_config[sam]['steps'].split() and db in multi_config[sam]['hmm_DBs'].split() else 0 for sam in samples['sample']]
 if "catalogue" in MULTI_STEPS:
     samples = samples.assign(genes=[1 if "analysis" in multi_config[sam]['steps'].split() else 0 for sam in samples['sample']])
     samples["prokka_prefix"] = ""

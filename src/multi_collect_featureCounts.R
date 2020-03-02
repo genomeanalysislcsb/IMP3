@@ -17,6 +17,7 @@ library(data.table)
 ###################################################################################################
 
 input_files         <- snakemake@input #actual files,determined based on step and what's there
+print(input_files)
 output             <- snakemake@output # "Collection/multi_{type}.{db}.tsv",category="Collection"),
                                         # "Collection/multi_{type}.{db}.RDS"
 samples <- snakemake@params[["samples"]]
@@ -27,7 +28,7 @@ samples <- snakemake@params[["samples"]]
 
 all_feat <- list()
 for(i in 1:length(input_files)){
-  all_feat[[samples[i]]] <- read.delim(input_files[i],comment.char = "#",stringsAsFactors = F)[,c(1,7)]
+  all_feat[[samples[i]]] <- read.delim(input_files[[i]],comment.char = "#",stringsAsFactors = F)[,c(1,7)]
   colnames(all_feat[[samples[i]]])[ncol(all_feat[[samples[i]]])] <- "reads"
 }
 

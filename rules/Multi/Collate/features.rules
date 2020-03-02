@@ -1,6 +1,10 @@
+def getFeats(wildcards):
+    all=expand("{raw_directory}/Analysis/annotation/{type}.{db}.counts.tsv",raw_directory=samples.loc[[a and b for a,b in zip(samples[wildcards.db] == 1, samples[wildcards.type] == 1)],"path"].tolist(),type=wildcards.type,db=wildcards.db)
+    return all
+
 rule collate_featureCounts:
     input:
-        lambda wildcards: expand("{raw_directory}/Analysis/annotation/{{type}}.{{db}}.counts.tsv",raw_directory=samples.loc[[a and b for a,b in zip(samples[wildcards.db] == 1, samples[wildcards.type] == 1)],"path"].tolist())
+        getFeats
     output:
         "Collection/multi_{type}.{db}.tsv",
         "Collection/multi_{type}.{db}.RDS"
@@ -10,7 +14,7 @@ rule collate_featureCounts:
         mem = MEMCORE,
         samples = lambda wildcards: samples.loc[[a and b for a,b in zip(samples[wildcards.db] == 1, samples[wildcards.type] == 1)],"sample"].tolist()
     log: "logs/collate_featureCounts_{type}.{db}.log"
-    message: 'collate_featureCounts: collecting {wildcards.db} {wildcards.type} data from " ".join(samples.loc[samples[wildcards.db] == 1 & samples[wildcards.type] == 1,"sample"]).'
+    message: 'collate_featureCounts: collecting {wildcards.db} {wildcards.type} data.'
     threads: 1
     conda: ENVDIR + "/IMP_multi.yaml"
     script:

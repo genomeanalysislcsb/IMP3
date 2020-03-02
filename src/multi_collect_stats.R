@@ -26,7 +26,7 @@ samples         <- snakemake@params[["samples"]]
 
 all_stats <- list()
 for(i in 1:length(input_files)){
-  all_stats[[samples[i]]] <- read.delim(input_files[i],stringsAsFactors = F)
+  all_stats[[samples[i]]] <- read.delim(input_files[[i]],stringsAsFactors = F)
   all_stats[[samples[i]]]$feature <- apply(all_stats[[samples[i]]][,1:2],1,
                                            function(x) paste(x,sep=":",collapse=":"))
 }
@@ -35,7 +35,7 @@ all_stats <- rbindlist(lapply(1:length(all_stats),function(x) data.frame(all_sta
                                                                       "sample"=names(all_stats)[x],
                                                                       stringsAsFactors = F)))
 
-all_stats <- tapply(all_stats$number,list(all_stats$feature,x$sample),sum)
+all_stats <- tapply(all_stats$number,list(all_stats$feature,all_stats$sample),sum)
 
 
 ###################################################################################################
@@ -44,5 +44,5 @@ all_stats <- tapply(all_stats$number,list(all_stats$feature,x$sample),sum)
 
 write.table(all_stats,output[[1]],
               col.names=NA,quote = F,sep="\t")
-saveRDS(output[[2]])
+saveRDS(all_stats,output[[2]])
 

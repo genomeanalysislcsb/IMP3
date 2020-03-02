@@ -39,7 +39,7 @@ CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "../../conf/userconf.imp.yaml"
 if os.path.exists(CUSTOM_CONFIG_PATH):
     print("reading configuration from "+CUSTOM_CONFIG_PATH)
     with open(CUSTOM_CONFIG_PATH, 'r') as rhandle:
-        data = yaml.load(rhandle)
+        data = yaml.load(rhandle,Loader=yaml.SafeLoader)
         config = dict_merge(config, data)
 
 
