@@ -26,16 +26,16 @@ while 1:
     if curr_clus== "":
         curr_clus = rep
         reps = dict(zip(all_s,[0]*len(all_s)))
-        out_file.write("\t".join(all_s) + "\n")
+        out_file.write("gene\t" + "\t".join(all_s) + "\n")
     mem = line.split("\t")[1]
     sam = samples.loc[samples.prokka_prefix == mem.split("_")[0],"sample"].iat[0]
     if rep != curr_clus:
-        out_file.write("\t".join([str(reps[s]) for s in all_s]) + "\n")
+        out_file.write(curr_clus + "\t" + "\t".join([str(reps[s]) for s in all_s]) + "\n")
         curr_clus = rep
         reps = dict(zip(all_s,[0]*len(all_s)))
     reps["all"] += 1
     reps[sam] += 1
 cluster_file.close()
-out_file.write("\t".join([str(reps[s]) for s in all_s]) + "\n")
+out_file.write(curr_clus + "\t" + "\t".join([str(reps[s]) for s in all_s]) + "\n")
 out_file.close()
     

@@ -27,6 +27,6 @@ while 1:
     func=[]
     for db in dbs:
         func.append(";".join([f.replace(db + "=","") for f in atts if f.startswith(db + "=")]))
-    out_file.write("\t".join([prot,tabs[5],compl] + func) + "\n")
+    out_file.write("\t".join([prot,tabs[4],compl] + func) + "\n")
 gff_file.close()
 out_file.close()
