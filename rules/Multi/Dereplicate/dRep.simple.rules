@@ -33,7 +33,7 @@ rule prep_dRep_single:
 rule dRep_simple:
     input:
         ctrl=expand("Dereplication/{sample}/dRep_single.prepped",
-         sample=samples.loc[samples.ass == 1,"sample"]),
+         sample=samples.loc[samples.bins == 1,"sample"]),
         dir="Dereplication/dRep_single"
     output:
         directory("Dereplication/dRep_single_out/dereplicated_genomes")
