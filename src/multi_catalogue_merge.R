@@ -33,7 +33,7 @@ cat <- merge(cat,read.delim(input_files[[2]],stringsAsFactors = F),by="gene",all
 if(krak){
   n <- 4
   krakenTab <- read.delim(input_files[[3]],stringsAsFactors = F)
-  krakenTab$tax <- sapply(krakenTab,function(x) paste(x[!is.na(x),sep=";",collapse=";"]))
+  krakenTab$tax <- apply(krakenTab,1,function(x) paste(x[!is.na(x)],sep=";",collapse=";"))
   cat <- merge(cat,krakenTab,by.x="gene",by.y="contig",all=T)
   rm(krakenTab)
 }else{
