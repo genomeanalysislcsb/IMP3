@@ -41,11 +41,12 @@ rule catalogue_tab:
         "Catalogue/catalogue.tsv"
     params:
         runtime = "12:00:00",
-        mem = BIGMEMCORE
+        mem = BIGMEMCORE,
+        types = TYPES
     threads: 1
     log: "logs/catalogue_tab.log"
     conda: ENVDIR + "/IMP_multi.yaml"
     message: "catalogue_tab: Merging results of catalogue."
     script:
-        SRCDIR + "/catalogue_merge.R"
+        SRCDIR + "/multi_catalogue_merge.R"
 
