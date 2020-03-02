@@ -1,6 +1,6 @@
 rule dRep_sum_simple:
     input:
-        "Dereplication/dRep_single_out/data_tables/Wdb.csv"
+        "Dereplication/dRep_single_out/data_tables/Widb.csv"
     output:
         report("Dereplication/all_bin_stats.tsv",category="Simple dereplication")
     threads: BIGCORENO

@@ -15,7 +15,7 @@ rule prep_dRep_single:
         dir="Dereplication/dRep_single",
         bins= lambda wildcards: expand("{raw_directory}/Binning/selected_DASTool_summary.txt",
                 raw_directory=samples.path[wildcards.sample]),
-        indir= lambda wildcards: expand("{raw_directory}/Binning/selected_DASTool_selected",
+        indir= lambda wildcards: expand("{raw_directory}/Binning/selected_DASTool_bins",
                 raw_directory=samples.path[wildcards.sample])
     output:
         "Dereplication/{sample}/dRep_single.prepped"
@@ -25,9 +25,9 @@ rule prep_dRep_single:
     threads: 1
     message: "prep_dRep_single: Copying DAStool bins of {wildcards.sample} to common directory."
     run:
-        selected_bins=pd.read_table(input.bins)['bin']
-        for BIN in selected_bins:
-            shell("cp {indir}/{BIN}.contigs.fa Dereplication/dRep_single/{wildcards.sample}.{BIN}.contigs.fa")
+        selected_bins=pd.read_csv(input.bins[0],sep="\t")
+        for BIN in selected_bins['bin']:
+            shell("cp {input.indir}/{BIN}.contigs.fa Dereplication/dRep_single/{wildcards.sample}.{BIN}.contigs.fa")
         shell("touch {output}")
 
 rule dRep_simple:
@@ -37,7 +37,7 @@ rule dRep_simple:
         dir="Dereplication/dRep_single"
     output:
         directory("Dereplication/dRep_single_out/dereplicated_genomes"),
-        "Dereplication/dRep_single_out/data_tables/Wdb.csv
+        "Dereplication/dRep_single_out/data_tables/Widb.csv"
     threads: BIGCORENO
     params:
         runtime = "12:00:00",
@@ -64,9 +64,10 @@ rule dRep_simple:
         size_weight = config['dereplication']['dRep']['size_weight']
     log: "logs/dereplication_dRep_simple.log"
     message: "dRep_simple: Running dRep on bins of input samples."
+    conda: ENVDIR + "/IMP_multi.yaml"
     shell:
         """
-        dRep filter {params.out} -p {threads} --length {params.length} --completeness {params.completeness} \
+        dRep filter {params.out} -d -p {threads} --length {params.length} --completeness {params.completeness} \
          --contamination {params.contamination} --checkM_method {params.checkM_method} \
          -g {input.dir}/*contigs.fa >> {log} 2>&1
         dRep cluster {params.out} -p {threads} --MASH_sketch {params.MASH_sketch} --S_algorithm {params.S_algorithm} \
@@ -76,6 +77,6 @@ rule dRep_simple:
         dRep choose {params.out} -p {threads} --completeness_weight {params.completeness_weight} \
          --contamination_weight {params.contamination_weight} --strain_heterogeneity_weight {params.strain_heterogeneity_weight} \
          --N50_weight {params.N50_weight} --size_weight {params.size_weight} --checkM_method {params.checkM_method} >> {log} 2>&1
-#        dRep evaluate {params.out} --evaluate all -p {threads} >> {log} 2>&1
+        dRep evaluate {params.out} --evaluate all -p {threads} >> {log} 2>&1
         """
         

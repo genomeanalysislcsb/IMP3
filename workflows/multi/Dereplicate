@@ -10,17 +10,16 @@ if config['dereplication']['cross_mapping_rebinning']['do']:
         "../../rules/Multi/Dereplicate/MaxBin.rules"
     include:
         "../../rules/Multi/Dereplicate/dRep.multi.rules"
+    if config['dereplication']['GTDBtk']:
+        include:
+            "../../rules/Multi/Dereplicate/gtdbtk_multi.rules"
 else:
-    include:
-        "../../rules/Multi/Dereplicate/dRep_sum.simple.rules"
-if config['dereplication']['GTDBtk']:
-    include:
-        "../../rules/Multi/Dereplicate/gtdbtk_multi.rules"
-<<<<<<< HEAD
-#include:
-#    "../../rules/Multi/Dereplicate/bin_stats.rules"
-=======
->>>>>>> ad49e034fcfc1e623dcc709c7395754626fc5f71
+    if config['dereplication']['GTDBtk']:
+        include:
+            "../../rules/Multi/Dereplicate/gtdbtk_drep.rules"
+    else:
+        include:
+            "../../rules/Multi/Dereplicate/dRep_sum.simple.rules"
 
 
 # master command
