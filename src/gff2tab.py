@@ -3,8 +3,8 @@
 import os
 import sys
 
-gff = snakemake.input
-output = snakemake.output
+gff = snakemake.input[0]
+output = snakemake.output[0]
 dbs = snakemake.params.dbs
 
 gff_file = open(gff, "r")    

@@ -34,7 +34,7 @@ rule mmSeqs:
     conda: ENVDIR + "/IMP_multi.yaml"
     shell:
         """
-        mmseqs easy-cluster {input} {params.cat} {params.tmp} --min-seq-id 0.95 -c 0.9 --cov-mode 1
+        mmseqs easy-cluster {input} {params.cat} {params.tmp} --min-seq-id 0.95 -c 0.9 --cov-mode 1 >> {log} 2>&1
         mv {params.cat}_rep_seq.fasta {output[1]}
         """
        

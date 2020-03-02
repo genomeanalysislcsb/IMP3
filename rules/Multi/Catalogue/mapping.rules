@@ -45,5 +45,5 @@ rule feature_count_cat:
     message: "feature_count_cat: Quantifying {wildcards.type} reads on the catalogue."
     shell:
         """
-        featureCounts -p -O -t "gene" -g ID -o {output} -s {params[0]} -a {input.gff} -T {threads} {input.bam} > {log} 2>&1
+        featureCounts -M --fraction -p --largestOverlap -t gene -g ID -o {output} -s {params[0]} -a {input.gff} -T {threads} {input.bam} > {log} 2>&1
         """

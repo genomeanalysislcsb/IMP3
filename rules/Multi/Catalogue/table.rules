@@ -11,7 +11,7 @@ rule cluster2tab:
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        samples = samples
+        sample = samples
     log: "logs/catalogue_cluster2tab.log"
     message: 'catalogue_cluster2tab: checking number of genes represented by each representative.'
     threads: 1
@@ -27,12 +27,13 @@ rule gff2tab:
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        dbs = config['hmm_DBs'].split()
+        dbs = config['hmm_DBs'].split(),
+        sam = samples
     log: "logs/catalogue_gff2tab.log"
     message: 'gff2tab: extracting gff for catalogue info.'
     threads: 1
     script:
-        SRCDIR + "/cluster2tab.py"
+        SRCDIR + "/gff2tab.py"
 
 rule catalogue_tab:
     input:
