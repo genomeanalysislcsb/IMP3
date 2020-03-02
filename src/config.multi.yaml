@@ -31,9 +31,8 @@ dereplication:
     S_algorithm: ANImf
     P_ani: 0.9
     S_ani: 0.99
-    SkipMash: False
-    SkipSecondary: False
-    n_PRESET: normal
+    SkipMash: ""
+    SkipSecondary: ""
     cov_thresh: 0.1
     coverage_method: larger
     clusterAlg: average
