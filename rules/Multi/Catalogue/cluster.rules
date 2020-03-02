@@ -78,6 +78,7 @@ rule extract_representative:
         """
         cp {input[0]} {output[0]}
         cut -f 1 {input[1]} | sort | uniq | grep {params.prok_p} >> {output[2]}
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         {SRCDIR}/fastaExtract.pl {output[0]} {output[2]} >> {output[3]}
         """
 

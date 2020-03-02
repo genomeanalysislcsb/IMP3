@@ -27,8 +27,7 @@ rule gff2tab:
     params:
         runtime = "12:00:00",
         mem = MEMCORE,
-        dbs = config['hmm_DBs'].split(),
-        sam = samples
+        dbs = config['hmm_DBs'].split()
     log: "logs/catalogue_gff2tab.log"
     message: 'gff2tab: extracting gff for catalogue info.'
     threads: 1
