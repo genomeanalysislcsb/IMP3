@@ -30,7 +30,7 @@ rule prep_dRep:
 rule prep_dRep_ms:
     input:
         dir="Dereplication/dRep_multi",
-        bins="Dereplication/dRep_single_output/dereplicated_genomes"
+        bins="Dereplication/dRep_single_out/dereplicated_genomes"
     output:
         "Dereplication/dRep_multi-single.prepped"
     params:
@@ -48,16 +48,19 @@ if config['dereplication']['simple_derep']:
     rule dRep_multi:
         input:
             ctrl=expand("Dereplication/{sample}/dRep_multi.prepped",
-             sample=samples.loc[samples.ass == 1,"sample"]),
+             sample=samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"]),
             ctrl2="Dereplication/dRep_multi-single.prepped",
             dir="Dereplication/dRep_multi"
         output:
-            directory("Dereplication/dRep_multi_out/dereplicated_genomes")
+            directory("Dereplication/dRep_multi_out/dereplicated_genomes"),
+            "Dereplication/dRep_multi_out/data_tables/Widb.csv"
         threads: BIGCORENO
+        conda: ENVDIR + "/IMP_multi.yaml"
         params:
             runtime = "12:00:00",
             mem = BIGMEMCORE,
             out = "Dereplication/dRep_multi_out",
+            db = config['db_path'],
             length = config['dereplication']['dRep']['length'],
             completeness = config['dereplication']['dRep']['completeness'],
             contamination = config['dereplication']['dRep']['contamination'],
@@ -68,7 +71,6 @@ if config['dereplication']['simple_derep']:
             S_ani = config['dereplication']['dRep']['S_ani'],
             SkipMash = config['dereplication']['dRep']['SkipMash'],
             SkipSecondary = config['dereplication']['dRep']['SkipSecondary'],
-            n_PRESET = config['dereplication']['dRep']['n_PRESET'],
             cov_thresh = config['dereplication']['dRep']['cov_thresh'],
             coverage_method = config['dereplication']['dRep']['coverage_method'],
             clusterAlg = config['dereplication']['dRep']['clusterAlg'],
@@ -81,31 +83,35 @@ if config['dereplication']['simple_derep']:
         message: "dRep_multi: Running dRep on multi-sample bins."
         shell:
             """
+            checkm data setRoot {params.db}/checkM/
             dRep filter {params.out} -p {threads} --length {params.length} --completeness {params.completeness} \
              --contamination {params.contamination} --checkM_method {params.checkM_method} \
              -g {input.dir}/*contigs.fa >> {log} 2>&1
             dRep cluster {params.out} -p {threads} --MASH_sketch {params.MASH_sketch} --S_algorithm {params.S_algorithm} \
-             --P_ani {params.P_ani} --S_ani {params.S_ani} --SkipMash {params.SkipMash} \
-             --SkipSecondary {params.SkipSecondary} --n_PRESET {params.n_PRESET} --cov_thresh {params.cov_thresh} \
+             --P_ani {params.P_ani} --S_ani {params.S_ani} {params.SkipMash} \
+             {params.SkipSecondary} --cov_thresh {params.cov_thresh} \
              --coverage_method {params.coverage_method} --clusterAlg {params.clusterAlg} >> {log} 2>&1
             dRep choose {params.out} -p {threads} --completeness_weight {params.completeness_weight} \
              --contamination_weight {params.contamination_weight} --strain_heterogeneity_weight {params.strain_heterogeneity_weight} \
              --N50_weight {params.N50_weight} --size_weight {params.size_weight} --checkM_method {params.checkM_method} >> {log} 2>&1
-    #        dRep evaluate {params.out} -p {threads} >> {log} 2>&1
+            dRep evaluate {params.out} -e a -p {threads} >> {log} 2>&1
             """
 else:
     rule dRep_multi:
         input:
             ctrl=expand("Dereplication/{sample}/dRep_multi.prepped",
-             sample=samples.loc[samples.ass == 1,"sample"]),
+             sample=samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"]),
             dir="Dereplication/dRep_multi"
         output:
-            directory("Dereplication/dRep_multi_out/dereplicated_genomes")
+            directory("Dereplication/dRep_multi_out/dereplicated_genomes"),
+            "Dereplication/dRep_multi_out/data_tables/Widb.csv"
         threads: BIGCORENO
+        conda: ENVDIR + "/IMP_multi.yaml"
         params:
             runtime = "12:00:00",
             mem = BIGMEMCORE,
             out = "Dereplication/dRep_multi_out",
+            db = config['db_path'],
             length = config['dereplication']['dRep']['length'],
             completeness = config['dereplication']['dRep']['completeness'],
             contamination = config['dereplication']['dRep']['contamination'],
@@ -116,7 +122,6 @@ else:
             S_ani = config['dereplication']['dRep']['S_ani'],
             SkipMash = config['dereplication']['dRep']['SkipMash'],
             SkipSecondary = config['dereplication']['dRep']['SkipSecondary'],
-            n_PRESET = config['dereplication']['dRep']['n_PRESET'],
             cov_thresh = config['dereplication']['dRep']['cov_thresh'],
             coverage_method = config['dereplication']['dRep']['coverage_method'],
             clusterAlg = config['dereplication']['dRep']['clusterAlg'],
@@ -129,16 +134,17 @@ else:
         message: "dRep_multi: Running dRep on multi-sample bins."
         shell:
             """
+            checkm data setRoot {params.db}/checkM/
             dRep filter {params.out} -p {threads} --length {params.length} --completeness {params.completeness} \
              --contamination {params.contamination} --checkM_method {params.checkM_method} \
              -g {input.dir}/*contigs.fa >> {log} 2>&1
             dRep cluster {params.out} -p {threads} --MASH_sketch {params.MASH_sketch} --S_algorithm {params.S_algorithm} \
-             --P_ani {params.P_ani} --S_ani {params.S_ani} --SkipMash {params.SkipMash} \
-             --SkipSecondary {params.SkipSecondary} --n_PRESET {params.n_PRESET} --cov_thresh {params.cov_thresh} \
+             --P_ani {params.P_ani} --S_ani {params.S_ani} {params.SkipMash}  \
+             {params.SkipSecondary} --cov_thresh {params.cov_thresh} \
              --coverage_method {params.coverage_method} --clusterAlg {params.clusterAlg} >> {log} 2>&1
             dRep choose {params.out} -p {threads} --completeness_weight {params.completeness_weight} \
              --contamination_weight {params.contamination_weight} --strain_heterogeneity_weight {params.strain_heterogeneity_weight} \
              --N50_weight {params.N50_weight} --size_weight {params.size_weight} --checkM_method {params.checkM_method} >> {log} 2>&1
-    #        dRep evaluate {params.out} -p {threads} >> {log} 2>&1
+            dRep evaluate {params.out} -e a -p {threads} >> {log} 2>&1
             """
 

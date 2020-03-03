@@ -9,10 +9,15 @@ if config['dereplication']['cross_mapping_rebinning']['do']:
     include:
         "../../rules/Multi/Dereplicate/MaxBin.rules"
     include:
+        "../../rules/Multi/Dereplicate/dastool.rules"
+    include:
         "../../rules/Multi/Dereplicate/dRep.multi.rules"
     if config['dereplication']['GTDBtk']:
         include:
             "../../rules/Multi/Dereplicate/gtdbtk_multi.rules"
+    else:
+        include:
+            "../../rules/Multi/Dereplicate/dRep_sum.multi.rules"
 else:
     if config['dereplication']['GTDBtk']:
         include:

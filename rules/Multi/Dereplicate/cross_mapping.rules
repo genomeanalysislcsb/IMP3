@@ -8,7 +8,7 @@ rule cross_mapping:
                 ass=samples.assembly_type[wildcards.sample],
                 ext=["fa.amb","fa.bwt","fa.pac","fa.sa","fa.ann","fa"])
     output:
-        "Dereplication/cross_mapping/{sample}.on.{cross_sample}.bam"
+        "Dereplication/cross_mapping/{cross_sample}.on.{sample}.sorted.bam"
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE
@@ -18,8 +18,8 @@ rule cross_mapping:
     message: "cross_mapping: Mapping {wildcards.cross_sample} reads on {wildcards.sample} contigs."
     shell:
         """
-        SAMHEADER="@RG\\tID:{SAMPLE}\\tSM:MG"
-        PREFIX=Dereplication/cross_mapping/{sample}.on.{cross_sample}
+        SAMHEADER="@RG\\tID:{wildcards.cross_sample}\\tSM:MG"
+        PREFIX=Dereplication/cross_mapping/{wildcards.cross_sample}.on.{wildcards.sample}
         # merge paired and se
         samtools merge --threads {threads} -f $PREFIX.merged.bam \
          <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[0]} {input[1]} 2>> {log}| \
@@ -33,7 +33,7 @@ rule cross_mapping:
 
 rule call_contig_depth:
     input:
-        "Dereplication/cross_mapping/{sample}.on.{cross_sample}.bam",
+        "Dereplication/cross_mapping/{cross_sample}.on.{sample}.sorted.bam",
         lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.{ext}",
                 raw_directory=samples.path[wildcards.sample],
                 ass=samples.assembly_type[wildcards.sample],
@@ -47,7 +47,7 @@ rule call_contig_depth:
     threads: 1
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/analysis_call_contig_depth.{cross_sample}.on.{sample}.log"
-    message: "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
+    message: "call_contig_depth: Getting data on {wildcards.sample} assembly coverage with {wildcards.cross_sample} reads."
     shell:
         """
         TMP_DEPTH=$(mktemp --tmpdir={TMPDIR} -t "depth_file_XXXXXX.txt")

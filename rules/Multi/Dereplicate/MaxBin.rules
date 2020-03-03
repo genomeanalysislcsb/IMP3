@@ -15,7 +15,7 @@ rule maxbin_contig2bin:
         for f in $(ls Dereplication/MaxBin/{wildcards.sample}/*.fasta | cut -f3 -d "/"); do 
          sed -e "s/$/\t$f/g" <(grep "^>" Dereplication/MaxBin/{wildcards.sample}/$f | sed -e 's/>//g') >> {output[0]}
         done
-        ln -s ../../{output[0]} {output[1]}
+        ln -s ../../../{output[0]} {output[1]}
         echo "Contig to bin mapping done" > {log}
         """
 
@@ -24,9 +24,9 @@ rule maxbin_get_depth:
         "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.txt",
         lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
                 raw_directory=samples.path[wildcards.sample],
-                ass=samples.ass_type[wildcards.sample])
+                ass=samples.assembly_type[wildcards.sample])
     output:
-        "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.0.txt"
+        "Dereplication/cross_mapping/{sample}.contig_depth0.{cross_sample}.txt"
     threads: 1
     params:
         runtime = "3:00:00",
@@ -46,11 +46,11 @@ localrules: maxbin_prep
 
 rule maxbin_prep:
     input:
-        lambda wildcards: expand("Dereplication/cross_mapping/{{sample}}.contig_depth.{cross_sample}.0.txt",
+        lambda wildcards: expand("Dereplication/cross_mapping/{{sample}}.contig_depth0.{cross_sample}.txt",
                cross_sample=samples.loc[[a and b for a,b in zip(samples.mg == 1,samples["sample"] != wildcards.sample)],"sample"]),
         lambda wildcards: expand("{raw_directory}/Stats/mg/{ass}.assembly.contig_depth.0.txt",
                raw_directory=samples.path[wildcards.sample],
-               ass=samples.ass_type[wildcards.sample])
+               ass=samples.assembly_type[wildcards.sample])
     output:
         "Dereplication/cross_mapping/{sample}.contig_depth.0.list"
     message: "maxbin_prep: Collecting abundance for {wildcards.sample}."
@@ -63,7 +63,7 @@ rule maxbin:
     input:
        lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
                 raw_directory=samples.path[wildcards.sample],
-                ass=samples.ass_type[wildcards.sample]),
+                ass=samples.assembly_type[wildcards.sample]),
        "Dereplication/cross_mapping/{sample}.contig_depth.0.list" 
     output:
        "Dereplication/MaxBin/{sample}/maxbin_res.log",

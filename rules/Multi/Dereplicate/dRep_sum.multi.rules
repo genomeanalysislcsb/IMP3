@@ -1,0 +1,15 @@
+rule dRep_sum_multi:
+    input:
+        "Dereplication/dRep_multi_out/data_tables/Widb.csv"
+    output:
+        report("Dereplication/all_bin_stats.tsv",category="Simple dereplication")
+    threads: BIGCORENO
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/dereplication_dRep_sum_multi.log"
+    message: "dRep_sum_multi: Gathering data on dereplicated bins."
+    shell:
+        """
+        sed 's/,/	/g' {input} >> {output}
+        """

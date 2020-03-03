@@ -43,6 +43,7 @@ rule dRep_simple:
         runtime = "12:00:00",
         mem = BIGMEMCORE,
         out = "Dereplication/dRep_single_out",
+        db = config['db_path'],
         length = config['dereplication']['dRep']['length'],
         completeness = config['dereplication']['dRep']['completeness'],
         contamination = config['dereplication']['dRep']['contamination'],
@@ -66,6 +67,7 @@ rule dRep_simple:
     conda: ENVDIR + "/IMP_multi.yaml"
     shell:
         """
+        checkm data setRoot {params.db}/checkM/
         dRep filter {params.out} -d -p {threads} --length {params.length} --completeness {params.completeness} \
          --contamination {params.contamination} --checkM_method {params.checkM_method} \
          -g {input.dir}/*contigs.fa >> {log} 2>&1

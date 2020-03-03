@@ -2,7 +2,7 @@ localrules: DASTool_check
 
 checkpoint DASTool_check:
     input:
-        expand(Dereplication/{binner}/{sample}/scaffold2bin.tsv",
+        lambda wildcards: expand("Dereplication/{binner}/{sample}/scaffold2bin.tsv",
         binner=config['dereplication']['cross_mapping_rebinning']['binners'].split(),
         sample=wildcards.sample)
     output:
@@ -12,9 +12,9 @@ checkpoint DASTool_check:
 
 rule DAS_tool_multi:
     input:
-        contigs=expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
+        contigs = lambda wildcards: expand("{raw_directory}/Assembly/{ass}.assembly.merged.fa",
                 raw_directory=samples.path[wildcards.sample],
-                ass=samples.ass_type[wildcards.sample]),
+                ass=samples.assembly_type[wildcards.sample]),
         proteins="Dereplication/{sample}/prokka.renamed.faa", 
         tabs=check_bintabs_multi
     output:
@@ -44,7 +44,7 @@ rule DAS_tool_multi:
         """
 
 def input_for_protein_names(wildcards):
-    if samples.bin[wildcards.sample]:
+    if samples.bins[wildcards.sample]:
         inputs = expand("{raw_directory}/Binning/prokka.renamed.faa",
                   raw_directory=samples.path[wildcards.sample])
     else:
@@ -59,8 +59,8 @@ CP_PROTEIN_SHELL = """
                 
 PREP_PROTEIN_SHELL = """
                      TMP_PROT=$(mktemp --tmpdir={TMPDIR} -t "proteins_XXXXXX.faa")
-                     TMP_TAB=$(mktemp --tmpdir={TMPDIR} -t "proteins_anno.fsv")
-                     cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
+                     TMP_TAB=$(mktemp --tmpdir={TMPDIR} -t "proteins_anno_XXXX.tsv")
+                     cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' > $TMP_TAB
 	                 sed 's/ .*//' {input[0]} >> $TMP_PROT
                      {SRCDIR}/prokka2dastoolHeader.pl  $TMP_PROT $TMP_TAB > {output} 2> {log}
                      """
