@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $IMPROOT/conda
+cd ../conda
 
 for i in `ls */etc/conda/activate.d/activate-r-base.sh`
 do
