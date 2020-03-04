@@ -1,7 +1,47 @@
+rule cp_seqs:
+    input:
+        lambda wildcards: expand("{raw_directory}/Analysis/annotation/prokka.ffn",
+                raw_directory=samples.path[wildcards.sample])
+    output:
+        temporary("Catalogue/{sample}.prokka.ffn")
+    threads: 1
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+#    log: "logs/catalogue_cp.{sample}.log"
+    message: 'catalogue_cp_seqs: Making temporary copy of sequences.'
+    threads: 1
+    shell:
+        """
+        cp {input} {output}
+        """
+
+rule get_complete_proteins:
+    input:
+        lambda wildcards: expand("{raw_directory}/Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+                raw_directory=samples.path[wildcards.sample]),
+        "Catalogue/{sample}.prokka.ffn"
+    output:
+        temporary("Catalogue/{sample}.complete_proteins.ffn"),
+        temporary("Catalogue/{sample}.complete_proteins.ffn.index")
+    threads: 1
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+    conda: ENVDIR + "/IMP_bioperl.yaml"
+    log: "logs/catalogue_get_complete_proteins.{sample}.log"
+    message: 'catalogue_get_complete_proteins: Extracting complete CDS from {wildcards.sample} prokka sequences.'
+    threads: 1
+    shell:
+        """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2  
+        {SRCDIR}/fastaExtract_complete.pl {input[1]} {input[0]} >> {output[0]}
+        """
+
 rule cat:
     input:
-        expand("{raw_directory}/Analysis/annotation/prokka.ffn",
-                raw_directory=samples.loc[samples.genes == 1 ,"path"])
+        expand("Catalogue/{sample}.complete_proteins.ffn",
+                sample=samples.loc[samples.genes == 1,"sample"])
     output:
         "Catalogue/multi_prokka.ffn"
     threads: 1
@@ -9,7 +49,7 @@ rule cat:
         runtime = "12:00:00",
         mem = MEMCORE
 #    log: "logs/catalogue_cat.log"
-    message: 'catalogue_cat: concatenating coding regions from " ".join(samples.loc[samples.genes == 1 ,"sample"]).'
+    message: 'catalogue_cat: concatenating complete coding regions.'
     threads: 1
     shell:
         """
@@ -34,7 +74,7 @@ rule mmSeqs:
     conda: ENVDIR + "/IMP_multi.yaml"
     shell:
         """
-        mmseqs easy-cluster {input} {params.cat} {params.tmp} --min-seq-id 0.95 -c 0.9 --cov-mode 1 >> {log} 2>&1
+        mmseqs easy-cluster {input} {params.cat} {params.tmp} --min-seq-id 0.95 -c 0.9 --cov-mode 0 >> {log} 2>&1
         mv {params.cat}_rep_seq.fasta {output[1]}
         """
        

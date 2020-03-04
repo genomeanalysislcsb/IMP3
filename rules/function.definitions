@@ -136,6 +136,7 @@ def reads_input_files(wildcards):
         base = bam_files
     return expand(base, type=wildcards.type)
 
+
 # for archiving checkpoint:
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_gziped.get(**wildcards).output[0]
