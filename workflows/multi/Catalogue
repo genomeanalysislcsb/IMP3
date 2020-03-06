@@ -14,6 +14,7 @@ include:
 rule all_cat:
     input:
         'Catalogue/catalogue.faa',
+        'Catalogue/aa_catalogue.faa',
         'Catalogue/catalogue.fasta',
         'Catalogue/catalogue.tsv'
     output:

@@ -13,6 +13,7 @@ hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc TIGRPFAM"
 collection:
   results: "taxonomy features stats"
 dereplication:
+  simple_derep: true
   cross_mapping_rebinning: 
     do: true
     binners: "MaxBin MetaBAT"
@@ -20,7 +21,6 @@ dereplication:
       cutoff: 1000
     MetaBAT:
       cutoff: 1500
-  simple_derep: true
   GTDBtk: true
   dRep:
     length: 50000

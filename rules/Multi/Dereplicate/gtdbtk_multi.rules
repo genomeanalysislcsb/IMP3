@@ -1,39 +1,33 @@
 rule GTDBtk_bins:
     input:
-        "Dereplication/dRep_multi_out/perBin/{clusterID}"
+        "Dereplication/dRep_multi_out/dereplicated_genomes/{clusterID}.contigs.fa"
     output:
-        directory("Dereplication/dRep_multi_out/perBin/{clusterID}/GTDB"),
+        directory("Dereplication/GTDB_multi/{clusterID}.GTDB_out")
     params:
         runtime = "12:00:00",
-        mem = BIGMEMCORE
+        mem = BIGMEMCORE,
+        outdir = "Dereplication/GTDB_multi/{wildcards.clusterID}"
     conda: ENVDIR + "/IMP_gtdbtk.yaml"
     log: "logs/dereplication_GTDBtk_bins.{clusterID}.log"
     message: "GTDBtk_bins: Classifiying {wildcards.clusterID} using GTDBtk."
     threads: BIGCORENO
     shell:
         """
+        mkdir -p {params.outdir} && cp {input} {params.outdir}
         export GTDBTK_DATA_PATH="{DBPATH}/GTDB_tk"
         export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
-        gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
-        """
-
-localrules: GTDB_all
-
-rule GTDB_all:
-    input:
-        "Dereplication/dRep_multi_out/per_bin_results.tar.gz"
-    output:
-        "Dereplication/GTDBtk.done"
-    shell:
-        """
-        touch {output}
+        gtdbtk classify_wf --genome_dir {params.outdir}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
         """
 
 rule GTDBtk_summarize:
     input:
-        gather_multi_GTDB_bins
+        gtdb = gather_multi_GTDB_bins,
+        dRep = expand("Dereplication/dRep_multi_out/data_tables/{file}.csv",
+                file=[Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"]),
+        bins= "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
     output:
-        report("Stats/bins.tsv" ,category="Dereplication")
+        "Dereplication/dRep_multi_out/dereplicated_rebin_stats.tsv",
+        report("Dereplication/all_bin_stats.tsv",category="Re-binning and dereplication")
     params:
         runtime = "4:00:00",
         mem = MEMCORE
@@ -43,20 +37,4 @@ rule GTDBtk_summarize:
     conda: ENVDIR + "/IMP_binning.yaml"
     script:
         SRCDIR + "/multi_summarize_GTDBtk.R"
-    
-rule bins_tar:
-    input:
-        dir="Dereplication/dRep_multi_out/perBin",
-        ctrl="Stats/bins.tsv"
-    output:
-        "Dereplication/dRep_multi_out/per_bin_results.tar.gz"
-    threads: 1
-    params:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    log: "logs/dereplication_gtdbtk_bins_tar.log"
-    message: "bins_tar: Compressing per-bin results."
-    shell:
-        """
-        tar czf {output} {input.dir} && rm -r {inputdir} >> {log} 2>&1
-        """
+
