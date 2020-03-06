@@ -9,7 +9,7 @@ sample_table: ""
 omes: "mg mt"
 outputdir: ""
 db_path: /data/idiv_biu/heintzbu/EXTDB/IMP_DBs
-hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc TIGRPFAM"
+hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc"
 collection:
   results: "taxonomy features stats"
 dereplication:
