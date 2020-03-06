@@ -2,9 +2,9 @@ steps: "preprocessing assembly analysis binning taxonomy summary"
 preprocessing_filtering: true
 mem:
   normal_mem_per_core_gb: 4
-  big_mem_total_gb: 400
-  big_mem_cores: 4
-  big_mem_per_core_gb: 100
+  big_mem_total_gb: 1600
+  big_mem_cores: 8
+  big_mem_per_core_gb: 200
 tmp_dir: tmp
 raws: 
   Metagenomics: ""
@@ -22,7 +22,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/work/projects/ecosystem_biology/local_tools/IMP3/databases"
+db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
 trimmomatic:
   adapter: "TruSeq3-PE"
   leading: 20
@@ -58,7 +58,7 @@ assembly:
   cap3:
     identity: 98
     overlap: 100
-hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc TIGRPFAM"
+hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
 hmm_settings: 
   KEGG:
     cutoff: ""

@@ -1,0 +1,54 @@
+steps: "collate catalogue dereplicate DB visualize"
+mem:
+  normal_mem_per_core_gb: 4
+  big_mem_total_gb: 800
+  big_mem_cores: 8
+  big_mem_per_core_gb: 100
+tmp_dir: tmp
+sample_table: ""
+omes: "mg mt"
+outputdir: ""
+db_path: /data/idiv_biu/heintzbu/EXTDB/IMP_DBs
+hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc"
+collection:
+  results: "taxonomy features stats"
+dereplication:
+  simple_derep: true
+  cross_mapping_rebinning: 
+    do: true
+    binners: "MaxBin MetaBAT"
+    MaxBin:
+      cutoff: 1000
+    MetaBAT:
+      cutoff: 1500
+  GTDBtk: true
+  dRep:
+    length: 50000
+    completeness: 75
+    contamination: 25
+    checkM_method: lineage_wf
+    MASH_sketch: 1000 
+    S_algorithm: ANImf
+    P_ani: 0.9
+    S_ani: 0.99
+    SkipMash: ""
+    SkipSecondary: ""
+    cov_thresh: 0.1
+    coverage_method: larger
+    clusterAlg: average
+    completeness_weight: 1
+    contamination_weight: 5
+    strain_heterogeneity_weight: 1
+    N50_weight: 0.5
+    size_weight: 0
+catalogue:
+  mapping: 
+    do: true
+    featureCountsStranding:
+      mt: 2
+      mg: 0
+  kraken: 
+    do: true
+    db: kraken2-microbial-fatfree
+
+
