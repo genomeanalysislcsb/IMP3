@@ -26,18 +26,15 @@ types           <- snakemake@params[["types"]]
 ###################################################################################################
 
 cat <- read.delim(input_files[[1]],stringsAsFactors = F)
-cat <- cat[,c(1,ncol(cat))]
-colnames(cat)[2] <- "members" 
-cat <- merge(cat,read.delim(input_files[[2]],stringsAsFactors = F),by="gene",all=T)
 
 if(krak){
-  n <- 4
-  krakenTab <- read.delim(input_files[[3]],stringsAsFactors = F)
+  n <- 3
+  krakenTab <- read.delim(input_files[[2]],stringsAsFactors = F)
   krakenTab$tax <- apply(krakenTab,1,function(x) paste(x[!is.na(x)],sep=";",collapse=";"))
   cat <- merge(cat,krakenTab,by.x="gene",by.y="contig",all=T)
   rm(krakenTab)
 }else{
-  n <- 3
+  n <- 2
 }
 
 if(map){

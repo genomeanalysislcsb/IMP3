@@ -185,7 +185,7 @@ def check_bintabs_multi(wildcards):
 
 # MULTI:
 def getCatIn(wildcards):
-    inputs = ["Catalogue/catalogue_genesPerRep.tsv","Catalogue/catalogue_anno.tsv"]
+    inputs = ["Catalogue/catalogue_anno.tsv"]
     if config['catalogue']['kraken']['do']:
         inputs.append("Catalogue/catalogue_kraken.parsed.tsv")
     if config['catalogue']['mapping']['do']:
