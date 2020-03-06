@@ -136,6 +136,7 @@ def reads_input_files(wildcards):
         base = bam_files
     return expand(base, type=wildcards.type)
 
+
 # for archiving checkpoint:
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_gziped.get(**wildcards).output[0]
@@ -184,7 +185,7 @@ def check_bintabs_multi(wildcards):
 
 # MULTI:
 def getCatIn(wildcards):
-    inputs = ["Catalogue/catalogue_genesPerRep.tsv","Catalogue/catalogue_anno.tsv"]
+    inputs = ["Catalogue/catalogue_anno.tsv"]
     if config['catalogue']['kraken']['do']:
         inputs.append("Catalogue/catalogue_kraken.parsed.tsv")
     if config['catalogue']['mapping']['do']:
