@@ -1,6 +1,9 @@
 if config['dereplication']['simple_derep']:
     include:
         "../../rules/Multi/Dereplicate/dRep.simple.rules"
+include:
+            "../../rules/Multi/Dereplicate/dRep_sum.simple.rules"
+
 if config['dereplication']['cross_mapping_rebinning']['do']:
     include:
         "../../rules/Multi/Dereplicate/cross_mapping.rules"
@@ -18,13 +21,6 @@ if config['dereplication']['cross_mapping_rebinning']['do']:
     else:
         include:
             "../../rules/Multi/Dereplicate/dRep_sum.multi.rules"
-else:
-    if config['dereplication']['GTDBtk']:
-        include:
-            "../../rules/Multi/Dereplicate/gtdbtk_drep.rules"
-    else:
-        include:
-            "../../rules/Multi/Dereplicate/dRep_sum.simple.rules"
 
 
 # master command

@@ -1,15 +1,20 @@
 rule dRep_sum_simple:
     input:
-        "Dereplication/dRep_single_out/data_tables/Widb.csv"
+        dRep = expand("Dereplication/dRep_single_out/data_tables/{file}.csv",
+                file=[Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"]),
+        ori = expand("{raw_directory}/Stats/{ass}/bins.tsv",
+                samples.loc[samples.bins == 1,"path"],
+                samples.loc[samples.bins == 1,"assembly_type"]) 
     output:
-        report("Dereplication/all_bin_stats.tsv",category="Simple dereplication")
-    threads: BIGCORENO
+        "Dereplication/dRep_single_out/originalNdereplicated_bin_stats",
+        report("Dereplication/all_bin_stats.tsv",category="Re-binning and dereplication")
+    threads: 1
     params:
         runtime = "12:00:00",
-        mem = MEMCORE
+        mem = MEMCORE,
+        sample = samples.loc[samples.bins == 1,"sample"].tolist()
+    conda: ENVDIR + "/IMP_multi.yaml"
     log: "logs/dereplication_dRep_sum_simple.log"
     message: "dRep_sum_simple: Gathering data on dereplicated bins."
-    shell:
-        """
-        cp {input} {output}
-        """
+    script:
+        SRCDIR + "/multi_derepOutput.R" 
