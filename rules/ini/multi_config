@@ -105,14 +105,14 @@ if "catalogue" in MULTI_STEPS:
                     samples.prokka_prefix[sam] = line.split("_")[0][1:]
 if "dereplicate" in MULTI_STEPS:
     samples = samples.assign(bins=[1 if "binning" in multi_config[sam]['steps'].split() else 0 for sam in samples['sample']])
-    if config['dereplication']['cross_mapping_rebinning']['do']:
-        if not 'rebinning' in samples.columns:
-            samples['rebinning'] = "yes"
-        samples = samples.assign(ass=[1 if ("assembly" in multi_config[sam]['steps'].split() or multi_config[sam]['raws']['Contigs'].split()) else 0 for sam in samples['sample']])
+    samples = samples.assign(ass=[1 if ("assembly" in multi_config[sam]['steps'].split() or multi_config[sam]['raws']['Contigs'].split()) else 0 for sam in samples['sample']])
         samples["assembly_type"] = ""
         for sam in samples['sample']:
             if samples.ass[sam] == 1:
                 samples.assembly_type[sam] = [f.replace(".assembly.merged.fa","") for f in os.listdir(samples.path[sam] + "/Assembly/") if fnmatch.fnmatch(f,"m*.assembly.merged.fa")][0]
+    if config['dereplication']['cross_mapping_rebinning']['do']:
+        if not 'rebinning' in samples.columns:
+            samples['rebinning'] = "yes"
 
 #print(samples)
 

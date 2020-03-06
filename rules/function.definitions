@@ -192,11 +192,16 @@ def getCatIn(wildcards):
         for type in TYPES:
             inputs.append("Catalogue/" + type + ".counts.tsv")
     return inputs
-        
+    
+def gather_multi_bins(wildcards):
+    checkpoint_output = checkpoints.getMultiBins.get(**wildcards).output[0]
+    return expand("Dereplication/GRiD_multi/{i}/grid/reads.GRiD.txt",
+           i=glob_wildcards("Dereplication/dRep_multi/{i}.contigs.fa").i)
+    
 def gather_multi_GTDB_bins(wildcards):
-    checkpoint_output = checkpoints.getBins_multi.get(**wildcards).output[0]
-    return expand("Dereplication/dRep_multi_out/perBin/{i}/GTDB",
-           i=glob_wildcards("Dereplication/dRep_multi_out/perBin/{i}/contigs.fa").i)
+    checkpoint_output = checkpoints.dRep_multi.get(**wildcards).output[0]
+    return expand("Dereplication/GTDB_multi/{i}.GTDB_out",
+           i=glob_wildcards("Dereplication/dRep_multi_out/dereplicated_genomes/{i}.contigs.fa").i)
            
 def getBam(wildcards):
     ori_sample = wildcards.clusterID.split(".")[0]
