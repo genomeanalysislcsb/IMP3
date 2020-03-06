@@ -89,10 +89,8 @@ samples = samples.assign(mg=[1 if (multi_config[sam]['raws']['Metagenomics'].spl
 samples = samples.assign(mt=[1 if (multi_config[sam]['raws']['Metatranscriptomics'].split() or multi_config[sam]['raws']['Alignment_metatranscriptomics'].split()) else 0 for sam in samples['sample']])
 if "collate" in MULTI_STEPS:
     COLL_STEPS = sorted(config['collection']['results'].split())
-    if "taxonomy" in COLL_STEPS:
-        samples = samples.assign(taxonomy=[1 if "taxonomy" in multi_config[sam]['steps'].split() and (multi_config[sam]['raws']['Metagenomics'].split() or multi_config[sam]['raws']['Metatranscriptomics'].split()) else 0 for sam in samples['sample']])
-    if "stats" in COLL_STEPS:
-        samples = samples.assign(stats=[1 if "summary" in multi_config[sam]['steps'].split() and "stats" in multi_config[sam]['summary_steps'].split() else 0 for sam in samples['sample']])
+    samples = samples.assign(taxonomy=[1 if "taxonomy" in multi_config[sam]['steps'].split() and (multi_config[sam]['raws']['Metagenomics'].split() or multi_config[sam]['raws']['Metatranscriptomics'].split()) else 0 for sam in samples['sample']])
+    samples = samples.assign(stats=[1 if "summary" in multi_config[sam]['steps'].split() and "stats" in multi_config[sam]['summary_steps'].split() else 0 for sam in samples['sample']])
     if "features" in COLL_STEPS:
         for db in config['hmm_DBs'].split():        
             samples[db] = 0

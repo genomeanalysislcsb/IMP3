@@ -1,15 +1,15 @@
-steps: "collate catalogue dereplicate DB visualize"
+steps: "collate catalogue dereplicate"
 mem:
-  normal_mem_per_core_gb: 4
-  big_mem_total_gb: 800
-  big_mem_cores: 8
+  normal_mem_per_core_gb: 1
+  big_mem_total_gb: 100
+  big_mem_cores: 1
   big_mem_per_core_gb: 100
 tmp_dir: tmp
 sample_table: ""
 omes: "mg mt"
 outputdir: ""
-db_path: /data/idiv_biu/heintzbu/EXTDB/IMP_DBs
-hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc TIGRPFAM"
+db_path: /work/projects/ecosystem_biology/local_tools/IMP3/databases
+hmm_DBs: "essential Resfams"
 collection:
   results: "taxonomy features stats"
 dereplication:
@@ -21,7 +21,7 @@ dereplication:
     MetaBAT:
       cutoff: 1500
   simple_derep: true
-  GTDBtk: true
+  GTDBtk: false
   dRep:
     length: 50000
     completeness: 75
@@ -49,6 +49,6 @@ catalogue:
       mg: 0
   kraken: 
     do: true
-    db: kraken2-microbial-fatfree
+    db: minikraken2
 
 

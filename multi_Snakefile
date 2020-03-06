@@ -10,8 +10,8 @@ include:
 workdir:
     OUTPUTDIR
 
-yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
-yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
+#yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
+#yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
 yaml.dump(config, open_output('multi.config.yaml'), allow_unicode=True,default_flow_style=False)
 
 # include workflows for data collection, catalogue, dRep and DB
@@ -45,13 +45,13 @@ rule SamplesPrint:
     input:
         config['sample_table']
     output:
-        "sample_table.tsv"
+        touch("sample_table.tsv")
     threads: 1
     params:
         runtime="00:10:00",
         mem="8G"
-    run:
-        samples.to_csv(path_or_buf=output[0],sep="\t",index=False,index_label=False)
+#    run:
+#        samples.to_csv(path_or_buf=output[0],sep="\t",index=False,index_label=False)
 
 rule bwa_index:
     input:
