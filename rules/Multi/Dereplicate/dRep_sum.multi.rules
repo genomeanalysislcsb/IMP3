@@ -5,7 +5,7 @@ rule dRep_sum_multi:
         bins= "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
     output:
         "Dereplication/dRep_multi_out/dereplicated_rebin_stats.tsv",
-        report("Dereplication/all_bin_stats.tsv",category="Re-binning and dereplication")
+        report("Dereplication/rebinned_bin_stats.tsv",category="Re-binning and dereplication")
     threads: 1 
     params:
         runtime = "12:00:00",

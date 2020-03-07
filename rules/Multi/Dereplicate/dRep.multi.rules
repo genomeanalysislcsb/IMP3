@@ -12,9 +12,8 @@ rule dRep_dir:
 
 checkpoint dRep_multi:
     input:
-        ctrl=expand("Dereplication/{sample}/dRep_multi.prepped",
+        ctrl=expand("Dereplication/dRep_multi/{sample}.dRep_multi.prepped",
           sample=samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"]),
-        dir="Dereplication/dRep_multi"
     output:
         directory("Dereplication/dRep_multi_out/dereplicated_genomes"),
         expand("Dereplication/dRep_multi_out/data_tables/{file}.csv",
@@ -24,6 +23,7 @@ checkpoint dRep_multi:
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE,
+        dir = "Dereplication/dRep_multi",
         out = "Dereplication/dRep_multi_out",
         db = config['db_path'],
         length = config['dereplication']['dRep']['length'],
@@ -51,7 +51,7 @@ checkpoint dRep_multi:
         checkm data setRoot {params.db}/checkM/
         dRep filter {params.out} -p {threads} --length {params.length} --completeness {params.completeness} \
           --contamination {params.contamination} --checkM_method {params.checkM_method} \
-          -g {input.dir}/*contigs.fa >> {log} 2>&1
+          -g {params.dir}/*contigs.fa >> {log} 2>&1
         dRep cluster {params.out} -p {threads} --MASH_sketch {params.MASH_sketch} --S_algorithm {params.S_algorithm} \
           --P_ani {params.P_ani} --S_ani {params.S_ani} {params.SkipMash}  \
           {params.SkipSecondary} --cov_thresh {params.cov_thresh} \

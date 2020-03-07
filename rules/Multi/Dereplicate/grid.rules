@@ -1,7 +1,7 @@
 rule GRID_summarize:
     input:
         grid=gather_multi_bins,
-        dastool=expand("Dereplication/{sample}/selected_DASTool_summary.txt,
+        dastool=expand("Dereplication/{sample}/selected_DASTool_summary.txt",
                  sample=samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"])
     output:
         "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
@@ -17,13 +17,12 @@ rule GRID_summarize:
         SRCDIR + "/multi_collect_GRID.R"
     
 
-checkpoint getMultiBins:
+rule getMultiBins:
     input: 
         bins="Dereplication/{sample}/selected_DASTool_summary.txt",
         indir="Dereplication/{sample}/selected_DASTool_bins"
     output:
-        "Dereplication/{sample}/dRep_multi.prepped",
-        directory("Dereplication/GRiD_multi")
+        "Dereplication/dRep_multi/{sample}.dRep_multi.prepped"
     params:
         runtime = "8:00:00",
         mem = MEMCORE
@@ -35,7 +34,16 @@ checkpoint getMultiBins:
             shell("cp {input.indir}/{BIN}.contigs.fa Dereplication/dRep_multi/{wildcards.sample}.{BIN}.contigs.fa")
             shell("mkdir -p Dereplication/GRiD_multi/{wildcards.sample}.{BIN} && cp Dereplication/{sample}/selected_DASTool_bins/{BIN}.contigs.fa Dereplication/GRiD_multi/{wildcards.sample}.{BIN}/contigs.fa")
         shell("touch {output}")
-    
+
+
+localrules: pre_grid
+checkpoint pre_grid:
+    input:
+       expand("Dereplication/dRep_multi/{sample}.dRep_multi.prepped",
+              sample=samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"])
+    output:
+       touch("Dereplication/GRiD_multi/grid.prepped")
+
 rule grid:
     input:
        "Dereplication/GRiD_multi/{clusterID}/contigs.fa",
@@ -46,14 +54,15 @@ rule grid:
     params:
         clusterInput="Dereplication/GRiD_multi/",
         runtime = "24:00:00",
-        mem = BIGMEMCORE
+        mem = BIGMEMCORE,
+        outdir = "Dereplication/GRiD_multi/{wildcards.clusterID}/grid"
     threads: 1
     conda: ENVDIR + "/IMP_grid.yaml"
     log: "logs/dereplication_grid.{clusterID}.log"
     message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput}{wildcards.clusterID} -o {output} -g {input[0]} > {log} 2>&1
+        grid single -r {params.clusterInput}{wildcards.clusterID} -o {params.outdir} -g {input[0]} > {log} 2>&1
         """
 
 rule prepare_gridBed:
@@ -75,7 +84,7 @@ rule prepare_gridBed:
 rule prepare_gridReads:
     input:
         lambda wildcards: expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
-                raw_directory=samples.path[wildcards.sample])
+                raw_directory=samples.path[wildcards.sample]),
         "Dereplication/GRiD_multi/{sample}.{clusterID}/contigs.bed"
     output:
         temporary("Dereplication/GRiD_multi/{sample}.{clusterID}/reads.fastq")

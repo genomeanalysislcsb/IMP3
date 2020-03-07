@@ -1,13 +1,13 @@
 rule dRep_sum_simple:
     input:
         dRep = expand("Dereplication/dRep_single_out/data_tables/{file}.csv",
-                file=[Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"]),
-        ori = expand("{raw_directory}/Stats/{ass}/bins.tsv",
-                samples.loc[samples.bins == 1,"path"],
-                samples.loc[samples.bins == 1,"assembly_type"]) 
+                file=["Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"]),
+        ori = expand("{raw_directory}/Stats/{ass}/{ass}.bins.tsv",
+                raw_directory=samples.loc[samples.bins == 1,"path"],
+                ass=samples.loc[samples.bins == 1,"assembly_type"]) 
     output:
         "Dereplication/dRep_single_out/originalNdereplicated_bin_stats",
-        report("Dereplication/all_bin_stats.tsv",category="Re-binning and dereplication")
+        report("Dereplication/dereplicated_bin_stats.tsv",category="Re-binning and dereplication")
     threads: 1
     params:
         runtime = "12:00:00",

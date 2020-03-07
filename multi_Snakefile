@@ -48,7 +48,7 @@ rule SamplesPrint:
 
 rule bwa_index:
     input:
-        "{fasta}"
+        ancient("{fasta}")
     output:
         "{fasta}.amb",
         "{fasta}.bwt",

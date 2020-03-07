@@ -1,9 +1,10 @@
+binctrl = []
 if config['dereplication']['simple_derep']:
     include:
         "../../rules/Multi/Dereplicate/dRep.simple.rules"
-include:
+    include:
             "../../rules/Multi/Dereplicate/dRep_sum.simple.rules"
-
+    binctrl.append("Dereplication/dereplicated_bin_stats.tsv")
 if config['dereplication']['cross_mapping_rebinning']['do']:
     include:
         "../../rules/Multi/Dereplicate/cross_mapping.rules"
@@ -14,7 +15,10 @@ if config['dereplication']['cross_mapping_rebinning']['do']:
     include:
         "../../rules/Multi/Dereplicate/dastool.rules"
     include:
+        "../../rules/Multi/Dereplicate/grid.rules"
+    include:
         "../../rules/Multi/Dereplicate/dRep.multi.rules"
+    binctrl.append("Dereplication/rebinned_bin_stats.tsv")
     if config['dereplication']['GTDBtk']:
         include:
             "../../rules/Multi/Dereplicate/gtdbtk_multi.rules"
@@ -26,7 +30,7 @@ if config['dereplication']['cross_mapping_rebinning']['do']:
 # master command
 rule all_derep:
     input:
-        "Dereplication/all_bin_stats.tsv"
+        binctrl
     output:
         touch('dereplicate.done')
 

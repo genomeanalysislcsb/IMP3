@@ -69,8 +69,9 @@ samples['sample'] = samples['sample'].astype(str)
 for sam in samples['sample']:
     if not re.match(r"[0-9a-zA-Z]",sam):
         raise Exception('please start library names with a letter or number')
-    samples.loc[samples['sample'] == sam,'sample'] = re.sub("_+","_",re.sub("[;|.-]","_",samples.loc[samples['sample'] == sam,'sample'].iat[0]))
-if 'path' not in samples.columns:
+samples['sample'] = samples['sample'].str.replace('[;|.-]','_')
+samples['sample'] = samples['sample'].str.replace('_+','_')
+if not 'path' in samples.columns:
     raise Exception("You haven't supplied the paths to the data.")
 if samples['path'].duplicated().any():
     raise Exception('paths should be unique.')
@@ -106,10 +107,10 @@ if "catalogue" in MULTI_STEPS:
 if "dereplicate" in MULTI_STEPS:
     samples = samples.assign(bins=[1 if "binning" in multi_config[sam]['steps'].split() else 0 for sam in samples['sample']])
     samples = samples.assign(ass=[1 if ("assembly" in multi_config[sam]['steps'].split() or multi_config[sam]['raws']['Contigs'].split()) else 0 for sam in samples['sample']])
-        samples["assembly_type"] = ""
-        for sam in samples['sample']:
-            if samples.ass[sam] == 1:
-                samples.assembly_type[sam] = [f.replace(".assembly.merged.fa","") for f in os.listdir(samples.path[sam] + "/Assembly/") if fnmatch.fnmatch(f,"m*.assembly.merged.fa")][0]
+    samples["assembly_type"] = ""
+    for sam in samples['sample']:
+        if samples.ass[sam] == 1:
+            samples.assembly_type[sam] = [f.replace(".assembly.merged.fa","") for f in os.listdir(samples.path[sam] + "/Assembly/") if fnmatch.fnmatch(f,"m*.assembly.merged.fa")][0]
     if config['dereplication']['cross_mapping_rebinning']['do']:
         if not 'rebinning' in samples.columns:
             samples['rebinning'] = "yes"

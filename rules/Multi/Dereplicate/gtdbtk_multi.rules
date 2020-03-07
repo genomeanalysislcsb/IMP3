@@ -23,11 +23,11 @@ rule GTDBtk_summarize:
     input:
         gtdb = gather_multi_GTDB_bins,
         dRep = expand("Dereplication/dRep_multi_out/data_tables/{file}.csv",
-                file=[Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"]),
+                file=["Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"]),
         bins= "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
     output:
         "Dereplication/dRep_multi_out/dereplicated_rebin_stats.tsv",
-        report("Dereplication/all_bin_stats.tsv",category="Re-binning and dereplication")
+        report("Dereplication/rebinned_bin_stats.tsv",category="Re-binning and dereplication")
     params:
         runtime = "4:00:00",
         mem = MEMCORE
