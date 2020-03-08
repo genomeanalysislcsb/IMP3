@@ -88,6 +88,8 @@ rule prepare_gridReads:
         "Dereplication/GRiD_multi/{sample}.{clusterID}/contigs.bed"
     output:
         temporary("Dereplication/GRiD_multi/{sample}.{clusterID}/reads.fastq")
+    wildcard_constraints:
+        sample="[^.]*"
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE

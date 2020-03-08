@@ -196,7 +196,7 @@ def getCatIn(wildcards):
 def gather_multi_bins(wildcards):
     checkpoint_output = checkpoints.pre_grid.get(**wildcards).output[0]
     return expand("Dereplication/GRiD_multi/{i}/grid/reads.GRiD.txt",
-           i=glob_wildcards("Dereplication/GRiD_multi/{i}/grid/reads.GRiD.txt").i)
+           i=glob_wildcards("Dereplication/GRiD_multi/{i}/contigs.fa").i)
     
 def gather_multi_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.dRep_multi.get(**wildcards).output[0]
