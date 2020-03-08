@@ -29,10 +29,10 @@ rule getMultiBins:
     threads: 1
     message: "getMultiBins: Copying DAStool bins of {wildcards.sample} to common directory and to single directories."
     run:
-        selected_bins=pd.read_csv(input.bins[0],sep="\t")
+        selected_bins=pd.read_csv(input.bins,sep="\t")
         for BIN in selected_bins['bin']:
             shell("cp {input.indir}/{BIN}.contigs.fa Dereplication/dRep_multi/{wildcards.sample}.{BIN}.contigs.fa")
-            shell("mkdir -p Dereplication/GRiD_multi/{wildcards.sample}.{BIN} && cp Dereplication/{sample}/selected_DASTool_bins/{BIN}.contigs.fa Dereplication/GRiD_multi/{wildcards.sample}.{BIN}/contigs.fa")
+            shell("mkdir -p Dereplication/GRiD_multi/{wildcards.sample}.{BIN} && cp Dereplication/{wildcards.sample}/selected_DASTool_bins/{BIN}.contigs.fa Dereplication/GRiD_multi/{wildcards.sample}.{BIN}/contigs.fa")
         shell("touch {output}")
 
 

@@ -1,7 +1,7 @@
 rule dRep_sum_simple:
     input:
         dRep = expand("Dereplication/dRep_single_out/data_tables/{file}.csv",
-                file=["Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"]),
+                file=["Chdb","Cdb","Sdb","Wdb","Widb","Ndb"]),
         ori = expand("{raw_directory}/Stats/{ass}/{ass}.bins.tsv",
                 raw_directory=samples.loc[samples.bins == 1,"path"],
                 ass=samples.loc[samples.bins == 1,"assembly_type"]) 

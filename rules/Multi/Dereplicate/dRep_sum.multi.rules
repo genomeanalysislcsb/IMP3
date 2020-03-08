@@ -1,7 +1,7 @@
 rule dRep_sum_multi:
     input:
         dRep = expand("Dereplication/dRep_multi_out/data_tables/{file}.csv",
-                file=[Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"]),
+                file=[Chdb","Cdb","Sdb","Wdb","Widb","Ndb"]),
         bins= "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
     output:
         "Dereplication/dRep_multi_out/dereplicated_rebin_stats.tsv",

@@ -12,7 +12,7 @@ rule maxbin_contig2bin:
     message: "maxbin_contig2bin: Getting contig to bin mapping."
     shell:
         """
-        for f in $(ls Dereplication/MaxBin/{wildcards.sample}/*.fasta | cut -f3 -d "/"); do 
+        for f in $(ls Dereplication/MaxBin/{wildcards.sample}/*.fasta | cut -f4 -d "/"); do 
          sed -e "s/$/\t$f/g" <(grep "^>" Dereplication/MaxBin/{wildcards.sample}/$f | sed -e 's/>//g') >> {output[0]}
         done
         ln -s ../../../{output[0]} {output[1]}

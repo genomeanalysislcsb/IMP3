@@ -17,7 +17,7 @@ checkpoint dRep_multi:
     output:
         directory("Dereplication/dRep_multi_out/dereplicated_genomes"),
         expand("Dereplication/dRep_multi_out/data_tables/{file}.csv",
-                file=["Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"])
+                file=["Chdb","Cdb","Sdb","Wdb","Widb","Ndb"])
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_multi.yaml"
     params:
