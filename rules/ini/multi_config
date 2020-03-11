@@ -82,7 +82,7 @@ multi_config = {}
 for sam in samples['sample']:
     spath = samples.loc[samples['sample']==sam, "path"].iat[0] + "/full.config.yaml"
     if os.path.exists(spath):
-        print("reading configuration from "+ spath)
+#        print("reading configuration from "+ spath)
         with open(spath, 'r') as rhandle:
             multi_config[sam] = yaml.load(rhandle,Loader=yaml.SafeLoader)
     

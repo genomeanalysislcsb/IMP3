@@ -17,6 +17,7 @@ libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
 cluster_files       <- snakemake@input[["dRep"]] #"Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"
 stats_file         <- snakemake@input[["bin"]] # "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
 out_files            <- snakemake@output #"dereplicated_rebin_stats.tsv","all_rebin_stats.tsv"
+gtdb_dirs         <- snakemake@input[["gtdb"]] #"Dereplication/GTDB_multi/{i}.GTDB_out"
 
 ###################################################################################################
 ## Read dRep output for all bins
@@ -73,30 +74,30 @@ wins <- merge(wins,allS,by=1,all.x=T,suffixes=c(".dRep",".all"))
 ## Read GTDBtk output for selected bins
 ###################################################################################################
 print("Reading GTDBtk results.")
-for(bin in setdiff(binTab$selected_by_DASTool,"")){
-  if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/GTDB/classify"))){
-    tfile <- paste0("Binning/selected_DASTool_bins/",
-                    bin,"/GTDB/classify/",
-                    list.files(path=paste0("Binning/selected_DASTool_bins/",
-                                           bin,"/GTDB/classify/"),
+for(bin in wins$dRepWinner){
+  currdir <- paste0("Dereplication/GTDB_multi/",bin,".GTDB_out")
+  if(currdir %in% unlist(gtdb_dirs)){
+    if(file.exists(currdir)){
+      tfile <- paste0(currdir,
+                      list.files(path=currdir,
                                pattern=".*summary.tsv"))
-    if(!"gtdbTab" %in% ls()){
-      gtdbTab <- data.frame("bin"=bin,
-                            read.delim(tfile,
+      if(!"gtdbTab" %in% ls()){
+        gtdbTab <- data.frame("bin"=bin,
+                              read.delim(tfile,
                                        stringsAsFactors=F)[,-1],
                             stringsAsFactors = F)
-    }else{
-      gtdbTab <- rbind(gtdbTab,
+      }else{
+        gtdbTab <- rbind(gtdbTab,
                        data.frame("bin"=bin,
                                   read.delim(tfile,
                                              stringsAsFactors=F)[,-1],
                                   stringsAsFactors = F))
+      }
     }
   }
 }
 
-binTab <- merge(binTab,gtdbTab,by.x="selected_by_DASTool",by.y="bin",all=T)
-
+wins <- merge(wins,gtdbTab,by=1,all.x=T,suffixes=c("",".GTDBtk"))
 
 ###################################################################################################
 ## Save output

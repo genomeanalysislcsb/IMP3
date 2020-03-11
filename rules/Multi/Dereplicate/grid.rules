@@ -52,17 +52,17 @@ rule grid:
         "Dereplication/GRiD_multi/{clusterID}/grid/reads.GRiD.txt",
         "Dereplication/GRiD_multi/{clusterID}/grid/reads.pdf"
     params:
-        clusterInput="Dereplication/GRiD_multi/",
+        clusterInput= "Dereplication/GRiD_multi/{clusterID}" ,
         runtime = "24:00:00",
         mem = BIGMEMCORE,
-        outdir = "Dereplication/GRiD_multi/{wildcards.clusterID}/grid"
+        outdir = "Dereplication/GRiD_multi/{clusterID}/grid" 
     threads: 1
     conda: ENVDIR + "/IMP_grid.yaml"
     log: "logs/dereplication_grid.{clusterID}.log"
     message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput}{wildcards.clusterID} -o {params.outdir} -g {input[0]} > {log} 2>&1
+        grid single -r {params.clusterInput} -o {params.outdir} -g {input[0]} > {log} 2>&1
         """
 
 rule prepare_gridBed:

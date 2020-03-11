@@ -62,17 +62,17 @@ for(sample in samples){
   }}
 selTab$multiBin <- apply(selTab[,c("sample","bin")],1,function(x) paste(x,sep=".",collapse="."))
 
-binTab$selected_by_DASTool <- sapply(binTab$multibin, function(x){
+binTab$selected_by_DASTool <- sapply(binTab$multiBin, function(x){
   if(x %in% selTab$multibin){
     y <- x
-  }else if(paste0(x,"_sub") %in% selTab$multibin){
+  }else if(paste0(x,"_sub") %in% selTab$multiBin){
       y <- paste0(x,"_sub")
   }else{
       y <- ""
     }
   })
 
-binTab <- merge(binTab,selTab,by.x="selected_by_DASTool",by.y="multibin",all=T,suffix=c(".binner",".DASTool"))
+binTab <- merge(binTab,selTab,by.x="selected_by_DASTool",by.y="multiBin",all=T,suffix=c(".binner",".DASTool"))
 
 ###################################################################################################
 ## Read GRiD output for selected bins

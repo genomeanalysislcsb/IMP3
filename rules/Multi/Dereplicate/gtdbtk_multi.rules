@@ -6,7 +6,7 @@ rule GTDBtk_bins:
     params:
         runtime = "12:00:00",
         mem = BIGMEMCORE,
-        outdir = "Dereplication/GTDB_multi/{wildcards.clusterID}"
+        outdir = "Dereplication/GTDB_multi/{clusterID}"
     conda: ENVDIR + "/IMP_gtdbtk.yaml"
     log: "logs/dereplication_GTDBtk_bins.{clusterID}.log"
     message: "GTDBtk_bins: Classifiying {wildcards.clusterID} using GTDBtk."
