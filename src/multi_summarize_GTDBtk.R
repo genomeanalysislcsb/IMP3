@@ -74,13 +74,13 @@ wins <- merge(wins,allS,by=1,all.x=T,suffixes=c(".dRep",".all"))
 ## Read GTDBtk output for selected bins
 ###################################################################################################
 print("Reading GTDBtk results.")
-for(bin in wins$dRepWinner){
+for(bin in wins$genome){
   currdir <- paste0("Dereplication/GTDB_multi/",bin,".GTDB_out")
   if(currdir %in% unlist(gtdb_dirs)){
     if(file.exists(currdir)){
-      tfile <- paste0(currdir,
+      tfile <- paste0(currdir,"/",
                       list.files(path=currdir,
-                               pattern=".*summary.tsv"))
+                               pattern="[^_]summary.tsv"))
       if(!"gtdbTab" %in% ls()){
         gtdbTab <- data.frame("bin"=bin,
                               read.delim(tfile,
