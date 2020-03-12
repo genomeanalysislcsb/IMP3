@@ -15,19 +15,24 @@ libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
 ###################################################################################################
 
 cluster_files       <- snakemake@input[["dRep"]] #"Chdb.csv","Cdb.csv","Sdb.csv","Wdb.csv","Widb.csv","Ndb.csv"
-stats_file         <- snakemake@input[["bin"]] # "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
+stats_file         <- snakemake@input[["bins"]] # "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
 out_files            <- snakemake@output #"dereplicated_rebin_stats.tsv","all_rebin_stats.tsv"
 gtdb_dirs         <- snakemake@input[["gtdb"]] #"Dereplication/GTDB_multi/{i}.GTDB_out"
 
 ###################################################################################################
 ## Read dRep output for all bins
 ###################################################################################################
-
+print("reading dRep output")
+print("Chdb.csv")
 bins <- read.delim(cluster_files[[1]],sep=",",stringsAsFactors = F)
+print("Cdb.csv")
 bins <- merge(bins,read.delim(cluster_files[[2]],sep=",",stringsAsFactors = F),by=1,all=T)
+print("Sdb.csv")
 bins <- merge(bins,read.delim(cluster_files[[3]],sep=",",stringsAsFactors = F),by=1,all=T)
+print("Wdb.csv")
 wins <- read.delim(cluster_files[[4]],sep=",",stringsAsFactors = F)
 bins$dRepWinner <- sapply(bins$Bin.Id,function(x) if(x %in% wins$genome) x else NA)
+print("Widb.csv")
 bins <- merge(read.delim(cluster_files[[5]],sep=",",
                    stringsAsFactors = F)[,c("genome","cluster_members",
                                             "closest_cluster_member","furthest_cluster_member")],
@@ -41,7 +46,8 @@ wins$memberNames <- sapply(wins$secondary_cluster,
                              mem <- mem[!is.na(mem)]
                              if(length(mem)>0) r <- paste(mem,sep=";",collapse=";") else r<- ""
                              r})
-dist <- read.delim(cluster_files[[5]],sep=",",stringsAsFactors = F)
+print("Ndb.csv")
+dist <- read.delim(cluster_files[[6]],sep=",",stringsAsFactors = F)
 bins$distToWinner <- sapply(bins$genome,function(x){
   if(x %in% wins$genome) r <- 0 else{
     if(! x %in% dist$querry) r <- NA else{
@@ -58,6 +64,7 @@ bins$dRepWinner <- gsub(".contigs.fa","",bins$dRepWinner)
 ###################################################################################################
 ## Merge with previous data
 ###################################################################################################
+print("Read stats")
 stat <- read.delim(stats_file[[1]],stringsAsFactors = F)
 stat <- stat[!is.na(stat$selected_by_DASTool) & stat$selected_by_DASTool != "",]
 if(nrow(stat)>0){
