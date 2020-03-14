@@ -1,0 +1,37 @@
+binctrl = []
+if config['dereplication']['simple_derep']:
+    include:
+        "../../rules/Multi/Dereplicate/dRep.simple.rules"
+    include:
+            "../../rules/Multi/Dereplicate/dRep_sum.simple.rules"
+    binctrl.append("Dereplication/dereplicated_bin_stats.tsv")
+if config['dereplication']['cross_mapping_rebinning']['do']:
+    include:
+        "../../rules/Multi/Dereplicate/cross_mapping.rules"
+    include:
+        "../../rules/Multi/Dereplicate/MetaBAT.rules"
+    include:
+        "../../rules/Multi/Dereplicate/MaxBin.rules"
+    include:
+        "../../rules/Multi/Dereplicate/dastool.rules"
+    include:
+        "../../rules/Multi/Dereplicate/grid.rules"
+    include:
+        "../../rules/Multi/Dereplicate/dRep.multi.rules"
+    binctrl.append("Dereplication/rebinned_bin_stats.tsv")
+    if config['dereplication']['GTDBtk']:
+        include:
+            "../../rules/Multi/Dereplicate/gtdbtk_multi.rules"
+    else:
+        include:
+            "../../rules/Multi/Dereplicate/dRep_sum.multi.rules"
+
+
+# master command
+rule all_derep:
+    input:
+        binctrl
+    output:
+        touch('dereplicate.done')
+
+

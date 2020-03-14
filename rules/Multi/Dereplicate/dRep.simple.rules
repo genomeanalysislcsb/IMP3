@@ -37,7 +37,8 @@ rule dRep_simple:
         dir="Dereplication/dRep_single"
     output:
         directory("Dereplication/dRep_single_out/dereplicated_genomes"),
-        "Dereplication/dRep_single_out/data_tables/Widb.csv"
+        expand("Dereplication/dRep_single_out/data_tables/{file}.csv",
+                file=["Chdb","Cdb","Sdb","Wdb","Widb","Ndb"])
     threads: BIGCORENO
     params:
         runtime = "12:00:00",

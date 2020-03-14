@@ -90,7 +90,8 @@ kraken_reads:
 GTDBtk_bins_single:
   partition: "-l highmem"
 
-
+dRep_simple:
+  partition: "-l highmem"
 
 
 

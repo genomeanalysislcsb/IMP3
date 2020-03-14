@@ -9,7 +9,7 @@ rule collapse_hybrid_assemblies:
         mem = BIGMEMCORE,
         sample = SAMPLE
     threads: 1
-#    conda: "IMP_assembly.yaml"
+    conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_collapse_hybrid_assemblies.log"
     message: "collapse_hybrid_assemblies: Merging hybrid assemblies."
     shell:
@@ -19,7 +19,7 @@ rule collapse_hybrid_assemblies:
         cat {input} > $NAME.cat.fa
 
         # Options should be after input file!
-        {BINDIR}/cap3 $NAME.cat.fa -p {config[assembly][cap3][identity]} -o {config[assembly][cap3][overlap]} > {log} 2>&1
+        cap3 $NAME.cat.fa -p {config[assembly][cap3][identity]} -o {config[assembly][cap3][overlap]} > {log} 2>&1
 
         # Concatenate assembled contigs, singletons and rename the contigs
         cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \
