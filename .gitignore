@@ -2,6 +2,7 @@
 !.gitignore
 !.gitlab-ci.yml
 *~
+docs/_build
 conf/userconfig.imp.json
 output/*
 db
