@@ -30,11 +30,78 @@ IMP is implemented in `Snakemake <https://snakemake.readthedocs.io/en/stable/ind
    :hidden:
    :name: running_IMP
 
-   running/configuring
    running/run
+   running/configuring
+   running/inputs
+   running/cluster_config
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: IMP's steps
+   :hidden:
+   :name: steps
 
+   steps/Overview
+   steps/Preprocessing
+   steps/Assembly
+   steps/Analysis
+   steps/Binning
+   steps/Taxonomy
+   steps/Summary
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: IMP's output
+   :hidden:
+   :name: outputs
 
+   output/Overview
+   output/Report
+   output/Stats
+   output/Preprocessing
+   output/Assembly
+   output/Analysis
+   output/Binning
+   output/Taxonomy
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: Configuring and running multi-IMP
+   :hidden:
+   :name: running_multiIMP
 
+   multi_running/run
+   multi_running/configuring
+   multi_running/sample_file
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: multi-IMP's steps
+   :hidden:
+   :name: multi_steps
+
+   multi_steps/Overview
+   multi_steps/Annotation
+   multi_steps/Taxonomy
+   multi_steps/Catalogue
+   multi_steps/Dereplication
+   multi_steps/Re-binning
+   multi_steps/Summary
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: multi-IMP's output
+   :hidden:
+   :name: multi_outputs
+
+   multi_output/Overview
+   multi_output/Report
+   multi_output/Stats
+   multi_output/Annotation
+   multi_output/Taxonomy
+   multi_output/Catalogue
+   multi_output/Dereplication
+   multi_output/Re-binning
 
 
 .. * :ref:`genindex`
