@@ -23,6 +23,6 @@ rule ctrl_stats_collation:
     input:
         "Collection/multi_stats.tsv"
     output:
-        touch("stats.collated")
+        touch("status/stats.collated")
 
 

@@ -12,7 +12,7 @@ workdir:
 
 yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
-yaml.dump(config, open_output('full.config.yaml'), allow_unicode=True,default_flow_style=False)
+yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True,default_flow_style=False)
 
 # include rules for the workflow based on the input parameters
 include:
@@ -45,9 +45,9 @@ if MG and MT:
         include:
             "workflows/integrative/Binning"
 
-    if 'summarize' in IMP_STEPS:
+    if 'summary' in IMP_STEPS:
         include:
-            "workflows/integrative/Summary"
+            "workflows/common/Summary"
 
 
 # Single omics MG workflow
@@ -135,9 +135,9 @@ else:
     raise Exception('No input data.')
 
 # master command summary and archiving
-inputs_all = ['workflow.done']
+inputs_all = ['status/workflow.done']
 if "summary" in IMP_STEPS:
-    inputs_all.append('summary.done')
+    inputs_all.append('status/summary.done')
     include:
         "workflows/common/Summary"
 #                 #if config['compress_level'] != "none" and config['compress_level'] != "":
@@ -149,7 +149,7 @@ rule ALL:
     input:
         inputs_all
     output:
-        touch('all.done')
+        touch('status/all.done')
 
 
 localrules: workflow, ALL
@@ -158,5 +158,5 @@ rule workflow:
     input:
         workflow_ctrl
     output:
-        touch('workflow.done')
+        touch('status/workflow.done')
 

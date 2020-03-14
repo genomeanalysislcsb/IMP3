@@ -18,7 +18,7 @@ rule reads_gzip:
     input:
         togz=gather_reads
     output:
-        "Preprocessing/{type}.reads.compressed"
+        "status/preprocessing_{type}.reads.compressed"
     params:
         runtime = "8:00:00",
         mem = MEMCORE
@@ -63,7 +63,7 @@ checkpoint reads_gziped:
     input:
         'Stats/{type}/{type}.read_counts.txt'
     output:
-        "Preprocessing/{type}.reads.detected"
+        "Stats/preprocessing_{type}.reads.detected"
     params:
         runtime = "8:00:00",
         mem = MEMCORE

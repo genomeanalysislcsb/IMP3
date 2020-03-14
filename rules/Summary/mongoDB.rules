@@ -8,7 +8,7 @@ rule mongo_server:
     input:
         db_output
     output:
-        touch("DB/DB_filling.done")
+        touch("status/DB_filling.running")
     threads: 1
     params:
         port = config["mongo_port"],
@@ -27,7 +27,7 @@ rule shut_mongo:
     input:
         db_output
     output:
-        touch("DB_filling.done")
+        touch("status/DB_filling.done")
     params:
         port = config["mongo_port"],
     message: "shut_mongo: killing mongod on config["mongo_port"]."
@@ -38,7 +38,7 @@ rule shut_mongo:
 
 rule prep_mongo:
     input:
-        "workflow.done"
+        "status/workflow.done"
     output:
         directory("DB")
     message: "prep_mongo: making DB directoy."

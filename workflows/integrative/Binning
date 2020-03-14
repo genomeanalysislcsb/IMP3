@@ -4,7 +4,7 @@
 include:
     '../../rules/Binning/DAStool/dastool.rules'
 
-inputs_binning = ["Binning/selected_DASTool_summary.txt","Binning/GRiD.done"]
+inputs_binning = ["Binning/selected_DASTool_summary.txt","status/binning_GRiD.done"]
 
 ## MaxBin
 if "MaxBin" in BIN_STEPS:
@@ -42,4 +42,4 @@ rule BINNING:
     input:
         inputs_binning
     output:
-        touch('binning.done')
+        touch('status/binning.done')

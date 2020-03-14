@@ -4,12 +4,9 @@ rule allmotu:
     input:
         expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv", type=TYPES)
     output:
-        "Analysis/mOTUs.done"
+        touch("status/taxonomy_mOTUs.done")
     threads: 1
-#    log: "logs/analysis_taxonomy_checkMotus.log"
     message: "allmotu: mOTUs done?"
-    shell:
-        """touch {output}"""
 
 rule motus:
     input:

@@ -24,10 +24,10 @@ if CONTIGS:
     if MT and "analysis" in IMP_STEPS:
         tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
 if "binning" in IMP_STEPS:
-    tax_ctrl.append("Analysis/taxonomy/GTDBtk.done")
+    tax_ctrl.append("status/taxonomy_GTDBtk.done")
 
 rule TAXONOMY:
     input:
         tax_ctrl
     output:
-        touch('taxonomy.done')
+        touch('status/taxonomy.done')

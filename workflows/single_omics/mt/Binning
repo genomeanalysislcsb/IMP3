@@ -32,4 +32,4 @@ rule BINNING:
     input:
         inputs_binning
     output:
-        touch('binning.done')
+        touch('status/binning.done')

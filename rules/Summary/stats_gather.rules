@@ -1,8 +1,8 @@
-sum_stats_input = ["workflow.done"]
+sum_stats_input = ["status/workflow.done"]
 if not "preprocessing" in IMP_STEPS:
-    sum_stats_input.append("preprocessing.analysed")
+    sum_stats_input.append("status/preprocessing.analysed")
 if CONTIGS:
-    sum_stats_input.append("assembly.analysed")
+    sum_stats_input.append("status/assembly.analysed")
 
 localrules: ALL_stats 
 
@@ -34,5 +34,5 @@ rule ALL_stats:
     input:
         gathered
     output:
-        touch("stats.done")
+        touch("status/stats.done")
 

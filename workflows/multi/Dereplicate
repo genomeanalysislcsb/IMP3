@@ -32,6 +32,6 @@ rule all_derep:
     input:
         binctrl
     output:
-        touch('dereplicate.done')
+        touch('status/dereplicate.done')
 
 

@@ -27,4 +27,4 @@ rule ANALYSIS:
         "Analysis/annotation/intermediary.tar.gz",
         "Analysis/annotation/proteomics.final.faa"
     output:
-        touch('analysis.done')
+        touch('status/analysis.done')

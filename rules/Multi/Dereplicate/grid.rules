@@ -22,7 +22,7 @@ rule getMultiBins:
         bins="Dereplication/{sample}/selected_DASTool_summary.txt",
         indir="Dereplication/{sample}/selected_DASTool_bins"
     output:
-        "Dereplication/dRep_multi/{sample}.dRep_multi.prepped"
+        "status/dRep_multi_{sample}.dRep_multi.prepped"
     params:
         runtime = "8:00:00",
         mem = MEMCORE
@@ -39,10 +39,10 @@ rule getMultiBins:
 localrules: pre_grid
 checkpoint pre_grid:
     input:
-       expand("Dereplication/dRep_multi/{sample}.dRep_multi.prepped",
+       expand("status/dRep_multi_{sample}.dRep_multi.prepped",
               sample=samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"])
     output:
-       touch("Dereplication/GRiD_multi/grid.prepped")
+       touch("status/dereplication_GRiD_multi_grid.prepped")
 
 rule grid:
     input:

@@ -22,7 +22,7 @@ rule vis_stats:
     input:
         stats_figs
     output:
-        touch("stats.visualized")
+        touch("status/stats.visualized")
 
 rule visualize_read_stats:
     input:
@@ -191,4 +191,4 @@ rule VIS:
     input:
         vis_target
     output:
-        touch('visualize.done')
+        touch('status/visualize.done')

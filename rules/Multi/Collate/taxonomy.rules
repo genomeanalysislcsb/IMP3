@@ -41,5 +41,5 @@ rule ctrl_tax_collation:
     input:
         expand("Collection/multi_{type}.{classifier}.Rdata",type=TYPES,classifier=["kraken","mOTUs"])
     output:
-        touch("taxonomy.collated")
+        touch("status/taxonomy.collated")
 

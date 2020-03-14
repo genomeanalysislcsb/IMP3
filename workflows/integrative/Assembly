@@ -48,4 +48,4 @@ rule ASSEMBLY:
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
         "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS)
     output:
-        touch('assembly.done')
+        touch('status/assembly.done')

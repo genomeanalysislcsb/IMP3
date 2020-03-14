@@ -18,6 +18,6 @@ rule all_cat:
         'Catalogue/catalogue.fasta',
         'Catalogue/catalogue.tsv'
     output:
-        touch('catalogue.done')
+        touch('status/catalogue.done')
 
 

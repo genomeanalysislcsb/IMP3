@@ -1,6 +1,6 @@
 # include rules to archive results
 
-arch_ctrl = ['workflow.done']
+arch_ctrl = ['status/workflow.done']
 if config['archiving']['keep_all']:
     include:
         '../../rules/Archiving/archiving.rules'

@@ -26,4 +26,4 @@ rule ctrl_featureCounts_collation:
     input:
         expand("Collection/multi_{type}.{db}.tsv",db=config['hmm_DBs'].split(),type=TYPES)
     output:
-        touch("features.collated")
+        touch("status/features.collated")

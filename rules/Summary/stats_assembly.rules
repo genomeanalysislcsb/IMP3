@@ -7,5 +7,5 @@ rule ASSEMBLY:
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
         "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS)
     output:
-        touch('assembly.analysed')
+        touch('status/assembly.analysed')
 

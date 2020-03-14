@@ -1,7 +1,7 @@
 
-arch_inputs = "workflow.done"
+arch_inputs = "status/workflow.done"
 if MG or MT:
-    arch_input.append("reads.compressed")
+    arch_input.append("status/reads.compressed")
 
 
 localrules: ARCHIVING
@@ -10,12 +10,12 @@ rule ARCHIVING:
     input:
         arch_input
     output:
-        "archiving.done"
+        "status/archiving.done"
 
 rule sync_final:
     input:
         OUTPUTDIR,
-        "workflow.done"
+        "status/workflow.done"
     output:
         SUMDIR
     threads: 1
@@ -30,13 +30,13 @@ rule sync_final:
 
 def entry_gz:
     if "preprocessing" in IMP_STEPS:
-        ctrl.append("preprocessing.done")
+        ctrl.append("status/preprocessing.done")
     elif "summary" in SUM_STEPS:
-        ctrl.append("stats.done")
+        ctrl.append("status/stats.done")
     if "assembly" in IMP_STEPS and (not MGaln and not MTaln):
-        ctrl.append("assembly.done")
+        ctrl.append("status/assembly.done")
     if "taxonomy" in IMP_STEPS:
-        ctrl.append("taxonomy.done")
+        ctrl.append("status/taxonomy.done")
     return ctrl
     
 def ctrl_readgz(wildcards):
@@ -54,7 +54,7 @@ rules compress_reads:
     input: 
         ctrl_readgz
     output:
-        touch("reads.compressed")
+        touch("status/reads.compressed")
 
 if MG or MT:
     rule gzip_reads:
@@ -73,7 +73,7 @@ if MG or MT:
 
 rule tar_gzip_directory:
     input:
-        check="workflow.done",
+        check="status/workflow.done",
         directory="{directory}"
     output:
         "{directory}.tar.gz"

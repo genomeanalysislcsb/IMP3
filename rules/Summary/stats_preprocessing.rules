@@ -2,4 +2,4 @@ rule PREPROCESSING:
     input:
         expand("Stats/{type}/{type}.read_counts.txt", type=TYPES)
     output:
-        touch('preprocessing.analysed')
+        touch('status/preprocessing.analysed')

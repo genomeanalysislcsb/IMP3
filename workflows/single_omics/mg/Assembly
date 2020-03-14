@@ -43,4 +43,4 @@ rule ASSEMBLY:
     input:
         master_ass_input
     output:
-        touch('assembly.done')
+        touch('status/assembly.done')

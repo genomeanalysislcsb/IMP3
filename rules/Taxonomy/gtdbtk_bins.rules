@@ -23,7 +23,7 @@ rule GTDB_all:
     input:
         "Binning/per_bin_results.tar.gz"
     output:
-        "Analysis/taxonomy/GTDBtk.done"
+        "status/taxonomy_GTDBtk.done"
     shell:
         """
         touch {output}

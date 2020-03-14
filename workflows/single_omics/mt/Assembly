@@ -40,4 +40,4 @@ rule ASSEMBLY:
         'Stats/mt/mt.assembly.length.txt',
         'Stats/mt/mt.assembly.gc_content.txt'
     output:
-        touch('assembly.done')
+        touch('status/assembly.done')

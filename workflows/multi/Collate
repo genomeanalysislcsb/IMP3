@@ -8,8 +8,8 @@ include:
 # master command
 rule all_collate:
     input:
-        expand("{task}.collated",task=config["collection"]["results"].split())
+        expand("status/{task}.collated",task=config["collection"]["results"].split())
     output:
-        touch('collate.done')
+        touch('status/collate.done')
 
 

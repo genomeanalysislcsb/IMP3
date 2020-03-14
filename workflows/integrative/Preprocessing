@@ -35,6 +35,6 @@ rule PREPROCESSING:
         "Stats/{type}/{type}.r2.preprocessed_fastqc.html",
         "Stats/{type}/{type}.se.preprocessed_fastqc.html",
         "Stats/{type}/{type}.read_counts.txt",
-        'Preprocessing/{type}.reads.compressed'], type=TYPES)
+        'status/preprocessing_{type}.reads.compressed'], type=TYPES)
     output:
-        touch('preprocessing.done')
+        touch('status/preprocessing.done')

@@ -8,7 +8,7 @@ def open_output(filename):
     return(open(OUTPUTDIR+'/'+filename, 'w+'))
 
 def workflow_ctrl(wildcards):
-    return([s + ".done" for s in IMP_STEPS if s != "summary"])
+    return(["status/" + s + ".done" for s in IMP_STEPS if s != "summary"])
 
 # data input
 # inputs (original files) to use

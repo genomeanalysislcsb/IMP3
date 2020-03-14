@@ -6,7 +6,7 @@ rule grid_all:
     input: 
         gather_bins
     output:
-        "Binning/GRiD.done"
+        "status/binning_GRiD.done"
     shell:
         """
         touch {output}
@@ -52,7 +52,7 @@ checkpoint getBins:
     input: 
         "Binning/selected_DASTool_summary.txt"
     output:
-        "Binning/GRiD.prepped"
+        "status/binning_GRiD.prepped"
     params:
         runtime = "8:00:00",
         mem = MEMCORE

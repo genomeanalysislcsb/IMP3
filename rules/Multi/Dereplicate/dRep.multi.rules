@@ -12,7 +12,7 @@ rule dRep_dir:
 
 checkpoint dRep_multi:
     input:
-        ctrl=expand("Dereplication/dRep_multi/{sample}.dRep_multi.prepped",
+        ctrl=expand("status/dRep_multi_{sample}.dRep_multi.prepped",
           sample=samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"]),
     output:
         directory("Dereplication/dRep_multi_out/dereplicated_genomes"),
