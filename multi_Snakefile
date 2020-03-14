@@ -1,10 +1,10 @@
 # include global functions
 include:
-    "rules/function.definitions"
+    "workflow/rules/function.definitions"
 
 # include configuration file
 include:
-    "rules/ini/multi_config"
+    "workflow/rules/ini/multi_config"
 
 # set working directory and dump output
 workdir:
@@ -15,28 +15,28 @@ yaml.dump(config, open_output('multi.config.yaml'), allow_unicode=True,default_f
 # include workflows for data collection, catalogue, dRep and DB
 if 'collate' in MULTI_STEPS:
     include:
-        "workflows/multi/Collate"
+        "workflow/rules/modules/multi/Collate"
 if 'catalogue' in MULTI_STEPS:
     include:
-        "workflows/multi/Catalogue"
+        "workflow/rules/modules/multi/Catalogue"
 if 'dereplicate' in MULTI_STEPS:
     include:
-        "workflows/multi/Dereplicate"
+        "workflow/rules/modules/multi/Dereplicate"
 if 'DB' in MULTI_STEPS:
     include:
-        "workflows/multi/DB"
+        "workflow/rules/modules/multi/DB"
 if 'visualize' in MULTI_STEPS:
     include:
-        "workflows/multi/Vis"
+        "workflow/rules/modules/multi/Vis"
 
 localrules: SamplesPrint, ALL
 # master command
 rule ALL:
     input:
-        expand("{step}.done",step=MULTI_STEPS),
+        expand("status/{step}.done",step=MULTI_STEPS),
         "sample_table.tsv"
     output:
-        touch('multi.done')
+        touch('status/multi.done')
 
 rule SamplesPrint:
     input:

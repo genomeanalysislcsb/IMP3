@@ -1,10 +1,10 @@
 # include global functions
 include:
-    "rules/function.definitions"
+    "workflow/rules/function.definitions"
 
 # include configuration file
 include:
-    "rules/ini/config"
+    "workflow/rules/ini/config"
 
 # set working directory and dump output
 workdir:
@@ -12,134 +12,134 @@ workdir:
 
 yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
-yaml.dump(config, open_output('full.config.yaml'), allow_unicode=True,default_flow_style=False)
+yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True,default_flow_style=False)
 
 # include rules for the workflow based on the input parameters
 include:
-    "rules/data.input.rules"
+    "workflow/rules/data.input.rules"
 
 # include workflows for preprocessing, assembly, analysis, binning and taxonomy steps
 # INTEGRATIVE MG-MT workflow
 if MG and MT:
     if 'preprocessing' in IMP_STEPS:
         include:
-            "workflows/integrative/Preprocessing"
+            "workflow/rules/modules/integrative/Preprocessing"
 
     if 'assembly' in IMP_STEPS:
         if config['assembly']['hybrid']:
             include:
-                "workflows/integrative/Assembly"
+                "workflow/rules/modules/integrative/Assembly"
         else:
             include:
-                "workflows/single_omics/mg/Assembly"
+                "workflow/rules/modules/single_omics/mg/Assembly"
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/integrative/Analysis"
+            "workflow/rules/modules/integrative/Analysis"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflows/integrative/Taxonomy"
+            "workflow/rules/modules/integrative/Taxonomy"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/integrative/Binning"
+            "workflow/rules/modules/integrative/Binning"
 
-    if 'summarize' in IMP_STEPS:
+    if 'summary' in IMP_STEPS:
         include:
-            "workflows/integrative/Summary"
+            "workflow/rules/modules/common/Summary"
 
 
 # Single omics MG workflow
 elif MG:
     if 'preprocessing' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Preprocessing"
+            "workflow/rules/modules/single_omics/mg/Preprocessing"
 
     if 'assembly' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Assembly"
+            "workflow/rules/modules/single_omics/mg/Assembly"
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Analysis"
+            "workflow/rules/modules/single_omics/mg/Analysis"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Taxonomy"
+            "workflow/rules/modules/single_omics/mg/Taxonomy"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Binning"
+            "workflow/rules/modules/single_omics/mg/Binning"
 # MT-only workflow
 elif MT:
     if 'preprocessing' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Preprocessing"
+            "workflow/rules/modules/single_omics/mt/Preprocessing"
 
     if 'assembly' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Assembly"
+            "workflow/rules/modules/single_omics/mt/Assembly"
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Analysis"
+            "workflow/rules/modules/single_omics/mt/Analysis"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Taxonomy"
+            "workflow/rules/modules/single_omics/mt/Taxonomy"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Binning"
+            "workflow/rules/modules/single_omics/mt/Binning"
 #starting from aligned reads:
 elif MGaln and MTaln:
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/integrative/Analysis"
+            "workflow/rules/modules/integrative/Analysis"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflows/integrative/Taxonomy"
+            "workflow/rules/modules/integrative/Taxonomy"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/integrative/Binning"
+            "workflow/rules/modules/integrative/Binning"
 
 elif MGaln:
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Analysis"
+            "workflow/rules/modules/single_omics/mg/Analysis"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Taxonomy"
+            "workflow/rules/modules/single_omics/mg/Taxonomy"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/single_omics/mg/Binning"
+            "workflow/rules/modules/single_omics/mg/Binning"
 
 elif MTaln:
     if 'analysis' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Analysis"
+            "workflow/rules/modules/single_omics/mt/Analysis"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Taxonomy"
+            "workflow/rules/modules/single_omics/mt/Taxonomy"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflows/single_omics/mt/Binning"
+            "workflow/rules/modules/single_omics/mt/Binning"
 else:
     raise Exception('No input data.')
 
 # master command summary and archiving
-inputs_all = ['workflow.done']
+inputs_all = ['status/workflow.done']
 if "summary" in IMP_STEPS:
-    inputs_all.append('summary.done')
+    inputs_all.append('status/summary.done')
     include:
-        "workflows/common/Summary"
+        "workflow/rules/modules/common/Summary"
 #                 #if config['compress_level'] != "none" and config['compress_level'] != "":
 #                 #    inputs_all.append('archiving.done')
 
@@ -149,7 +149,7 @@ rule ALL:
     input:
         inputs_all
     output:
-        touch('all.done')
+        touch('status/all.done')
 
 
 localrules: workflow, ALL
@@ -158,5 +158,5 @@ rule workflow:
     input:
         workflow_ctrl
     output:
-        touch('workflow.done')
+        touch('status/workflow.done')
 

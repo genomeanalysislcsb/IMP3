@@ -1,0 +1,46 @@
+# include rules for the Assembly part of the workflow
+
+# include needed rules
+include:
+    '../../../Assembly/common/bwa.index.rules'
+
+include:
+    '../../../Assembly/common/%s.rules' % IMP_ASSEMBLER
+
+include:
+    '../../../Assembly/common/merge-assembly.rules'
+
+include:
+    '../../../Assembly/single-omic/extract-unmapped.rules'
+
+include:
+    '../../../Assembly/common/contig.rules'
+
+include:
+    '../../../Assembly/common/mapping.rules'
+
+include:
+    '../../../Assembly/common/contig-length.rules'
+include:
+    '../../../Assembly/common/contig-depth.rules'
+
+
+master_ass_input = [
+        'Assembly/intermediary.tar.gz',
+        'Assembly/mg.assembly.merged.fa',
+        'Assembly/mg.assembly.merged.fa.fai',
+        'Assembly/mg.assembly.merged.fa.bed3',
+        expand('Assembly/{type}.reads.sorted.bam',type=TYPES),
+        expand('Assembly/{type}.reads.sorted.bam.bai',type=TYPES),
+        expand("Stats/{type}/{ass}.assembly.contig_coverage.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.contig_depth.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.contig_flagstat.txt",type=TYPES,ass=ASS),
+        "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
+        "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS)]
+
+# master command
+rule ASSEMBLY:
+    input:
+        master_ass_input
+    output:
+        touch('status/assembly.done')

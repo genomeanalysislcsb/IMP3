@@ -1,0 +1,84 @@
+rule GTDBtk_bins_single:
+    input:
+        "Binning/selected_DASTool_bins/{clusterID}"
+    output:
+        directory("Binning/selected_DASTool_bins/{clusterID}/GTDB"),
+    params:
+        runtime = "12:00:00",
+        mem = BIGMEMCORE
+    conda: ENVDIR + "/IMP_gtdbtk.yaml"
+    log: "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
+    message: "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
+    threads: BIGCORENO
+    shell:
+        """
+        export GTDBTK_DATA_PATH="{DBPATH}/GTDB_tk"
+        export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
+        gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
+        """
+
+localrules: GTDB_all
+
+rule GTDB_all:
+    input:
+        "Binning/per_bin_results.tar.gz"
+    output:
+        "status/taxonomy_GTDBtk.done"
+    shell:
+        """
+        touch {output}
+        """
+
+rule GTDBtk_summarize:
+    input:
+        gather_GTDB_bins
+    output:
+        report("Stats/%s/%s.bins.tsv" % (ASS,ASS),category="Taxonomy")
+    params:
+        runtime = "12:00:00",
+        mem = MEMCORE
+    log: "logs/taxonomy_GTDBtk_summarize.log"
+    message: "GTDBtk_summarize: Summarizing binning results."
+    threads: 1
+    conda: ENVDIR + "/IMP_binning.yaml"
+    script:
+        SRCDIR + "/summarize_GTDBtk.R"
+    
+if MG:
+    rule bins_tar:
+        input:
+            dir="Binning/selected_DASTool_bins",
+            ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS),
+            gridbins=gather_bins,
+            gtdbbins=gather_GTDB_bins
+        output:
+            "Binning/per_bin_results.tar.gz"
+        threads: 1
+        params:
+            runtime = "8:00:00",
+            mem = MEMCORE
+        log: "logs/taxonomy_bins_tar.log"
+        message: "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
+        shell:
+            """
+            tar czf {output} {input.gridbins} {input.gtdbbins} && rm -r {input.gridbins} {input.gtdbbins} >> {log} 2>&1
+            """
+else:
+    rule bins_tar:
+        input:
+            dir="Binning/selected_DASTool_bins",
+            ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS),
+            gtdbbins=gather_GTDB_bins
+        output:
+            "Binning/per_bin_results.tar.gz"
+        threads: 1
+        params:
+            runtime = "8:00:00",
+            mem = MEMCORE
+        log: "logs/taxonomy_bins_tar.log"
+        message: "bins_tar: Compressing per-bin results of GTDBtk."
+        shell:
+            """
+            tar czf {output} {input.gtdbbins} && rm -r {input.gtdbbins} >> {log} 2>&1
+            """
+
