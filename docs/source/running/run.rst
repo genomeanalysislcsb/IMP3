@@ -2,9 +2,10 @@
 Running IMP
 ===========
 
-Run IMP by calling Snakemake with the appropriate settings::
+Run IMP by calling Snakemake with the appropriate settings:
 
-snakemake ....
+.. code-block:: console
+    snakemake ....
 
 If you use slurm cluster ...
 

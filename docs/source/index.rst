@@ -13,7 +13,8 @@ metatranscriptomic data), analysis of microbial community structure (taxonomy) a
 (gene functions and abundances), binning, as well as summaries and visualizations. 
 As an added functionality, IMP also performs single-omic metagenomic or metatranscriptomic analyses.
 
-IMP is implemented in _Snakemake: https://snakemake.readthedocs.io/en/stable/index.html .
+IMP is implemented in `Snakemake`_ 
+.. _Snakemake: https://snakemake.readthedocs.io/en/stable/index.html .
 
 
 .. toctree::
