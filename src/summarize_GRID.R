@@ -76,7 +76,7 @@ for(bin in setdiff(binTab$selected_by_DASTool[!is.na(binTab$selected_by_DASTool)
   }
 }
 
-binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool",by.y="bin",all=T)
+if("gridTab" %in% ls()) binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool",by.y="bin",all=T)
 
 ###################################################################################################
 ## Save concatenated output

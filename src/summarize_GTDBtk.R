@@ -77,8 +77,7 @@ print("Reading GRiD results.")
       }
     }
   }
-
-binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool",by.y="bin",all=T)
+if("gridTab" %in% ls()) binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool",by.y="bin",all=T)
 }
 ###################################################################################################
 ## Read GTDBtk output for selected bins
