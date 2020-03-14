@@ -1,0 +1,20 @@
+rule ABRicate_contigs:
+    input:
+	"Assembly/{ASS}.assembly.merged.fa",
+	expand("{amrdb}",amrdb=config["abricate"])
+    output:
+	"Analysis/amr"
+	"Analysis/amr.done"
+    threads: 1
+    shell:
+	"""
+	mkdir -p $output0
+        echo "# ABRicate "{amrdb}" start"
+	abricate --db {amrdb} --quiet $input0 >Analysis/amr/abricate.{amrdb}.tsv
+	echo "# ABRicate "{amrdb}" done"
+done
+
+touch $output1
+
+conda deactivate
+
