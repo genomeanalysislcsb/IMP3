@@ -1,8 +1,3 @@
-.. IMP3 documentation master file, created by
-   sphinx-quickstart on Sat Mar 14 17:06:18 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 IMP3
 ====
 
@@ -11,9 +6,13 @@ integrated analysis of coupled metagenomic and metatranscriptomic data. IMP inco
 preprocessing, assembly (including optional iterative co-assembly of metagenomic and 
 metatranscriptomic data), analysis of microbial community structure (taxonomy) and function 
 (gene functions and abundances), binning, as well as summaries and visualizations. 
-As an added functionality, IMP also performs single-omic metagenomic or metatranscriptomic analyses.
 
-IMP is implemented in `Snakemake <https://snakemake.readthedocs.io/en/stable/index.html>`_.
+IMP is implemented in `Snakemake <https://snakemake.readthedocs.io/en/stable/index.html>`_. It is user-friendly
+and can be adjusted easily configured to perform single-omic metagenomic or metatranscriptomic analyses, as
+well as single modules, e.g. only assembly or only binning.
+
+IMP is being developed at the `Luxembourg Centre for Systems Biomedicine <https://wwwen.uni.lu/lcsb/research/eco_systems_biology>`_ and the
+`German Centre for Integrative Biodiversity Research (iDiv) Halle-Jena-Leipzig <https://www.idiv.de/en/groups_and_people/central_management/bioinformatics_unit_biu/research.html>`_.
 
 
 .. toctree::
