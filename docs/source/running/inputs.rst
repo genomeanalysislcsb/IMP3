@@ -15,7 +15,6 @@ if you start the analysis from pre-processing reads. If you supply already pre-p
 assembly step or for further analysis, you can pass one additional single ends file.
 
 .. code-block:: yaml
-
 raws: 
   Metagenomics: "/path/to/metagenomics.read.r1.fastq.gz /path/to/metagenomics.read.r2.fastq.gz"
   Metatranscriptomics: "/another/path/to/metatranscriptomics.read.r1.fastq.gz /another/path/to/metatranscriptomics.read.r2.fastq.gz"
@@ -30,7 +29,6 @@ If you wish to perform a metagenomics assembly, you can also add a single file o
 long-reads data (as fastq files). In this case, please also name the sequencing method (possible values are "nanopore" and "pacbio").
 
 .. code-block:: yaml
-
 raws: 
   Metagenomics: "/path/to/metagenomics.read.r1.fastq.gz /path/to/metagenomics.read.r2.fastq.gz"
   Metatranscriptomics: ""
