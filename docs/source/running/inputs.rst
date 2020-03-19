@@ -28,6 +28,7 @@ assembly step or for further analysis, you can pass one additional single ends f
 
 If you wish to perform a metagenomics assembly, you can also add a single file of already pre-processed
 long-reads data (as fastq files). In this case, please also name the sequencing method (possible values are "nanopore" and "pacbio").
+*The long reads are only used by IMP, if you choose "metaspades" as assembler.*
 
 .. code-block:: yaml
 
