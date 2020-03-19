@@ -8,7 +8,7 @@ metatranscriptomic data), analysis of microbial community structure (taxonomy) a
 (gene functions and abundances), binning, as well as summaries and visualizations. 
 
 IMP is implemented in `Snakemake <https://snakemake.readthedocs.io/en/stable/index.html>`_. It is user-friendly
-and can be adjusted easily configured to perform single-omic metagenomic or metatranscriptomic analyses, as
+and can be easily configured to perform single-omic metagenomic or metatranscriptomic analyses, as
 well as single modules, e.g. only assembly or only binning.
 
 IMP is being developed at the `Luxembourg Centre for Systems Biomedicine <https://wwwen.uni.lu/lcsb/research/eco_systems_biology>`_ and the
