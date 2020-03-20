@@ -1,4 +1,4 @@
 ===================
-IMP steps: Taxonomy
+IMP3 steps: Taxonomy
 ===================
 

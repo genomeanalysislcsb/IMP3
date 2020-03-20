@@ -1,4 +1,4 @@
 ==============================
-multi-IMP steps: Dereplication
+multi-IMP3 steps: Dereplication
 ==============================
 

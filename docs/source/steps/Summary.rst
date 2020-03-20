@@ -1,5 +1,5 @@
 ==================
-IMP steps: Summary
+IMP3 steps: Summary
 ==================
 
-IMP will summarize...
+IMP3 will summarize...

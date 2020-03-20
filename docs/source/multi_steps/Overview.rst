@@ -1,4 +1,4 @@
 ===========================
-Overview of multi-IMP steps
+Overview of multi-IMP3 steps
 ===========================
 

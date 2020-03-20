@@ -1,4 +1,4 @@
 ==================
-IMP steps: Binning
+IMP3 steps: Binning
 ==================
 

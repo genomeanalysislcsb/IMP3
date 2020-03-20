@@ -1,10 +1,10 @@
 =================
-IMP input options
+IMP3 input options
 =================
 
-IMP is designed to perform integrated analyses of metagenomics and metatranscriptomics data.
+IMP3 is designed to perform integrated analyses of metagenomics and metatranscriptomics data.
 A typical workflow starts with a pair of files of paired-end metagenomics reads and a pair
-of files with paired-end metatranscriptomics reads (both in fastq format). Alternatively, you can hand IMP only metagenomics
+of files with paired-end metatranscriptomics reads (both in fastq format). Alternatively, you can hand IMP3 only metagenomics
 or only metatranscriptomics reads. If you want to forego assembly and are looking to annotate
 your assembly and to bin contigs into metagenomics-assembled genomes, you can give assemblies (as fasta)
 in addition to alignments (.bam files) or trimmed reads (fastq format) to IMP.

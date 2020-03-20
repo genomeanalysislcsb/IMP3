@@ -1,4 +1,4 @@
 ===========================
-multi-IMP steps: Re-binning
+multi-IMP3 steps: Re-binning
 ===========================
 
