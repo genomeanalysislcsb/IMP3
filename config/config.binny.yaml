@@ -1,0 +1,35 @@
+mem:
+  normal_mem_per_core_gb: 4
+  big_mem_total_gb: 1600
+  big_mem_cores: 8
+  big_mem_per_core_gb: 200
+tmp_dir: tmp
+raws: 
+  Contigs: ""
+  Alignment_metagenomics: ""
+sample: test
+outputdir: ""
+summary_steps: "stats vis"
+db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
+assembly: 
+  hybrid: true
+prokka: 
+  essentials_genes_db_url: "https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm"
+  prefix: prokka
+  databases: 
+    - "cm/Bacteria.i1i"
+    - "genus/Staphylococcus.phr"
+    - "hmm/CLUSTERS.hmm.h3f"
+    - "kingdom/Archaea/sprot.phr"
+binning:
+  binny:
+    pk: 10
+    nn: 4
+    cutoff: 1000
+  vizbin:
+    dimension: 50
+    kmer: 5
+    size: 4
+    theta: 0.5
+    perp: 30
+    cutoff: 1000

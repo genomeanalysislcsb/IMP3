@@ -1,0 +1,33 @@
+rule contig_fasta_indexing:
+    input:
+        "Assembly/%s.assembly.merged.fa" % ASS
+    output:
+        "Assembly/%s.assembly.merged.fa.fai" % ASS
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: 1
+    conda: ENVDIR + "/IMP_mapping.yaml"
+    log: "logs/assembly_contig_fasta_indexing.log"
+    message: "contig_fasta_indexing: Indexing assembly."
+    shell:
+        """
+        samtools faidx {input[0]} > {log} 2>&1
+        """
+
+rule contig_fasta2bed_conversion:
+    input:
+        "Assembly/%s.assembly.merged.fa" % ASS,
+        "Assembly/%s.assembly.merged.fa.fai" % ASS
+    output:
+        "Assembly/%s.assembly.merged.fa.bed3" % ASS
+    params:
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: 1
+#    log: "logs/assembly_fastabed.log"
+    message: "contig_fasta2bed_conversion: Writing bed file for assembly."
+    shell:
+        """
+        cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output}
+        """

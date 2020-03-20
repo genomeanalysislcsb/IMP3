@@ -1,10 +1,10 @@
 # include global functions
 include:
-    "workflow/rules/function.definitions"
+    "workflow/rules/function.definitions.smk"
 
 # include configuration file
 include:
-    "workflow/rules/Binny/config"
+    "workflow/rules/Binny/config.smk"
 
 # set working directory and dump output
 workdir:
@@ -16,21 +16,21 @@ yaml.dump(config, open_output('binny.config.yaml'), allow_unicode=True,default_f
 
 # include rules for the workflow based on the input parameters
 include:
-    "workflow/rules/Binny/data.input.rules"
+    "workflow/rules/Binny/data.input.smk"
 
 # include workflows for analysis and binning
 #starting from aligned reads:
     include:
-        "workflow/rules/Binny/Analysis"
+        "workflow/rules/Binny/module_Analysis.smk"
     include:
-        "workflow/rules/Binny/Binning"
+        "workflow/rules/Binny/module_Binning.smk"
 
 # master command summary and archiving
 inputs_all = ['status/workflow.done']
 if "summary" in IMP_STEPS:
     inputs_all.append('status/summary.done')
     include:
-        "workflow/rules/Binny/Summary"
+        "workflow/rules/Binny/module_Summary.smk"
 
 localrules: workflow, ALL
 

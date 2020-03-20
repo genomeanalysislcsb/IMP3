@@ -1,1 +1,0 @@
-Tree of taxa found by kraken2 - only taxa with at least 0.05% of the reads mapping are displayed. Colours from yellow (low abundance) to blue (high abundance). Leaves and nodes without symbold were not detected in the respective reads. Triangles indicate taxa that were not found in the assemblies, while circles were found.
