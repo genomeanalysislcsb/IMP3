@@ -1,0 +1,51 @@
+# include global functions
+include:
+    "workflow/rules/function.definitions"
+
+# include configuration file
+include:
+    "workflow/rules/Binny/config"
+
+# set working directory and dump output
+workdir:
+    OUTPUTDIR
+
+yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
+yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
+yaml.dump(config, open_output('binny.config.yaml'), allow_unicode=True,default_flow_style=False)
+
+# include rules for the workflow based on the input parameters
+include:
+    "workflow/rules/Binny/data.input.rules"
+
+# include workflows for analysis and binning
+#starting from aligned reads:
+    include:
+        "workflow/rules/Binny/Analysis"
+    include:
+        "workflow/rules/Binny/Binning"
+
+# master command summary and archiving
+inputs_all = ['status/workflow.done']
+if "summary" in IMP_STEPS:
+    inputs_all.append('status/summary.done')
+    include:
+        "workflow/rules/Binny/Summary"
+
+localrules: workflow, ALL
+
+# master command
+rule ALL:
+    input:
+        inputs_all
+    output:
+        touch('status/all.done')
+
+
+# master command workflow
+rule workflow:
+    input:
+        binny_workflow_ctrl
+    output:
+        touch('status/binny.done')
+
