@@ -1,8 +1,9 @@
-======================
-Cluster coonfiguration
-======================
+=====================
+Cluster configuration
+=====================
 
-Snakemake workflows, and hence IMP3, can be run in cluster mode, i.e. Snakemake will submit all the
+Snakemake workflows, and hence IMP3, can be run in
+`cluster mode <https://snakemake.readthedocs.io/en/stable/executing/cluster-cloud.html#cluster-execution>`_, i.e. Snakemake will submit all the
 rules (except if explicitly stated) to a batch submission system. For Snakemake to know how to submit to the cluster,
 the command and arguments for submission can be stated
 in the `snakemake` call:
