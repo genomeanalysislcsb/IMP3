@@ -1,0 +1,103 @@
+METASPADES_ASSEMBLY_SHELL = """
+if [ -d "{output[0]}" ]; then
+    rm -rf {output[0]}
+fi
+spades.py --meta \
+ --pe1-1 {input[0]} \
+ --pe1-2 {input[1]} \
+ --pe1-s {input[2]} \
+ --pe2-1 {input[3]} \
+ --pe2-2 {input[4]} \
+ --pe2-s {input[5]} \
+  {params.contigs} \
+  -t {threads} \
+  -m {BIGMEMTOTAL} \
+  -k {KMER_STEPS} \
+  {LONG_READ_ARG} \
+  -o {output[0]} > {log} 2>&1
+ln -fs  {output[1]} {output[2]}
+"""
+kmersteps=range(config['assembly']['mink'],config['assembly']['maxk']+1,config['assembly']['step'])
+KMER_STEPS =",".join(map(str,kmersteps)) 
+
+LONG_READ_ARG = ""
+if LONG:
+    LONG_READ_ARG = "--" + config['raws']['LongReadTech'] + " Assembly/long_reads.fastq"
+
+else:
+    rule metaspades_hybrid_assembly_1:
+        input:
+            'Preprocessing/mg.r1.preprocessed.fq',
+            'Preprocessing/mg.r2.preprocessed.fq',
+            'Preprocessing/mg.se.preprocessed.fq',
+            'Preprocessing/mt.r1.preprocessed.fq',
+            'Preprocessing/mt.r2.preprocessed.fq',
+            'Preprocessing/mt.se.preprocessed.fq',
+            'Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa'
+        output:
+            'Assembly/intermediary/mgmt.metaspades_hybrid.1/contigs.fa',
+            'Assembly/intermediary/mgmt.metaspades_hybrid.1.fa',
+            directory('Assembly/intermediary/mgmt.metaspades_hybrid.1')
+        params:
+            contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa",
+            runtime = "120:00:00",
+            mem = BIGMEMCORE
+        threads: BIGCORENO
+        conda: ENVDIR + "/IMP_assembly.yaml"
+        log: "logs/assembly_metaspades_hybrid_assembly_1.log"
+        message: "metaspades_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using METASPADES"
+        shell:
+            """
+            if [ -d "{output[2]}" ]; then
+                rm -rf {output[2]}
+            fi
+            METASPADES_ASSEMBLY_SHELL
+        """
+
+rule metaspades_hybrid_assembly_2:
+    input:
+        'Assembly/intermediary/mgmt.r1.metaspades_hybrid.mt.unmapped.fq',
+        'Assembly/intermediary/mgmt.r2.metaspades_hybrid.mt.unmapped.fq',
+        'Assembly/intermediary/mgmt.se.metaspades_hybrid.mt.unmapped.fq',
+        'Assembly/intermediary/mgmt.r1.metaspades_hybrid.mg.unmapped.fq',
+        'Assembly/intermediary/mgmt.r2.metaspades_hybrid.mg.unmapped.fq',
+        'Assembly/intermediary/mgmt.se.metaspades_hybrid.mg.unmapped.fq',
+    output:
+        'Assembly/intermediary/mgmt.metaspades_hybrid.2/contigs.fa',
+        'Assembly/intermediary/mgmt.metaspades_hybrid.2.fa',
+        directory('Assembly/intermediary/mgmt.metaspades_hybrid.2')
+    params:
+        contigs = "",
+        runtime = "120:00:00",
+        mem = BIGMEMCORE
+    threads: BIGCORENO
+    conda: ENVDIR + "/IMP_assembly.yaml"
+    log: "logs/assembly_metaspades_hybrid_assembly_2.log"
+    message: "metaspades_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using metaspades"
+    shell:
+        """
+        if [ -d "{output[2]}" ]; then
+            rm -rf {output[2]}
+        fi
+
+        METASPADES_ASSEMBLY_SHELL 
+	"""
+
+rule concatenate_mapped_unmapped:
+    input:
+        'Assembly/intermediary/mt.metaspades_preprocessed.1.fa',
+        'Assembly/intermediary/mt.metaspades_unmapped.2.fa',
+    output:
+        'Assembly/intermediary/mt.metaspades_preprocessed.1.final.contig.fa'
+    params:
+        runtime = "120:00:00",
+        mem = MEMCORE
+    threads: 1
+    conda: ENVDIR + "/IMP_assembly.yaml"
+    shell:
+        """
+        {SRCDIR}/rename_sequences.pl {input[0]} preprocessing > {input[0]}.tmp
+        {SRCDIR}/rename_sequences.pl {input[1]} unmapped > {input[1]}.tmp
+        cat {input[0]}.tmp {input[1]}.tmp >{output[0]}
+        rm {input[0]}.tmp  {input[1]}.tmp
+        """

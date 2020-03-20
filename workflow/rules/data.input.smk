@@ -1,0 +1,96 @@
+if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in IMP_STEPS or 'binning' in IMP_STEPS):
+    if CONTIGS:
+        include:
+            'Assembly/common/contig.rules'
+        include:
+            'Assembly/common/mapping.rules'
+        include:
+            'Assembly/common/contig-length.rules'
+        include:
+            'Assembly/common/contig-depth.rules'
+        if not MGaln:
+            include:
+                'Assembly/common/bwa.index.rules'
+        if not MTaln:
+            include:
+                'Assembly/common/bwa.index.rules'
+    
+
+localrules: prepare_input_data
+
+# outputs (input for workflow) to be generated (in rule)
+input_files_list = []
+if MG and len(MG) == 2:
+    input_files_list.append("Preprocessing/mg.r1.fq")
+    input_files_list.append("Preprocessing/mg.r2.fq")
+elif MG and len(MG) == 3:
+    input_files_list.append("Preprocessing/mg.r1.fq")
+    input_files_list.append("Preprocessing/mg.r2.fq")
+    input_files_list.append("Preprocessing/mg.se.fq")
+if MT and len(MT) == 2:
+    input_files_list.append("Preprocessing/mt.r1.fq")
+    input_files_list.append("Preprocessing/mt.r2.fq")
+elif MT and len(MT) == 3:
+    input_files_list.append("Preprocessing/mt.r1.fq")
+    input_files_list.append("Preprocessing/mt.r2.fq")
+    input_files_list.append("Preprocessing/mt.se.fq")
+if CONTIGS and not "assembly" in IMP_STEPS:
+    input_files_list.append("Assembly/%s.assembly.merged.fa" %ASS)
+    if MGaln:
+        input_files_list.append("Assembly/mg.reads.sorted.bam")
+    if MTaln:
+        input_files_list.append("Assembly/mt.reads.sorted.bam")
+if "assembly" in IMP_STEPS and LONG:
+    input_files_list.append("Assembly/long_reads.fastq")
+
+# symlinks to be generated (from , to)
+symlinks_list = []
+if not 'preprocessing' in IMP_STEPS and MG:
+    symlinks_list.append(("mg.r1.fq", "Preprocessing/mg.r1.preprocessed.fq"))
+    symlinks_list.append(("mg.r2.fq", "Preprocessing/mg.r2.preprocessed.fq"))
+    symlinks_list.append(("mg.se.fq", "Preprocessing/mg.se.preprocessed.fq"))
+if not 'preprocessing' in IMP_STEPS and MT:
+    symlinks_list.append(("mt.r1.fq", "Preprocessing/mt.r1.preprocessed.fq"))
+    symlinks_list.append(("mt.r2.fq", "Preprocessing/mt.r2.preprocessed.fq"))
+    symlinks_list.append(("mt.se.fq", "Preprocessing/mt.se.preprocessed.fq"))
+
+# symlinks to output to be generated (in rule)
+symlinked_output_list = []
+if not 'preprocessing' in IMP_STEPS and MG:
+    symlinked_output_list.append("Preprocessing/mg.r1.preprocessed.fq")
+    symlinked_output_list.append("Preprocessing/mg.r2.preprocessed.fq")
+    symlinked_output_list.append("Preprocessing/mg.se.preprocessed.fq")
+if not 'preprocessing' in IMP_STEPS and MT:
+    symlinked_output_list.append("Preprocessing/mt.r1.preprocessed.fq")
+    symlinked_output_list.append("Preprocessing/mt.r2.preprocessed.fq")
+    symlinked_output_list.append("Preprocessing/mt.se.preprocessed.fq")
+
+# empty se files to be touched
+fake_output = []
+if not 'preprocessing' in IMP_STEPS and MG and len(MG) == 2:
+    fake_output.append("Preprocessing/mg.se.fq")
+if not 'preprocessing' in IMP_STEPS and MT and len(MT) == 2:
+    fake_output.append("Preprocessing/mt.se.fq")
+
+
+rule prepare_input_data:
+    input:
+        get_ori_files
+    output:
+        input_files_list,
+        symlinked_output_list,
+        fake_output
+    threads: 1
+    params:
+        runtime = "4:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    message: "Preparing input."
+    run:
+        prepare_input_files(input, input_files_list)
+        if fake_output:
+            touch_fake_output(fake_output)
+        if symlinks_list:
+            symlink_input_files(symlinks_list)
+
+

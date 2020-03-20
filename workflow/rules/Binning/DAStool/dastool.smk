@@ -1,0 +1,62 @@
+localrules: DAS_tool_check
+
+checkpoint DAS_tool_check:
+    input:
+        expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS)
+    output:
+        "Binning/DAS_tool.ready"
+    shell:
+        "touch {output}"
+
+rule DAS_tool:
+    input:
+        contigs="Assembly/%s.assembly.merged.fa" % ASS,
+        proteins="Binning/prokka.renamed.faa", 
+        tabs=check_bintabs
+    output:
+        "Binning/selected_DASTool_summary.txt",
+        "Binning/selected_DASTool_scaffolds2bin.txt",
+        directory("Binning/selected_DASTool_bins")
+    threads: 4
+    params:
+        runtime = "24:00:00",
+        mem = BIGMEMCORE
+    conda: ENVDIR + "/IMP_binning.yaml"
+    log: "logs/binning_DAS_tool.log"
+    message: "DAS_tool: Running DAS_Tool."
+    shell:
+        """
+        TABS="{input.tabs}"
+        TAB_tmp=${{TABS//Binning\//}}
+        TAB_tmp2=${{TAB_tmp//\/scaffold2bin.tsv/}}
+        TABSl=${{TAB_tmp2// /,}}
+        DAS_Tool -i ${{TABS// /,}} \
+         -l $TABSl \
+         -c {input.contigs} \
+         --search_engine diamond \
+         --proteins {input.proteins} --score_threshold 0.3 \
+         --threads {threads} --write_bins 1 \
+         -o Binning/selected > {log} 2>&1
+        """
+
+rule format_protein_names:
+    input:
+        "Analysis/annotation/prokka.faa",
+        "Analysis/annotation/annotation.filt.gff"
+    output:
+        "Analysis/annotation/annotation.filt.contig2ID.tsv",
+        "Binning/prokka.renamed.faa"
+    params:
+        runtime = "4:00:00",
+        mem = MEMCORE
+    threads: 1
+    log: "logs/binning_format_protein_names.log"
+    message: "format_protein_names: Preparing protein sequences for DAS tool."
+    shell:
+        """
+        TMP_PROT=$(mktemp --tmpdir={TMPDIR} -t "proteins_XXXXXX.faa")
+        cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
+	    sed 's/ .*//' {input[0]} >> $TMP_PROT
+        {SRCDIR}/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} > {output[1]} 2> {log}
+	"""
+
