@@ -2,27 +2,27 @@
 
 # include needed rules
 include:
-    '../../../Assembly/common/bwa.index.rules'
+    '../../../Assembly/common/bwa.index.smk'
 
 include:
-    '../../../Assembly/common/%s.rules' % IMP_ASSEMBLER
+    '../../../Assembly/common/%s.smk' % IMP_ASSEMBLER
 
 include:
-    '../../../Assembly/common/merge-assembly.rules'
+    '../../../Assembly/common/merge-assembly.smk'
 
 include:
-    '../../../Assembly/single-omic/extract-unmapped.rules'
+    '../../../Assembly/single-omic/extract-unmapped.smk'
 
 include:
-    '../../../Assembly/common/contig.rules'
+    '../../../Assembly/common/contig.smk'
 
 include:
-    '../../../Assembly/common/mapping.rules'
+    '../../../Assembly/common/mapping.smk'
 
 include:
-    '../../../Assembly/common/contig-length.rules'
+    '../../../Assembly/common/contig-length.smk'
 include:
-    '../../../Assembly/common/contig-depth.rules'
+    '../../../Assembly/common/contig-depth.smk'
 
 
 master_ass_input = [

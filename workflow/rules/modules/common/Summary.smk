@@ -5,30 +5,30 @@ localrules: SUMMARY, VIS
 sum_target = []
 if "stats" in SUM_STEPS:
     include:
-        '../../Summary/stats_gather.rules'
+        '../../Summary/stats_gather.smk'
     sum_target.append("status/stats.done")
     if not "preprocessing" in IMP_STEPS and (MG or MT or MGaln or MTaln):
         include:
-            '../../Summary/reads-count.rules'
+            '../../Summary/reads-count.smk'
         include:
-            '../../Summary/stats_preprocessing.rules'
+            '../../Summary/stats_preprocessing.smk'
     if not "assembly" in IMP_STEPS and CONTIGS:
         include:
-            '../../Assembly/common/mapping.rules'
+            '../../Assembly/common/mapping.smk'
         include:
-            '../../Assembly/common/bwa.index.rules'
+            '../../Assembly/common/bwa.index.smk'
         include:
-            '../../Assembly/common/contig.rules'
+            '../../Assembly/common/contig.smk'
         include:
-            '../../Assembly/common/contig-length.rules'
+            '../../Assembly/common/contig-length.smk'
         include:
-            '../../Assembly/common/contig-depth.rules'
+            '../../Assembly/common/contig-depth.smk'
         include:
-            '../../Summary/stats_assembly.rules'
+            '../../Summary/stats_assembly.smk'
 
 if "DB" in SUM_STEPS:
     include:
-        '../../Summary/mongoDB.rules'
+        '../../Summary/mongoDB.smk'
     sum_target.append("status/DB_filling.done")
 
 
@@ -37,7 +37,7 @@ if "vis" in SUM_STEPS:
     vis_targets = []
     if "stats" in SUM_STEPS:
         include:
-            '../../Summary/vis_stats.rules'
+            '../../Summary/vis_stats.smk'
         vis_targets.append("status/stats.visualized")
     rule VIS:
         input:

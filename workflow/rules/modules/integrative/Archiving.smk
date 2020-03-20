@@ -3,7 +3,7 @@
 arch_ctrl = ['status/workflow.done']
 if config['archiving']['keep_all']:
     include:
-        '../../Archiving/archiving.rules'
+        '../../Archiving/archiving.smk'
     arch_ctrl.append()
 elif config['archiving']['reduce']:
 

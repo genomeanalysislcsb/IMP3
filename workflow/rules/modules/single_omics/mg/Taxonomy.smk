@@ -1,15 +1,15 @@
 # include rules for the Taxonomy part of the workflow
 
 include:
-    "../../Taxonomy/mOTUlink.rules"
+    "../../../Taxonomy/mOTUlink.smk"
 include:
-    "../../Taxonomy/mOTUs.rules"
+    "../../../Taxonomy/mOTUs.smk"
 include:
-    "../../Taxonomy/kraken_reads.rules"
+    "../../../Taxonomy/kraken_reads.smk"
 include:
-    "../../Taxonomy/kraken_contigs.rules"
+    "../../../Taxonomy/kraken_contigs.smk"
 include:
-    "../../Taxonomy/gtdbtk_bins.rules"
+    "../../../Taxonomy/gtdbtk_bins.smk"
 
 # master command
 if MG or MT:

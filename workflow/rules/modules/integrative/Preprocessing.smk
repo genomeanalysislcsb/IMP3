@@ -2,24 +2,24 @@
 
 
 include:
-    '../../Preprocessing/fastqc.rules'
+    '../../Preprocessing/fastqc.smk'
 
 include:
-    '../../Preprocessing/reads-count.rules'
+    '../../Preprocessing/reads-count.smk'
 
 # trimming rules
 include:
-    "../../Preprocessing/trimming.rules"
+    "../../Preprocessing/trimming.smk"
 # filtering rna for mt data
 include:
-    "../../Preprocessing/rna.filtering.rules"
+    "../../Preprocessing/rna.filtering.smk"
 # include filtering rule or not
 if PREPROCESSING_FILTERING:
     include:
-        "../../Preprocessing/filtering.rules"
+        "../../Preprocessing/filtering.smk"
 else:
     include:
-        "../../Preprocessing/no-filtering.rules"
+        "../../Preprocessing/no-filtering.smk"
 
 # master command
 rule PREPROCESSING:

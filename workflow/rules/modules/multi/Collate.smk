@@ -1,9 +1,9 @@
 include:
-    "../../Multi/Collate/features.rules"
+    "../../Multi/Collate/features.smk"
 include:
-    "../../Multi/Collate/taxonomy.rules"
+    "../../Multi/Collate/taxonomy.smk"
 include:
-    "../../Multi/Collate/stats.rules"
+    "../../Multi/Collate/stats.smk"
 
 # master command
 rule all_collate:

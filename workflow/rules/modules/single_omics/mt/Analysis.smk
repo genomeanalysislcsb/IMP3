@@ -1,17 +1,17 @@
 # include rules for the Analysis part of the workflow
 
 include:
-    '../../../Analysis/gene-depth.rules'
+    '../../../Analysis/gene-depth.smk'
 include:
-    '../../../Analysis/prokkaC.rules'
+    '../../../Analysis/prokkaC.smk'
 include:
-    '../../../Analysis/variant.rules'
+    '../../../Analysis/variant.smk'
 include:
-    '../../../Analysis/annotate.rules'
+    '../../../Analysis/annotate.smk'
 include:
-    '../../../Analysis/prepProteomics.rules'
+    '../../../Analysis/prepProteomics.smk'
 include:
-    '../../../Analysis/featureCount.rules'
+    '../../../Analysis/featureCount.smk'
 
 # master command
 rule ANALYSIS:
@@ -22,7 +22,7 @@ rule ANALYSIS:
         expand("Stats/{type}/annotation/{type}.gene.len", type=TYPES),
         expand("Analysis/snps/{type}.variants.samtools.vcf.gz", type=TYPES),
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-        expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
+        "Analysis/annotation/mt.CDS_counts.tsv",
         expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split()),
         "Analysis/annotation/intermediary.tar.gz",
         "Analysis/annotation/proteomics.final.faa"

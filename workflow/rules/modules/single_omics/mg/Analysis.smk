@@ -1,17 +1,17 @@
 # include rules for the Analysis part of the workflow
 
 include:
-    '../../Analysis/gene-depth.rules'
+    '../../../Analysis/gene-depth.smk'
 include:
-    '../../Analysis/prokkaC.rules'
+    '../../../Analysis/prokkaC.smk'
 include:
-    '../../Analysis/variant.rules'
+    '../../../Analysis/variant.smk'
 include:
-    '../../Analysis/annotate.rules'
+    '../../../Analysis/annotate.smk'
 include:
-    '../../Analysis/prepProteomics.rules'
+    '../../../Analysis/prepProteomics.smk'
 include:
-    '../../Analysis/featureCount.rules'
+    '../../../Analysis/featureCount.smk'
 
 # master command
 rule ANALYSIS:

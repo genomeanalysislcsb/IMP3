@@ -1,13 +1,13 @@
 include:
-    "../../Multi/Catalogue/cluster.rules"
+    "../../Multi/Catalogue/cluster.smk"
 if config['catalogue']['kraken']['do']:
     include:
-        "../../Multi/Catalogue/kraken_genes.rules"
+        "../../Multi/Catalogue/kraken_genes.smk"
 if config['catalogue']['mapping']['do']:
     include:
-        "../../Multi/Catalogue/mapping.rules"
+        "../../Multi/Catalogue/mapping.smk"
 include:
-    "../../Multi/Catalogue/table.rules"
+    "../../Multi/Catalogue/table.smk"
 
 
 # master command

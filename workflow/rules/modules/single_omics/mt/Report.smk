@@ -1,13 +1,13 @@
 # include rules for the Report part of the workflow
 
 include:
-    "../../../Report/diagramm.rule"
+    "../../../Report/diagramm.smk"
 
 include:
-    "../../../Report/libraries.rules"
+    "../../../Report/libraries.smk"
 
 include:
-    "../../../Report/report.rules"
+    "../../../Report/report.smk"
 
 # master command
 rule REPORT:

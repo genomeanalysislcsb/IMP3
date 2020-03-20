@@ -17,5 +17,6 @@ dependencies/*
 READMEconda
 conda/
 test/*
+oldrules/*
 IMP2to3/*
 rules/CRISPR
