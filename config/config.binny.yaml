@@ -1,8 +1,8 @@
 mem:
   normal_mem_per_core_gb: 4
-  big_mem_total_gb: 1600
-  big_mem_cores: 8
-  big_mem_per_core_gb: 200
+  big_mem_total_gb: 100
+  big_mem_cores: 1
+  big_mem_per_core_gb: 100
 tmp_dir: tmp
 raws: 
   Contigs: ""
@@ -14,7 +14,6 @@ db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
 assembly: 
   hybrid: true
 prokka: 
-  essentials_genes_db_url: "https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm"
   prefix: prokka
   databases: 
     - "cm/Bacteria.i1i"

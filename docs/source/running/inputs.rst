@@ -1,6 +1,8 @@
-=================
+.. _input_options:
+
+==================
 IMP3 input options
-=================
+==================
 
 IMP3 is designed to perform integrated analyses of metagenomics and metatranscriptomics data.
 A typical workflow starts with a pair of files of paired-end metagenomics reads and a pair

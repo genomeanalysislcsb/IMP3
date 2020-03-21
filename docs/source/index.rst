@@ -33,6 +33,7 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    running/configuring
    running/inputs
    running/cluster_config
+   running/databases
    
 .. toctree::
    :maxdepth: 1
