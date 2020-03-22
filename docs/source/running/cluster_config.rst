@@ -1,3 +1,5 @@
+.. _cluster_config:
+
 =====================
 Cluster configuration
 =====================
