@@ -5,7 +5,7 @@ Configuring IMP3 runs
 =====================
 
 You can choose the steps IMP3 should perform, the data it should run on, and the settings
-of each step by means of a .`yaml <https://yaml.org/>`_ file. 
+of each step by means of a `.yaml <https://yaml.org/>`_ file. 
 
 This description will guide you through all sections, but note that the order of the items in the config file is arbitrary.
 You can also omit most fields and IMP3 will use default settings. Exceptions are the :ref:`inputs <input_options>` and
@@ -47,7 +47,7 @@ IMP3 steps
 ----------
 
 With IMP3, you can choose to run the whole workflow or just some :ref:`steps <steps_overview>`. List the steps, separated by
-a space under ``steps``. The default is to run all steps.
+a space under **steps**. The default is to run all steps.
 If you choose to perform pre-processing of reads, you can turn on or off filtering (i.e. the removal of reads which
 map against a reference genome, most commonly a host genome). The default is for filtering to be on and reads to be mapped against
 a file hg38.fa in the database directory.
@@ -180,36 +180,36 @@ The called open reading frames will be attempted to be annotated using HMMs. The
 The name given in the **hmm_DBs** field must match the directory containing the HMMs.
 If you want IMP3 to later perform binning using Binny, you should let IMP3 at least annotated the essential genes.
 Different HMM collections have different names and :ref:`pre-calibrated cut-offs <HMMs>`. If your collection has cut-off values from calibration,
-set **cutoff** to --cut_tc. Otherwise, keep an empty string.
+set **cutoff** to ``--cut_tc``. Otherwise, keep an empty string.
 Regarding the naming, some HMM collections contain multiple models for the same functional entity (e.g. multiple HMMs for one KEGG KO).
 If you happen to have such a collection, and the models are named with the functional entity + _ + another identifier, you can set
-**trim** to "--trimall" and IMP3 will remove the underscore and final identifier for you.
+**trim** to `--trimall`` and IMP3 will remove the underscore and final identifier for you.
 	  
 .. code-block:: yaml	  
 	  
-hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
-hmm_settings: 
-  KEGG:
-    cutoff: ""
-    trim: "--trimall"
-  essential:
-    cutoff: "--cut_tc"
-    trim: ""
-  metacyc:
-    cutoff: ""
-    trim: "--trimall"
-  Cas:
-    cutoff: ""
-    trim: ""
-  Pfam_A:
-    cutoff: "--cut_tc"
-    trim: ""
-  dbCAN:
-    cutoff: ""
-    trim: ""
-  Resfams:
-    cutoff: ""
-    trim: ""
+  hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
+  hmm_settings: 
+    KEGG:
+      cutoff: ""
+      trim: "--trimall"
+    essential:
+      cutoff: "--cut_tc"
+      trim: ""
+    metacyc:
+      cutoff: ""
+      trim: "--trimall"
+    Cas:
+      cutoff: ""
+      trim: ""
+    Pfam_A:
+      cutoff: "--cut_tc"
+      trim: ""
+    dbCAN:
+      cutoff: ""
+      trim: ""
+    Resfams:
+      cutoff: ""
+      trim: ""
 	
 	
 --------------------------------
@@ -219,15 +219,14 @@ Analysis: proteomics preparation
 You could just use the amino acid output of prokka as a database for metaproteomics. IMP3 also gives you a file with
 Metaproteomics Analyzer-conformant FASTA headers, filtered to proteins having at least as many tryptic peptides as you
 wish, with incomplete non-tryptic ends cut away. It will also add a file with host (or other reference) proteins (which should be
-present in your :ref:`databases directory <ext_DBs>`), if you give this file's name. Finally, it can insert variants, but
- :ref:`beware <variants_metaP>`.
+present in your :ref:`databases directory <ext_DBs>`), if you give this file's name. Finally, it can insert variants, but :ref:`beware <variants_metaP>`.
 	  
 .. code-block:: yaml	  
 	
-proteomics:
-  filter_N_peptides: 2
-  host_proteome: ""
-  insert_variants: false
+  proteomics:
+    filter_N_peptides: 2
+    host_proteome: ""
+    insert_variants: false
   
 
 -----------------------------------
