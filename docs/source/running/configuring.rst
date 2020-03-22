@@ -7,7 +7,7 @@ Configuring IMP3 runs
 You can choose the steps IMP3 should perform, the data it should run on, and the settings
 of each step by means of a `.yaml <https://yaml.org/>`_ file. 
 
-This description will guide you through all sections, but note that the order of the items in the config file is arbitrary.
+This description will guide you through all sections of the config file, but note that the order of the items in the config file is arbitrary.
 You can also omit most fields and IMP3 will use default settings. Exceptions are the :ref:`inputs <input_options>` and
 an output directory.
 
@@ -16,14 +16,15 @@ an output directory.
 Inputs and directories
 ----------------------
 
-You need to tell IMP3 where the **raw or input files** are located. Give absolute paths. (The default is no input, and nothing will be done.)
+You need to tell IMP3 where the **raw or input files** are located. (The default is no input, and nothing will be done). Give absolute paths. 
 You also need to tell IMP3 where the **ouput** should be written. Please also give an absolute path here.
 It's advisable to give a **sample name** to IMP3. Avoid special characters. Punctuation will be converted to underscore.
 The sample name will be prepended to, e.g. the contig names. (If you don't give a sample name, IMP3 will take the last two parts of the output
-path, concatenate them with an underscore and use the results as sample name.)
-A directory for **temporary files** can be given. If you don't give an absolute path, it will be put into the output directory (and named tmp).
+path, concatenate them with an underscore and use the results as sample name).
+A directory for **temporary files** can be given. If you don't give an absolute path, it will be put into the output directory
+(and, for the default, named tmp).
 If you let IMP3 perform any steps that need :ref:`databases <ext_DBs>` (i.e. preprocessing (filtering of reads against a host genome, filtering rRNA reads),
-analysis (gene calling, functional annotation), or taxonomy (kraken)), you also need to give the path to one directory that houses all the
+analysis (gene calling, functional annotation), or taxonomy (kraken2)), you also need to give the path to one directory that houses all the
 databases.
 
 .. code-block:: yaml
@@ -48,12 +49,12 @@ IMP3 steps
 
 With IMP3, you can choose to run the whole workflow or just some :ref:`steps <steps_overview>`. List the steps, separated by
 a space under **steps**. The default is to run all steps.
-If you choose to perform pre-processing of reads, you can turn on or off filtering (i.e. the removal of reads which
+If you choose to perform pre-processing of reads, you can turn on or off **preprocessing_filtering** (i.e. the removal of reads which
 map against a reference genome, most commonly a host genome). The default is for filtering to be on and reads to be mapped against
 a file hg38.fa in the database directory.
 If you choose to let IMP3 summarize your results, you can define which steps should be taken. The default is to extract some
-stats on all performed steps and to visualize them. You can choose to do neither, in which case IMP3 will not make summaries.
-You can have only stats, or stats and visualization by stating one or both separate by a space.
+**stats** on all performed steps and to visualize them (**vis**). You can choose to do neither, in which case IMP3 will not make summaries.
+You can have only stats, or stats and visualization by stating one or both separated by a space.
 Don't expect IMP3 to do anything useful, if you choose only vis (visualization). 
 
 .. code-block:: yaml
@@ -68,7 +69,7 @@ Available hardware
 
 Tell IMP3 how large the **RAM** of your **normal** and **bigmem** cpus is and how many **cores** of each you want to maximally use in a step.
 (Defaults may be blatantly inappropriate for your system.)
-Currently you need to have both kinds of cores, or change the ;ref:`cluster config file <cluster_config>`. 
+Currently you need to have both kinds of cores, or change the :ref:`cluster config file <cluster_config>`. 
 
 .. code-block:: yaml
 
@@ -142,15 +143,15 @@ and the steps are merged using the Cap3 overlap assembler, which you can configu
 	  
 .. code-block:: yaml
 	  
-assembly: 
-  hybrid: true
-  assembler: megahit
-  mink: 25
-  maxk: 99
-  step: 4
-  cap3:
-    identity: 98
-    overlap: 100
+  assembly: 
+    hybrid: true
+    assembler: megahit
+    mink: 25
+    maxk: 99
+    step: 4
+    cap3:
+      identity: 98
+      overlap: 100
 
 
 ----------------------
@@ -183,7 +184,7 @@ Different HMM collections have different names and :ref:`pre-calibrated cut-offs
 set **cutoff** to ``--cut_tc``. Otherwise, keep an empty string.
 Regarding the naming, some HMM collections contain multiple models for the same functional entity (e.g. multiple HMMs for one KEGG KO).
 If you happen to have such a collection, and the models are named with the functional entity + _ + another identifier, you can set
-**trim** to `--trimall`` and IMP3 will remove the underscore and final identifier for you.
+**trim** to ``--trimall`` and IMP3 will remove the underscore and final identifier for you.
 	  
 .. code-block:: yaml	  
 	  
