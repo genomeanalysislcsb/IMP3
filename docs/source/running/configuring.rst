@@ -5,7 +5,8 @@ Configuring IMP3 runs
 =====================
 
 You can choose the steps IMP3 should perform, the data it should run on, and the settings
-of each step by means of a `.yaml <https://yaml.org/>`_ file. 
+of each step by means of a `.yaml <https://yaml.org/>`_ file. You have to point snakemake to the config file when you :ref:`run <run_IMP>`
+IMP3, using the ``--configfile`` argument.
 
 This description will guide you through all sections of the config file, but note that the order of the items in the config file is arbitrary.
 You can also omit most fields and IMP3 will use default settings. Exceptions are the :ref:`inputs <input_options>` and
@@ -63,13 +64,18 @@ Don't expect IMP3 to do anything useful, if you choose only vis (visualization).
   preprocessing_filtering: true
   summary_steps: "stats vis"
 
+.. _hardware:
+
 ------------------
 Available hardware 
 ------------------
 
 Tell IMP3 how large the **RAM** of your **normal** and **bigmem** cpus is and how many **cores** of each you want to maximally use in a step.
-(Defaults may be blatantly inappropriate for your system.)
-Currently you need to have both kinds of cores, or change the :ref:`cluster config file <cluster_config>`. 
+*Defaults may be blatantly inappropriate for your system. Note that if you don't let IMP3 submit jobs for you,
+most steps don't care about how much RAM you say you have, but some do (e.g. mapping, kraken).*
+The number of normal cores is determined by the ``--cores`` argument of your snakemake :ref:,call <run_IMP>`, rather than set here.
+Currently you need to have both kinds of cores, if you run IMP3 in :ref:`cluster mode <run_cluster>`,
+or you have to change the :ref:`cluster config file <cluster_config>`. 
 
 .. code-block:: yaml
 
