@@ -11,6 +11,8 @@ my $aa_table = &loadAA();
 
 my $gcnt = 1;
 my $lcont = "";
+
+my %loci =();
 open (IN, $gffFile);
 while (<IN>) {
     next if (/^\#/);
@@ -18,29 +20,32 @@ while (<IN>) {
     my @f = split(/\t/);
     if ($f[2] eq "CDS") { #0: contig 1:source 2:feature 3:start 4:end 5:. 6:sense 7:score 8:attribute
         my $seq = $f[0];
-	if ($seq ne $lcont){
-	   $lcont = $seq;
-	   $gcnt = 1
+        if(exists($loci{$seq})){
+         $loci{$seq} += 1;
         }else{
-	   $gcnt += 1;
-	}
-	my $id = $seq."_".$gcnt;
+         $loci{$seq} = 1;
+        }
+        my $id = $seq."_".$loci{$seq};
         #print STDERR $seq;
         my ($part) = ($f[8] =~ /partial=(\d\d);/);
         if ($f[6] eq "-") {
             $part = reverse($part);
         }
         my $startC = substr($part,0,1);
-	my $strand = $f[6] == "+" ? 1 : 2;
-        my $sequence = $db->seq($seq,$f[3], $f[4], $strand);
+        my $sequence = "";
+	if($f[6] eq "+"){ 
+             $sequence = $db->seq($seq,$f[3], $f[4]);
+        }else{
+             $sequence = $db->seq($seq,$f[4], $f[3]);
+        }
             if  (!defined( $sequence )) {
                 print STDERR "Sequence $seq not found. \n";
                 next;
             }
-	my $pro = &translate($sequence);
-	substr($pro,0,1,"M") if $startC == 0;
+	       my $pro = &translate($sequence);
+	       substr($pro,0,1,"M") if $startC == 0;
         print qq(\>$id\n$pro\n);
-				}
+    }
 }
 close(IN);
 exit;
