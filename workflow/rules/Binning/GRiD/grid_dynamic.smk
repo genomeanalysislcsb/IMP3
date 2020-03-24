@@ -17,7 +17,7 @@ if not "taxonomy" in IMP_STEPS:
         input:
             gather_bins
         output:
-            report("Stats/%s/bins.tsv" %ASS,"Binning")
+            report("Stats/%s/%s.bins.tsv" %(ASS,ASS),"Binning")
         params:
             runtime = "12:00:00",
             mem = MEMCORE
@@ -31,7 +31,7 @@ if not "taxonomy" in IMP_STEPS:
     rule bins_tar:
         input:
             dir="Binning/selected_DASTool_bins",
-            ctrl="Stats/%s/bins.tsv" %ASS,
+            ctrl="Stats/%s/%s.bins.tsv" %(ASS,ASS),
             bins=gather_bins
         output:
             "Binning/per_bin_results.tar.gz"
@@ -43,7 +43,7 @@ if not "taxonomy" in IMP_STEPS:
         message: "bins_tar: Compressing per-bin results of GRiD."
         shell:
             """
-            tar cvzf {output} {input.bins} && rm -r {input.bins} >> {log} 2>&1
+            tar cvzf {output} {input.bins} >> {log} 2>&1 && rm -r {input.bins} >> {log} 2>&1
             """
 
 

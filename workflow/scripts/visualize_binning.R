@@ -203,6 +203,7 @@ alluvial(cont2binM[,c(binners,"DASTool")],freq = cont2binM$freq,
          border=NA)
 dev.off()
 
+if("depthGeneStat" %in% ls()){
 for(bin in unique(cont2bin[["DASTool"]]$bin)){
   circ_genes <- gffGetID(gene_gff[gene_gff$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],])
   circ_genes <- gffAddComplete(circ_genes)
@@ -224,7 +225,7 @@ for(bin in unique(cont2bin[["DASTool"]]$bin)){
   col <- colorRampPalette(brewer.pal(11,"Spectral"))(256)[256:1][1+255*binTab$binScore.DASTool[binTab$selected_by_DASTool==bin]]
   makeCircosFiles(contig_length[contig_length$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],],
                    circ_genes,col,circos_files)
-}
+}}
 if("mg" %in% types){
   plotfile <- outplot[["mg"]]
   png(plotfile,width=17,height=12,units = "cm",res=300,pointsize=7)
@@ -249,6 +250,7 @@ if("mg" %in% types){
   box()
   dev.off()
 }
+if("depthGeneStat" %in% ls()){
 plotfile <- outplot[["mt"]]
 if("mt" %in% types){
   png(plotfile,width=17,height=12,units = "cm",res=300,pointsize=7)
@@ -278,6 +280,7 @@ if("mt" %in% types){
        labels=plotnames,las=2,lwd=0.5)
   box()
   dev.off()
+}
 }
 plotfile <- outplot[["vizbin"]]
 if("binny" %in% binners){

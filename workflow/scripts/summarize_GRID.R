@@ -83,7 +83,7 @@ if("gridTab" %in% ls()) binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool
 ###################################################################################################
 
 print("Writing concatenated bin table.")
-write.table(binTab,out_file,sep="\t",quote=F,row.names=F)
+write.table(binTab,out_file[[1]],sep="\t",quote=F,row.names=F)
 
 
 
