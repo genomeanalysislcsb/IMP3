@@ -8,7 +8,7 @@ rule get_proteins_DAStool:
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1
-    conda: ENVDIR + "/IMP_bioperl"
+    conda: ENVDIR + "/IMP_bioperl.yaml"
     log: "logs/binning_translateProteins.log"
     message: "get_proteins_DAStool: Translating sequences based on GFF - code 11."
     shell:

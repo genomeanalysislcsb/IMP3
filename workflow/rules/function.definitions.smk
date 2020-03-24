@@ -156,7 +156,7 @@ def gather_reads(wildcards):
 # for checkpoints:
 def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    if MG:
+    if MG or MGaln:
         return expand("Binning/selected_DASTool_bins/{i}/grid",
            i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
     else:
