@@ -14,6 +14,11 @@ if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in I
         if not MTaln:
             include:
                 'Assembly/common/bwa.index.rules'
+
+if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
+    if ANN:
+        include:
+            'Binning/DAStool/translate2DAStool.smk'
     
 
 localrules: prepare_input_data
@@ -42,6 +47,8 @@ if CONTIGS and not "assembly" in IMP_STEPS:
         input_files_list.append("Assembly/mt.reads.sorted.bam")
 if "assembly" in IMP_STEPS and LONG:
     input_files_list.append("Assembly/long_reads.fastq")
+if ANN and not "analysis" in IMP_STEPS:
+    input_files_list.append("Analysis/annotation/annotation_CDS_RNA_hmms.gff")
 
 # symlinks to be generated (from , to)
 symlinks_list = []

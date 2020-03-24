@@ -1,7 +1,7 @@
 rule cut_rRNA:
     input:
         "Assembly/%s.assembly.merged.fa" %ASS,
-        "Analysis/annotation/annotation.filt.gff"
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "Binning/binny/%s.assembly.merged.cut.fa" %ASS
     log: "logs/binning_cut_rRNA.log"

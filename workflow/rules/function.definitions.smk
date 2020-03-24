@@ -26,6 +26,8 @@ def get_ori_files(wildcards):
             inputs.append(MTaln)
     if "assembly" in IMP_STEPS and LONG:
         inputs.append(LONG)
+    if ANN and not "analysis" in IMP_STEPS:
+        inputs.append(ANN)
     if any(isinstance(i, list) for i in inputs):
         out = []
         for sublist in inputs:

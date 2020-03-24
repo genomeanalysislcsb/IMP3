@@ -171,7 +171,6 @@ The default databases of prokka should be in your :ref:`databases directory <ext
 .. code-block:: yaml
 
   prokka: 
-    prefix: prokka
     databases: 
       - "cm/Bacteria.i1i"
       - "genus/Staphylococcus.phr"

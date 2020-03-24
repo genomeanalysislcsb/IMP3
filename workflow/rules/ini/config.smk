@@ -65,6 +65,7 @@ LONG = os.environ.get("LONGREADS", config['raws']['LongReads'])
 CONTIGS = os.environ.get("CONTIGS", config['raws']['Contigs'])
 MGaln = os.environ.get("MGaln", config['raws']['Alignment_metagenomics'])
 MTaln = os.environ.get("MTaln", config['raws']['Alignment_metatranscriptomics'])
+ANN = os.environ.get("ANN", config['raws']['Gff'])
 SAMPLE = os.environ.get("SAMPLE", config['sample'])
 if SAMPLE == "":
     SAMPLE = "_".join(OUTPUTDIR.split("/")[-2:])

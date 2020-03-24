@@ -42,7 +42,7 @@ rule DAS_tool:
 rule format_protein_names:
     input:
         "Analysis/annotation/prokka.faa",
-        "Analysis/annotation/annotation.filt.gff"
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "Analysis/annotation/annotation.filt.contig2ID.tsv",
         "Binning/prokka.renamed.faa"
