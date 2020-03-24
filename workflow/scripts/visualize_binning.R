@@ -282,8 +282,9 @@ if("mt" %in% types){
   dev.off()
 }
 }
+if(file.exists("Binning/binny"){
 plotfile <- outplot[["vizbin"]]
-if("binny" %in% binners){
+#if("binny" %in% binners){
   png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
   par(mar=c(0.5,0.5,0.5,0.5))
   vizbin <- read.delim(vizbin_file,stringsAsFactors = F,header=F)
