@@ -43,7 +43,7 @@ while (<IN>) {
                 next;
             }
 	       my $pro = &translate($sequence);
-	       substr($pro,0,1,"M") if $startC == 0;
+	       substr($pro,0,1,"M") if $f[8] =~ /partial=/ && $startC == 0;
         print qq(\>$id\n$pro\n);
     }
 }
