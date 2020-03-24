@@ -32,8 +32,12 @@ while (<IN>) {
             $part = reverse($part);
         }
         my $startC = substr($part,0,1);
-	       my $strand = $f[6] eq "+" ? 1 : 2;
-        my $sequence = $db->seq($seq,$f[3], $f[4], $strand);
+        my $sequence = "";
+	if($f[6] eq "+"){ 
+             $sequence = $db->seq($seq,$f[3], $f[4]);
+        }else{
+             $sequence = $db->seq($seq,$f[4], $f[3]);
+        }
             if  (!defined( $sequence )) {
                 print STDERR "Sequence $seq not found. \n";
                 next;
