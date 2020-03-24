@@ -282,7 +282,7 @@ if("mt" %in% types){
   dev.off()
 }
 }
-if(file.exists("Binning/binny"){
+if(file.exists("Binning/binny")){
 plotfile <- outplot[["vizbin"]]
 #if("binny" %in% binners){
   png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
