@@ -34,7 +34,7 @@ include:
     '../../Binning/GRiD/grid_dynamic.smk'
 
 if not 'taxonomy' in IMP_STEPS:
-    inputs_binning.append("Binning/selected_DASTool_bins/per_bin_results.tar.gz")
+    inputs_binning.append("Binning/per_bin_results.tar.gz")
 
 
 ## master command

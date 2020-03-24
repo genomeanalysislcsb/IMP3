@@ -34,7 +34,7 @@ if not "taxonomy" in IMP_STEPS:
             ctrl="Stats/%s/bins.tsv" %ASS,
             bins=gather_bins
         output:
-            "Binning/selected_DASTool_bins/per_bin_results.tar.gz"
+            "Binning/per_bin_results.tar.gz"
         threads: 1
         params:
             runtime = "8:00:00",

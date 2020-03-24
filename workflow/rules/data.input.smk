@@ -1,19 +1,19 @@
 if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in IMP_STEPS or 'binning' in IMP_STEPS):
     if CONTIGS:
         include:
-            'Assembly/common/contig.rules'
+            'Assembly/common/contig.smk'
         include:
-            'Assembly/common/mapping.rules'
+            'Assembly/common/mapping.smk'
         include:
-            'Assembly/common/contig-length.rules'
+            'Assembly/common/contig-length.smk'
         include:
-            'Assembly/common/contig-depth.rules'
+            'Assembly/common/contig-depth.smk'
         if not MGaln:
             include:
-                'Assembly/common/bwa.index.rules'
+                'Assembly/common/bwa.index.smk'
         if not MTaln:
             include:
-                'Assembly/common/bwa.index.rules'
+                'Assembly/common/bwa.index.smk'
 
 if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
     if ANN:
