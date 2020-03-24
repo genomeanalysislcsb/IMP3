@@ -1,4 +1,5 @@
-.. _assembly_step:
+
+.. _step_assembly:
 
 ====================
 IMP3 steps: Assembly

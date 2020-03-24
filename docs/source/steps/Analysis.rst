@@ -1,3 +1,6 @@
+
+.. _step_analysis:
+
 ====================
 IMP3 steps: Analysis
 ====================

@@ -144,7 +144,7 @@ If you let IMP3 do an **assembly**, you have the choice between Megahit and Meta
 If you have metagenomic and metatranscriptomic reads, you can choose between a **hybrid** assembly of both or a purely metagenomic
 assembly. Hybrid metaG/metaT assemblies are currently only possible with Megahit. On the other hand,
 Metaspades is your only option, if you want to assemble long and short metagenomic reads.
-You can set the minimal and maximal *k*-mer size and the intervals between. IMP3 performs an :ref:`iterative assembly <assembly_step>`
+You can set the minimal and maximal *k*-mer size and the intervals between. IMP3 performs an :ref:`iterative assembly <step_assembly>`
 and the steps are merged using the Cap3 overlap assembler, which you can configure.
 	  
 .. code-block:: yaml
