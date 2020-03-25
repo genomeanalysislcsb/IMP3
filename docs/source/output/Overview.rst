@@ -17,6 +17,6 @@ Here's an overview of the all outputs:
     :alt: IMP3 outputs
 	
 You can run :ref:`reporting <run_report>` to also get more information on the run, together with the visualizations in a .html
-document.
+document. All outputs are explained in more detail in the next sections.
 
 

@@ -103,6 +103,13 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    multi_output/Dereplication
    multi_output/Re-binning
 
+.. toctree::
+   :maxdepth: 1
+   :caption: FAQ
+   :hidden:
+   :name: FAQ
+
+   FAQ
 
 .. * :ref:`genindex`
 .. * :ref:`modindex`
