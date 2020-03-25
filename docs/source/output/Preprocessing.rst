@@ -16,7 +16,7 @@ called ``<mg|mt>.<r1|r2>.fq.gz``. All IMP3 runs with preprocessing will also hav
 
 Metatranscriptomic reads are always filtered to remove rRNA reads using `SortMeRNA <https://github.com/biocore/sortmerna>`_ .
 The remaining reads from this step are ``mt.<r1|r2|se>.trimmed.rna.fq.gz``.
-If you chose to filter your reads by mapping against a reference, you will also find ``mt.<r1|r2|se>.trimmed.rna_filtered.<reference>_filtered.fq.gz`
+If you chose to filter your reads by mapping against a reference, you will also find ``mt.<r1|r2|se>.trimmed.rna_filtered.<reference>_filtered.fq.gz``
 and/or ``mg.<r1|r2|se>.trimmed.<reference>_filtered.fq.gz``.
 
 **Why is there a Preprocessing directory if you did not choose to do preprocessing?** If you supplied already preprocessed reads,
