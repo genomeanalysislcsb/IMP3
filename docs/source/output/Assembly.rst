@@ -46,7 +46,8 @@ columns (1: contig names, 2: 0 (= the first position in bed coordinates), 3: con
 7: the coverage breadth, i.e. proportion of covered positions (scaling 0-1)).
 
 
-.. [*] The name of the assembly depends on the workflow: if you have only metagenomic reads, have chosen the non-hybrid assembly workflow, or have provided your own assembly, the assembly will be referred to by ``mg. If you used only metatranscriptomic reads, it will be 
-   referred to by ``mt. If you chose the hybrid metagenomics and metatranscriptomics workflow and supplied both kinds of reads, it will be
-   represented by ``mgmt.
+.. [*] The name of the assembly depends on the workflow: if you have only metagenomic reads, have chosen the non-hybrid assembly workflow,
+   or have provided your own assembly, the assembly will be referred to by ``mg``. If you used only metatranscriptomic reads, it will be 
+   referred to by ``mt``. If you chose the hybrid metagenomics and metatranscriptomics workflow and supplied both kinds of reads, it will be
+   represented by ``mgmt``.
 
