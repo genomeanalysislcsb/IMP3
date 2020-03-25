@@ -10,8 +10,7 @@ IMP3, using the ``--configfile`` argument.
 
 This description will guide you through all sections of the config file, but note that the order of the items in the config file is arbitrary.
 You can also omit most fields and IMP3 will use default settings. Exceptions are the :ref:`inputs <input_options>` and
-an output directory.
-
+an output directory. IMP3 will write the used configuration including the defaults into the output folder as ``sample.config.yaml``.
 
 ----------------------
 Inputs and directories
