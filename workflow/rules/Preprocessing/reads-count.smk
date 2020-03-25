@@ -63,7 +63,7 @@ checkpoint reads_gziped:
     input:
         'Stats/{type}/{type}.read_counts.txt'
     output:
-        "Stats/preprocessing_{type}.reads.detected"
+        "status/preprocessing_{type}.reads.detected"
     params:
         runtime = "8:00:00",
         mem = MEMCORE
