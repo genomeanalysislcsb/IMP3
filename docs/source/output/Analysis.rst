@@ -1,10 +1,13 @@
+
+.. _output_analysis:
+
 =====================
 IMP3 output: Analysis
 =====================
 
-
-
-
+The **Analysis** directory contains the output of the :ref:`taxonomy <output_taxonomy>` step. The exception
+is the output of GTDBtk, which is run on the bins selected by DASTool. See the :ref:`next <output_taxonomy>`
+section for details.
 
 .. _output_analysis_stats:
 

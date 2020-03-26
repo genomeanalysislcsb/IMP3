@@ -115,7 +115,8 @@ Pre-processing: filtering
 -------------------------
 
 If you want IMP3 to pre-process your reads and you've chosen to map against a reference genome (e.g. host),
-you can set the file name of the reference genome, which should be located or linked to in the :ref:`databases directory <ext_DBs>`.
+you can set the file name of the reference genome, which should be located or linked to in the :ref:`databases directory's <ext_DBs>`
+subfolder **filtering**.
 IMP3 will remove rRNA reads from your metatranscriptomic reads. You can decide which databases to use for this. The default is
 to use the databases supplied by sort me RNA. You should have these in the :ref:`databases directory <ext_DBs>`, too.
 
