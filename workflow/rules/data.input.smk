@@ -80,12 +80,12 @@ if not 'preprocessing' in IMP_STEPS and MT:
 fake_output = []
 if not 'preprocessing' in IMP_STEPS and MG and len(MG) == 2:
     fake_output.append("Preprocessing/mg.se.fq")
-if not 'preprocessing' in IMP_STEPS and MG and len(MG) == 1:
+if MG and len(MG) == 1:
     fake_output.append("Preprocessing/mg.r1.fq")
     fake_output.append("Preprocessing/mg.r2.fq")
 if not 'preprocessing' in IMP_STEPS and MT and len(MT) == 2:
     fake_output.append("Preprocessing/mt.se.fq")
-if not 'preprocessing' in IMP_STEPS and MT and len(MT) == 1:
+if MT and len(MT) == 1:
     fake_output.append("Preprocessing/mt.r1.fq")
     fake_output.append("Preprocessing/mt.r2.fq")
 
