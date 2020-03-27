@@ -35,8 +35,8 @@ rule gzip_ori_files:
     output:
         'Preprocessing/{type}.{read}.fq.gz'
     wildcard_constraints:
-        read="r.",
-        type="m."
+        read="se",
+        type="mg"
     params:
         runtime = "8:00:00",
         mem = MEMCORE
