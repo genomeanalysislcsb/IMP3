@@ -1,4 +1,3 @@
-import pandas as pd
 
 localrules: grid_all
 

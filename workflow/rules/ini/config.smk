@@ -8,6 +8,7 @@ import bz2
 import re
 from copy import deepcopy
 import subprocess
+import pandas as pd
 
 def dict_merge(a, b):
     """
@@ -105,6 +106,8 @@ elif CONTIGS and MG:
 elif CONTIGS and MT:
     TYPES = ['mt']
     ASS = 'mg'
+
+#print(TYPES)
 
 # settings
 IMP_STEPS = sorted(os.environ.get("IMP_STEPS", config['steps']).split())
