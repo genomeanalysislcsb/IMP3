@@ -70,8 +70,8 @@ in ``<mg|mt>.variants.samtools.vcf.gz`` with the index file ``<mg|mt>.variants.s
 Taxonomy
 --------
 
-The **Analysis** directory contains the output of the :ref:`taxonomy <output_taxonomy> step. The exception
-is the output of GTDBtk, which is run on the bins selected by DASTool. See the :ref:`next <output_taxonomy>
+The **Analysis** directory contains the output of the :ref:`taxonomy <output_taxonomy>` step. The exception
+is the output of GTDBtk, which is run on the bins selected by DASTool. See the :ref:`next <output_taxonomy>`
 section for details.
 
 .. _output_analysis_stats:
