@@ -158,8 +158,6 @@ def reads_input_files_SE(wildcards):
         'Preprocessing/{type}.se.preprocessed.fq',
     ]
     trimmed_fq_files = [
-        'Preprocessing/{type}.r1.trimmed.fq',
-        'Preprocessing/{type}.r2.trimmed.fq',
         'Preprocessing/{type}.se.trimmed.fq'
     ]
     if wildcards.type != "mg" :

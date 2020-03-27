@@ -2,7 +2,7 @@ rule fastqc_raw:
     input:
         'Preprocessing/{type}.se.fq'
     output:
-        'Stats/{type}/{type}.se_fastqc.html'
+        'Stats/{type}/{type}.se_fastqc.html',
         'Stats/{type}/{type}.se_fastqc.zip'
     threads: 2
     params:
