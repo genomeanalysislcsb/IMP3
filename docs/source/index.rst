@@ -61,8 +61,8 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    output/Preprocessing
    output/Assembly
    output/Analysis
-   output/Binning
    output/Taxonomy
+   output/Binning
    output/Logs
    
 .. toctree::

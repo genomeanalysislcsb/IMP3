@@ -157,7 +157,7 @@ write.table(t(c("first",est)),
 cdb <- dbscan(contigInfo[,coco],est,pk)
 
 #count contigs in clusters and document clustering steps
-pdf(paste0(binny_dir,paste("/scatterPlot1",pk,pk,"pdf",sep=".")))
+pdf(paste0(binny_dir,paste("/scatterPlot1",pk,nn,"pdf",sep=".")))
 plot(contigInfo[,coco],pch=16,cex=0.25,ann=F,axes=F)
 j <- 1
 cdbTab <- data.frame("cluster"=names(table(cdb$cluster)),"contigs"=0,"numberEss"=0,"uniqueEss"=0,stringsAsFactors=F)

@@ -6,7 +6,7 @@ IMP3 output: Taxonomy
 =====================
 
 The output of the **taxonomy** step is mostly written to ``taxonomy/`` in the **Analysis** directory. The exception
-is the output of GTDBtk, which is run on the bins selected by DASTool.
+is the output of GTDBtk, which is run on the bins selected by DASTool and has its results summarized with the bins.
 
 
 .. _output_taxonomy_stats:
