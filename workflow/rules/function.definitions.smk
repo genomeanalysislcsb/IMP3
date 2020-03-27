@@ -121,7 +121,6 @@ def reads_input_files(wildcards):
     ]
     if wildcards.type not in TYPES:
         return 'reads_input_files-no-file-here'
-    if MG or MT:
         base = raw_fq_files
         if 'preprocessing' in IMP_STEPS:
             base += preprocessed_fq_files
