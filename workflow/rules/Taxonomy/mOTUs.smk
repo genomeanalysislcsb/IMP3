@@ -29,9 +29,12 @@ rule motus:
 	then
 	    chmod 666 $CONDA_PREFIX/share/motus-*/db_mOTU/*
 	fi
-        if [ -s {input[2]} ]
+        if [ -s {input[2]} ] && [ -s {input[0]} ] && [ -s {input[1]} ]
         then
             motus profile -f {input[0]} -r {input[1]} -s {input[2]} -A -c -t {threads} -o {output} >& {log}
+        elif [ -s {input[2]} ]
+        then
+            motus profile -s {input[2]} -A -c -t {threads} -o {output} >& {log}
         else
             motus profile -f {input[0]} -r {input[1]} -A -c -t {threads} -o {output} >& {log}
         fi 

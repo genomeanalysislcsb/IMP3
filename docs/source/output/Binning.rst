@@ -2,6 +2,15 @@
 IMP3 output: Binning
 ====================
 
+DASTool result:	selected_ DASTool_summary.txt
+contigs per bin:	selected_ DASTool_bins/<bin>.contigs.fa
+protein predictions:	 prokka.renamed.faa
+single-copy ann.:	prokka.renamed.faa.<taxon>.scg
+binner inputs:	selected_<binner>.eval
+others:	selected_ DASTool_<data>.<suffix>
+Binner outputs:	<binner>/
+Binner final results:	<binner>/scaffold2bin.tsv
+More results per bin:	per_bin_results.tar.gz
 
 
 
