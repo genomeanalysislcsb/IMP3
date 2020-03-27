@@ -53,8 +53,12 @@ if MG and MT:
 # Single omics MG workflow
 elif MG:
     if 'preprocessing' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Preprocessing.smk"
+        if len(MG) == 2:
+            include:
+                "workflow/rules/modules/single_omics/mg/Preprocessing.smk"
+        if len(MG) == 1:
+            include:
+                "workflow/rules/modules/single_omics/mg/PreprocessingSE.smk"
 
     if 'assembly' in IMP_STEPS:
         include:
