@@ -80,6 +80,6 @@ section for details.
 Stats from the analysis step
 ----------------------------
 
-In addition to the annotation and SNP calling, the analysis step will also collect some stats for you and save them to the ``Stats
+In addition to the annotation and SNP calling, the analysis step will also collect some stats for you and save them to the **Stats**
 directory. 
 
