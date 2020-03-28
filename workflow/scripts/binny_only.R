@@ -104,7 +104,7 @@ annot.E.prelim$contig <- as.character(annot.E.prelim$contig)
 save.image(paste0(binny_dir,"/binny_WS.Rdata"))
 }else{
   for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
-		system(paste0("touch ",o)
+		system(paste0("touch ",o))
 	}
 	stop("No essential genes. Stopping binny.")
 }
@@ -118,7 +118,7 @@ if(nrow(coords)>0){
   save.image(paste0(binny_dir,"/binny_WS.Rdata"))
 }else{
 for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
-		system(paste0("touch ",o)
+		system(paste0("touch ",o))
 	}
 	stop("No Vizbin coordinates. Stopping binny.")
 }
