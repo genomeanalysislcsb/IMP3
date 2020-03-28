@@ -42,7 +42,7 @@ for(binner in binners){
 ## Read DAStool output for selected bins
 ###################################################################################################
 print("Reading DAStool results.")
-if(!file.exists("Binning/selected_DASTool_summary.txt")){
+if(file.info("Binning/selected_DASTool_summary.txt")$size==0){
   print("No Output from DAStool!")
   system(paste0("touch ",out_file))
 }else{
