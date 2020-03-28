@@ -42,7 +42,11 @@ if not "taxonomy" in IMP_STEPS:
         message: "bins_tar: Compressing per-bin results of GRiD."
         shell:
             """
-            tar cvzf {output} {input.bins} >> {log} 2>&1 && rm -r {input.bins} >> {log} 2>&1
+            if [ -z "$(ls -A {input.dir})" ]; then
+              tar cvzf {output} {input.bins} >> {log} 2>&1 && rm -r {input.bins} >> {log} 2>&1
+            else
+              touch {output}
+            fi
             """
 
 

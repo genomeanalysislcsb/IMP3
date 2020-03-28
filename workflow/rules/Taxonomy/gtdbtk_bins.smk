@@ -62,7 +62,7 @@ if MG:
         shell:
             """
             if [ -z "$(ls -A {input.dir})" ]; then
-            tar czf {output} {input.gridbins} {input.gtdbbins} && rm -r {input.gridbins} {input.gtdbbins} >> {log} 2>&1
+              tar czf {output} {input.gridbins} {input.gtdbbins} && rm -r {input.gridbins} {input.gtdbbins} >> {log} 2>&1
             else
               touch {output}
             fi
@@ -83,6 +83,10 @@ else:
         message: "bins_tar: Compressing per-bin results of GTDBtk."
         shell:
             """
-            tar czf {output} {input.gtdbbins} && rm -r {input.gtdbbins} >> {log} 2>&1
+            if [ -z "$(ls -A {input.dir})" ]; then
+              tar czf {output} {input.gtdbbins} && rm -r {input.gtdbbins} >> {log} 2>&1
+            else
+              touch {output}
+            fi
             """
 
