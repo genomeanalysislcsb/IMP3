@@ -44,7 +44,7 @@ annot_file          <- snakemake@input[["gff"]]
 function_script     <- snakemake@params[["plot_functions"]]
 pk 		    <- snakemake@config[["binning"]][["binny"]][["pk"]]
 nn 		    <- snakemake@config[["binning"]][["binny"]][["nn"]]
-all_outputs <- <- snakemake@output
+all_outputs <- snakemake@output
 
 ###################################################################################################
 ## Initialize functions for various calculations and normalizations
