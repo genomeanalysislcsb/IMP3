@@ -49,8 +49,8 @@ rule get_present_mOTUs:
     message: "get_present_mOTUs: Extracting identity of present mOTUs."
     shell:
         """
-        grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output}
-	"""
+        grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output} || true
+	    """
 
 rule extract_mOTU_db_genes:
     input:
@@ -92,8 +92,12 @@ rule blast_mOTU_db_genes:
     message: "blast_mOTU_db_genes: Blasting {wildcards.COG} genes to present mOTUs."
     shell:
         """
-        makeblastdb -in {input[0]} -dbtype nucl -parse_seqids > {log} 2>&1
-        blastn -db {input[0]} -query {input[1]} -outfmt 7 -out {output} -max_target_seqs 1 > {log} 2>&1
+        if [ -s {input[0]} ]; then 
+          makeblastdb -in {input[0]} -dbtype nucl -parse_seqids > {log} 2>&1
+          blastn -db {input[0]} -query {input[1]} -outfmt 7 -out {output} -max_target_seqs 1 > {log} 2>&1
+        else
+          touch {output}
+        fi
         """
 
 rule parse_blast_mOTU:
