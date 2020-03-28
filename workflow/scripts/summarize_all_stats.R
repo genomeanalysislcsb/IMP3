@@ -96,20 +96,22 @@ if(file.exists(paste0("Analysis/taxonomy/mOTUs/",types[1],".mOTU.counts.tsv"))){
   
   print("Reading mOTU results.")
   for(type in types){
-    motuRep <- read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F, comment.char = "#")
-    motuTemp <- data.frame("type"=type,
+	  if(file.info(motuStats_files[[type]])$size>0){
+      motuRep <- read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F, comment.char = "#")
+      motuTemp <- data.frame("type"=type,
                            "step"=c("mOTU mapping reads",
                                     "mOTU species","mOTU genera"),
                            "number"=c(motuRep$V2[1],
                                       length(grep("s__",motuRep$V1)),length(grep("g__",motuRep$V1))),
                            stringsAsFactors=F)
-    rm(motuRep)
-    if(!"statsTab" %in% ls()){
-      statsTab <- motuTemp
-    }else{
-      statsTab <- rbind(statsTab,
+      rm(motuRep)
+      if(!"statsTab" %in% ls()){
+        statsTab <- motuTemp
+      }else{
+        statsTab <- rbind(statsTab,
                         motuTemp)
-    }
+      }
+		}
   }
 }
 ###################################################################################################
@@ -171,19 +173,21 @@ if(file.exists(paste0("Analysis/annotation/",types[1],".",dbs[1],".counts.tsv.su
   
   print("Reading map stats for features.")
   for(type in types){
-    mapTemp <- data.frame("type"=type,
+	  if(file.info(fcStats_files[[type]][[x]])$size>0){
+      mapTemp <- data.frame("type"=type,
                           "step"=paste("mapping to", dbs),
                           "number"=sapply(dbs,function(x){
                             mapTab <- read.delim(fcStats_files[[type]][[x]],stringsAsFactors=F,header = T)
                             mapTab[1,2]
                           }),
                           stringsAsFactors=F)
-    if(!"statsTab" %in% ls()){
-      statsTab <- mapTemp
-    }else{
-      statsTab <- rbind(statsTab,
+      if(!"statsTab" %in% ls()){
+        statsTab <- mapTemp
+      }else{
+        statsTab <- rbind(statsTab,
                         mapTemp)
-    }
+      }
+		}
   }
 }
 ###################################################################################################
@@ -478,6 +482,8 @@ print("Writing concatenated read table.")
 write.table(statsTab,out_file_tsv,sep="\t",quote=F,row.names=F)
 if("binTab" %in% ls()){
   write.table(binTab,out_file_bins,sep="\t",quote=F,row.names=F)
+}else if(length(snakemake@output)>2){
+	system(paste0("touch ",out_file_bins))
 }
 save.image(out_file_rdat)
 
