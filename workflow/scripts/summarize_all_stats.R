@@ -176,7 +176,7 @@ if(file.exists(paste0("Analysis/annotation/",types[1],".",dbs[1],".counts.tsv.su
       mapTemp <- data.frame("type"=type,
                           "step"=paste("mapping to", dbs),
                           "number"=sapply(dbs,function(x){
-													  if(file.info(fcStats_files[[type]][[x]])$size>0){
+													  if(file.exists(fcStats_files[[type]][[x]])){
                             mapTab <- read.delim(fcStats_files[[type]][[x]],stringsAsFactors=F,header = T)
                             mapTab[1,2]
 														}else{0}
