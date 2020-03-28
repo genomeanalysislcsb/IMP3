@@ -345,9 +345,13 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
 ###################################################################################################
 ## Binning stats
 ###################################################################################################
-if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
+bin_in_file <- paste0("Stats/",ass,"/",ass,".bins.tsv")
+if(file.exists(bin_in_file)){
+  if(file.info(bin_in_file)$size==0){
+	  system(paste0("touch ",out_file_bins))
+	}else{
   print("Reading binning stats.")
-  binTab <- read.delim(paste0("Stats/",ass,"/",ass,".bins.tsv"),
+  binTab <- read.delim(bin_in_file,
                        stringsAsFactors=F,header = T)
   
   rnas_bin_tab <- matrix(0,nrow=length(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]),
@@ -474,6 +478,7 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
                       binTemp)
   }
 }
+}
 ###################################################################################################
 ## Save concatenated output
 ###################################################################################################
@@ -482,8 +487,6 @@ print("Writing concatenated read table.")
 write.table(statsTab,out_file_tsv,sep="\t",quote=F,row.names=F)
 if("binTab" %in% ls()){
   write.table(binTab,out_file_bins,sep="\t",quote=F,row.names=F)
-}else if(length(snakemake@output)>2){
-	system(paste0("touch ",out_file_bins))
 }
 save.image(out_file_rdat)
 
