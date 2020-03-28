@@ -96,7 +96,7 @@ if(file.exists(paste0("Analysis/taxonomy/mOTUs/",types[1],".mOTU.counts.tsv"))){
   
   print("Reading mOTU results.")
   for(type in types){
-	  if(file.info(motuStats_files[[type]])$size>0){
+	  if(nrow(read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F,nrows=2))>1){
       motuRep <- read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F, comment.char = "#")
       motuTemp <- data.frame("type"=type,
                            "step"=c("mOTU mapping reads",
