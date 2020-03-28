@@ -49,7 +49,7 @@ rule get_present_mOTUs:
     message: "get_present_mOTUs: Extracting identity of present mOTUs."
     shell:
         """
-        grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output} || touch {output}
+        grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output} || touch {output}
 	    """
 
 rule extract_mOTU_db_genes:
