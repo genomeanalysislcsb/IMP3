@@ -8,7 +8,7 @@ rule maxbin:
     threads: 4
     params:
         runtime = "24:00:00",
-        mem = BIGMEMCORE
+        mem = MEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"
     log: "logs/binning_maxbin.log"
     message: "maxbin: Running MaxBin."

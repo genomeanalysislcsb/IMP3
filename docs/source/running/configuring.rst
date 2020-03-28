@@ -274,6 +274,7 @@ If you ask IMP3 to bin your contigs, you can run MaxBin2 and/or MetaBAT2 and/or 
 For MaxBin2 and binny, it is required that you have metagenomics depths: if you have only metatranscriptomics reads / assemblies,
 only MetaBAT2 will run.
 Each binner comes with a few settings that you may want to configure.
+The minimum cutoff for MetaBAT is 1500. binny has no minimum number.
 If you want to get VizBin output, you have to choose :ref:`binny <wtf_is_binny>`.
 
 .. code-block:: yaml

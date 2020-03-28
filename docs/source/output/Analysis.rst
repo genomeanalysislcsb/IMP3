@@ -35,7 +35,8 @@ contigs, separated by ";", 3: left-most coordinate (as described for the .gff fo
 right-most coordinate (as described for the .gff format) or coordinates (separated by ";"), 5: feature direction or directions
 (separated by ";"), 6: total length of feature(s), 7: total counted reads).
 In addition, summaries of the numbers of
-reads that were mapped and overlapped with the features are found in the respective files ending on ``tsv.summary``. 
+reads that were mapped and overlapped with the features are found in the respective files ending on ``tsv.summary``. If you only
+had metatranscriptomic reads to start with, you will not get data for rRNA, because rRNA has been filtered out.
 
 The FASTA file for proteomics is called ``proteomics.final.faa``. The header for the protein predictions is in a format that
 should work with most proteomics search engines and analysis tools, in particular the `MetaProteomeAnalyzer <http://www.mpa.ovgu.de/>`_ .
