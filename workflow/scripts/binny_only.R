@@ -99,6 +99,7 @@ if(!"essential" %in% colnames(annot.1)){
    for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
 		system(paste0("touch ",o))
 		}
+		print("no essential genes. Ending Binny")
 	}else{
 print("Creating annotation table")
 annot.E.prelim <- annot.1[,c("contig","start","end","essential")]
@@ -115,6 +116,7 @@ if(nrow(coords)==0){
 for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
 		system(paste0("touch ",o))
 	}
+	print("no vizbin coordinates. Ending Binny")
 	}else{
 print("DONE: Reading data")
   save.image(paste0(binny_dir,"/binny_WS.Rdata"))

@@ -42,6 +42,10 @@ for(binner in binners){
 ## Read DAStool output for selected bins
 ###################################################################################################
 print("Reading DAStool results.")
+if(!file.exists("Binning/selected_DASTool_summary.txt")){
+  print("No Output from DAStool!")
+  system(paste0("touch ",out_file))
+}else{
 selTab <- read.delim("Binning/selected_DASTool_summary.txt",stringsAsFactors=F)
 binTab$selected_by_DASTool <- sapply(binTab$bin, function(x){
   if(x %in% selTab$bin){
@@ -115,6 +119,6 @@ print(paste("Writing concatenated bin table with",nrow(binTab),"x",ncol(binTab),
 
 
 write.table(binTab,file=out_file,sep="\t",quote=F,row.names=F)
-
+}
 
 
