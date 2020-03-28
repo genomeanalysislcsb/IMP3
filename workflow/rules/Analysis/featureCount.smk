@@ -20,7 +20,7 @@ rule feature_count:
 rule feature_count_gene:
     input:
         "Assembly/{type}.reads.sorted.bam",
-        "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
+        "Analysis/annotation/intermediary/annotation_CDS_RNA_hmms.gff"
     output:
         "Analysis/annotation/{type}.{feature}_counts.tsv"
     params:
