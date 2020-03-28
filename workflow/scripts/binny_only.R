@@ -44,7 +44,7 @@ annot_file          <- snakemake@input[["gff"]]
 function_script     <- snakemake@params[["plot_functions"]]
 pk 		    <- snakemake@config[["binning"]][["binny"]][["pk"]]
 nn 		    <- snakemake@config[["binning"]][["binny"]][["nn"]]
-
+all_outputs <- <- snakemake@output
 
 ###################################################################################################
 ## Initialize functions for various calculations and normalizations
@@ -95,19 +95,33 @@ annot.1[,2:3] <- sapply(annot.1[2:3], as.numeric)
 save.image(paste0(binny_dir,"/binny_WS.Rdata"))
 
 # create annotation table
+if("essential" %in% colnames(annot.1)){
 print("Creating annotation table")
 annot.E.prelim <- annot.1[,c("contig","start","end","essential")]
 annot.E.prelim <- annot.E.prelim[!is.na(annot.E.prelim$essential),]
 annot.E.prelim$essential <- as.character(annot.E.prelim$essential)
 annot.E.prelim$contig <- as.character(annot.E.prelim$contig)
 save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+}else{
+  for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
+		system(paste0("touch ",o)
+	}
+	stop("No essential genes. Stopping binny.")
+}
 
 print("Reading in vizbin coordinates")
 coords <- read.table(coords_file, colClasses=c("factor", "numeric", "numeric"),
                      sep="\t", col.names=c("contig", "x", "y"))
 
-print("DONE: Reading data")
-save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+if(nrow(coords)>0){
+	print("DONE: Reading data")
+  save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+}else{
+for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
+		system(paste0("touch ",o)
+	}
+	stop("No Vizbin coordinates. Stopping binny.")
+}
 
 ###################################################################################################
 ## Incorporate coordinates from vizbin
@@ -529,3 +543,4 @@ rm(list=c("contigInfo","coco","pk","nn","clusterRes","essPal","cI","cI2","hi","a
 print("START: Saving R image: binny_WS.Rdata")
 save.image(paste0(binny_dir,"/binny_WS.Rdata"))
 print("DONE: Saving R image: binny_WS.Rdata")
+
