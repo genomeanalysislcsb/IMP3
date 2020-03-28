@@ -173,20 +173,20 @@ if(file.exists(paste0("Analysis/annotation/",types[1],".",dbs[1],".counts.tsv.su
   
   print("Reading map stats for features.")
   for(type in types){
-	  if(file.info(fcStats_files[[type]][[x]])$size>0){
       mapTemp <- data.frame("type"=type,
                           "step"=paste("mapping to", dbs),
                           "number"=sapply(dbs,function(x){
+													  if(file.info(fcStats_files[[type]][[x]])$size>0){
                             mapTab <- read.delim(fcStats_files[[type]][[x]],stringsAsFactors=F,header = T)
                             mapTab[1,2]
+														}else{0}
                           }),
                           stringsAsFactors=F)
-      if(!"statsTab" %in% ls()){
+    if(!"statsTab" %in% ls()){
         statsTab <- mapTemp
-      }else{
+    }else{
         statsTab <- rbind(statsTab,
                         mapTemp)
-      }
 		}
   }
 }
