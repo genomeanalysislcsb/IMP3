@@ -43,6 +43,8 @@ rule vizbin:
            then
              paste <(grep "^>" {input} | sed -e 's/>//') \
               <(cat $TMP_VIZBIN/data.points | sed -e 's/,/\t/') > {output}
+           else
+             touch {output}
            fi
         rm -rf $TMP_VIZBIN
         """
