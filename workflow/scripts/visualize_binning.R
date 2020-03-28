@@ -162,7 +162,7 @@ if(!"binTab" %in% ls()){
  for(o in unlist(outplot)){
       system(paste0("touch ",o))
     }
-    print("No binning stats. Aborting visualization."))
+    print("No binning stats. Aborting visualization.")
 }else{
 
 binners <- unique(binTab$binner)
