@@ -158,6 +158,13 @@ circos_files       <- "Visualization/"
 print("Loading data.")
 load(stats_image)
 
+if(!"binTab" %in% ls()){
+ for(o in unlist(outplot)){
+      system(paste0("touch ",o))
+    }
+    print("No binning stats. Aborting visualization."))
+}else{
+
 binners <- unique(binTab$binner)
 names(outplot)[1:(1+length(types))] <- c("alluvial",types)
 if(file.exists("Binning/binny")) names(outplot)[length(outplot)] <- "vizbin"
@@ -305,4 +312,4 @@ plotfile <- outplot[["vizbin"]]
          pch=16,cex=0.8,bty="n",y.intersp=0.8,title=paste(nrow(vizcont),"contigs"))
   dev.off()
 }
-
+}
