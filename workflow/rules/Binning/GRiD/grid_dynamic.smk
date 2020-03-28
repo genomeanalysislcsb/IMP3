@@ -59,7 +59,7 @@ checkpoint getBins:
 #    log: "logs/binning_prepareGRiD.log"
     message: "getBins: Copying DAStool bins to single directories."
     run:
-        if os.stat("file").st_size > 0:
+        if os.stat("Binning/selected_DASTool_summary.txt").st_size > 0:
             selected_bins=pd.read_table("Binning/selected_DASTool_summary.txt")['bin']
             for BIN in selected_bins:
                 shell("mkdir -p Binning/selected_DASTool_bins/{BIN} && cp Binning/selected_DASTool_bins/{BIN}.contigs.fa Binning/selected_DASTool_bins/{BIN}/contigs.fa")
