@@ -176,7 +176,7 @@ rule call_contig_depth:
 rule annotate:
     input:
         'assembly.fa',
-        expand("{path}/essential", path=DBPATH)
+        expand("{path}/hmm/essential", path=DBPATH)
     output:
         "intermediary/annotation.filt.gff",
         "intermediary/prokka.faa",
