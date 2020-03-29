@@ -9,6 +9,7 @@ import re
 from copy import deepcopy
 import subprocess
 import pandas as pd
+from pathlib import Path
 
 
 def dict_merge(a, b):
