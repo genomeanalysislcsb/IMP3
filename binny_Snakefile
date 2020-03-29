@@ -134,7 +134,7 @@ rule prepare_input_data:
         partition = "-p batch --qos qos-batch"
     message: "Preparing input."
     run:
-        prepare_input_files(input, input_files_list)
+        prepare_input_files(input, output)
 
 # contig depth
 rule call_contig_depth:
