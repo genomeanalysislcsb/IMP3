@@ -343,7 +343,7 @@ rule binny:
         intermediary/contigs2clusters.{pk}.{nn}.RDS \
         finalClusterMap.{pk}.{nn}.png \
         intermediary/clusteringWS.{pk}.{nn}.Rdata".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"]),
-        "scaffold2bin.tsv"
+        "scaffold2bin.tsv",
         "intermediary/binny_WS.Rdata"
     params:
         plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",
