@@ -36,7 +36,7 @@ rule DAS_tool:
          --search_engine diamond \
          --proteins {input.proteins} --score_threshold 0.3 \
          --threads {threads} --write_bins 1 \
-         -o Binning/selected > {log} 2>&1 || touch {output[0]}  {output[1]} && mkdir {output[2]}
+         -o Binning/selected > {log} 2>&1 || touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir {output[2]}
         """
 
 rule format_protein_names:

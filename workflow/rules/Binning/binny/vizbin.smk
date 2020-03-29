@@ -44,7 +44,7 @@ rule vizbin:
              paste <(grep "^>" {input} | sed -e 's/>//') \
               <(cat $TMP_VIZBIN/data.points | sed -e 's/,/\t/') > {output}
            else
-             touch {output}
+             touch {output} status/binning_vizbin.impossible
            fi
         rm -rf $TMP_VIZBIN
         """
@@ -75,6 +75,8 @@ rule vizbin_mt:
            then
              paste <(grep "^>" {input} | sed -e 's/>//') \
               <(cat $TMP_VIZBIN/data.points | sed -e 's/,/\t/') > {output}
+           else
+             touch {output} status/binning_vizbin.impossible
            fi
         rm -rf $TMP_VIZBIN
         """

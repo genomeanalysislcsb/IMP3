@@ -22,5 +22,5 @@ rule maxbin:
          -abund {input[1]} \
          -out Binning/MaxBin/maxbin_res \
          -thread {threads} \
-         -min_contig_length {config[binning][MaxBin][cutoff]} > {log} 2>&1 || touch {output}
+         -min_contig_length {config[binning][MaxBin][cutoff]} > {log} 2>&1 || touch {output} status/binning_maxbin.impossible
         """

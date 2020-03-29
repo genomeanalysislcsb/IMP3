@@ -14,7 +14,7 @@ rule feature_count:
     message: "feature_count: Quantifying {wildcards.db} with {wildcards.type} reads."
     shell:
         """
-	    featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params[0]} -a {input[1]} -T {threads} {input[0]} > {log} 2>&1 || touch {output}
+	    featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params[0]} -a {input[1]} -T {threads} {input[0]} > {log} 2>&1 || touch {output} status/analysis_featureCounts.{wildcards.type}.{wildcards.db}.impossible
 	    """
 
 rule feature_count_gene:
@@ -33,5 +33,5 @@ rule feature_count_gene:
     message: "feature_count_gene: Quantifying {wildcards.feature} with {wildcards.type} reads."
     shell:
         """
-        featureCounts -p -O -t {wildcards.feature} -g ID -o {output} -s {params[0]}  -a {input[1]} -T {threads} {input[0]} > {log} 2>&1 || touch {output}
+        featureCounts -p -O -t {wildcards.feature} -g ID -o {output} -s {params[0]}  -a {input[1]} -T {threads} {input[0]} > {log} 2>&1 || touch {output} status/analysis_featureCounts.{wildcards.type}.{wildcards.feature}.impossible
         """

@@ -49,7 +49,7 @@ rule get_present_mOTUs:
     message: "get_present_mOTUs: Extracting identity of present mOTUs."
     shell:
         """
-        grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output} || touch {output}
+        grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output} || touch {output} status/taxonomy_mOTUs.impossible
 	    """
 
 rule extract_mOTU_db_genes:
@@ -96,7 +96,7 @@ rule blast_mOTU_db_genes:
           makeblastdb -in {input[0]} -dbtype nucl -parse_seqids > {log} 2>&1
           blastn -db {input[0]} -query {input[1]} -outfmt 7 -out {output} -max_target_seqs 1 > {log} 2>&1
         else
-          touch {output}
+          touch {output} status/taxonomy_mOTU_link.{wildcards.COG}.impossible
         fi
         """
 
