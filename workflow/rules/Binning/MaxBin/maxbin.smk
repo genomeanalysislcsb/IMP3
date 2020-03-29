@@ -8,7 +8,7 @@ rule maxbin:
     threads: 4
     params:
         runtime = "24:00:00",
-        mem = BIGMEMCORE
+        mem = MEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"
     log: "logs/binning_maxbin.log"
     message: "maxbin: Running MaxBin."
@@ -22,5 +22,5 @@ rule maxbin:
          -abund {input[1]} \
          -out Binning/MaxBin/maxbin_res \
          -thread {threads} \
-         -min_contig_length {config[binning][MaxBin][cutoff]} > {log} 2>&1
+         -min_contig_length {config[binning][MaxBin][cutoff]} > {log} 2>&1 || touch {output} status/binning_maxbin.impossible
         """

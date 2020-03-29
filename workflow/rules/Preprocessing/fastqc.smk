@@ -49,7 +49,7 @@ rule fastqc_preprocessed:
           fastqc -o {params.outputdir} -f fastq {input[0]} {input[1]} {input[2]} -t {threads} -d {TMPDIR} > {log} 2>&1
         else
           echo "{input[2]} is empty, FastQC will not run for that file" > {log} 2>&1
-          fastqc -o {input[3]} -f fastq {input[0]} {input[1]} -t {threads} -d {TMPDIR} > {log} 2>&1
+          fastqc -o {params.outputdir} -f fastq {input[0]} {input[1]} -t {threads} -d {TMPDIR} > {log} 2>&1
           echo "Creating empty files for {input[2]}..." > {log} 2>&1
           touch {output[2]}
         echo "No single end reads were generated" > {output[5]} > {log} 2>&1

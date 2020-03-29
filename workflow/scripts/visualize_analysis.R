@@ -151,14 +151,18 @@ if(length(types)>1){
        ylab="",
        xlab="contig coverage depth (metaG)",cex.lab=9/7,axes=F,
        col=plotcol)
-  points(perGeneM$depth.mg[perGeneM$depth.mt==0],
+  if(any(perGeneM$depth.mg==0)){
+     points(perGeneM$depth.mg[perGeneM$depth.mt==0],
          rep(min0(depthGeneStat[["mt"]]$depth)/10,length(which(perGeneM$depth.mt==0))),
          pch=16,cex=0.2,
          col=plotcol[perGeneM$depth.mt==0])
-  points(rep(min0(depthGeneStat[["mg"]]$depth)/10,length(which(perGeneM$depth.mg==0))),
+  }
+  if(any(perGeneM$depth.mt==0)){
+     points(rep(min0(depthGeneStat[["mg"]]$depth)/10,length(which(perGeneM$depth.mg==0))),
          perGeneM$depth.mt[perGeneM$depth.mg==0],
          pch=16,cex=0.2,
          col=plotcol[perGeneM$depth.mg==0])
+  } 
   mtext("gene coverage depth (metaT)",2,2.8,cex=9/7)
   axis(1,
        at=c(min0(depthGeneStat[["mg"]]$depth)/10,10^c(-3:8)),
@@ -184,10 +188,12 @@ if(length(types)>1){
        ylab="",
        xlab="rank",cex.lab=9/7,axes=F,
        col=plotcol[order(perGeneM$depth,decreasing = T)])
-  points((length(which(perGeneM$depth>0))+1):nrow(perGeneM),
+  if(any(perGeneM$depth==0)){
+       points((length(which(perGeneM$depth>0))+1):nrow(perGeneM),
          rep(min0(depthGeneStat[[types[1]]]$depth)/10,length(which(perGeneM$depth==0))),
          pch=16,cex=0.2,
          col=plotcol[perGeneM$depth==0])
+  }
   mtext(paste0("contig coverage depth (meta",ifelse(types[1]=="mg","G","T"),")"),
         2,2.8,cex=9/7)
   axis(1,lwd=0.5,las=1)

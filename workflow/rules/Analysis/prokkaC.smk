@@ -4,10 +4,10 @@ rule annotate:
         expand("{path}/{db}", path=DBPATH, db=config["prokka"]["databases"])
     output:
         report("Analysis/annotation/annotation.filt.gff",category="Analysis"),
-        "Analysis/annotation/{p}.faa".format(p=config['prokka']['prefix']),
-        "Analysis/annotation/{p}.fna".format(p=config['prokka']['prefix']),
-        "Analysis/annotation/{p}.ffn".format(p=config['prokka']['prefix']),
-        "Analysis/annotation/{p}.fsa".format(p=config['prokka']['prefix']),
+        "Analysis/annotation/prokka.faa",
+        "Analysis/annotation/prokka.fna",
+        "Analysis/annotation/prokka.ffn",
+        "Analysis/annotation/prokka.fsa",
     threads: 8
     params:
         runtime = "8:00:00",
@@ -22,14 +22,14 @@ rule annotate:
         if [ ! -f $CONDA_PREFIX/db/hmm/HAMAP.hmm.h3m ]; then
           {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db --setupdb
         fi 
-	{BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db --force --outdir Analysis/annotation --prefix {config[prokka][prefix]} --noanno --cpus {threads} --metagenome {input[0]} >> {log} 2>&1
+	{BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db --force --outdir Analysis/annotation --prefix prokka --noanno --cpus {threads} --metagenome {input[0]} >> {log} 2>&1
         
 	# Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
         # And keeps only the gff table.
 
-        LN=`grep -Hn "^>" Analysis/annotation/{config[prokka][prefix]}.gff | head -n1 | cut -f2 -d ":" || if [[ $? -eq 141 ]]; then true; else exit $?; fi`
+        LN=`grep -Hn "^>" Analysis/annotation/prokka.gff | head -n1 | cut -f2 -d ":" || if [[ $? -eq 141 ]]; then true; else exit $?; fi`
         LN1=1
         LN=$(($LN-$LN1))
-        head -n $LN Analysis/annotation/{config[prokka][prefix]}.gff | grep -v "^#" | sort | uniq | grep -v "^==" > {output[0]}
+        head -n $LN Analysis/annotation/prokka.gff | grep -v "^#" | sort | uniq | grep -v "^==" > {output[0]}
         """
 

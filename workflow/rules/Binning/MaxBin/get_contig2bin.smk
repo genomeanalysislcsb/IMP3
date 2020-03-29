@@ -12,8 +12,13 @@ rule maxbin_contig2bin:
     message: "maxbin_contig2bin: Getting contig to bin mapping."
     shell:
         """
-        for f in $(ls Binning/MaxBin/*.fasta | cut -f3 -d "/"); do 
-         sed -e "s/$/\t$f/g" <(grep "^>" Binning/MaxBin/$f | sed -e 's/>//g') >> {output[0]}
+        for f in Binning/MaxBin/*.fasta; do
+          if [ -e "$f" ]; then
+            f2=`echo f | cut -f3 -d "/"`
+            sed -e "s/$/\t$f2/g" <(grep "^>" Binning/MaxBin/$f2 | sed -e 's/>//g') >> {output[0]}
+          else
+            touch {output[0]}
+          fi
         done
         ln -s ../../{output[0]} {output[1]}
         echo "Contig to bin mapping done" > {log}

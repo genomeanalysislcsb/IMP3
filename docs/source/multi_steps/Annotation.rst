@@ -1,4 +1,4 @@
 ===========================
-multi-IMP steps: Annotation
+multi-IMP3 steps: Annotation
 ===========================
 

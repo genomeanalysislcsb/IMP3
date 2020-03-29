@@ -651,6 +651,13 @@ load(stats_image)
 
 names(outplot) <- c(types,"sum")
 
+if(!all(sapply(types,function(type) nrow(read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F,nrows=2))>1))){
+  for(o in unlist(outplot)){
+      system(paste0("touch ",o))
+    }
+    print(paste0("missing data for ",type,". Aborting visualization."))
+}else{
+
 motuc <- list()
 tax_tab <- list()
 for(type in types){
@@ -831,3 +838,4 @@ if(length(types)>1){
   }
 }
 dev.off()
+}

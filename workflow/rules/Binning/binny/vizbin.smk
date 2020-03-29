@@ -1,7 +1,7 @@
 rule cut_rRNA:
     input:
         "Assembly/%s.assembly.merged.fa" %ASS,
-        "Analysis/annotation/annotation.filt.gff"
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "Binning/binny/%s.assembly.merged.cut.fa" %ASS
     log: "logs/binning_cut_rRNA.log"
@@ -43,6 +43,8 @@ rule vizbin:
            then
              paste <(grep "^>" {input} | sed -e 's/>//') \
               <(cat $TMP_VIZBIN/data.points | sed -e 's/,/\t/') > {output}
+           else
+             touch {output} status/binning_vizbin.impossible
            fi
         rm -rf $TMP_VIZBIN
         """
@@ -73,6 +75,8 @@ rule vizbin_mt:
            then
              paste <(grep "^>" {input} | sed -e 's/>//') \
               <(cat $TMP_VIZBIN/data.points | sed -e 's/,/\t/') > {output}
+           else
+             touch {output} status/binning_vizbin.impossible
            fi
         rm -rf $TMP_VIZBIN
         """

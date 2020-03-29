@@ -14,6 +14,8 @@ yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping(
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
 yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True,default_flow_style=False)
 
+Path("status").mkdir(exist_ok=True)
+
 # include rules for the workflow based on the input parameters
 include:
     "workflow/rules/data.input.smk"
@@ -53,8 +55,12 @@ if MG and MT:
 # Single omics MG workflow
 elif MG:
     if 'preprocessing' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Preprocessing.smk"
+        if len(MG) == 2:
+            include:
+                "workflow/rules/modules/single_omics/mg/Preprocessing.smk"
+        if len(MG) == 1:
+            include:
+                "workflow/rules/modules/single_omics/mg/PreprocessingSE.smk"
 
     if 'assembly' in IMP_STEPS:
         include:

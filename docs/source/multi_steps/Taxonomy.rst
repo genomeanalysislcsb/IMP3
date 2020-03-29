@@ -1,4 +1,4 @@
 =========================
-multi-IMP steps: Taxonomy
+multi-IMP3 steps: Taxonomy
 =========================
 

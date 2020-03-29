@@ -14,7 +14,8 @@ if "taxonomy" in IMP_STEPS:
     stats_figs.append("Visualization/Taxonomy_mOTU_plot.png")
 if "binning" in IMP_STEPS:    
     stats_figs.append("Visualization/Binning_alluvial.png")
-    stats_figs.append(expand("Visualization/Binning_{type}_depth.png",type=TYPES))
+    if "analysis" in IMP_STEPS:
+        stats_figs.append(expand("Visualization/Binning_{type}_depth.png",type=TYPES))
     if "binny" in BIN_STEPS:
         stats_figs.append("Visualization/Binning_vizbin.png")
     

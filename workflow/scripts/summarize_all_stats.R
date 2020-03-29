@@ -96,20 +96,22 @@ if(file.exists(paste0("Analysis/taxonomy/mOTUs/",types[1],".mOTU.counts.tsv"))){
   
   print("Reading mOTU results.")
   for(type in types){
-    motuRep <- read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F, comment.char = "#")
-    motuTemp <- data.frame("type"=type,
+	  if(nrow(read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F,nrows=2))>1){
+      motuRep <- read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F, comment.char = "#")
+      motuTemp <- data.frame("type"=type,
                            "step"=c("mOTU mapping reads",
                                     "mOTU species","mOTU genera"),
                            "number"=c(motuRep$V2[1],
                                       length(grep("s__",motuRep$V1)),length(grep("g__",motuRep$V1))),
                            stringsAsFactors=F)
-    rm(motuRep)
-    if(!"statsTab" %in% ls()){
-      statsTab <- motuTemp
-    }else{
-      statsTab <- rbind(statsTab,
+      rm(motuRep)
+      if(!"statsTab" %in% ls()){
+        statsTab <- motuTemp
+      }else{
+        statsTab <- rbind(statsTab,
                         motuTemp)
-    }
+      }
+		}
   }
 }
 ###################################################################################################
@@ -171,19 +173,21 @@ if(file.exists(paste0("Analysis/annotation/",types[1],".",dbs[1],".counts.tsv.su
   
   print("Reading map stats for features.")
   for(type in types){
-    mapTemp <- data.frame("type"=type,
+      mapTemp <- data.frame("type"=type,
                           "step"=paste("mapping to", dbs),
                           "number"=sapply(dbs,function(x){
+													  if(file.exists(fcStats_files[[type]][[x]])){
                             mapTab <- read.delim(fcStats_files[[type]][[x]],stringsAsFactors=F,header = T)
                             mapTab[1,2]
+														}else{0}
                           }),
                           stringsAsFactors=F)
     if(!"statsTab" %in% ls()){
-      statsTab <- mapTemp
+        statsTab <- mapTemp
     }else{
-      statsTab <- rbind(statsTab,
+        statsTab <- rbind(statsTab,
                         mapTemp)
-    }
+		}
   }
 }
 ###################################################################################################
@@ -266,20 +270,22 @@ if(file.exists(paste0("Analysis/taxonomy/kraken/",ass,".kraken.parsed.tsv"))){
 ###################################################################################################
 ## Annotation stats
 ###################################################################################################
+if(file.exists("Analysis/annotation/annotation_CDS_RNA_hmms.gff")){
+    gene_gff <- read.delim("Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+                              stringsAsFactors=F,header = F)
+    colnames(gene_gff) <- c("contig","source","feature","start","end","score","strand","frame","attribute")
+}else if(file.exists("Analysis/annotation/annotation.filt.gff")){
+    gene_gff <- read.delim("Analysis/annotation/annotation.filt.gff",
+                           stringsAsFactors=F,header = F)
+  colnames(gene_gff) <- c("contig","source","feature","start","end","score","strand","frame","attribute")
+}
+
 if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
   print("Reading annotation stats.")
   gene_length <- read.delim(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"),
                             stringsAsFactors=F,header = F)
   colnames(gene_length) <- c("gene","length")
   
-  if(file.exists("Analysis/annotation/annotation_CDS_RNA_hmms.gff")){
-    gene_gff <- read.delim("Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-                           stringsAsFactors=F,header = F)
-  }else{
-    gene_gff <- read.delim("Analysis/annotation/annotation.filt.gff",
-                           stringsAsFactors=F,header = F)
-  }
-  colnames(gene_gff) <- c("contig","source","feature","start","end","score","strand","frame","attribute")
   c2g <- data.frame("contig"=gene_gff$contig,
                     "gene"=gsub("ID=([^;]+);.+","\\1",gene_gff$attribute))
   depthGeneStats_files <- list()
@@ -339,9 +345,13 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
 ###################################################################################################
 ## Binning stats
 ###################################################################################################
-if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
+bin_in_file <- paste0("Stats/",ass,"/",ass,".bins.tsv")
+if(file.exists(bin_in_file)){
+  if(file.info(bin_in_file)$size==0){
+	  system(paste0("touch ",out_file_bins))
+	}else{
   print("Reading binning stats.")
-  binTab <- read.delim(paste0("Stats/",ass,"/",ass,".bins.tsv"),
+  binTab <- read.delim(bin_in_file,
                        stringsAsFactors=F,header = T)
   
   rnas_bin_tab <- matrix(0,nrow=length(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]),
@@ -467,6 +477,7 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".bins.tsv"))){
     statsTab <- rbind(statsTab,
                       binTemp)
   }
+}
 }
 ###################################################################################################
 ## Save concatenated output

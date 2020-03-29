@@ -69,12 +69,6 @@ prepare_gridReads:
 grid:
   partition: "-l highmem"
 
-maxbin:
-  partition: "-l highmem"
-
-metabat:
-  partition: "-l highmem"
-
 vizbin:
   partition: "-l highmem"
 

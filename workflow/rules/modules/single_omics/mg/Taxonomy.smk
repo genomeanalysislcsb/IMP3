@@ -4,8 +4,12 @@ include:
     "../../../Taxonomy/mOTUlink.smk"
 include:
     "../../../Taxonomy/mOTUs.smk"
-include:
-    "../../../Taxonomy/kraken_reads.smk"
+if len(MG) == 1:
+    include:
+        "../../../Taxonomy/kraken_reads_SE.smk"
+else:
+    include:
+        "../../../Taxonomy/kraken_reads.smk"
 include:
     "../../../Taxonomy/kraken_contigs.smk"
 include:

@@ -1,4 +1,7 @@
-========================
-IMP steps: Preprocessing
-========================
+
+.. _step_preprocessing:
+
+=========================
+IMP3 steps: Preprocessing
+=========================
 

@@ -1,5 +1,5 @@
 =======================================
-Configuring multi-IMP runs: Sample file
+Configuring multi-IMP3 runs: Sample file
 =======================================
 
 

@@ -1,4 +1,4 @@
 ==========================
-multi-IMP steps: Catalogue
+multi-IMP3 steps: Catalogue
 ==========================
 

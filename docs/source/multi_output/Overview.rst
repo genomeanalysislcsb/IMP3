@@ -1,4 +1,4 @@
 ============================
-Overview of multi-IMP output
+Overview of multi-IMP3 output
 ============================
 

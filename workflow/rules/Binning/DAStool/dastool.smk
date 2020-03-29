@@ -36,13 +36,13 @@ rule DAS_tool:
          --search_engine diamond \
          --proteins {input.proteins} --score_threshold 0.3 \
          --threads {threads} --write_bins 1 \
-         -o Binning/selected > {log} 2>&1
+         -o Binning/selected > {log} 2>&1 || touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir {output[2]}
         """
 
 rule format_protein_names:
     input:
         "Analysis/annotation/prokka.faa",
-        "Analysis/annotation/annotation.filt.gff"
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "Analysis/annotation/annotation.filt.contig2ID.tsv",
         "Binning/prokka.renamed.faa"

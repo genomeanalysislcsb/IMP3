@@ -24,8 +24,8 @@ rule metabat:
          -a $TMP_FILE --cvExt \
 	 --saveCls \
          -o {output[0]} \
-         -t {threads} \
-         -m {config[binning][MetaBAT][cutoff]} > {log} 2>&1
+         -t {threads} -v \
+         -m {config[binning][MetaBAT][cutoff]} >> {log} 2>&1
 	ln -s ../../{output[0]} {output[1]}
 	rm $TMP_FILE
         """

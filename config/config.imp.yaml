@@ -14,6 +14,7 @@ raws:
   Contigs: ""
   Alignment_metagenomics: ""
   Alignment_metatranscriptomics: ""
+  Gff: ""
 sample: test
 outputdir: ""
 summarydir: ""
@@ -90,7 +91,6 @@ hmm_settings:
 COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
 prokka: 
   essentials_genes_db_url: "https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm"
-  prefix: prokka
   databases: 
     - "cm/Bacteria.i1i"
     - "genus/Staphylococcus.phr"

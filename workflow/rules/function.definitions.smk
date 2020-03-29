@@ -26,6 +26,8 @@ def get_ori_files(wildcards):
             inputs.append(MTaln)
     if "assembly" in IMP_STEPS and LONG:
         inputs.append(LONG)
+    if ANN and not "analysis" in IMP_STEPS:
+        inputs.append(ANN)
     if any(isinstance(i, list) for i in inputs):
         out = []
         for sublist in inputs:
@@ -93,6 +95,16 @@ def no_filtering_input(wildcards):
     if wildcards.type in TYPES:
         return input_no_filtering[wildcards.type]
     return 'no_filtering_input_no_file_here'
+    
+def no_filtering_input_SE(wildcards):
+    input_no_filtering = {
+        'mg': [
+            'Preprocessing/mg.se.trimmed.fq'
+        ]
+    }
+    if wildcards.type == "mg":
+        return input_no_filtering[wildcards.type]
+    return 'no_filtering_input_no_file_here'
 
 def reads_input_files(wildcards):
     raw_fq_files = [
@@ -119,7 +131,7 @@ def reads_input_files(wildcards):
     ]
     if wildcards.type not in TYPES:
         return 'reads_input_files-no-file-here'
-    if MG or MT:
+    elif MG or MT:
         base = raw_fq_files
         if 'preprocessing' in IMP_STEPS:
             base += preprocessed_fq_files
@@ -135,6 +147,27 @@ def reads_input_files(wildcards):
     elif MGaln or MTaln:
         base = bam_files
     return expand(base, type=wildcards.type)
+    
+def reads_input_files_SE(wildcards):
+    raw_fq_files = [
+        'Preprocessing/{type}.r1.fq'
+    ]
+    preprocessed_fq_files = [
+        'Preprocessing/{type}.r1.preprocessed.fq',
+        'Preprocessing/{type}.r2.preprocessed.fq',
+        'Preprocessing/{type}.se.preprocessed.fq',
+    ]
+    trimmed_fq_files = [
+        'Preprocessing/{type}.se.trimmed.fq'
+    ]
+    if wildcards.type != "mg" :
+        return 'reads_input_files-no-file-here'
+    else:
+        base = raw_fq_files
+        base += preprocessed_fq_files
+        if PREPROCESSING_FILTERING:
+            base += trimmed_fq_files
+    return expand(base, type=wildcards.type)
 
 
 # for archiving checkpoint:
@@ -148,13 +181,12 @@ def gather_reads(wildcards):
                                                    type=type,read=["r1","r2","se"])]
     valid_reads = [f for f in list(set(pot_reads).difference(["Preprocessing/" + s for s in last_reads])) if not os.path.islink(f)]
     return([s + ".gz" for s in valid_reads])
-
 	
 # BINNING:		
 # for checkpoints:
 def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    if MG:
+    if MG or MGaln:
         return expand("Binning/selected_DASTool_bins/{i}/grid",
            i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
     else:

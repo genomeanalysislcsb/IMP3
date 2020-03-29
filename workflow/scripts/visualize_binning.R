@@ -146,7 +146,7 @@ ygb <- colorRampPalette(brewer.pal(8,"YlGnBu")[2:8])
 stats_image         <- snakemake@input[["stats"]] #"Stats/all_stats.Rdata"
 bin_memberships     <- snakemake@input[["bins"]]  # Binning/*/scaffold2bin.tsv
 mag_memberships     <- snakemake@input[["dastool"]]  # Binning/selected_DASTool_scaffolds2bin.txt
-vizbin_file         <- snakemake@input[["vizbin"]] #"Binning/binny/ASS.vizbin.with-contig-names.points",
+if(file.exists("Binning/binny"))  vizbin_file         <- snakemake@input[["vizbin"]] #"Binning/binny/ASS.vizbin.with-contig-names.points",
 outplot             <- snakemake@output # "Visualization/Binning_alluvial.png"
                                         #"Visualization/Binning_{type}_depth.png"
                                        #"Visualization/Binning_vizbin.png" 
@@ -158,9 +158,16 @@ circos_files       <- "Visualization/"
 print("Loading data.")
 load(stats_image)
 
+if(!"binTab" %in% ls()){
+ for(o in unlist(outplot)){
+      system(paste0("touch ",o))
+    }
+    print("No binning stats. Aborting visualization.")
+}else{
+
 binners <- unique(binTab$binner)
 names(outplot)[1:(1+length(types))] <- c("alluvial",types)
-if("binny" %in% binners & "mg" %in% types) names(outplot)[length(outplot)] <- "vizbin"
+if(file.exists("Binning/binny")) names(outplot)[length(outplot)] <- "vizbin"
 
 ###################################################################################################
 ## plot
@@ -203,6 +210,7 @@ alluvial(cont2binM[,c(binners,"DASTool")],freq = cont2binM$freq,
          border=NA)
 dev.off()
 
+if("depthGeneStat" %in% ls()){
 for(bin in unique(cont2bin[["DASTool"]]$bin)){
   circ_genes <- gffGetID(gene_gff[gene_gff$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],])
   circ_genes <- gffAddComplete(circ_genes)
@@ -224,7 +232,7 @@ for(bin in unique(cont2bin[["DASTool"]]$bin)){
   col <- colorRampPalette(brewer.pal(11,"Spectral"))(256)[256:1][1+255*binTab$binScore.DASTool[binTab$selected_by_DASTool==bin]]
   makeCircosFiles(contig_length[contig_length$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],],
                    circ_genes,col,circos_files)
-}
+}}
 if("mg" %in% types){
   plotfile <- outplot[["mg"]]
   png(plotfile,width=17,height=12,units = "cm",res=300,pointsize=7)
@@ -249,6 +257,7 @@ if("mg" %in% types){
   box()
   dev.off()
 }
+if("depthGeneStat" %in% ls()){
 plotfile <- outplot[["mt"]]
 if("mt" %in% types){
   png(plotfile,width=17,height=12,units = "cm",res=300,pointsize=7)
@@ -279,8 +288,10 @@ if("mt" %in% types){
   box()
   dev.off()
 }
+}
+if(file.exists("Binning/binny")){
 plotfile <- outplot[["vizbin"]]
-if("binny" %in% binners){
+#if("binny" %in% binners){
   png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
   par(mar=c(0.5,0.5,0.5,0.5))
   vizbin <- read.delim(vizbin_file,stringsAsFactors = F,header=F)
@@ -301,4 +312,4 @@ if("binny" %in% binners){
          pch=16,cex=0.8,bty="n",y.intersp=0.8,title=paste(nrow(vizcont),"contigs"))
   dev.off()
 }
-
+}
