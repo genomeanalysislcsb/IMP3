@@ -371,5 +371,5 @@ rule tar_binny_files:
     message: "tar_binny_files: Compressing intermediary files from binny."
     shell:
        """
-       tar cvzf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1
+       tar cvzf {output} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1
        """
