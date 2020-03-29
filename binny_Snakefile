@@ -147,8 +147,8 @@ rule call_contig_depth:
         mem = MEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/analysis_call_contig_depth.{type}.log"
-    message: "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
+    log: "logs/analysis_call_contig_depth.log"
+    message: "call_contig_depth: Getting data on assembly coverage with mg reads."
     shell:
         """
         echo "Running BEDTools for average depth in each position" >> {log}
@@ -259,8 +259,8 @@ rule makegff:
         mem = MEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_annotation.yaml"
-    log: "logs/analysis_makegff.{db}.log"
-    message: "makegff: Adding hmmer results of {wildcards.db} to gff."
+    log: "logs/analysis_makegff.essential.log"
+    message: "makegff: Adding hmmer results of essential genes to gff."
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
