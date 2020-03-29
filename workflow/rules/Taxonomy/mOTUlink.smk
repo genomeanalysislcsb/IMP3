@@ -131,7 +131,7 @@ rule tar_intermediary_mOTU:
     message: "tar_intermediary_mOTU: Compressing intermediary steps of mOTU linking."
     shell:
        """
-       tar cvzf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1
+       tar cvzf {output} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1
        """
 
 

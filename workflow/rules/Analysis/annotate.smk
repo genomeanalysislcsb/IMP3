@@ -73,7 +73,7 @@ rule tar_annotation:
     message: "tar_annotation: Compressing intermediary steps of annotation."
     shell:
        """
-       tar cvzf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1
+       tar cvzf {output} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1
        """
 
         

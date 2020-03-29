@@ -16,7 +16,7 @@ rule assembly_contig_length:
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         perl {SRCDIR}/fastaNamesSizes.pl {input} > {output[0]} 2>> {log}
 
-        echo "Obtaining GC content"
+        echo "Obtaining GC content" >> {log}
         # AHB TMP_GC=$(mktemp --tmpdir={TMPDIR} -t "gc_out_XXXXXX.txt")
         TMP_GC=$(mktemp --tmpdir=Analysis -t "gc_out_XXXXXX.txt")
         perl {SRCDIR}/get_GC_content.pl {input} $TMP_GC >> {log} 2>&1
