@@ -26,6 +26,9 @@ def dict_merge(a, b):
             result[k] = deepcopy(v)
     return result
 
+def open_output(filename):
+    return(open(OUTPUTDIR+'/'+filename, 'w+'))
+
 # default executable for snakmake
 shell.executable("bash")
    
