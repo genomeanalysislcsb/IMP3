@@ -7,7 +7,7 @@ rule dRep_simple_dir:
         directory("Dereplication/dRep_single")
     shell:
         """
-        mkdir {output}
+        mkdir -p {output}
         """
 
 rule prep_dRep_single:

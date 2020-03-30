@@ -44,7 +44,7 @@ rule prep_mongo:
     message: "prep_mongo: making DB directoy."
     shell:
         """
-        mkdir {output}
+        mkdir -p {output}
         """
 
 rule mongoDB_bins:
