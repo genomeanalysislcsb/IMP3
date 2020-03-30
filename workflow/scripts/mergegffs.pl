@@ -40,7 +40,7 @@ foreach my $infile (@ARGV){
 			if($data{$tabstr}{'id'} eq $id){
 				push @{$data{$tabstr}{'att'}},@tmpattr;
 			}else{
-				die "two different IDs for the same locus.";
+				print STDERR "# WARNING: two different IDs for the same locus.\n";
 			}
 		}else{
 			$data{$tabstr}{'id'} = $id;
