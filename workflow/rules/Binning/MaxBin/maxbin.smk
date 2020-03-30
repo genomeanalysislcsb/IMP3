@@ -5,7 +5,7 @@ rule maxbin:
     output:
        "Binning/MaxBin/maxbin_res.log",
        "Binning/MaxBin/maxbin_res.summary"
-    threads: 4
+    threads: 8
     params:
         runtime = "24:00:00",
         mem = MEMCORE
