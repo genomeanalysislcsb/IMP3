@@ -7,7 +7,7 @@ rule dRep_dir:
         directory("Dereplication/dRep_multi")
     shell:
         """
-        mkdir {output}
+        mkdir -p {output}
         """
 
 checkpoint dRep_multi:
