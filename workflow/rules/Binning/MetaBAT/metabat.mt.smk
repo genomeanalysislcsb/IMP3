@@ -4,10 +4,10 @@ rule metabat:
     output:
         "Binning/MetaBAT/metabat_res",
 	"Binning/MetaBAT/scaffold2bin.tsv"
-    threads: 4
+    threads: 8
     params:
         runtime = "24:00:00",
-        mem = BIGMEMCORE
+        mem = MEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"
     log: "logs/binning_metabat.log"
     message: "metabat: Running MetaBAT."
