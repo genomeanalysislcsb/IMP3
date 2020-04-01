@@ -13,13 +13,15 @@ rule maxbin_contig2bin:
     shell:
         """
         for f in Binning/MaxBin/*.fasta; do
-          if [ -e "$f" ]; then
-            f2=`echo f | cut -f3 -d "/"`
+          if [ -s "$f" ]; then
+            f2=`echo $f | cut -f3 -d "/"`
             sed -e "s/$/\t$f2/g" <(grep "^>" Binning/MaxBin/$f2 | sed -e 's/>//g') >> {output[0]}
-          else
-            touch {output[0]}
           fi
         done
-        ln -s ../../{output[0]} {output[1]}
+        if [ -e {output[0]} ]; then
+            ln -s ../../{output[0]} {output[1]}
+        else
+            touch {output[0]} {output[1]}
+        fi
         echo "Contig to bin mapping done" > {log}
         """
