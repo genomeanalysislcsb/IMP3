@@ -114,9 +114,9 @@ elif CONTIGS and MT:
 # settings
 IMP_STEPS = sorted(os.environ.get("IMP_STEPS", config['steps']).split())
 PREPROCESSING_FILTERING = os.environ.get("PREPROCESSING_FILTERING", config['preprocessing_filtering'])
-FILTER = os.environ.get("FILTER", config['filtering']['filter'])
+FILTER = os.environ.get("FILTER", config['filtering']['filter']).split()
 IMP_ASSEMBLER = os.environ.get("IMP_ASSEMBLER", config['assembly']['assembler'])
-BIN_STEPS = os.environ.get("IMP_BINNING_METHOD", config['binning']['binners'].split())
+BIN_STEPS = os.environ.get("IMP_BINNING_METHOD", config['binning']['binners']).split()
 if not MG and not MGaln:
     BIN_STEPS = list(set(BIN_STEPS).difference(["MaxBin", "binny"]))
 SUM_STEPS = os.environ.get("SUM_STEPS", config['summary_steps']).split()
@@ -124,8 +124,8 @@ SUM_STEPS = os.environ.get("SUM_STEPS", config['summary_steps']).split()
 # hardware parameters
 BIGCORENO = os.environ.get("BIGCORENO", config['mem']['big_mem_cores'])
 BIGMEMTOTAL = os.environ.get("BIGMEMTOTAL", config['mem']['big_mem_total_gb'])
-MEMCORE = os.environ.get("MEMCORE", str(config['mem']['normal_mem_per_core_gb']) + "G")
-BIGMEMCORE = os.environ.get("BIGMEMCORE", str(config['mem']['big_mem_per_core_gb']) + "G")
+MEMCORE = os.environ.get("MEMCORE", str(config['mem']['normal_mem_per_core_gb'])) + "G"
+BIGMEMCORE = os.environ.get("BIGMEMCORE", str(config['mem']['big_mem_per_core_gb'])) + "G"
 
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless a absolute path is set
