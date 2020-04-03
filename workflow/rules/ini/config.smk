@@ -54,7 +54,7 @@ ENVDIR = srcdir("../../envs")
 # output
 OUTPUTDIR = os.path.abspath(os.path.expandvars(os.environ.get("OUTPUTDIR", config['outputdir'])))
 print(OUTPUTDIR)
-SUMDIR = os.path.abspath(os.path.expandvars(os.environ.get("SUMDIR", config['summarydir']))
+SUMDIR = os.path.abspath(os.path.expandvars(os.environ.get("SUMDIR", config['summarydir'])))
 if OUTPUTDIR == SUMDIR:
     if SUMDIR[-1] != "/":
         SUMDIR += "_final"
