@@ -3,7 +3,7 @@ rule annotate:
         'Assembly/%s.assembly.merged.fa' % ASS,
         expand("{path}/{db}", path=DBPATH, db=config["prokka"]["databases"])
     output:
-        report("Analysis/annotation/annotation.filt.gff",category="Analysis"),
+        "Analysis/annotation/annotation.filt.gff",
         "Analysis/annotation/prokka.faa",
         "Analysis/annotation/prokka.fna",
         "Analysis/annotation/prokka.ffn",

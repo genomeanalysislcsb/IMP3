@@ -21,7 +21,7 @@ if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
             'Binning/DAStool/translate2DAStool.smk'
     
 
-localrules: prepare_input_data
+localrules: prepare_input_data, check_inputs, check_read_se_input, check_assembly_input, check_read_r_input
 
 # outputs (input for workflow) to be generated (in rule)
 input_files_list = []
@@ -95,8 +95,7 @@ rule prepare_input_data:
     threads: 1
     params:
         runtime = "4:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
+        mem = MEMCORE
     message: "Preparing input."
     run:
         prepare_input_files(input, input_files_list)
@@ -105,4 +104,92 @@ rule prepare_input_data:
         if symlinks_list:
             symlink_input_files(symlinks_list)
 
+checked_files_list = [p for "status" + f.split("/")[-1] + ".checked" in input_files_list]
 
+rule check_inputs:
+    input:
+        checked_files_list
+    output:
+        touch("status/inputs.done")
+    
+rule check_read_r_input:
+    input:
+        expand("Preprocessing/{type}.{read}.fq",read=["r1","r2"])
+    output:
+        expand("status/{type}.{read}.fq.checked",read=["r1","r2"])
+    message: "Checking {type} read input."
+    shell:
+        """
+        if [ "$(wc -l < {input[0]})" -eq "$(wc -l < {input[1]})" ]; then
+          touch {output}
+        else
+          echo "ERROR: Paired read files don't have the same number of reads." && exit 1
+        fi
+        """
+
+rule check_read_se_input:
+    input:
+        "Preprocessing/{type}.se.fq"
+    output:
+        "status/{type}.se.fq.checked"
+    message: "Checking assembly."
+    shell:
+        """
+        if [ -s {input} ]; then
+          touch {output}
+        else
+          echo "ERROR: {input} is empty." && exit 1
+        fi
+        """
+        
+rule check_assembly_input:
+    input:
+        "Assembly/{ass}.assembly.merged.fa"
+    output:
+        "status/{ass}.assembly.merged.fa.checked"
+    message: "Checking assembly."
+    shell:
+        """
+        if [ -s {input} ]; then
+          touch {output}
+        else
+          echo "ERROR: Assembly is empty." && exit 1
+        fi
+        """
+
+rule check_bam_input:
+    input:
+        "Assembly/%s.assembly.merged.fa" %ASS,
+        "Assembly/{type}.reads.sorted.bam"
+    output:
+        "status/{type}.reads.sorted.bam.checked"
+        threads: 1
+    params:
+        runtime = "4:00:00",
+        mem = MEMCORE
+    message: "Checking {type} alignment."
+    conda: ENVDIR + "/IMP_mapping.yaml"
+    shell:
+        """
+        samtools quickcheck {input[1]} || (echo "ERROR: {input[1]} corrupt." && exit 1)
+        cmp --silent <(samtools view -H {input[1]} | grep "@SQ" | cut -f 2 | sed 's/SN://' | sort) \
+         <(grep ">" {input[0]} | sed 's/^>//' | sort) || (echo "ERROR: Names of assembly and {input[1]} do not match." && exit 1)
+        """
+
+rule check_ann_input:
+    input:
+        "Assembly/%s.assembly.merged.fa" %ASS,
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
+    output:
+        "status/annotation_CDS_RNA_hmms.gff.checked"
+        threads: 1
+    params:
+        runtime = "4:00:00",
+        mem = MEMCORE
+    message: "Checking annotation."
+    conda: ENVDIR + "/IMP_bioperl.yaml"
+    shell:
+        """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        perl {SRCDIR}/matchContigsGFF.pl
+        """

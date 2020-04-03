@@ -49,6 +49,10 @@ def prepare_input_files(inputs, outputs):
     for infilename, outfilename in zip(inputs, outputs):
         _, fname1 = os.path.split(infilename)
         _process_file(fname1, infilename, outfilename)
+    # check if r1,r2 are in outputs, if yes, check if both have the same number of lines
+    # quickcheck samtools for bam input
+    # for bam and assembly check number of SQ headers and contigs are equal
+    # for assembly and gff file check that they match
 
 def symlink_input_files(data):
     for infilename, outfilename in data:
@@ -73,7 +77,6 @@ def _process_file(fname, inp, outfilename):
     # unbzip2
     elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
         shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
-
     # copy
     else:
         shutil.copy(inp, outfilename)

@@ -141,7 +141,7 @@ else:
     raise Exception('No input data.')
 
 # master command summary and archiving
-inputs_all = ['status/workflow.done']
+inputs_all = ['status/inputs.done','status/workflow.done']
 if "summary" in IMP_STEPS:
     inputs_all.append('status/summary.done')
     include:
