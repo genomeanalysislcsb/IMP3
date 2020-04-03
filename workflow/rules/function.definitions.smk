@@ -187,11 +187,11 @@ def filtering_mg_input(wildcards):
 def filtering_mt_input(wildcards):
     n = len(wildcards.filterstep.split("."))
     if n == 1:
-        return ['Preprocessing/mg.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mg.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mg.se.trimmed.rna_filtered.fq']
+        return ['Preprocessing/mt.r1.trimmed.rna_filtered.fq',
+        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
+        'Preprocessing/mt.se.trimmed.rna_filtered.fq']
     elif n > 1:
-        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Preprocessing/mg.r1.trimmed.rna_filtered.','Preprocessing/mg.r2.trimmed.rna_filtered.','Preprocessing/mg.se.trimmed.rna_filtered.' ]]
+        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Preprocessing/mt.r1.trimmed.rna_filtered.','Preprocessing/mt.r2.trimmed.rna_filtered.','Preprocessing/mt.se.trimmed.rna_filtered.' ]]
     else:
         raise ValueError("invalid filter length %s" % n)
 
