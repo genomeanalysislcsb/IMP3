@@ -193,8 +193,8 @@ rule check_bam_input:
     shell:
         """
         samtools quickcheck {input[1]} || (echo "ERROR: {input[1]} corrupt." && exit 1)
-        cmp --silent <(samtools view -H {input[1]} | grep "@SQ" | cut -f 2 | sed 's/SN://' | sort) \
-         <(grep ">" {input[0]} | sed 's/^>//' | sort) || (echo "ERROR: Names of assembly and {input[1]} do not match." && exit 1)
+        (cmp --silent <(samtools view -H {input[1]} | grep "@SQ" | cut -f 2 | sed 's/SN://' | sort) \
+         <(grep ">" {input[0]} | sed 's/^>//' | sort) && touch {output} )|| (echo "ERROR: Names of assembly and {input[1]} do not match." && exit 1)
         """
 
 rule check_ann_input:
