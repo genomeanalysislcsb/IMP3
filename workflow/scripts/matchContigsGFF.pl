@@ -16,6 +16,7 @@ while (<IN>) {
     my @f = split(/\t/);
 				my $sequence = $db->seq($f[0],$f[3],$f[4]);
 				defined( $sequence ) or die "Contig $f[0] not found in assembly. \n";
+                length( $sequence ) eq $f[4] - $f[3] or die "Coordinates in .gff file don't match contig lengths for $f[0]. \n";
 }
 close(IN);
 exit;
