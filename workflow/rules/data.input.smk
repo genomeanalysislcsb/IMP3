@@ -213,5 +213,5 @@ rule check_ann_input:
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        perl {SRCDIR}/matchContigsGFF.pl {input}
+        (perl {SRCDIR}/matchContigsGFF.pl {input} && touch {output} ) || (echo "ERROR: Assembly and {input[1]} do not match." && exit 1)
         """
