@@ -23,22 +23,6 @@ FILTERING_CMD = """
         rm -rf $TMP_FILE
         """
 
-def filtering_mg_input(wildcards):
-    n = len(wildcards.filterstep.split("."))
-    if n == 1:
-        return ['Preprocessing/mg.r1.trimmed.fq',
-        'Preprocessing/mg.r2.trimmed.fq',
-        'Preprocessing/mg.se.trimmed.fq']
-    elif n > 1:
-        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Preprocessing/mg.r1.trimmed.','Preprocessing/mg.r2.trimmed.','Preprocessing/mg.se.trimmed.' ]]
-    else:
-        raise ValueError("invalid filter length %s" % n)
-
-def filtering_filter(wildcards):
-    return ancient(expand(
-            "{dir}/filtering/{filter}.{ext}", filter=wildcards.filterstep.split(".")[-1].split("_")[0],
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
-
 rule mg_filtering:
     input:
         filtering_mg_input,
@@ -59,23 +43,19 @@ rule mg_filtering:
 
 rule mt_filtering:
     input:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq',
-        ancient(expand(
-            "{dir}/filtering/{filter}.{ext}", filter=FILTER,
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
+        filtering_mt_input,
+        filtering_filter
     output:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.%s_filtered.fq' % FILTER[0],
-        'Preprocessing/mt.r2.trimmed.rna_filtered.%s_filtered.fq'% FILTER[0] ,
-        'Preprocessing/mt.se.trimmed.rna_filtered.%s_filtered.fq' % FILTER[0]
+        expand('Preprocessing/mt.{read}.trimmed.rna_filtered.{{filterstep}}.fq',read=["r1","r2","se"])
+    wildcard_constraints:
+        filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     params:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/preprocessing_mt_filtering.log"
-    message: "mt_filtering: Filtering mt reads  {FILTER}."
+    log: "logs/preprocessing_mt_filtering.{filterstep}.log"
+    message: "mt_filtering: Filtering mt reads to get {wildcards.filterstep}."
     shell:
         FILTERING_CMD
 

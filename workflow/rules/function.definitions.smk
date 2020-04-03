@@ -173,6 +173,34 @@ def reads_input_files_SE(wildcards):
     return expand(base, type=wildcards.type)
 
 
+def filtering_mg_input(wildcards):
+    n = len(wildcards.filterstep.split("."))
+    if n == 1:
+        return ['Preprocessing/mg.r1.trimmed.fq',
+        'Preprocessing/mg.r2.trimmed.fq',
+        'Preprocessing/mg.se.trimmed.fq']
+    elif n > 1:
+        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Preprocessing/mg.r1.trimmed.','Preprocessing/mg.r2.trimmed.','Preprocessing/mg.se.trimmed.' ]]
+    else:
+        raise ValueError("invalid filter length %s" % n)
+
+def filtering_mt_input(wildcards):
+    n = len(wildcards.filterstep.split("."))
+    if n == 1:
+        return ['Preprocessing/mg.r1.trimmed.rna_filtered.fq',
+        'Preprocessing/mg.r2.trimmed.rna_filtered.fq',
+        'Preprocessing/mg.se.trimmed.rna_filtered.fq']
+    elif n > 1:
+        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Preprocessing/mg.r1.trimmed.rna_filtered.','Preprocessing/mg.r2.trimmed.rna_filtered.','Preprocessing/mg.se.trimmed.rna_filtered.' ]]
+    else:
+        raise ValueError("invalid filter length %s" % n)
+
+def filtering_filter(wildcards):
+    return ancient(expand(
+            "{dir}/filtering/{filter}.{ext}", filter=wildcards.filterstep.split(".")[-1].split("_")[0],
+            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
+
+
 # for archiving checkpoint:
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_gziped.get(**wildcards).output[0]
