@@ -212,6 +212,10 @@ rule check_ann_input:
     conda: ENVDIR + "/IMP_bioperl.yaml"
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        (perl {SRCDIR}/matchContigsGFF.pl {input} && touch {output} ) || (echo "ERROR: Assembly and {input[1]} do not match." && exit 1)
+        if [ -s {input[1]} ]; then
+          export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+          (perl {SRCDIR}/matchContigsGFF.pl {input} && touch {output} ) || (echo "ERROR: Assembly and {input[1]} do not match." && exit 1)
+        else
+          echo "ERROR: Annotation file is empty." && exit 1
+        fi
         """
