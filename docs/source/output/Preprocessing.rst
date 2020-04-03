@@ -15,7 +15,8 @@ called ``<mg|mt>.<r1|r2>.fq.gz``. All IMP3 runs with preprocessing will also hav
 `trimmomatic output <http://www.usadellab.org/cms/?page=trimmomatic>`_ ``<mg|mt>.<r1|r2|se>.trimmed.fq.gz``. 
 
 Metatranscriptomic reads are always filtered to remove rRNA reads using `SortMeRNA <https://github.com/biocore/sortmerna>`_ .
-The remaining reads from this step are ``mt.<r1|r2|se>.trimmed.rna.fq.gz``.
+rRNA reads are in ``mt.<r1|r2|se>.trimmed.rna.fq.gz``.
+The remaining reads from this step are ``mt.<r1|r2|se>.trimmed.rna_filtered.fq.gz``.
 If you chose to filter your reads by mapping against a reference, you will also find ``mt.<r1|r2|se>.trimmed.rna_filtered.<reference>_filtered.fq.gz``
 and/or ``mg.<r1|r2|se>.trimmed.<reference>_filtered.fq.gz``.
 

@@ -46,8 +46,7 @@ if os.path.exists(CUSTOM_CONFIG_PATH):
 
 
 # some parameters
-SRCDIR = srcdir("../../src")
-LIBDIR = srcdir("../../lib")
+SRCDIR = srcdir("../../scripts")
 BINDIR = srcdir("../../bin")
 ENVDIR = srcdir("../../envs")
 

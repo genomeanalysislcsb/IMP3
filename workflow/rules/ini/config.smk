@@ -52,7 +52,7 @@ ENVDIR = srcdir("../../envs")
 
 # get parameters from the command line
 # output
-OUTPUTDIR = os.environ.get("OUTPUTDIR", config['outputdir'])
+OUTPUTDIR = os.path.expandvars(os.environ.get("OUTPUTDIR", config['outputdir']))
 SUMDIR = os.environ.get("SUMDIR", config['summarydir'])
 if OUTPUTDIR == SUMDIR:
     if SUMDIR[-1] != "/":
