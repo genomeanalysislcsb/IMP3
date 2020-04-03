@@ -163,7 +163,7 @@ rule check_bam_input:
         "Assembly/{type}.reads.sorted.bam"
     output:
         "status/{type}.reads.sorted.bam.checked"
-        threads: 1
+    threads: 1
     params:
         runtime = "4:00:00",
         mem = MEMCORE
@@ -182,7 +182,7 @@ rule check_ann_input:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "status/annotation_CDS_RNA_hmms.gff.checked"
-        threads: 1
+    threads: 1
     params:
         runtime = "4:00:00",
         mem = MEMCORE
