@@ -17,14 +17,14 @@ Inputs and directories
 ----------------------
 
 You need to tell IMP3 where the **raw or input files** are located. (The default is no input, and nothing will be done). Give absolute paths. 
-You also need to tell IMP3 where the **ouput** should be written. Please also give an absolute path here.
+You also need to tell IMP3 where the **ouput** should be written. You can give absolute or relative paths here.
 It's advisable to give a **sample name** to IMP3. Avoid special characters. Punctuation will be converted to underscore.
 The sample name will be prepended to, e.g. the contig names. (If you don't give a sample name, IMP3 will take the last two parts of the output
 path, concatenate them with an underscore and use the results as sample name).
 A directory for **temporary files** can be given. If you don't give an absolute path, it will be put into the output directory
 (and, for the default, named tmp).
 If you let IMP3 perform any steps that need :ref:`databases <ext_DBs>` (i.e. preprocessing (filtering of reads against a host genome, filtering rRNA reads),
-analysis (gene calling, functional annotation), or taxonomy (kraken2)), you also need to give the path to one directory that houses all the
+analysis (gene calling, functional annotation), or taxonomy (kraken2)), you also need to give the absolute path to one directory that houses all the
 databases.
 
 .. code-block:: yaml
