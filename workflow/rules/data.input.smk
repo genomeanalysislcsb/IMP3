@@ -118,6 +118,7 @@ rule check_read_r_input:
         expand("Preprocessing/{{type}}.{read}.fq",read=["r1","r2"])
     output:
         expand("status/{{type}}.{read}.fq.checked",read=["r1","r2"])
+    priority: 10
     message: "Checking {wildcards.type} read input."
     shell:
         """
@@ -126,7 +127,7 @@ rule check_read_r_input:
         else
           echo "ERROR: Paired read files don't have the same number of reads." && exit 1
         fi
-        """
+    """
 
 rule check_read_se_input:
     input:
@@ -134,6 +135,7 @@ rule check_read_se_input:
     output:
         "status/{type}.se.fq.checked"
     message: "Checking single end {wildcards.type} read input."
+    priority: 10
     shell:
         """
         if [ -s {input} ]; then
@@ -148,6 +150,7 @@ rule check_assembly_input:
         "Assembly/{ass}.assembly.merged.fa"
     output:
         "status/{ass}.assembly.merged.fa.checked"
+    priority: 10
     message: "Checking assembly."
     shell:
         """
@@ -164,6 +167,7 @@ rule check_bam_input:
         "Assembly/{type}.reads.sorted.bam"
     output:
         "status/{type}.reads.sorted.bam.checked"
+    priority: 10
     threads: 1
     params:
         runtime = "4:00:00",
@@ -183,6 +187,7 @@ rule check_ann_input:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "status/annotation_CDS_RNA_hmms.gff.checked"
+    priority: 10
     threads: 1
     params:
         runtime = "4:00:00",
