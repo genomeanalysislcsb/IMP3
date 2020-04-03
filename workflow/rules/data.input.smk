@@ -114,9 +114,9 @@ rule check_inputs:
     
 rule check_read_r_input:
     input:
-        expand("Preprocessing/{type}.{read}.fq",read=["r1","r2"],type={wildcards.type})
+        expand("Preprocessing/{wildcards.type}.{read}.fq",read=["r1","r2"])
     output:
-        expand("status/{type}.{read}.fq.checked",read=["r1","r2"],type={wildcards.type})
+        expand("status/{type}.{wildcards.read}.fq.checked",read=["r1","r2"])
     message: "Checking {type} read input."
     shell:
         """
