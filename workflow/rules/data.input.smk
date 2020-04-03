@@ -104,7 +104,7 @@ rule prepare_input_data:
         if symlinks_list:
             symlink_input_files(symlinks_list)
 
-checked_files_list = ["status" + f.split("/")[-1] + ".checked" for f in input_files_list]
+checked_files_list = ["status/" + f.split("/")[-1] + ".checked" for f in input_files_list]
 
 rule check_inputs:
     input:
