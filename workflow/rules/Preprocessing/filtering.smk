@@ -23,27 +23,30 @@ FILTERING_CMD = """
         rm -rf $TMP_FILE
         """
 
-SYMLINK_CMD = """
-ln -fs $(echo {input[0]} | cut -f 2 -d /) {output[0]} && touch -h {output[0]}
-ln -fs $(echo {input[1]} | cut -f 2 -d /) {output[1]} && touch -h {output[1]}
-ln -fs $(echo {input[2]} | cut -f 2 -d /) {output[2]} && touch -h {output[2]}
-"""
+def filtering_mg_input(wildcards):
+    n = len(wildcards.filterstep.split("."))
+    if n == 1:
+        return ['Preprocessing/mg.r1.trimmed.fq',
+        'Preprocessing/mg.r2.trimmed.fq',
+        'Preprocessing/mg.se.trimmed.fq']
+    elif n > 1:
+        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Preprocessing/mg.r1.trimmed.','Preprocessing/mg.r2.trimmed.','Preprocessing/mg.se.trimmed.' ]]
+    else:
+        raise ValueError("invalid filter length %s" % n)
 
-#def filtering_input(wildcards):
-    
+def filtering_filter(wildcards):
+    return wildcards.filterstep.split(".")[-1].split("_")[0]
 
 rule mg_filtering:
     input:
-        'Preprocessing/mg.r1.trimmed.fq',
-        'Preprocessing/mg.r2.trimmed.fq',
-        'Preprocessing/mg.se.trimmed.fq',
+        filtering_mg_input,
         ancient(expand(
-            "{dir}/filtering/{filter}.{ext}", filter=FILTER,
+            "{dir}/filtering/{filter}.{ext}", filter=filtering_filter,
             ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
     output:
-        'Preprocessing/mg.r1.trimmed.%s_filtered.fq' % FILTER[0],
-        'Preprocessing/mg.r2.trimmed.%s_filtered.fq' % FILTER[0],
-        'Preprocessing/mg.se.trimmed.%s_filtered.fq' % FILTER[0]
+        expand('Preprocessing/mg.r1.trimmed.{{filterstep}}.fq',read=["r1","r2","se"])
+    wildcard_constraints:
+        filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     params:
         runtime = "24:00:00",
         mem = BIGMEMCORE
@@ -85,7 +88,6 @@ rule symlink_mt_preprocessed_files:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1
-#    log: "logs/preprocessing_symlink_mt_preprocessed_files.log"
     message: "symlink_mt_preprocessed_files: Symlinking filtered mt reads."
     run:
         for i,o in zip(input,output):
@@ -101,7 +103,6 @@ rule symlink_mg_preprocessed_files:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1
-#    log: "logs/preprocessing_symlink_mg_preprocessed_files.log"
     message: "symlink_mg_preprocessed_files: Symlinking filtered mg reads."
     run:
         for i,o in zip(input,output):

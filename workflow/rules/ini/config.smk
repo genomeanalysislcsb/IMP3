@@ -39,7 +39,7 @@ CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "../../../config/userconf.imp.
 
 # merge 2 configurations files together
 if os.path.exists(CUSTOM_CONFIG_PATH):
-    print("reading configuration from "+CUSTOM_CONFIG_PATH)
+    #print("reading configuration from "+CUSTOM_CONFIG_PATH)
     with open(CUSTOM_CONFIG_PATH, 'r') as rhandle:
         data = yaml.load(rhandle)
         config = dict_merge(config, data)
@@ -53,7 +53,7 @@ ENVDIR = srcdir("../../envs")
 # get parameters from the command line
 # output
 OUTPUTDIR = os.path.abspath(os.path.expandvars(os.environ.get("OUTPUTDIR", config['outputdir'])))
-print(OUTPUTDIR)
+#print(OUTPUTDIR)
 SUMDIR = os.path.abspath(os.path.expandvars(os.environ.get("SUMDIR", config['summarydir'])))
 if OUTPUTDIR == SUMDIR:
     if SUMDIR[-1] != "/":
