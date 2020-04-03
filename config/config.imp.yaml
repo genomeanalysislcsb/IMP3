@@ -89,13 +89,6 @@ hmm_settings:
     cutoff: ""
     trim: ""
 COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
-prokka: 
-  essentials_genes_db_url: "https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm"
-  databases: 
-    - "cm/Bacteria.i1i"
-    - "genus/Staphylococcus.phr"
-    - "hmm/CLUSTERS.hmm.h3f"
-    - "kingdom/Archaea/sprot.phr"
 featureCountsStranding:
   mt: 2
   mg: 0
