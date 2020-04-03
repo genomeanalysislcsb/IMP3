@@ -52,8 +52,8 @@ rule mg_filtering:
         mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/preprocessing_mg_filtering.log"
-    message: "mg_filtering: Filtering mg reads against {FILTER[0]}."
+    log: "logs/preprocessing_mg_filtering.{filterstep}.log"
+    message: "mg_filtering: Filtering mg reads against {wilcards.filterstep}."
     shell:
         FILTERING_CMD
 
