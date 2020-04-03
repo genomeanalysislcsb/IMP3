@@ -21,7 +21,7 @@ if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
             'Binning/DAStool/translate2DAStool.smk'
     
 
-localrules: prepare_input_data, check_inputs, check_read_se_input, check_assembly_input, check_read_r_input
+localrules: prepare_input_data, check_inputs, check_read_se_input, check_assembly_input, check_read_r_input, check_longread_input
 
 # outputs (input for workflow) to be generated (in rule)
 input_files_list = []
@@ -158,6 +158,22 @@ rule check_assembly_input:
           touch {output}
         else
           echo "ERROR: Assembly is empty." && exit 1
+        fi
+        """
+
+rule check_longread_input:
+    input:
+        "Assembly/long_reads.fastq"
+    output:
+        "status/long_reads.fastq.checked"
+    priority: 10
+    message: "Checking long reads."
+    shell:
+        """
+        if [ -s {input} ]; then
+          touch {output}
+        else
+          echo "ERROR: Long reads file is empty." && exit 1
         fi
         """
 
