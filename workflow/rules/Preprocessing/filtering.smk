@@ -35,16 +35,16 @@ def filtering_mg_input(wildcards):
         raise ValueError("invalid filter length %s" % n)
 
 def filtering_filter(wildcards):
-    return wildcards.filterstep.split(".")[-1].split("_")[0]
+    return ancient(expand(
+            "{dir}/filtering/{filter}.{ext}", filter=wildcards.filterstep.split(".")[-1].split("_")[0],
+            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
 
 rule mg_filtering:
     input:
         filtering_mg_input,
-        ancient(expand(
-            "{dir}/filtering/{filter}.{ext}", filter=filtering_filter,
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
+        filtering_filter
     output:
-        expand('Preprocessing/mg.r1.trimmed.{{filterstep}}.fq',read=["r1","r2","se"])
+        expand('Preprocessing/mg.{read}.trimmed.{{filterstep}}.fq',read=["r1","r2","se"])
     wildcard_constraints:
         filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     params:
@@ -53,7 +53,7 @@ rule mg_filtering:
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/preprocessing_mg_filtering.{filterstep}.log"
-    message: "mg_filtering: Filtering mg reads against {wilcards.filterstep}."
+    message: "mg_filtering: Filtering mg reads to get {wildcards.filterstep}."
     shell:
         FILTERING_CMD
 
@@ -75,7 +75,7 @@ rule mt_filtering:
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/preprocessing_mt_filtering.log"
-    message: "mt_filtering: Filtering mt reads against {FILTER}."
+    message: "mt_filtering: Filtering mt reads  {FILTER}."
     shell:
         FILTERING_CMD
 
