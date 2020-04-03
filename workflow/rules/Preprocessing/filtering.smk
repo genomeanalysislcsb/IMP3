@@ -37,21 +37,20 @@ rule mg_filtering:
         'Preprocessing/mg.r1.trimmed.fq',
         'Preprocessing/mg.r2.trimmed.fq',
         'Preprocessing/mg.se.trimmed.fq',
-        ancient('{dir}/{ref}.fa'.format(dir=DBPATH + "/filtering", ref=FILTER)),
         ancient(expand(
-            "{p}/filtering/{filter}.{ext}", filter=FILTER,
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], p=DBPATH))
+            "{dir}/filtering/{filter}.{ext}", filter=FILTER,
+            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
     output:
-        'Preprocessing/mg.r1.trimmed.%s_filtered.fq' % FILTER,
-        'Preprocessing/mg.r2.trimmed.%s_filtered.fq' % FILTER,
-        'Preprocessing/mg.se.trimmed.%s_filtered.fq' % FILTER
+        'Preprocessing/mg.r1.trimmed.%s_filtered.fq' % FILTER[0],
+        'Preprocessing/mg.r2.trimmed.%s_filtered.fq' % FILTER[0],
+        'Preprocessing/mg.se.trimmed.%s_filtered.fq' % FILTER[0]
     params:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/preprocessing_mg_filtering.log"
-    message: "mg_filtering: Filtering mg reads against {FILTER}."
+    message: "mg_filtering: Filtering mg reads against {FILTER[0]}."
     shell:
         FILTERING_CMD
 
@@ -60,14 +59,13 @@ rule mt_filtering:
         'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
         'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
         'Preprocessing/mt.se.trimmed.rna_filtered.fq',
-        ancient('{dir}/{ref}.fa'.format(dir=DBPATH + "/filtering", ref=FILTER)),
         ancient(expand(
-            "{p}/filtering/{filter}.{ext}", filter=FILTER,
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], p=DBPATH))
+            "{dir}/filtering/{filter}.{ext}", filter=FILTER,
+            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
     output:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.%s_filtered.fq' % FILTER,
-        'Preprocessing/mt.r2.trimmed.rna_filtered.%s_filtered.fq'% FILTER ,
-        'Preprocessing/mt.se.trimmed.rna_filtered.%s_filtered.fq' % FILTER
+        'Preprocessing/mt.r1.trimmed.rna_filtered.%s_filtered.fq' % FILTER[0],
+        'Preprocessing/mt.r2.trimmed.rna_filtered.%s_filtered.fq'% FILTER[0] ,
+        'Preprocessing/mt.se.trimmed.rna_filtered.%s_filtered.fq' % FILTER[0]
     params:
         runtime = "24:00:00",
         mem = BIGMEMCORE
