@@ -111,13 +111,14 @@ rule check_inputs:
         checked_files_list
     output:
         touch("status/inputs.done")
+    priority: 11
     
 rule check_read_r_input:
     input:
         expand("Preprocessing/{{type}}.{read}.fq",read=["r1","r2"])
     output:
         expand("status/{{type}}.{read}.fq.checked",read=["r1","r2"])
-    message: "Checking {type} read input."
+    message: "Checking {wildcards.type} read input."
     shell:
         """
         if [ "$(wc -l < {input[0]})" -eq "$(wc -l < {input[1]})" ]; then
@@ -132,7 +133,7 @@ rule check_read_se_input:
         "Preprocessing/{type}.se.fq"
     output:
         "status/{type}.se.fq.checked"
-    message: "Checking assembly."
+    message: "Checking single end {wildcards.type} read input."
     shell:
         """
         if [ -s {input} ]; then
@@ -167,7 +168,7 @@ rule check_bam_input:
     params:
         runtime = "4:00:00",
         mem = MEMCORE
-    message: "Checking {type} alignment."
+    message: "Checking {wildcards.type} alignment."
     conda: ENVDIR + "/IMP_mapping.yaml"
     shell:
         """
