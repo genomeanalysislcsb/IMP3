@@ -15,7 +15,7 @@ while (<IN>) {
     chomp;
     my @f = split(/\t/);
 				my $sequence = $db->seq($f[0],$f[3],$f[4]);
-				defined( $sequence ) or die "Contig $seq not found in assembly. \n";
+				defined( $sequence ) or die "Contig $f[0] not found in assembly. \n";
 }
 close(IN);
 exit;
