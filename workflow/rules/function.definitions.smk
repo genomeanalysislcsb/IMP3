@@ -193,7 +193,6 @@ def filtering_mg_SE_input(wildcards):
     else:
         raise ValueError("invalid filter length %s" % n)
 
-
 def filtering_mt_input(wildcards):
     n = len(wildcards.filterstep.split("."))
     if n == 1:

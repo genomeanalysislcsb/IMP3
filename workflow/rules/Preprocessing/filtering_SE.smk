@@ -12,7 +12,7 @@ FILTERING_CMD = """
 rule mg_filtering:
     input:
         filtering_mg_SE_input,
-        filtering_filter
+#        filtering_filter
     output:
         'Preprocessing/mg.se.trimmed.{{filterstep}}.fq'
     wildcard_constraints:
