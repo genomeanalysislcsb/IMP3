@@ -124,8 +124,8 @@ SUM_STEPS = os.environ.get("SUM_STEPS", config['summary_steps']).split()
 # hardware parameters
 BIGCORENO = os.environ.get("BIGCORENO", config['mem']['big_mem_cores'])
 BIGMEMTOTAL = os.environ.get("BIGMEMTOTAL", config['mem']['big_mem_total_gb'])
-MEMCORE = os.environ.get("MEMCORE", str(config['mem']['normal_mem_per_core_gb'])) + "G"
-BIGMEMCORE = os.environ.get("BIGMEMCORE", str(config['mem']['big_mem_per_core_gb'])) + "G"
+MEMCORE = str(os.environ.get("MEMCORE", config['mem']['normal_mem_per_core_gb'])) + "G"
+BIGMEMCORE = str(os.environ.get("BIGMEMCORE", config['mem']['big_mem_per_core_gb'])) + "G"
 
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless a absolute path is set
