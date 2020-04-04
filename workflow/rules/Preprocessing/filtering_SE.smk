@@ -5,7 +5,7 @@ FILTERING_CMD = """
         bwa mem -v 1 -t {threads} {input[1]} {input[0]} 2>> {log} | \
           samtools view --threads {threads} -bS - 2>> {log} | \
           samtools view --threads {threads} -uf 4 - 2>> {log} | \
-          bamToFastq -i stdin -fq {output[0]} >> {log} 2>&1
+          bamToFastq -i stdin -fq {output} >> {log} 2>&1
         rm -rf $TMP_FILE
         """
 
