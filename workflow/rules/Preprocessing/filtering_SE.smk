@@ -9,7 +9,7 @@ FILTERING_CMD = """
         rm -rf $TMP_FILE
         """
 
-rule mg_filtering:
+rule mg_SE_filtering:
     input:
         filtering_mg_SE_input,
 #        filtering_filter
