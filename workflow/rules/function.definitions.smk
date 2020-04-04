@@ -187,9 +187,9 @@ def filtering_mg_input(wildcards):
 def filtering_mg_SE_input(wildcards):
     n = len(wildcards.filterstep.split("."))
     if n == 1:
-        return 'Preprocessing/mg.se.trimmed.fq'
+        return ['Preprocessing/mg.se.trimmed.fq']
     elif n > 1:
-        return 'Preprocessing/mg.se.trimmed.' + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq"
+        return ['Preprocessing/mg.se.trimmed.' + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq"]
     else:
         raise ValueError("invalid filter length %s" % n)
 
