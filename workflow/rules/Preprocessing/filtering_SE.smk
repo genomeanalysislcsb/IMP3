@@ -9,12 +9,12 @@ FILTERING_CMD = """
         rm -rf $TMP_FILE
         """
 
-rule mg_SE_filtering:
+rule mg_filtering:
     input:
         filtering_mg_SE_input,
-#        filtering_filter
+        filtering_filter
     output:
-        'Preprocessing/mg.se.trimmed.{{filterstep}}.fq'
+        'Preprocessing/mg.se.trimmed.{filterstep}.fq'
     wildcard_constraints:
         filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     params:
