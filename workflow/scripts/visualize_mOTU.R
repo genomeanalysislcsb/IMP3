@@ -707,7 +707,8 @@ dir.create("Visualization", showWarnings = FALSE)
 
 relReads <- list()
 for(type in types){
-  plotfile <- outplot[type]
+  plotfile <- outplot[[type]]
+  print(plotfile)
   relReads[[type]] <- log10(0.1 + sapply(c(df_tree$tip.label,df_tree$node.label)[reorder(df_tree, order = "postorder")$edge[,2]],
                                          function(x){
                                            if(x %in% motuc[[type]]$newName){
