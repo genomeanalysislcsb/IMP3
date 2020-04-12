@@ -116,7 +116,7 @@ properties:
     type: object
     properties:
        files:
-        type: object
+        type: array
   assembly:
     type: object
     properties:

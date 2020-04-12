@@ -39,7 +39,6 @@ trimmomatic:
 nextseq: false
 filtering:
   filter: hg38
-  url: "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz"
 sortmerna:
   files:
     - rfam-5.8s-database-id98

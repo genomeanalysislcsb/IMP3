@@ -10,6 +10,7 @@ from copy import deepcopy
 import subprocess
 import pandas as pd
 from pathlib import Path
+from snakemake.utils import validate
 
 def dict_merge(a, b):
     """
