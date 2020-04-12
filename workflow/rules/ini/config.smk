@@ -44,6 +44,7 @@ if os.path.exists(CUSTOM_CONFIG_PATH):
         data = yaml.load(rhandle)
         config = dict_merge(config, data)
 
+validate(config,schema="../../../schemas/schema.imp.yaml")
 
 # some parameters
 SRCDIR = srcdir("../../scripts")

@@ -1,0 +1,218 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: IMP Snakemake configuration file
+
+type: object
+
+properties:
+  steps:
+    type: string
+  preprocessing_filtering:
+    type: boolean
+  mem:
+    type: object
+    properties:
+      normal_mem_per_core_gb:
+        type: number
+        minimum: 0
+      big_mem_total_gb:
+        type: number
+        minimum: 0
+      big_mem_cores:
+        type: number
+        minimum: 1
+      big_mem_per_core_gb:
+        type: number
+        minimum: 0
+  tmp_dir:
+    type: string
+  raws:
+    type: object
+    properties:
+      Metagenomics:
+        type: string
+      Metatranscriptomics:
+        type: string
+      LongReads:
+        type: string
+      LongReadTech:
+        type: string
+        enum:
+          - ""
+          - "nanopore"
+          - "pacbio"
+      Contigs:
+        type: string
+      Alignment_metagenomics:
+        type: string
+      Alignment_metatranscriptomics:
+        type: string
+      Gff:
+        type: string
+  sample:
+    type: string
+  outputdir:
+    type: string
+  summarydir:
+    type: string
+  summary_steps:
+    type: string
+  mongo_user:
+    type: string
+  mongo_port:
+    type:
+      - string
+      - number
+  mongo_password:
+    type: string
+  compress_level:
+    type: string
+  db_path:
+    type: string
+    pattern: "^/.+$"
+  trimmomatic:
+    type: object
+    properties:
+      adapter:
+        type: string
+      leading:
+        type: number
+        minimum: 0
+      minlen:
+        type: number
+        minimum: 0
+      palindrome_clip_threshold:
+        type: number
+        minimum: 0
+      simple_clip_threshold:
+        type: number
+        minimum: 0
+      trailing:
+        type: number
+        minimum: 0
+      seed_mismatch:
+        type: number
+        minimum: 0
+      window_size:
+        type: number
+        minimum: 1
+      window_quality:
+        type: number
+        minimum: 0
+      strictness:
+        type: number
+      target_length:
+        type: number
+        minimum: 0
+  nextseq:
+    type: boolean
+  filtering:
+    type: object
+    properties:
+      filter:
+        type: string
+        pattern: "^[^_.]+$" 
+  sortmerna:
+    type: object
+    properties:
+       files:
+        type: object
+  assembly:
+    type: object
+    properties:
+      hybrid:
+        type: boolean
+    assembler:
+        type: string
+        enum:
+          - megahit
+          - metaspades
+    mink:
+      type: number
+      minimum: 3
+    maxk:
+      type: number
+      minimum: 3
+    step:
+      type: number
+      minimum: 1
+    cap3:
+      type: object
+      properties:
+        identity:
+          type: number
+          minimum: 1
+          maximum: 100
+        overlap:
+          type: number
+          minimum: 1
+  hmm_DBs:
+    type: string
+  hmm_settings:
+    type: object
+  COGS:
+    type: string
+  featureCountsStranding:
+    type: object
+    properties:
+      mt:
+        type: number
+        minimum: 0
+        maximum: 2
+      mg:
+        type: number
+        minimum: 0
+        maximum: 2
+  proteomics:
+    type: object
+    properties:
+      filter_N_peptides:
+        type: number
+        minimum: 1
+      host_proteome:
+        type: string
+      insert_variants:
+        type: boolean
+  binning:
+    type: object
+    properties:
+      binners:
+        type: string
+      MaxBin:
+        type: object
+        properties:
+          cutoff:
+            type: number
+            minimum: 1
+      MetaBAT:
+        type: object
+        properties:
+          cutoff:
+            type: number
+            minimum: 1500
+      binny:
+        type: object
+        properties:
+          pk:
+            type: number
+            minimum: 1
+          nn:
+            type: number
+            minimum: 2
+      vizbin:
+        type: object
+        properties:
+          dimension:
+            type: number
+            minimum: 2
+          kmer:
+            type: number
+            minimum: 2
+          perp:
+            type: number
+            minimum: 1
+          cutoff:
+            type: number
+            minimum: 1
+  krakendb:
+    type: string

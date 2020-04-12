@@ -105,12 +105,9 @@ binning:
   binny:
     pk: 10
     nn: 4
-    cutoff: 1000
   vizbin:
     dimension: 50
     kmer: 5
-    size: 4
-    theta: 0.5
     perp: 30
     cutoff: 1000
 krakendb: minikraken2
