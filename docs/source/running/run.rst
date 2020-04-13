@@ -24,7 +24,7 @@ to the visual outputs, run snakemake with the ``--report`` option:
 
 .. _run_cluster:
 
-If you want to use a batch submission system to run IMP3, add the appropriate arguments (more details :ref:`here <cluster_config>):
+If you want to use a batch submission system to run IMP3, add the appropriate arguments (more details :ref:`here <cluster_config>`):
 
 .. code-block:: console
 
