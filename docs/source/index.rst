@@ -32,24 +32,7 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    
    running/run_idx
    steps/Overview
-   
-   steps/Overview
-   steps/Preprocessing
-   steps/Assembly
-   steps/Analysis
-   steps/Binning
-   steps/Taxonomy
-   steps/Summary
-
    output/Overview
-   output/Report
-   output/Stats
-   output/Preprocessing
-   output/Assembly
-   output/Analysis
-   output/Taxonomy
-   output/Binning
-   output/Logs
    
 .. toctree::
    :maxdepth: 1
