@@ -27,26 +27,14 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    :maxdepth: 2
    :caption: IMP3
    :hidden:
-   :name: IMP3
-
-   .. toctree::
-      :maxdepth: 2
-      :caption: Running and configuring IMP3
-      :hidden:
-      :name: running_IMP3
-
-      running/run
-      running/configuring
-      running/inputs
-      running/cluster_config
-      running/databases
+   :name: running_IMP3
    
-.. toctree::
-   :maxdepth: 1
-   :caption: IMP3's steps
-   :hidden:
-   :name: steps
-
+   running/run
+   running/configuring
+   running/inputs
+   running/cluster_config
+   running/databases
+   
    steps/Overview
    steps/Preprocessing
    steps/Assembly
@@ -54,12 +42,6 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    steps/Binning
    steps/Taxonomy
    steps/Summary
-   
-.. toctree::
-   :maxdepth: 1
-   :caption: IMP3's output
-   :hidden:
-   :name: outputs
 
    output/Overview
    output/Report
@@ -72,20 +54,14 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    output/Logs
    
 .. toctree::
-   :maxdepth: 1
-   :caption: Configuring and running multi-IMP3
+   :maxdepth: 2
+   :caption: Multi-IMP3
    :hidden:
    :name: running_multiIMP3
 
    multi_running/run
    multi_running/configuring
    multi_running/sample_file
-   
-.. toctree::
-   :maxdepth: 1
-   :caption: multi-IMP3's steps
-   :hidden:
-   :name: multi_steps
 
    multi_steps/Overview
    multi_steps/Annotation
@@ -94,12 +70,7 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    multi_steps/Dereplication
    multi_steps/Re-binning
    multi_steps/Summary
-   
-.. toctree::
-   :maxdepth: 1
-   :caption: multi-IMP3's output
-   :hidden:
-   :name: multi_outputs
+
 
    multi_output/Overview
    multi_output/Report
