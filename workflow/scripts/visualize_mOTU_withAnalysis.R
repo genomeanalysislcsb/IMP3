@@ -697,7 +697,14 @@ for(type in types){
 edgel <- unique(edgel)
 gra <- graph_from_edgelist(as.matrix(edgel),directed = T)
 V(gra)$name <- gsub("[,/(/)]","",V(gra)$name)
-df_tree = collapse.singles(read.newick(text = graph_to_newick(gra,"r__root")))
+grn <- read.newick(text=graph_to_newick(gra,"r__root"))
+if(length(grn$tip.label)<2){
+  for(o in unlist(outplot)){
+      system(paste0("touch ",o))
+    }
+    print(Less than two leaves in tree. Aborting visualization.")
+}else{
+df_tree <- collapse.singles(grn)
 df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
 
 if(!grepl("^=",scan(geneLev_file,what=character(),n=1))){
@@ -838,4 +845,4 @@ if(length(types)>1){
   }
 }
 dev.off()
-}
+}}
