@@ -1,5 +1,6 @@
+####
 IMP3
-====
+####
 
 The Integrated Meta-Omics Pipeline, IMP, is a reproducible and modular pipeline for large-scale 
 integrated analysis of coupled metagenomic and metatranscriptomic data. IMP3 incorporates read 
