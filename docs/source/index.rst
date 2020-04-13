@@ -40,27 +40,9 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    :hidden:
    :name: running_multiIMP3
 
-   multi_running/run
-   multi_running/configuring
-   multi_running/sample_file
-
+   multi_running/run_idx
    multi_steps/Overview
-   multi_steps/Annotation
-   multi_steps/Taxonomy
-   multi_steps/Catalogue
-   multi_steps/Dereplication
-   multi_steps/Re-binning
-   multi_steps/Summary
-
-
    multi_output/Overview
-   multi_output/Report
-   multi_output/Stats
-   multi_output/Annotation
-   multi_output/Taxonomy
-   multi_output/Catalogue
-   multi_output/Dereplication
-   multi_output/Re-binning
 
 .. toctree::
    :maxdepth: 1
