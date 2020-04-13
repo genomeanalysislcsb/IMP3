@@ -24,7 +24,7 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    installation/installation
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: IMP3
    :hidden:
    :name: running_IMP3
@@ -54,7 +54,7 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    output/Logs
    
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Multi-IMP3
    :hidden:
    :name: running_multiIMP3
