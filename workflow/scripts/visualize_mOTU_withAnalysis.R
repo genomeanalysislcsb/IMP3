@@ -709,7 +709,8 @@ if(!all(sapply(types,function(type) nrow(read.delim(motuStats_files[[type]],stri
     if(!grepl("^=",scan(geneLev_file,what=character(),n=1))){
       gene_tab <- read.delim(geneLev_file,stringsAsFactors = F)
     }else{
-      gene_tab <- read.delim(geneLev_file,stringsAsFactors = F,comment.char="=",header=F)
+      gene_tab <- tryCatch(read.delim(geneLev_file,stringsAsFactors = F,comment.char="=",header=F),
+                           error=function(e) setNames(data.frame(matrix(ncol = 19, nrow = 0)), c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")))
       colnames(gene_tab) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
     }
     
