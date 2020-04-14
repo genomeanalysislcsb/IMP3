@@ -37,6 +37,9 @@ rule DAS_tool:
          --proteins {input.proteins} --score_threshold 0.3 \
          --threads {threads} --write_bins 1 \
          -o Binning/selected > {log} 2>&1 || touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir -p  {output[2]}
+        if [ ! -f {output[0]} ]; then
+          touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir -p  {output[2]}
+        fi
         """
 
 rule format_protein_names:
