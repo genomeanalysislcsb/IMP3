@@ -4,6 +4,19 @@
 Overview of IMP3 steps
 ======================
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Overview of IMP3 steps
+   :hidden:
+   :name: steps_IMP3
+
+   Preprocessing
+   Assembly
+   Analysis
+   Binning
+   Taxonomy
+   Summary
+
 The workflow of IMP3 consists of six modules: :ref:`pre-processing <step_preprocessing>` of reads
 , :ref:`assembly <step_assembly>`, :ref:`analysis <step_analysis>` of contigs including
 functional annotation, :ref:`binning <step_binning>` of contigs, determination of :ref:`taxonomy <step_taxonomy>` at

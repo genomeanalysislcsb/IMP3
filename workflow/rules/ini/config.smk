@@ -10,6 +10,7 @@ from copy import deepcopy
 import subprocess
 import pandas as pd
 from pathlib import Path
+from snakemake.utils import validate
 
 def dict_merge(a, b):
     """
@@ -39,11 +40,12 @@ CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "../../../config/userconf.imp.
 
 # merge 2 configurations files together
 if os.path.exists(CUSTOM_CONFIG_PATH):
-    print("reading configuration from "+CUSTOM_CONFIG_PATH)
+    #print("reading configuration from "+CUSTOM_CONFIG_PATH)
     with open(CUSTOM_CONFIG_PATH, 'r') as rhandle:
         data = yaml.load(rhandle)
         config = dict_merge(config, data)
 
+validate(config,schema="../../../schemas/schema.imp.yaml")
 
 # some parameters
 SRCDIR = srcdir("../../scripts")
@@ -52,8 +54,9 @@ ENVDIR = srcdir("../../envs")
 
 # get parameters from the command line
 # output
-OUTPUTDIR = os.environ.get("OUTPUTDIR", config['outputdir'])
-SUMDIR = os.environ.get("SUMDIR", config['summarydir'])
+OUTPUTDIR = os.path.abspath(os.path.expandvars(os.environ.get("OUTPUTDIR", config['outputdir'])))
+#print(OUTPUTDIR)
+SUMDIR = os.path.abspath(os.path.expandvars(os.environ.get("SUMDIR", config['summarydir'])))
 if OUTPUTDIR == SUMDIR:
     if SUMDIR[-1] != "/":
         SUMDIR += "_final"
@@ -113,9 +116,9 @@ elif CONTIGS and MT:
 # settings
 IMP_STEPS = sorted(os.environ.get("IMP_STEPS", config['steps']).split())
 PREPROCESSING_FILTERING = os.environ.get("PREPROCESSING_FILTERING", config['preprocessing_filtering'])
-FILTER = os.environ.get("FILTER", config['filtering']['filter'])
+FILTER = os.environ.get("FILTER", config['filtering']['filter']).split()
 IMP_ASSEMBLER = os.environ.get("IMP_ASSEMBLER", config['assembly']['assembler'])
-BIN_STEPS = os.environ.get("IMP_BINNING_METHOD", config['binning']['binners'].split())
+BIN_STEPS = os.environ.get("IMP_BINNING_METHOD", config['binning']['binners']).split()
 if not MG and not MGaln:
     BIN_STEPS = list(set(BIN_STEPS).difference(["MaxBin", "binny"]))
 SUM_STEPS = os.environ.get("SUM_STEPS", config['summary_steps']).split()
@@ -123,8 +126,8 @@ SUM_STEPS = os.environ.get("SUM_STEPS", config['summary_steps']).split()
 # hardware parameters
 BIGCORENO = os.environ.get("BIGCORENO", config['mem']['big_mem_cores'])
 BIGMEMTOTAL = os.environ.get("BIGMEMTOTAL", config['mem']['big_mem_total_gb'])
-MEMCORE = os.environ.get("MEMCORE", str(config['mem']['normal_mem_per_core_gb']) + "G")
-BIGMEMCORE = os.environ.get("BIGMEMCORE", str(config['mem']['big_mem_per_core_gb']) + "G")
+MEMCORE = str(os.environ.get("MEMCORE", config['mem']['normal_mem_per_core_gb'])) + "G"
+BIGMEMCORE = str(os.environ.get("BIGMEMCORE", config['mem']['big_mem_per_core_gb'])) + "G"
 
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless a absolute path is set

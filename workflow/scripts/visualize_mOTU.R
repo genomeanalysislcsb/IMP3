@@ -652,161 +652,170 @@ names(outplot) <- c(types,"sum")
 
 if(!all(sapply(types,function(type) nrow(read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F,nrows=2))>1))){
   for(o in unlist(outplot)){
+    system(paste0("touch ",o))
+  }
+  print(paste0("missing data for ",type,". Aborting visualization."))
+}else{
+  
+  motuc <- list()
+  tax_tab <- list()
+  for(type in types){
+    motuc[[type]] <- read.delim(motuStats_files[[type]],stringsAsFactors=F,header=T)
+    motuc[[type]]$newName <- ""
+    tax_tab[[type]] <- list()
+    for(i in 1:nrow(motuc[[type]])){
+      stax <- motuc[[type]][i,1]
+      tax_vec <- unlist(strsplit(stax,split="|",fixed = T))
+      r <- sub("__.*","",tax_vec[length(tax_vec)])
+      if(!"edgel" %in% ls()){
+        if(length(tax_vec)==1){
+          edgel <- matrix(c("r__root",tax_vec),nrow=1,ncol=2)
+        }else{
+          edgel <- matrix(tax_vec[length(tax_vec)-1:0],nrow=1,ncol=2)
+        }
+      }else{
+        if(length(tax_vec)==1){
+          edgel <- rbind(edgel,matrix(c("r__root",tax_vec),nrow=1,ncol=2))
+        }else{
+          edgel <- rbind(edgel,matrix(tax_vec[length(tax_vec)-1:0],nrow=1,ncol=2))
+        }
+      }
+      if(! r %in% names(tax_tab[[type]])){
+        tax_tab[[type]][[r]] <- data.frame("taxString"=stax,
+                                           "reads"=motuc[[type]][i,2],
+                                           stringsAsFactors = F)
+      }else{
+        tax_tab[[type]][[r]] <- rbind(tax_tab[[type]][[r]],
+                                      data.frame("taxString"=stax,
+                                                 "reads"=motuc[[type]][i,2],
+                                                 stringsAsFactors = F))
+      }
+      motuc[[type]]$newName[i] <- gsub("[,/(/)]","",tax_vec[length(tax_vec)])
+    }
+  }
+  edgel <- unique(edgel)
+  gra <- graph_from_edgelist(as.matrix(edgel),directed = T)
+  V(gra)$name <- gsub("[,/(/)]","",V(gra)$name)
+  grn <- read.newick(text=graph_to_newick(gra,"r__root"))
+  if(length(grn$tip.label)<2){
+    for(o in unlist(outplot)){
       system(paste0("touch ",o))
     }
-    print(paste0("missing data for ",type,". Aborting visualization."))
-}else{
-
-motuc <- list()
-tax_tab <- list()
-for(type in types){
-  motuc[[type]] <- read.delim(motuStats_files[[type]],stringsAsFactors=F,header=T)
-  motuc[[type]]$newName <- ""
-  tax_tab[[type]] <- list()
-  for(i in 1:nrow(motuc[[type]])){
-    stax <- motuc[[type]][i,1]
-    tax_vec <- unlist(strsplit(stax,split="|",fixed = T))
-    r <- sub("__.*","",tax_vec[length(tax_vec)])
-    if(!"edgel" %in% ls()){
-      if(length(tax_vec)==1){
-        edgel <- matrix(c("r__root",tax_vec),nrow=1,ncol=2)
-      }else{
-        edgel <- matrix(tax_vec[length(tax_vec)-1:0],nrow=1,ncol=2)
+    print("Less than two leaves in tree. Aborting visualization.")
+  }else{
+    df_tree <- collapse.singles(grn)
+    df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
+    
+    ###################################################################################################
+    ## plot
+    ###################################################################################################
+    print("Plotting mOTU stats.")
+    dir.create("Visualization", showWarnings = FALSE)
+    
+    relReads <- list()
+    for(type in types){
+      plotfile <- outplot[[type]]
+      print(plotfile)
+      relReads[[type]] <- log10(0.1 + sapply(c(df_tree$tip.label,df_tree$node.label)[reorder(df_tree, order = "postorder")$edge[,2]],
+                                             function(x){
+                                               if(x %in% motuc[[type]]$newName){
+                                                 sum(motuc[[type]][motuc[[type]]$newName==x,2])}else{
+                                                   0}})/sum(tax_tab[[type]][["k"]][,2]))
+      col <- colorRampPalette(brewer.pal(9,"YlGnBu")[-1])(256)[cut(relReads[[type]],256)]
+      png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=9)
+      par("mar"=c(0.2,0.2,0.2,0.2))
+      a <- plot.phylo2(df_tree,type="fan",show.tip.label = T,edge.color = "black",edge.width =0.3,
+                       cex=0.3,label.offset = 0.02)
+      points(a[,3:4],lwd=0.2,
+             bg=col,pch=21,cex=0.75*(1+relReads[[type]])+ifelse(relReads[[type]]==-1,0,0.4))
+      dev.off()
+    }
+    
+    
+    ###################################################################################################
+    ## plot mg vs mt for every level or histogram of mg or mt
+    ###################################################################################################
+    plotfile <- outplot[["sum"]]
+    png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
+    par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5,mfrow=plotdim(length(unique(unlist(c(sapply(tax_tab,names)))))),cex=1)
+    if(length(types)>1){
+      for(rank in unique(unlist(c(sapply(tax_tab,names))))){
+        if(rank %in% names(tax_tab[[1]]) & rank %in% names(tax_tab[[2]])){
+          perMotuM <-merge(tax_tab[[1]][[rank]],tax_tab[[2]][[rank]],by=1,all=T,suffixes=paste0(".",types))
+          perMotuM[is.na(perMotuM)] <- 0
+          if(nrow(perMotuM)>0){
+            plot(perMotuM$reads.mg,perMotuM$reads.mt,
+                 pch=16,cex=1,log="xy",las=1,
+                 xlim=c(0.09,max(sapply(tax_tab,function(x) max(x[[rank]][,2])))*1.2),xaxs="i",
+                 ylim=c(0.09,max(sapply(tax_tab,function(x) max(x[[rank]][,2])))*1.2),yaxs="i",
+                 ylab="",
+                 xlab="counts (metaG)",cex.lab=9/7,axes=F,
+                 col=brewer.pal(8,"Set2")[4])
+            points(perMotuM$reads.mg[perMotuM$reads.mt==0],
+                   rep(0.1,length(which(perMotuM$reads.mt==0))),
+                   pch=16,cex=0.8,
+                   col=brewer.pal(8,"Set2")[4])
+            points(rep(0.1,length(which(perMotuM$reads.mg==0))),
+                   perMotuM$reads.mt[perMotuM$reads.mg==0],
+                   pch=16,cex=0.8,
+                   col=brewer.pal(8,"Set2")[4])
+            mtext("counts (metaT)",2,2.8,cex=9/7)
+            mtext(paste0(rank,"__"),3,-1,cex=9/7)
+            axis(1,
+                 at=c(0.09,10^c(0:10)),
+                 labels=c(0,format(10^c(0:10),scientific=T,digits = 2)),lwd=0.5,las=1)
+            axis(2,at=c(0.09,10^c(0:10)),
+                 labels=c(0,format(10^c(0:10),scientific=T,digits = 2)),lwd=0.5,las=1)
+            box(bty="o")
+          }
+        }else{
+          ttyp <- ifelse(rank %in% names(tax_tab[[1]]),1,2)
+          if(nrow(tax_tab[[ttyp]][[rank]])>0){
+            depth_hist_log <- hist(log10(tax_tab[[ttyp]][[rank]][,2]),
+                                   breaks=seq(from=0,
+                                              to=log10(max(tax_tab[[ttyp]][[rank]][,2])*1.2),
+                                              length.out = 100),plot=F)
+            plot(expand_hist_mids(depth_hist_log),
+                 expand_hist_counts(depth_hist_log),
+                 type="l",axes=F,ylab="",xlab=paste0("read counts ",ifelse(ttyp=="mg","(metaG)","(metaT)")),
+                 cex.lab=9/7,col=brewer.pal(8,"Set2")[4],
+                 xlim=c(expand_hist_mids(depth_hist_log)[1]-1.03,
+                        max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
+                 ylim=c(0,max(c(max(depth_hist_log$counts),
+                                length(which(tax_tab[[ttyp]][[rank]][,2]==0))))*1.1),yaxs="i")
+            mtext("mOTUs",2,2.8,cex=9/7)
+            mtext(paste0(rank,"__"),3,-1,cex=9/7)
+            axis(1,at=c(0:10),
+                 labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
+            axis(2,lwd=0.5,las=1)
+            box(bty="o")
+          }
+        }
       }
     }else{
-      if(length(tax_vec)==1){
-        edgel <- rbind(edgel,matrix(c("r__root",tax_vec),nrow=1,ncol=2))
-      }else{
-        edgel <- rbind(edgel,matrix(tax_vec[length(tax_vec)-1:0],nrow=1,ncol=2))
+      for(rank in unique(unlist(c(sapply(tax_tab,names))))){
+        if(nrow(tax_tab[[1]][[rank]])>0){
+          depth_hist_log <- hist(log10(tax_tab[[1]][[rank]][,2]),
+                                 breaks=seq(from=0,
+                                            to=log10(max(tax_tab[[1]][[rank]][,2])*1.2),
+                                            length.out = 100),plot=F)
+          plot(expand_hist_mids(depth_hist_log),
+               expand_hist_counts(depth_hist_log),
+               type="l",axes=F,ylab="",xlab=paste0("read counts ",ifelse(types[1]=="mg","(metaG)","(metaT)")),
+               cex.lab=9/7,col=brewer.pal(8,"Set2")[4],
+               xlim=c(expand_hist_mids(depth_hist_log)[1]-1.03,
+                      max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
+               ylim=c(0,max(c(max(depth_hist_log$counts),
+                              length(which(tax_tab[[1]][[rank]][,2]==0))))*1.1),yaxs="i")
+          mtext("mOTUs",2,2.8,cex=9/7)
+          mtext(paste0(rank,"__"),3,-1,cex=9/7)
+          axis(1,at=c(0:10),
+               labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
+          axis(2,lwd=0.5,las=1)
+          box(bty="o")
+        }
       }
     }
-    if(! r %in% names(tax_tab[[type]])){
-      tax_tab[[type]][[r]] <- data.frame("taxString"=stax,
-                                 "reads"=motuc[[type]][i,2],
-                                 stringsAsFactors = F)
-    }else{
-      tax_tab[[type]][[r]] <- rbind(tax_tab[[type]][[r]],
-                            data.frame("taxString"=stax,
-                                       "reads"=motuc[[type]][i,2],
-                                       stringsAsFactors = F))
-    }
-    motuc[[type]]$newName[i] <- gsub("[,/(/)]","",tax_vec[length(tax_vec)])
+    dev.off()
   }
-}
-edgel <- unique(edgel)
-gra <- graph_from_edgelist(as.matrix(edgel),directed = T)
-V(gra)$name <- gsub("[,/(/)]","",V(gra)$name)
-df_tree = collapse.singles(read.newick(text = graph_to_newick(gra,"r__root")))
-df_tree$edge.length <- rep(0.1,nrow(df_tree$edge))
-
-###################################################################################################
-## plot
-###################################################################################################
-print("Plotting mOTU stats.")
-dir.create("Visualization", showWarnings = FALSE)
-
-relReads <- list()
-for(type in types){
-  plotfile <- outplot[type]
-  relReads[[type]] <- log10(0.1 + sapply(c(df_tree$tip.label,df_tree$node.label)[reorder(df_tree, order = "postorder")$edge[,2]],
-                                         function(x){
-                                           if(x %in% motuc[[type]]$newName){
-                                             motuc[[type]][motuc[[type]]$newName==x,2]}else{
-                                               0}})/sum(tax_tab[[type]][["k"]][,2]))
-  col <- colorRampPalette(brewer.pal(9,"YlGnBu")[-1])(256)[cut(relReads[[type]],256)]
-  png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=9)
-  par("mar"=c(0.2,0.2,0.2,0.2))
-  a <- plot.phylo2(df_tree,type="fan",show.tip.label = T,edge.color = "black",edge.width =0.3,
-                   cex=0.3,label.offset = 0.02)
-  points(a[,3:4],lwd=0.2,
-         bg=col,pch=21,cex=0.75*(1+relReads[[type]])+ifelse(relReads[[type]]==-1,0,0.4))
-  dev.off()
-}
-
-
-###################################################################################################
-## plot mg vs mt for every level or histogram of mg or mt
-###################################################################################################
-plotfile <- outplot[["sum"]]
-png(plotfile,width=17,height=17,units = "cm",res=300,pointsize=7)
-par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5,mfrow=plotdim(length(unique(unlist(c(sapply(tax_tab,names)))))),cex=1)
-if(length(types)>1){
-  for(rank in unique(unlist(c(sapply(tax_tab,names))))){
-    if(rank %in% names(tax_tab[[1]]) & rank %in% names(tax_tab[[2]])){
-      perMotuM <-merge(tax_tab[[1]][[rank]],tax_tab[[2]][[rank]],by=1,all=T,suffixes=paste0(".",types))
-      perMotuM[is.na(perMotuM)] <- 0
-      if(nrow(perMotuM)>0){
-        plot(perMotuM$reads.mg,perMotuM$reads.mt,
-             pch=16,cex=1,log="xy",las=1,
-             xlim=c(0.09,max(sapply(tax_tab,function(x) max(x[[rank]][,2])))*1.2),xaxs="i",
-             ylim=c(0.09,max(sapply(tax_tab,function(x) max(x[[rank]][,2])))*1.2),yaxs="i",
-             ylab="",
-             xlab="counts (metaG)",cex.lab=9/7,axes=F,
-             col=brewer.pal(8,"Set2")[4])
-        points(perMotuM$reads.mg[perMotuM$reads.mt==0],
-               rep(0.1,length(which(perMotuM$reads.mt==0))),
-               pch=16,cex=0.8,
-               col=brewer.pal(8,"Set2")[4])
-        points(rep(0.1,length(which(perMotuM$reads.mg==0))),
-               perMotuM$reads.mt[perMotuM$reads.mg==0],
-               pch=16,cex=0.8,
-               col=brewer.pal(8,"Set2")[4])
-        mtext("counts (metaT)",2,2.8,cex=9/7)
-        mtext(paste0(rank,"__"),3,-1,cex=9/7)
-        axis(1,
-             at=c(0.09,10^c(0:10)),
-             labels=c(0,format(10^c(0:10),scientific=T,digits = 2)),lwd=0.5,las=1)
-        axis(2,at=c(0.09,10^c(0:10)),
-             labels=c(0,format(10^c(0:10),scientific=T,digits = 2)),lwd=0.5,las=1)
-        box(bty="o")
-      }
-    }else{
-      ttyp <- ifelse(rank %in% names(tax_tab[[1]]),1,2)
-      if(nrow(tax_tab[[ttyp]][[rank]])>0){
-        depth_hist_log <- hist(log10(tax_tab[[ttyp]][[rank]][,2]),
-                               breaks=seq(from=0,
-                                          to=log10(max(tax_tab[[ttyp]][[rank]][,2])*1.2),
-                                          length.out = 100),plot=F)
-        plot(expand_hist_mids(depth_hist_log),
-             expand_hist_counts(depth_hist_log),
-             type="l",axes=F,ylab="",xlab=paste0("read counts ",ifelse(ttyp=="mg","(metaG)","(metaT)")),
-             cex.lab=9/7,col=brewer.pal(8,"Set2")[4],
-             xlim=c(expand_hist_mids(depth_hist_log)[1]-1.03,
-                    max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
-             ylim=c(0,max(c(max(depth_hist_log$counts),
-                            length(which(tax_tab[[ttyp]][[rank]][,2]==0))))*1.1),yaxs="i")
-        mtext("mOTUs",2,2.8,cex=9/7)
-        mtext(paste0(rank,"__"),3,-1,cex=9/7)
-        axis(1,at=c(0:10),
-             labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
-        axis(2,lwd=0.5,las=1)
-        box(bty="o")
-      }
-    }
-  }
-}else{
-  for(rank in unique(unlist(c(sapply(tax_tab,names))))){
-    if(nrow(tax_tab[[1]][[rank]])>0){
-      depth_hist_log <- hist(log10(tax_tab[[1]][[rank]][,2]),
-                             breaks=seq(from=0,
-                                        to=log10(max(tax_tab[[1]][[rank]][,2])*1.2),
-                                        length.out = 100),plot=F)
-      plot(expand_hist_mids(depth_hist_log),
-           expand_hist_counts(depth_hist_log),
-           type="l",axes=F,ylab="",xlab=paste0("read counts ",ifelse(types[1]=="mg","(metaG)","(metaT)")),
-           cex.lab=9/7,col=brewer.pal(8,"Set2")[4],
-           xlim=c(expand_hist_mids(depth_hist_log)[1]-1.03,
-                  max(expand_hist_mids(depth_hist_log))*1.03),xaxs="i",
-           ylim=c(0,max(c(max(depth_hist_log$counts),
-                          length(which(tax_tab[[1]][[rank]][,2]==0))))*1.1),yaxs="i")
-      mtext("mOTUs",2,2.8,cex=9/7)
-      mtext(paste0(rank,"__"),3,-1,cex=9/7)
-      axis(1,at=c(0:10),
-           labels = format(c(10^(0:10)),scientific=T),lwd=0.5,las=1)
-      axis(2,lwd=0.5,las=1)
-      box(bty="o")
-    }
-  }
-}
-dev.off()
 }

@@ -5,6 +5,21 @@
 Overview of IMP3's output 
 =========================
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Overview of IMP3's output
+   :hidden:
+   :name: output_IMP3
+
+   Report
+   Stats
+   Preprocessing
+   Assembly
+   Analysis
+   Taxonomy
+   Binning
+   Logs
+
 Once you run IMP3, it will fill the output directory with the intermediary outputs, the acutal :ref:`configuration <configuration>`
 and results. Before the end, it will compress some of the intermediary steps.
 Finally, it will make some summaries and visualizations (if you want).

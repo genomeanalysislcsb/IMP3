@@ -17,98 +17,73 @@ FILTERING_CMD = """
           samtools view --threads {threads} -uf 4 - 2>> {log} | \
           bamToFastq -i stdin -fq {output[2]} >> {log} 2>&1
         else
-         echo "{input[2]} is empty, skipping single end human sequence filtering, but creating it anyway..." >> {log}
+         echo "{input[2]} is empty, skipping single end reference sequence filtering, but creating it anyway..." >> {log}
          touch {output[2]}
         fi
         rm -rf $TMP_FILE
         """
 
-SYMLINK_CMD = """
-ln -fs $(echo {input[0]} | cut -f 2 -d /) {output[0]} && touch -h {output[0]}
-ln -fs $(echo {input[1]} | cut -f 2 -d /) {output[1]} && touch -h {output[1]}
-ln -fs $(echo {input[2]} | cut -f 2 -d /) {output[2]} && touch -h {output[2]}
-"""
-
-
 rule mg_filtering:
     input:
-        'Preprocessing/mg.r1.trimmed.fq',
-        'Preprocessing/mg.r2.trimmed.fq',
-        'Preprocessing/mg.se.trimmed.fq',
-        '{dir}/{ref}.fa'.format(dir=DBPATH + "/filtering", ref=FILTER),
-        ancient(expand(
-            "{p}/filtering/{filter}.{ext}", filter=FILTER,
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], p=DBPATH))
+        filtering_mg_input,
+        filtering_filter
     output:
-        'Preprocessing/mg.r1.trimmed.%s_filtered.fq' % FILTER,
-        'Preprocessing/mg.r2.trimmed.%s_filtered.fq' % FILTER,
-        'Preprocessing/mg.se.trimmed.%s_filtered.fq' % FILTER
+        expand('Preprocessing/mg.{read}.trimmed.{{filterstep}}.fq',read=["r1","r2","se"])
+    wildcard_constraints:
+        filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     params:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/preprocessing_mg_filtering.log"
-    message: "mg_filtering: Filtering mg reads against {FILTER}."
+    log: "logs/preprocessing_mg_filtering.{filterstep}.log"
+    message: "mg_filtering: Filtering mg reads to get {wildcards.filterstep}."
     shell:
         FILTERING_CMD
 
 rule mt_filtering:
     input:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq',
-        '{dir}/{ref}.fa'.format(dir=DBPATH + "/filtering", ref=FILTER),
-        expand(
-            "{p}/filtering/{filter}.{ext}", filter=FILTER,
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], p=DBPATH)
+        filtering_mt_input,
+        filtering_filter
     output:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.%s_filtered.fq' % FILTER,
-        'Preprocessing/mt.r2.trimmed.rna_filtered.%s_filtered.fq'% FILTER ,
-        'Preprocessing/mt.se.trimmed.rna_filtered.%s_filtered.fq' % FILTER
+        expand('Preprocessing/mt.{read}.trimmed.rna_filtered.{{filterstep}}.fq',read=["r1","r2","se"])
+    wildcard_constraints:
+        filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     params:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/preprocessing_mt_filtering.log"
-    message: "mt_filtering: Filtering mt reads against {FILTER}."
+    log: "logs/preprocessing_mt_filtering.{filterstep}.log"
+    message: "mt_filtering: Filtering mt reads to get {wildcards.filterstep}."
     shell:
         FILTERING_CMD
 
-
 rule symlink_mt_preprocessed_files:
     input:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.%s_filtered.fq' % FILTER,
-        'Preprocessing/mt.r2.trimmed.rna_filtered.%s_filtered.fq' % FILTER,
-        'Preprocessing/mt.se.trimmed.rna_filtered.%s_filtered.fq' % FILTER
+        expand("Preprocessing/mt.{read}.trimmed.rna_filtered.{filtered}.fq",filtered=".".join([s + "_filtered" for s in FILTER]),read=["r1","r2","se"])
     output:
-        'Preprocessing/mt.r1.preprocessed.fq',
-        'Preprocessing/mt.r2.preprocessed.fq',
-        'Preprocessing/mt.se.preprocessed.fq'
+        expand('Preprocessing/mt.{read}.preprocessed.fq',read=["r1","r2","se"])
     params:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1
-#    log: "logs/preprocessing_symlink_mt_preprocessed_files.log"
     message: "symlink_mt_preprocessed_files: Symlinking filtered mt reads."
-    shell:
-        SYMLINK_CMD
+    run:
+        for i,o in zip(input,output):
+             shell("ln -fs $(echo {i} | cut -f 2 -d /) {o} && touch -h {o}")
+
 
 rule symlink_mg_preprocessed_files:
     input:
-        'Preprocessing/mg.r1.trimmed.%s_filtered.fq' % FILTER,
-        'Preprocessing/mg.r2.trimmed.%s_filtered.fq' % FILTER,
-        'Preprocessing/mg.se.trimmed.%s_filtered.fq' % FILTER
+        expand("Preprocessing/mg.{read}.trimmed.{filtered}.fq",filtered=".".join([s + "_filtered" for s in FILTER]),read=["r1","r2","se"])
     output:
-        'Preprocessing/mg.r1.preprocessed.fq',
-        'Preprocessing/mg.r2.preprocessed.fq',
-        'Preprocessing/mg.se.preprocessed.fq'
+        expand('Preprocessing/mg.{read}.preprocessed.fq',read=["r1","r2","se"])
     params:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1
-#    log: "logs/preprocessing_symlink_mg_preprocessed_files.log"
     message: "symlink_mg_preprocessed_files: Symlinking filtered mg reads."
-    shell:
-        SYMLINK_CMD
+    run:
+        for i,o in zip(input,output):
+             shell("ln -fs $(echo {i} | cut -f 2 -d /) {o} && touch -h {o}")

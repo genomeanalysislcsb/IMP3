@@ -1,7 +1,6 @@
 rule annotate:
     input:
-        'Assembly/%s.assembly.merged.fa' % ASS,
-        expand("{path}/{db}", path=DBPATH, db=config["prokka"]["databases"])
+        'Assembly/%s.assembly.merged.fa' % ASS
     output:
         "Analysis/annotation/annotation.filt.gff",
         "Analysis/annotation/prokka.faa",

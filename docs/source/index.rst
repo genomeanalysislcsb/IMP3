@@ -1,5 +1,6 @@
+####
 IMP3
-====
+####
 
 The Integrated Meta-Omics Pipeline, IMP, is a reproducible and modular pipeline for large-scale 
 integrated analysis of coupled metagenomic and metatranscriptomic data. IMP3 incorporates read 
@@ -22,87 +23,26 @@ IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https
    :name: installation
 
    installation/installation
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Configuring and running IMP3
-   :hidden:
-   :name: running_IMP3
-
-   running/run
-   running/configuring
-   running/inputs
-   running/cluster_config
-   running/databases
    
 .. toctree::
    :maxdepth: 1
-   :caption: IMP3's steps
+   :caption: IMP3
    :hidden:
-   :name: steps
-
+   :name: IMP3
+   
+   running/run_idx
    steps/Overview
-   steps/Preprocessing
-   steps/Assembly
-   steps/Analysis
-   steps/Binning
-   steps/Taxonomy
-   steps/Summary
-   
-.. toctree::
-   :maxdepth: 1
-   :caption: IMP3's output
-   :hidden:
-   :name: outputs
-
    output/Overview
-   output/Report
-   output/Stats
-   output/Preprocessing
-   output/Assembly
-   output/Analysis
-   output/Taxonomy
-   output/Binning
-   output/Logs
    
 .. toctree::
    :maxdepth: 1
-   :caption: Configuring and running multi-IMP3
+   :caption: Multi-IMP3
    :hidden:
    :name: running_multiIMP3
 
-   multi_running/run
-   multi_running/configuring
-   multi_running/sample_file
-   
-.. toctree::
-   :maxdepth: 1
-   :caption: multi-IMP3's steps
-   :hidden:
-   :name: multi_steps
-
+   multi_running/run_idx
    multi_steps/Overview
-   multi_steps/Annotation
-   multi_steps/Taxonomy
-   multi_steps/Catalogue
-   multi_steps/Dereplication
-   multi_steps/Re-binning
-   multi_steps/Summary
-   
-.. toctree::
-   :maxdepth: 1
-   :caption: multi-IMP3's output
-   :hidden:
-   :name: multi_outputs
-
    multi_output/Overview
-   multi_output/Report
-   multi_output/Stats
-   multi_output/Annotation
-   multi_output/Taxonomy
-   multi_output/Catalogue
-   multi_output/Dereplication
-   multi_output/Re-binning
 
 .. toctree::
    :maxdepth: 1

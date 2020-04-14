@@ -8,17 +8,10 @@ raws:
 sample: test
 outputdir: ""
 db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
-prokka: 
-  databases: 
-    - "cm/Bacteria.i1i"
-    - "genus/Staphylococcus.phr"
-    - "hmm/CLUSTERS.hmm.h3f"
-    - "kingdom/Archaea/sprot.phr"
 binning:
   binny:
     pk: 10
     nn: 4
-    cutoff: 1000
   vizbin:
     dimension: 50
     kmer: 5
