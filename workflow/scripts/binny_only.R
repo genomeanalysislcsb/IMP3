@@ -113,12 +113,12 @@ print("Reading in vizbin coordinates")
 coords <- read.table(coords_file, colClasses=c("factor", "numeric", "numeric"),
                      sep="\t", col.names=c("contig", "x", "y"))
 
-if(nrow(coords)==0){
+if(nrow(coords)==0 | length(intersect(annot.E.prelim$contig,coords$contig))==0){
 for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
 		system(paste0("touch ",o))
 	}
 	system("touch status/binning_binny.impossible")
-	print("no vizbin coordinates. Ending Binny")
+	print("no vizbin coordinates for essential genes. Ending Binny")
 	}else{
 print("DONE: Reading data")
   save.image(paste0(binny_dir,"/binny_WS.Rdata"))
