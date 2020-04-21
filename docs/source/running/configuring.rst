@@ -5,17 +5,15 @@ Configuring IMP3 runs
 =====================
 
 IMP3 is designed modular and highly configurable. Users can define the analysis steps IMP3 should perform, the data it should run on, the databases and tools 
-that should be used and the settings of each step in a single **config file** in `yaml <https://yaml.org/>`_ format. This **config file** is provided `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ 
-as described here :ref:`run <run_IMP>`, using the ``--configfile`` argument.
-
-This description will guide you through all sections of the **config file**. 
+that should be used and the settings of each step in a single **config file** in `yaml <https://yaml.org/>`_ format. This **config file** is provided to `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ 
+as described here :ref:`run <run_IMP>`, using the ``--configfile`` argument. This description will guids through all fields and sections of the **config file**. 
 
 Some general notes on the **config file**:
 
-- the order of the items in the config file is arbitrary.
-- the **config file** does not need to contain all fields.
-- only two fields are required: **:ref:`inputs <input_options>`** and an **output directory**. 
-- all other fields are optional and if emtpy the IMP3 default settings will be used. 
+- The order of the items in the **config file** is arbitrary.
+- The **config file** does not need to contain all fields.
+- Only two fields are required: **:ref:`raws <input_options>`** and an **output directory**. 
+- All other fields are optional and if emtpy the IMP3 default settings will be used. 
 - IMP3 will write the user-specified configuration including pre-defined fields the output folder as ``sample.config.yaml``.
 
 -------------------------------
@@ -29,7 +27,7 @@ Different steps in IMP3 require different input files. All input files are given
 - **MetaG** and/or **MetaT** `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files (requires ``Contigs`` file, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
 - ``Contigs`` file in FASTA format (used for the mapping of the metaG und metaG raw files, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
 - ``LongReads`` file in `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ (requires a ``LongReadTech`` description).
-- ``LongReadTech`` description of used long read sequencing technology.
+- ``LongReadTech`` description of used long read sequencing technology. Currently supported are ``nanopore`` and ``pacbio``.
 - ``Gff`` file to gff based on the ``Contigs`` file (only required if the :ref:`Preprocessing <step_preprocessing>`, :ref:`Assembly <step_assembly>` and :ref:`Analysis <step_analysis>` steps are skipped and only the step :ref:`Binning <step_binning>` should performed).
 
 Paired end read files are separated by ``<space>``.
@@ -40,11 +38,11 @@ Users can give a **sample name**: ``sample`` (default value is ``test``). Specia
 The **sample name** will be used throughout the IMP3 workflow, e.g. prepended to contig names. If the user-defined sample name is empty (``sample: ""``), IMP3 
 will take the last two parts of the output path, concatenate them with an underscore and use the results as sample name).
 
-A directory for **temporary files** can be given (by default it is named ``tmp``). If you don't give an absolute path, it will be put into the output 
+A directory for **temporary files** can be given (by default it is named ``tmp``). If the absolute path is not given, the ``tmp`` directory will be placed into the output 
 directory.
 
-If you let IMP3 perform any steps that need :ref:`databases <ext_DBs>` (i.e. :ref:`Preprocessing <step_preprocessing>` (filtering of reads against a host genome, filtering rRNA reads),
-:ref:`Analysis <step_analysis>` (gene calling, functional annotation), or :ref:`Taxonomy <step_taxonomy>` (kraken2)), you also need to give the full path to a single directory that houses all the
+If IMP3 performs any steps that need :ref:`databases <ext_DBs>` (i.e. :ref:`Preprocessing <step_preprocessing>` (filtering of reads against a host genome, filtering rRNA reads),
+:ref:`Analysis <step_analysis>` (gene calling, functional annotation), or :ref:`Taxonomy <step_taxonomy>` (kraken2)), the user has to give the full path to a single directory that houses all the
 databases.
 
 .. code-block:: yaml
@@ -53,7 +51,7 @@ databases.
     Metagenomics: "/path/to/pair1 /path/to/pair2"
     Metatranscriptomics: "/path/to/pair1 /path/to/pair2"
     LongReads: "/path/to/longreads"
-    LongReadTech: ""
+    LongReadTech: "nanopore|pacbio"
     Contigs: "/path/to/contigfile"
     Alignment_metagenomics: "/path/to/mg-bamfile"
     Alignment_metatranscriptomics: "/path/to/mt-bamfile"
@@ -69,14 +67,14 @@ databases.
 IMP3 steps
 ----------
 
-With IMP3, you can choose to run the whole workflow or just some :ref:`steps <steps_overview>`. The field ``steps`` lists the user-defined IMP3 analysis steps, separated by
+IMP3 runs either the whole workflow or just some :ref:`steps <steps_overview>`. The field ``steps`` lists the user-defined IMP3 analysis steps, separated by
 a space, under **steps**. The default is to run all steps.
 
 By default (``preprocessing_filter: true``) and having raw reads as input, IMP3 will pre-process the raw sequencing reads (i.e. the removal of reads 
 which map against a reference genome, most commonly a host genome). The user can set ``preprocessing_filtering`` to ``false`` to skip this step. 
 The default filtering will quality-trim reads and map them mapped against the human genome given as file ``hg38.fa`` in the database directory under ``db_path``.
 
-If ``steps`` contains ``summary``, IMP3 will summarize your results. The user can define which steps should be taken for summary in the field ``summary_steps``. 
+If ``steps`` contains ``summary``, IMP3 will summarize the results. The user can define which steps should be taken for summary in the field ``summary_steps``. 
 The default is to extract summary statistics (``stats``) on all performed steps and to visualize them (``vis``). If ``summary_steps`` is empty, IMP3 will 
 not make summaries. Currently, the user can either choose ``stats`` or ``vis`` or both. 
 
@@ -94,7 +92,7 @@ Available hardware support
 
 Some IMP3 steps need high memory machines depending on the size of the dataset and the databases used. IMP3 is able to run tasks on specific 
 type of nodes, depending on the **memory** demands of the jobs, high memory demanding jobs are automatically scheduled to ``big_mem`` nodes. 
-Depending on how much **RAM** your local computer or compute cluster have available for your jobs the user can define the settings for  **normal** 
+Depending on how much **RAM** on the local computer or compute cluster are available for the IMP3 run the user can define the settings for  **normal** 
 and **bigmem** cpus:
 
 - ``normal_mem_per_core_gb`` (max. available RAM (in Gb) per core of **normal** compute cores, default 4 Gb)
@@ -102,7 +100,7 @@ and **bigmem** cpus:
 - ``big_mem_cores`` (available number of **bigmem** compute cores, default 8)
 - ``big_mem_per_core`` (max. available RAM (in Gb) per core of **bigmem** compute cores, default 200 Gb)
 
-The number of cores is determined by the ``--cores`` argument of your `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ :ref:,call <run_IMP>`, rather than set here.
+The number of cores is determined by the ``--cores`` argument of the `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ :ref:,call <run_IMP>`, rather than set here.
 
 The jobs will be scheduled depending on the availability and RAM demands depending on how many **cores** of each the user maximally use in a step.
 
@@ -123,8 +121,8 @@ Currently you need to have both kinds of cores, if you run IMP3 in :ref:`cluster
 Pre-processing: trimming 
 ------------------------
 
-For the IMP3 :ref:`Preprocessing <step_preprocessing>` step, IMP3 is using **:ref:`Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`** for read trimming.
-The user can set all **:ref:`Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`** options (defaults given below):
+For the IMP3 :ref:`Preprocessing <step_preprocessing>` step, IMP3 is using `Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`_ for read trimming.
+The user can set all `Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`_ options (defaults given below):
 
 .. code-block:: yaml
 
@@ -142,7 +140,7 @@ The user can set all **:ref:`Trimmomatic <http://www.usadellab.org/cms/?page=tri
     target_length: 40
   nextseq: false
 
-If your reads originate from an :ref:`Illumina Nextseq <https://www.illumina.com/systems/sequencing-platforms/nextseq.html?langsel=/us/>` machine, we advise to set **nextseq** to true. This will remove
+If the reads originate from an `Illumina Nextseq <https://www.illumina.com/systems/sequencing-platforms/nextseq.html?langsel=/us/>`_ machine, we advise to set **nextseq** to true. This will remove
 trailing Gs that the Nextseq systems add to reads that are shorter than the run cycles.
 
 -------------------------
@@ -153,8 +151,8 @@ The IMP3 :ref:`Preprocessing <step_preprocessing>` step allows to map against a 
 The user can set the file name of the reference genome (``filter``, which should be located or linked to the :ref:`databases directory <ext_DBs>` (``db_path``)
 subfolder ``filtering``, e.g. this would be a Fasta file ``hg39.fa`` within the directory ``db_path/filtering``. 
 
-IMP3 will remove rRNA reads from your **metaT** reads. The user can decide which databases to use for this. The default is
-to use the databases supplied by :ref:`SortMeRNA <https://bioinfo.lifl.fr/RNA/sortmerna/>`. These databases should be available in 
+IMP3 will remove rRNA reads from **metaT** reads. The user can decide which databases to use for this. The default is
+to use the databases supplied by `SortMeRNA <https://bioinfo.lifl.fr/RNA/sortmerna/>`_. These databases should be available in 
 the :ref:`databases directory <ext_DBs>` in Fasta format.
 
 .. code-block:: yaml
@@ -177,16 +175,16 @@ the :ref:`databases directory <ext_DBs>` in Fasta format.
 Assembly
 --------
 
-For the IMP3 :ref:`Assembly <step_assembly>` step, the user has the choice between two assemblers, :ref:`megahit <http://www.metagenomics.wiki/tools/assembly/megahit>` 
-or :ref:`Metaspades <http://cab.spbu.ru/software/meta-spades/>` as **metaG assemblers**. If you have **metaG** and **metaT** reads, the user can 
+For the IMP3 :ref:`Assembly <step_assembly>` step, the user has the choice between two assemblers, `Megait <http://www.metagenomics.wiki/tools/assembly/megahit>`_  
+or `MetaSpades <http://cab.spbu.ru/software/meta-spades/>`_ as **metaG assemblers**. If the input are **metaG** and **metaT** reads, the user can 
 choose between a **hybrid** assembly using both types of reads or a purely **metaG-only** assembly. 
 
-**Hybrid metaG/metaT assemblies** are currently only possible with :ref:`megahit <http://www.metagenomics.wiki/tools/assembly/megahit>`. 
+**Hybrid metaG/metaT assemblies** are currently only possible with `Megahit <http://www.metagenomics.wiki/tools/assembly/megahit>`_. 
 
-:ref:`Metaspades <http://cab.spbu.ru/software/meta-spades/>` is currently your only option, if you want to assemble **long and short metaG** reads together.
+`MetaSpades <http://cab.spbu.ru/software/meta-spades/>`_ is currently the only option to assemble **long and short metaG** reads together.
 
 For all assemblies, the user can set the minimal and maximal *k*-mer size and the intervals between for the multi *k*-mer assemblies performed by both assemblers. 
-IMP3 performs :ref:`iterative assembly <step_assembly>` and the steps are merged using the :ref:`Cap3 <http://seq.cs.iastate.edu/cap3.html>` overlap assembler, which you can configure.
+IMP3 performs :ref:`iterative assembly <step_assembly>` and the steps are merged using the `Cap3 <http://seq.cs.iastate.edu/cap3.html>`_ overlap assembler, which can be configured.
 	  
 .. code-block:: yaml
 	  
@@ -205,9 +203,9 @@ IMP3 performs :ref:`iterative assembly <step_assembly>` and the steps are merged
 Analysis: gene calling
 ----------------------
 
-In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 perfoms gene calling using a customized version of :ref:`Prokka <http://www.vicbioinformatics.com/software.prokka.shtml>` 
-on the assembled contigs (see :ref:`customized prokka <prokkaC>`) to call open reading frames, rRNA and tRNA genes. The default databases of prokka 
-should be placed in your :ref:`databases directory <ext_DBs>` and are part of the default configuration.
+In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 perfoms gene calling using a customized version of `Prokka <http://www.vicbioinformatics.com/software.prokka.shtml>`_ 
+on the assembled contigs (see `customized prokka <prokkaC>`_) to call open reading frames, rRNA and tRNA genes. The default databases of prokka 
+should be placed in the :ref:`databases directory <ext_DBs>` and are part of the default configuration.
 	  
 .. code-block:: yaml
 
@@ -223,18 +221,18 @@ should be placed in your :ref:`databases directory <ext_DBs>` and are part of th
 Analysis: gene annotation
 -------------------------
 
-In the IMP3 :ref:`Analysis <step_analysis>` step, the called open reading frames will be annotated using :ref:`hmmer <http://hmmer.org/>` and a set of HMM databases. 
-The **HMM databases** must be present in your :ref:`databases directory <ext_DBs>`. The name given in the ``hmm_DBs`` field must match the directory 
+In the IMP3 :ref:`Analysis <step_analysis>` step, the called open reading frames will be annotated using `hmmer <http://hmmer.org/>`_ and a set of HMM databases. 
+The **HMM databases** must be present in the :ref:`databases directory <ext_DBs>`. The name given in the ``hmm_DBs`` field must match the directory 
 containing the HMMs.
 
 For the IMP3 :ref:`Binning <step_binning>` step using :ref:`Binny <wtf_is_binny>`, contigs needs to be annotated with the essential genes HMMs (``essential``).
 
-Different HMM databases have different names and :ref:`pre-calibrated cut-offs <HMMs>`. If your HMM database has cut-off values from :ref:`hmmer <http://hmmer.org/>` 
+Different HMM databases have different names and :ref:`pre-calibrated cut-offs <HMMs>`. If the HMM database has cut-off values from `hmmer <http://hmmer.org/>`_ 
 calibration, set ``cutoff`` to ``--cut_tc``. Otherwise, keep an empty string.
 
 Regarding the naming, some HMM databases contain multiple models for the same functional entity (e.g. multiple HMMs for one KEGG KO).
-If you happen to have such a collection, and the models are named with the functional entity + _ + another identifier, you can set
-**trim** to ``--trimall`` and IMP3 will remove the underscore and final identifier for you.
+If the database contains models that are named with the functional entity + _ + another identifier, the user can set
+**trim** to ``--trimall`` and IMP3 will remove the underscore and final identifier.
 	  
 .. code-block:: yaml	  
 	  
@@ -269,10 +267,10 @@ Analysis: proteomics preparation
 
 In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 provides several files for downstream **metaP** analysis.
 
-- The user can the protein sequence output of :ref:`Prokka <http://www.vicbioinformatics.com/software.prokka.shtml>` as a search database for metaP analysis. 
-- IMP3 also provides a file with :ref:`Metaproteomics Analyzer <http://www.mpa.ovgu.de/>`-conformant Fasta file headers, filtered to proteins having a 
+- The user can the protein sequence output of `Prokka <http://www.vicbioinformatics.com/software.prokka.shtml>`_ as a search database for metaP analysis. 
+- IMP3 also provides a file with `Metaproteomics Analyzer <http://www.mpa.ovgu.de/>`_-conformant Fasta file headers, filtered to proteins having a 
 minimum user-defined number of tryptic peptides (``filter_N_peptides``), with incomplete non-tryptic ends cut away. 
-- IMP3 will add a Fasta file with host (or other reference) protein sequences (which should be placed in your :ref:`databases directory <ext_DBs>`). 
+- IMP3 will add a Fasta file with host (or other reference) protein sequences (which should be placed in the :ref:`databases directory <ext_DBs>`). 
 - IMP3 will generates optional (``insert_variants: true/false``) a Fasta protein file with the protein isoforms by inserting variants called on the assembled contigs (see :ref:`beware <variants_metaP>`).
 	  
 .. code-block:: yaml	  
@@ -287,7 +285,7 @@ minimum user-defined number of tryptic peptides (``filter_N_peptides``), with in
 Analysis: reads per function / gene
 -----------------------------------
 
-In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 runs :ref:`featureCounts <http://subread.sourceforge.net/>` to count the numbers of **metaG** and/or 
+In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 runs `featureCounts <http://subread.sourceforge.net/>`_ to count the numbers of **metaG** and/or 
 **metaT** reads mapping to coding sequences and other annotated functional categories that can be used for downstream differential expression / abundance 
 analyses. Per default, IMP3 assumes **metaG** reads to **not be strand-specific (mt: 0)** and **metaT** reads to be **stranded in the truSeq way (mt: 2)**. 
 	  
@@ -302,9 +300,9 @@ analyses. Per default, IMP3 assumes **metaG** reads to **not be strand-specific 
 Taxonomy
 --------
 
-In the IMP3 :ref:`Taxonony <step_taxonomy>` step, IMP3 runs :ref:`kraken2 <https://ccb.jhu.edu/software/kraken2/>` and :ref:`mOTUs2 <https://motu-tool.org/>` on the **metaG** reads. 
-While the :ref:`mOTUs2 databases <https://motu-tool.org/>` are installed with the :ref:`IMP3 installation <install>`, the user need to have a :ref:`kraken2 <https://ccb.jhu.edu/software/kraken2/>` 
-database available in your :ref:`databases directory <ext_DBs>` and give its name under ``krakendb``.
+In the IMP3 :ref:`Taxonony <step_taxonomy>` step, IMP3 runs `kraken2 <https://ccb.jhu.edu/software/kraken2/>`_ and `mOTUs2 <https://motu-tool.org/>`_ on the **metaG** reads. 
+While the `mOTUs2 databases <https://motu-tool.org/>`_ are installed with the :ref:`IMP3 installation <install>`, the user need to have a `kraken2 <https://ccb.jhu.edu/software/kraken2/>`_  
+database available in the :ref:`databases directory <ext_DBs>` and give its name under ``krakendb``.
 
 If the IMP3 input are **metaG** reads and the :ref:`Taxonony <step_taxonomy>` and :ref:`Analysis <step_analysis>` steps are performed, IMP3 will search 
 the predicted genes for for the mOTUs2-marker genes. The default COGs can be customized (field ``COGS``).
@@ -319,12 +317,12 @@ the predicted genes for for the mOTUs2-marker genes. The default COGs can be cus
 Binning
 -------
 
-In the IMP3 :ref:`Binning <step_binning>` step, the user can choose to run any combination of three different ``binners``: :ref:`MaxBin2 <https://sourceforge.net/projects/maxbin2/>`, 
-:ref:`MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>`, :ref:`Binny <wtf_is_binny>`.
-The results of the all binnings will then refined using :ref:`DAStool <https://github.com/cmks/DAS_Tool>`.
+In the IMP3 :ref:`Binning <step_binning>` step, the user can choose to run any combination of three different ``binners``: `MaxBin2 <https://sourceforge.net/projects/maxbin2/>`_, 
+`MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>`_, :ref:`Binny <wtf_is_binny>`.
+The results of the all binnings will then refined using `DAStool <https://github.com/cmks/DAS_Tool>`_.
 
-For :ref:`MaxBin2 <https://sourceforge.net/projects/maxbin2/>` and :ref:`Binny <wtf_is_binny>`, it is required that you have **metaG** reads.
-If there are only **metaT** reads / assemblies are available, only :ref:`MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>` will run.
+For `MaxBin2 <https://sourceforge.net/projects/maxbin2/>`_ and :ref:`Binny <wtf_is_binny>`, **metaG** reads are required.
+If there are only **metaT** reads / assemblies are available, only `MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>`_ will run.
 
 Each binner comes with a few parameters that the user can configure:
 
