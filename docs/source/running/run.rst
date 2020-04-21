@@ -10,14 +10,15 @@ You can run IMP3 by calling Snakemake with the appropriate settings:
 
   snakemake /path/to/IMP3/Snakefile --configfile /path/to/config.file.yaml --use-conda --conda-prefix /path/to/IMP3/conda --cores corenumber
 
-All paths can be relative or absolute. 
-
-``--configfile`` specifies the config file for your sampple. More info you can find :ref:`here <configuring>`.
+``--configfile`` specifies the config file for your sample. More info you can find :ref:`here <configuration>`.
 
 ``--conda-prefix`` path to your IMP3 conda directory for the IMP3 conda environments.
 
 ``--cores`` specifies the number of threads you want to maximally use at the same time in addition to the
 thread running the main snakemake (but note :ref:`extra limitations <hardware>` set in the config file).
+
+All paths can be relative or absolute. 
+
 
 .. _run_report:
 
