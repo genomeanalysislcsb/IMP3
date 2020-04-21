@@ -25,11 +25,12 @@ Inputs, outputs and directories
 As required input the user has to tell IMP3 where the **raw or input files** are located. (The default is no input, and nothing will be done). 
 Different steps in IMP3 require different input files. All input files are given with their absolute paths. Input files can be:
 
-- **MetaG** and/or **MetaT** paired-end or single-end raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files. (I
-- **MetaG** and/or **MetaT** `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files (requires ``Contigs`` file).
-- ``Contigs`` file in FASTA format (used for the mapping of the metaG und metaG raw files).
+- **MetaG** and/or **MetaT** paired-end or single-end raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files.
+- **MetaG** and/or **MetaT** `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files (requires ``Contigs`` file, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
+- ``Contigs`` file in FASTA format (used for the mapping of the metaG und metaG raw files, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
 - ``LongReads`` file in `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ (requires a ``LongReadTech`` description).
 - ``LongReadTech`` description of used long read sequencing technology.
+- ``Gff`` file to gff based on the ``Contigs`` file (only required if the :ref:`Preprocessing <step_preprocessing>`, :ref:`Assembly <step_assembly>` and :ref:`Analysis <step_analysis>` steps are skipped and only the step :ref:`Binning <step_binning>` should performed).
 
 Paired end read files are separated by ``<space>``.
 
@@ -42,8 +43,8 @@ will take the last two parts of the output path, concatenate them with an unders
 A directory for **temporary files** can be given (by default it is named ``tmp``). If you don't give an absolute path, it will be put into the output 
 directory.
 
-If you let IMP3 perform any steps that need :ref:`databases <ext_DBs>` (i.e. preprocessing (filtering of reads against a host genome, filtering rRNA reads),
-analysis (gene calling, functional annotation), or taxonomy (kraken2)), you also need to give the full path to a single directory that houses all the
+If you let IMP3 perform any steps that need :ref:`databases <ext_DBs>` (i.e. :ref:`Preprocessing <step_preprocessing>` (filtering of reads against a host genome, filtering rRNA reads),
+:ref:`Analysis <step_analysis>` (gene calling, functional annotation), or :ref:`Taxonomy <step_taxonomy>` (kraken2)), you also need to give the full path to a single directory that houses all the
 databases.
 
 .. code-block:: yaml
@@ -56,6 +57,7 @@ databases.
     Contigs: "/path/to/contigfile"
     Alignment_metagenomics: "/path/to/mg-bamfile"
     Alignment_metatranscriptomics: "/path/to/mt-bamfile"
+    
   outputdir: "/path/to/output"
   sample: <sampleid> (default: test)
   tmp_dir: /path/to/tmp (default: tmp)
@@ -66,8 +68,8 @@ databases.
 IMP3 steps
 ----------
 
-With IMP3, you can choose to run the whole workflow or just some :ref:`steps <steps_overview>`. List the steps, separated by
-a space under **steps**. The default is to run all steps.
+With IMP3, you can choose to run the whole workflow or just some :ref:`steps <steps_overview>`. The field ``steps`` lists the user-defined IMP3 analysis steps, separated by
+a space, under **steps**. The default is to run all steps.
 
 By default (``preprocessing_filter: true``) and having raw reads as input, IMP3 will pre-process the raw sequencing reads (i.e. the removal of reads 
 which map against a reference genome, most commonly a host genome). The user can set ``preprocessing_filtering`` to ``false`` to skip this step. 
@@ -89,7 +91,7 @@ not make summaries. Currently, the user can either choose ``stats`` or ``vis`` o
 Available hardware support
 --------------------------
 
-Tell IMP3 how large the **RAM** of your **normal** and **bigmem** cpus is and how many **cores** of each you want to maximally use in a step.
+IMP3 is able to run tasks on specific type of nodes, depending if the user d how large the **RAM** of your **normal** and **bigmem** cpus is and how many **cores** of each you want to maximally use in a step.
 *Defaults may be blatantly inappropriate for your system. Note that if you don't let IMP3 submit jobs for you,
 most steps don't care about how much RAM you say you have, but some do (e.g. mapping, kraken).*
 The number of normal cores is determined by the ``--cores`` argument of your snakemake :ref:,call <run_IMP>`, rather than set here.
