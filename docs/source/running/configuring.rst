@@ -11,6 +11,7 @@ as described here :ref:`run <run_IMP>`, using the ``--configfile`` argument.
 This description will guide you through all sections of the **config file**. 
 
 Some general notes on the **config file**:
+
 - the order of the items in the config file is arbitrary.
 - the **config file** does not need to contain all fields.
 - only two fields are required: **:ref:`inputs <input_options>`** and an **output directory**. 
@@ -23,6 +24,7 @@ Inputs, outputs and directories
 
 As required input the user has to tell IMP3 where the **raw or input files** are located. (The default is no input, and nothing will be done). 
 Different steps in IMP3 require different input files. All input files are given with their absolute paths. Input files can be:
+
 - **MetaG** and/or **MetaT** paired-end or single-end raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files. (I
 - **MetaG** and/or **MetaT** `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files (requires ``Contigs`` file).
 - ``Contigs`` file in FASTA format (used for the mapping of the metaG und metaG raw files).
