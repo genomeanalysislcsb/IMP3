@@ -4,43 +4,60 @@
 Configuring IMP3 runs
 =====================
 
-You can choose the steps IMP3 should perform, the data it should run on, and the settings
-of each step by means of a `.yaml <https://yaml.org/>`_ file. You have to point snakemake to the config file when you :ref:`run <run_IMP>`
-IMP3, using the ``--configfile`` argument.
+IMP3 is designed modular and highly configurable. Users can define the analysis steps IMP3 should perform, the data it should run on, the databases and tools 
+that should be used and the settings of each step in a single **config file** in `yaml <https://yaml.org/>`_ format. This **config file** is provided `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ 
+as described here :ref:`run <run_IMP>`, using the ``--configfile`` argument.
 
-This description will guide you through all sections of the config file, but note that the order of the items in the config file is arbitrary.
-You can also omit most fields and IMP3 will use default settings. Exceptions are the :ref:`inputs <input_options>` and
-an output directory. IMP3 will write the used configuration including the defaults into the output folder as ``sample.config.yaml``.
+This description will guide you through all sections of the **config file**. 
 
-----------------------
-Inputs and directories
-----------------------
+Some general notes on the **config file**:
+- the order of the items in the config file is arbitrary.
+- the **config file** does not need to contain all fields.
+- only two fields are required: **:ref:`inputs <input_options>`** and an **output directory**. 
+- all other fields are optional and if emtpy the IMP3 default settings will be used. 
+- IMP3 will write the user-specified configuration including pre-defined fields the output folder as ``sample.config.yaml``.
 
-You need to tell IMP3 where the **raw or input files** are located. (The default is no input, and nothing will be done). Give absolute paths. 
-You also need to tell IMP3 where the **ouput** should be written. Please also give an absolute path here.
-It's advisable to give a **sample name** to IMP3. Avoid special characters. Punctuation will be converted to underscore.
-The sample name will be prepended to, e.g. the contig names. (If you don't give a sample name, IMP3 will take the last two parts of the output
-path, concatenate them with an underscore and use the results as sample name).
-A directory for **temporary files** can be given. If you don't give an absolute path, it will be put into the output directory
-(and, for the default, named tmp).
+-------------------------------
+Inputs, outputs and directories
+-------------------------------
+
+As required input the user has to tell IMP3 where the **raw or input files** are located. (The default is no input, and nothing will be done). 
+Different steps in IMP3 require different input files. All input files are given with their absolute paths. Input files can be:
+- **MetaG** and/or **MetaT** paired-end or single-end raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files. (I
+- **MetaG** and/or **MetaT** `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files (requires ``Contigs`` file).
+- ``Contigs`` file in FASTA format (used for the mapping of the metaG und metaG raw files).
+- ``LongReads`` file in `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ (requires a ``LongReadTech`` description).
+- ``LongReadTech`` description of used long read sequencing technology.
+
+Paired end read files are separated by ``<space>``.
+
+The ``outputdir`` (with full path) defines the directory, where the IMP3 workflow output should be written to.
+
+Users can give a **sample name**: ``sample`` (default value is ``test``). Special characters should be avoided, punctuation will be converted to underscore.
+The **sample name** will be used throughout the IMP3 workflow, e.g. prepended to contig names. If the user-defined sample name is empty (``sample=""``), IMP3 
+will take the last two parts of the output path, concatenate them with an underscore and use the results as sample name).
+
+A directory for **temporary files** can be given (by default it is named ``tmp``). If you don't give an absolute path, it will be put into the output 
+directory.
+
 If you let IMP3 perform any steps that need :ref:`databases <ext_DBs>` (i.e. preprocessing (filtering of reads against a host genome, filtering rRNA reads),
-analysis (gene calling, functional annotation), or taxonomy (kraken2)), you also need to give the path to one directory that houses all the
+analysis (gene calling, functional annotation), or taxonomy (kraken2)), you also need to give the full path to a single directory that houses all the
 databases.
 
 .. code-block:: yaml
 
   raws: 
-    Metagenomics: ""
-    Metatranscriptomics: ""
-    LongReads: ""
+    Metagenomics: "/path/to/pair1 /path/to/pair2"
+    Metatranscriptomics: "/path/to/pair1 /path/to/pair2"
+    LongReads: "/path/to/longreads"
     LongReadTech: ""
-    Contigs: ""
-    Alignment_metagenomics: ""
-    Alignment_metatranscriptomics: ""
-  outputdir: ""
-  sample: test
-  tmp_dir: tmp
-  db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
+    Contigs: "/path/to/contigfile"
+    Alignment_metagenomics: "/path/to/mg-bamfile"
+    Alignment_metatranscriptomics: "/path/to/mt-bamfile"
+  outputdir: "/path/to/output"
+  sample: <sampleid> (default: test)
+  tmp_dir: /path/to/tmp (default: tmp)
+  db_path: "/path/to/IMP_DBs"
 
 
 ----------
@@ -49,13 +66,14 @@ IMP3 steps
 
 With IMP3, you can choose to run the whole workflow or just some :ref:`steps <steps_overview>`. List the steps, separated by
 a space under **steps**. The default is to run all steps.
-If you choose to perform pre-processing of reads, you can turn on or off **preprocessing_filtering** (i.e. the removal of reads which
-map against a reference genome, most commonly a host genome). The default is for filtering to be on and reads to be mapped against
-a file hg38.fa in the database directory.
-If you choose to let IMP3 summarize your results, you can define which steps should be taken. The default is to extract some
-**stats** on all performed steps and to visualize them (**vis**). You can choose to do neither, in which case IMP3 will not make summaries.
-You can have only stats, or stats and visualization by stating one or both separated by a space.
-Don't expect IMP3 to do anything useful, if you choose only vis (visualization). 
+
+By default (``preprocessing_filter: true``) and having raw reads as input, IMP3 will pre-process the raw sequencing reads (i.e. the removal of reads 
+which map against a reference genome, most commonly a host genome). The user can set ``preprocessing_filtering`` to ``false`` to skip this step. 
+The default filtering will quality-trim reads and map them mapped against the human genome given as file ``hg38.fa`` in the database directory under ``db_path``.
+
+If ``steps`` contains ``summary``, IMP3 will summarize your results. The user can define which steps should be taken for summary in the field ``summary_steps``. 
+The default is to extract summary statistics (``stats``) on all performed steps and to visualize them (``vis``). If ``summary_steps`` is empty, IMP3 will 
+not make summaries. Currently, the user can either choose ``stats`` or ``vis`` or both. 
 
 .. code-block:: yaml
 
@@ -65,9 +83,9 @@ Don't expect IMP3 to do anything useful, if you choose only vis (visualization).
 
 .. _hardware:
 
-------------------
-Available hardware 
-------------------
+--------------------------
+Available hardware support
+--------------------------
 
 Tell IMP3 how large the **RAM** of your **normal** and **bigmem** cpus is and how many **cores** of each you want to maximally use in a step.
 *Defaults may be blatantly inappropriate for your system. Note that if you don't let IMP3 submit jobs for you,
