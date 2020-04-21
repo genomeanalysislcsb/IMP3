@@ -57,6 +57,7 @@ databases.
     Contigs: "/path/to/contigfile"
     Alignment_metagenomics: "/path/to/mg-bamfile"
     Alignment_metatranscriptomics: "/path/to/mt-bamfile"
+    Gff: "/path/to/gfffile"
     
   outputdir: "/path/to/output"
   sample: <sampleid> (default: test)
@@ -148,11 +149,13 @@ trailing Gs that the Nextseq systems add to reads that are shorter than the run 
 Pre-processing: filtering 
 -------------------------
 
-If you want IMP3 to pre-process your reads and you've chosen to map against a reference genome (e.g. host),
-you can set the file name of the reference genome, which should be located or linked to in the :ref:`databases directory's <ext_DBs>`
-subfolder **filtering**.
-IMP3 will remove rRNA reads from your metatranscriptomic reads. You can decide which databases to use for this. The default is
-to use the databases supplied by sort me RNA. You should have these in the :ref:`databases directory <ext_DBs>`, too.
+The IMP3 :ref:`Preprocessing <step_preprocessing>` step allows to map against a user-defined reference genome (e.g. host). 
+The user can set the file name of the reference genome (``filter``, which should be located or linked to the :ref:`databases directory <ext_DBs>` (``db_path``)
+subfolder ``filtering``, e.g. this would be a Fasta file ``hg39.fa`` within the directory ``db_path/filtering``. 
+
+IMP3 will remove rRNA reads from your **metaT** reads. The user can decide which databases to use for this. The default is
+to use the databases supplied by :ref:`SortMeRNA <https://bioinfo.lifl.fr/RNA/sortmerna/>`. These databases should be available in 
+the :ref:`databases directory <ext_DBs>` in Fasta format.
 
 .. code-block:: yaml
 
@@ -174,12 +177,16 @@ to use the databases supplied by sort me RNA. You should have these in the :ref:
 Assembly
 --------
 
-If you let IMP3 do an **assembly**, you have the choice between Megahit and Metaspades as metagenome **assemblers**.
-If you have metagenomic and metatranscriptomic reads, you can choose between a **hybrid** assembly of both or a purely metagenomic
-assembly. Hybrid metaG/metaT assemblies are currently only possible with Megahit. On the other hand,
-Metaspades is your only option, if you want to assemble long and short metagenomic reads.
-You can set the minimal and maximal *k*-mer size and the intervals between. IMP3 performs an :ref:`iterative assembly <step_assembly>`
-and the steps are merged using the Cap3 overlap assembler, which you can configure.
+For the IMP3 :ref:`Assembly <step_assembly>` step, the user has the choice between two assemblers, :ref:`megahit <http://www.metagenomics.wiki/tools/assembly/megahit>` 
+or :ref:`Metaspades <http://cab.spbu.ru/software/meta-spades/>` as **metaG assemblers**. If you have **metaG** and **metaT** reads, the user can 
+choose between a **hybrid** assembly using both types of reads or a purely **metaG-only** assembly. 
+
+**Hybrid metaG/metaT assemblies** are currently only possible with :ref:`megahit <http://www.metagenomics.wiki/tools/assembly/megahit>`. 
+
+:ref:`Metaspades <http://cab.spbu.ru/software/meta-spades/>` is currently your only option, if you want to assemble **long and short metaG** reads together.
+
+For all assemblies, the user can set the minimal and maximal *k*-mer size and the intervals between for the multi *k*-mer assemblies performed by both assemblers. 
+IMP3 performs :ref:`iterative assembly <step_assembly>` and the steps are merged using the :ref:`Cap3 <http://seq.cs.iastate.edu/cap3.html>` overlap assembler, which you can configure.
 	  
 .. code-block:: yaml
 	  
@@ -198,9 +205,9 @@ and the steps are merged using the Cap3 overlap assembler, which you can configu
 Analysis: gene calling
 ----------------------
 
-If you want IMP3 to analyse the assembled contigs, it will run a :ref:`customized prokka <prokkaC>` to call open reading frames,
-rRNA and tRNA genes.
-The default databases of prokka should be in your :ref:`databases directory <ext_DBs>` and are part of the default configuration.
+In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 perfoms gene calling using a customized version of :ref:`Prokka <http://www.vicbioinformatics.com/software.prokka.shtml>` 
+on the assembled contigs (see :ref:`customized prokka <prokkaC>`) to call open reading frames, rRNA and tRNA genes. The default databases of prokka 
+should be placed in your :ref:`databases directory <ext_DBs>` and are part of the default configuration.
 	  
 .. code-block:: yaml
 
@@ -216,12 +223,16 @@ The default databases of prokka should be in your :ref:`databases directory <ext
 Analysis: gene annotation
 -------------------------
 
-The called open reading frames will be attempted to be annotated using HMMs. The HMMs must be present in your :ref:`databases directory <ext_DBs>`.
-The name given in the **hmm_DBs** field must match the directory containing the HMMs.
-If you want IMP3 to later perform binning using Binny, you should let IMP3 at least annotated the essential genes.
-Different HMM collections have different names and :ref:`pre-calibrated cut-offs <HMMs>`. If your collection has cut-off values from calibration,
-set **cutoff** to ``--cut_tc``. Otherwise, keep an empty string.
-Regarding the naming, some HMM collections contain multiple models for the same functional entity (e.g. multiple HMMs for one KEGG KO).
+In the IMP3 :ref:`Analysis <step_analysis>` step, the called open reading frames will be annotated using :ref:`hmmer <http://hmmer.org/>` and a set of HMM databases. 
+The **HMM databases** must be present in your :ref:`databases directory <ext_DBs>`. The name given in the ``hmm_DBs`` field must match the directory 
+containing the HMMs.
+
+For the IMP3 :ref:`Binning <step_binning>` step using :ref:`Binny <wtf_is_binny>`, contigs needs to be annotated with the essential genes HMMs (``essential``).
+
+Different HMM databases have different names and :ref:`pre-calibrated cut-offs <HMMs>`. If your HMM database has cut-off values from :ref:`hmmer <http://hmmer.org/>` 
+calibration, set ``cutoff`` to ``--cut_tc``. Otherwise, keep an empty string.
+
+Regarding the naming, some HMM databases contain multiple models for the same functional entity (e.g. multiple HMMs for one KEGG KO).
 If you happen to have such a collection, and the models are named with the functional entity + _ + another identifier, you can set
 **trim** to ``--trimall`` and IMP3 will remove the underscore and final identifier for you.
 	  
@@ -256,16 +267,19 @@ If you happen to have such a collection, and the models are named with the funct
 Analysis: proteomics preparation
 --------------------------------
 
-You could just use the amino acid output of prokka as a database for metaproteomics. IMP3 also gives you a file with
-Metaproteomics Analyzer-conformant FASTA headers, filtered to proteins having at least as many tryptic peptides as you
-wish, with incomplete non-tryptic ends cut away. It will also add a file with host (or other reference) proteins (which should be
-present in your :ref:`databases directory <ext_DBs>`), if you give this file's name. Finally, it can insert variants, but :ref:`beware <variants_metaP>`.
+In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 provides several files for downstream **metaP** analysis.
+
+- The user can the protein sequence output of :ref:`Prokka <http://www.vicbioinformatics.com/software.prokka.shtml>` as a search database for metaP analysis. 
+- IMP3 also provides a file with :ref:`Metaproteomics Analyzer <http://www.mpa.ovgu.de/>`-conformant Fasta file headers, filtered to proteins having a 
+minimum user-defined number of tryptic peptides (``filter_N_peptides``), with incomplete non-tryptic ends cut away. 
+- IMP3 will add a Fasta file with host (or other reference) protein sequences (which should be placed in your :ref:`databases directory <ext_DBs>`). 
+- IMP3 will generates optional (``insert_variants: true/false``) a Fasta protein file with the protein isoforms by inserting variants called on the assembled contigs (see :ref:`beware <variants_metaP>`).
 	  
 .. code-block:: yaml	  
 	
   proteomics:
     filter_N_peptides: 2
-    host_proteome: ""
+    host_proteome: "hostproteomefile"
     insert_variants: false
   
 
@@ -273,9 +287,9 @@ present in your :ref:`databases directory <ext_DBs>`), if you give this file's n
 Analysis: reads per function / gene
 -----------------------------------
 
-IMP3 runs featureCounts to give you numbers of reads mapping to coding sequences and functional categories. You may want to use these
-for differential expression / abundance analyses. Per default, IMP3 assumes metagenomics reads to **not be strand-specific (0)** and
-metatranscriptomics reads to be **stranded in the truSeq way (2)**. 
+In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 runs :ref:`featureCounts <http://subread.sourceforge.net/>` to count the numbers of **metaG** and/or 
+**metaT** reads mapping to coding sequences and other annotated functional categories that can be used for downstream differential expression / abundance 
+analyses. Per default, IMP3 assumes **metaG** reads to **not be strand-specific (mt: 0)** and **metaT** reads to be **stranded in the truSeq way (mt: 2)**. 
 	  
 .. code-block:: yaml	  
 	
@@ -288,11 +302,12 @@ metatranscriptomics reads to be **stranded in the truSeq way (2)**.
 Taxonomy
 --------
 
-If you give reads to IMP3 and choose taxonomy to be done, IMP3 will run kraken2 and mOTUs2 on your reads. While the mOTUs databases
-are installed with the :ref:`IMP3 install <install>`, you need to have a kraken2 database in your :ref:`databases directory <ext_DBs>`
-and give its name under **krakendb**.
-If you give reads to IMP3 and ask for taxonomy and analysis to be done, it will also go looking for the mOTU-marker genes in your
-predicted genes and let you know which ones it found. The default COGs can be adjusted, if you feel adventurous.
+In the IMP3 :ref:`Taxonony <step_taxonomy>` step, IMP3 runs :ref:`kraken2 <https://ccb.jhu.edu/software/kraken2/>` and :ref:`mOTUs2 <https://motu-tool.org/>` on the **metaG** reads. 
+While the :ref:`mOTUs2 databases <https://motu-tool.org/>` are installed with the :ref:`IMP3 installation <install>`, the user need to have a :ref:`kraken2 <https://ccb.jhu.edu/software/kraken2/>` 
+database available in your :ref:`databases directory <ext_DBs>` and give its name under ``krakendb``.
+
+If the IMP3 input are **metaG** reads and the :ref:`Taxonony <step_taxonomy>` and :ref:`Analysis <step_analysis>` steps are performed, IMP3 will search 
+the predicted genes for for the mOTUs2-marker genes. The default COGs can be customized (field ``COGS``).
 	  
 .. code-block:: yaml
 
@@ -304,12 +319,19 @@ predicted genes and let you know which ones it found. The default COGs can be ad
 Binning
 -------
 
-If you ask IMP3 to bin your contigs, you can run MaxBin2 and/or MetaBAT2 and/or :ref:`binny <wtf_is_binny>` on them, prior to DAStool.
-For MaxBin2 and binny, it is required that you have metagenomics depths: if you have only metatranscriptomics reads / assemblies,
-only MetaBAT2 will run.
-Each binner comes with a few settings that you may want to configure.
-The minimum cutoff for MetaBAT is 1500. binny has no minimum number.
-If you want to get VizBin output, you have to choose :ref:`binny <wtf_is_binny>`.
+In the IMP3 :ref:`Binning <step_binning>` step, the user can choose to run any combination of three different ``binners``: :ref:`MaxBin2 <https://sourceforge.net/projects/maxbin2/>`, 
+:ref:`MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>`, :ref:`Binny <wtf_is_binny>`.
+The results of the all binnings will then refined using :ref:`DAStool <https://github.com/cmks/DAS_Tool>`.
+
+For :ref:`MaxBin2 <https://sourceforge.net/projects/maxbin2/>` and :ref:`Binny <wtf_is_binny>`, it is required that you have **metaG** reads.
+If there are only **metaT** reads / assemblies are available, only :ref:`MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>` will run.
+
+Each binner comes with a few parameters that the user can configure:
+
+- The default minimum contig lengths ``cutoff`` for :ref:`MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>` is *1500*. 
+- The default minimum contig lengths ``cutoff`` for :ref:`MaxBin2 <https://sourceforge.net/projects/maxbin2/>` is *1000*.
+- :ref:`Binny <wtf_is_binny>` has no minimum ontig lengths cutoff. If :ref:`VizBin <http://claczny.github.io/VizBin/>` output should be included into the summary, 
+:ref:`Binny <wtf_is_binny>` has to be chosen.
 
 .. code-block:: yaml
 
