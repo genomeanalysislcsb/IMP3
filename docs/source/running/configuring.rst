@@ -37,7 +37,7 @@ Paired end read files are separated by ``<space>``.
 The ``outputdir`` (with full path) defines the directory, where the IMP3 workflow output should be written to.
 
 Users can give a **sample name**: ``sample`` (default value is ``test``). Special characters should be avoided, punctuation will be converted to underscore.
-The **sample name** will be used throughout the IMP3 workflow, e.g. prepended to contig names. If the user-defined sample name is empty (``sample=""``), IMP3 
+The **sample name** will be used throughout the IMP3 workflow, e.g. prepended to contig names. If the user-defined sample name is empty (``sample: ""``), IMP3 
 will take the last two parts of the output path, concatenate them with an underscore and use the results as sample name).
 
 A directory for **temporary files** can be given (by default it is named ``tmp``). If you don't give an absolute path, it will be put into the output 
@@ -91,12 +91,23 @@ not make summaries. Currently, the user can either choose ``stats`` or ``vis`` o
 Available hardware support
 --------------------------
 
-IMP3 is able to run tasks on specific type of nodes, depending if the user d how large the **RAM** of your **normal** and **bigmem** cpus is and how many **cores** of each you want to maximally use in a step.
-*Defaults may be blatantly inappropriate for your system. Note that if you don't let IMP3 submit jobs for you,
-most steps don't care about how much RAM you say you have, but some do (e.g. mapping, kraken).*
-The number of normal cores is determined by the ``--cores`` argument of your snakemake :ref:,call <run_IMP>`, rather than set here.
-Currently you need to have both kinds of cores, if you run IMP3 in :ref:`cluster mode <run_cluster>`,
-or you have to change the :ref:`cluster config file <cluster_config>`. 
+Some IMP3 steps need high memory machines depending on the size of the dataset and the databases used. IMP3 is able to run tasks on specific 
+type of nodes, depending on the **memory** demands of the jobs, high memory demanding jobs are automatically scheduled to ``big_mem`` nodes. 
+Depending on how much **RAM** your local computer or compute cluster have available for your jobs the user can define the settings for  **normal** 
+and **bigmem** cpus:
+
+- ``normal_mem_per_core_gb`` (max. available RAM (in Gb) per core of **normal** compute cores, default 4 Gb)
+- ``big_mem_total_gb`` (max. available total RAM (in Gb) of **bigmem** compute cores, default 1600 Gb)
+- ``big_mem_cores`` (available number of **bigmem** compute cores, default 8)
+- ``big_mem_per_core`` (max. available RAM (in Gb) per core of **bigmem** compute cores, default 200 Gb)
+
+The number of cores is determined by the ``--cores`` argument of your `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ :ref:,call <run_IMP>`, rather than set here.
+
+The jobs will be scheduled depending on the availability and RAM demands depending on how many **cores** of each the user maximally use in a step.
+
+*Defaults may be blatantly inappropriate for your system. Note that if you don't let IMP3 submit jobs for you, most steps are run independently of how much RAM is available, but some do (e.g. mapping, kraken).*
+
+Currently you need to have both kinds of cores, if you run IMP3 in :ref:`cluster mode <run_cluster>`, or you have to change the :ref:`cluster config file <cluster_config>`. 
 
 .. code-block:: yaml
 
@@ -111,9 +122,8 @@ or you have to change the :ref:`cluster config file <cluster_config>`.
 Pre-processing: trimming 
 ------------------------
 
-If you want IMP3 to pre-process your reads, you can set all **trimmomatic** options (defaults below).
-If your reads originate from an Illumina Nextseq machine, we advise to set **nextseq** to true. This will remove
-trailing Gs that the Nextseq systems add to reads that are shorter than the run cycles.
+For the IMP3 :ref:`Preprocessing <step_preprocessing>` step, IMP3 is using **:ref:`Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`** for read trimming.
+The user can set all **:ref:`Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`** options (defaults given below):
 
 .. code-block:: yaml
 
@@ -131,6 +141,8 @@ trailing Gs that the Nextseq systems add to reads that are shorter than the run 
     target_length: 40
   nextseq: false
 
+If your reads originate from an :ref:`Illumina Nextseq <https://www.illumina.com/systems/sequencing-platforms/nextseq.html?langsel=/us/>` machine, we advise to set **nextseq** to true. This will remove
+trailing Gs that the Nextseq systems add to reads that are shorter than the run cycles.
 
 -------------------------
 Pre-processing: filtering 
