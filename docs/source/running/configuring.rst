@@ -324,8 +324,8 @@ If there are only **metaT** reads or assemblies are available, only `MetaBAT2 <h
 
 Each binner comes with a few parameters that the user can configure:
 
-- The default minimum contig lengths ``cutoff`` for :ref:`MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>` is *1500*. 
-- The default minimum contig lengths ``cutoff`` for :ref:`MaxBin2 <https://sourceforge.net/projects/maxbin2/>` is *1000*.
+- The default minimum contig lengths ``cutoff`` for `MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>`_ is *1500*. 
+- The default minimum contig lengths ``cutoff`` for `MaxBin2 <https://sourceforge.net/projects/maxbin2/>`_ is *1000*.
 - :ref:`Binny <wtf_is_binny>` has no minimum contig lengths cutoff. If :ref:`VizBin <http://claczny.github.io/VizBin/>` output should be included into the summary, :ref:`Binny <wtf_is_binny>` has to be chosen.
 
 .. code-block:: yaml
