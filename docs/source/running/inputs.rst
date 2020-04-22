@@ -12,7 +12,7 @@ of **metaT** reads (both in `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`
 or only **metaT** reads. 
 
 If the data is already assembled and the contigs need to get annotated and binned into metagenomics-assembled genomes (**MAGs**), 
-IMP3 also takes assemblies (in *Fasta* format) in addition to alignments (`Bam <https://genome.sph.umich.edu/wiki/BAM>`_ files) or trimmed reads (`Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ format) 
+IMP3 also takes assemblies (in *Fasta* format) in addition to alignments (`BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files) or trimmed reads (`Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ format) 
 as input.
 
 All inputs are defined in the :ref:`config file <configuration>`.
@@ -74,8 +74,8 @@ Contigs and alignments
 
 If the user has already an assembly and would like to use IMP3 to annotate genes, perform binning and/or determine contig-level
 taxonomy, the contigs can be used in input in *Fasta* format. In addition, the user can give reads either in `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files or already aligned
-as `Bam <https://genome.sph.umich.edu/wiki/BAM>`_ files. For `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files, the same limitations apply as discussed above. 
-The `Bam <https://genome.sph.umich.edu/wiki/BAM>`_ should be sorted by contig name.
+as `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files. For `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files, the same limitations apply as discussed above. 
+The `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files should be sorted by contig name.
 
 .. code-block:: yaml
 
