@@ -17,11 +17,11 @@ Overview of IMP3 steps
    Taxonomy
    Summary
 
-The workflow of IMP3 consists of six modules: :ref:`pre-processing <step_preprocessing>` of reads
-, :ref:`assembly <step_assembly>`, :ref:`analysis <step_analysis>` of contigs including
-functional annotation, :ref:`binning <step_binning>` of contigs, determination of :ref:`taxonomy <step_taxonomy>` at
-various levels, and :ref:`summary <step_summary>` including visualization.
-Typically, you will supply IMP3 with reads and it will run through the whole workflow.
+The IMP3 workflow consists of six modules: :ref:`Preprocessing <step_preprocessing>` of reads
+, :ref:`Assembly <step_assembly>`, :ref:`Analysis <step_analysis>` of contigs including
+functional annotation, :ref:`Binning <step_binning>` of contigs, determination of :ref:`Taxonomy <step_taxonomy>` at
+various levels, and :ref:`Summary <step_summary>` including visualization.
+Typically, IMP3 will use raw sequencing reads as :ref:`input <input_options>` and run through the whole workflow.
 
 .. image:: ../figures/steps.png
     :width: 711px
@@ -29,13 +29,13 @@ Typically, you will supply IMP3 with reads and it will run through the whole wor
     :height: 515px
     :alt: IMP3 steps
 
-Given the appropriate :ref:`input<input_options>` , you can also run most steps independently. For instance, you may have
-already processed reads and are looking to assemble and annotate them. You'd then select only assembly and analysis from the
-steps (and potentially summary). You can also supply an assembly that you may want to have
-annotated and binned. Or an annotated assembly that you want binned etc. Just enter your
-input data and select the steps in the :ref:`config <configuration>` file and IMP3 will take care of it.
+Given the appropriate :ref:`input <input_options>`, most steps can be run independently. For instance, if the user has
+already processed reads and wants to assemble and annotate them. The user would  then select only ``assembly`` and ``analysis`` from the
+ :ref:`steps <steps_overview>` (and potentially ``summary``). The user can also supply directly a given assembly to annotate and bin it. 
+Or an already annotated assembly just for binning etc. Just enter the appropriate :ref:`input <input_options>` data and define the ``steps``
+in the :ref:`config <configuration>` file and IMP3 will take care of it.
 
-To get an impression of all steps of a run with metagenomics and metatranscriptomics reads (hybrid assembly),
-download :download:`this file <../figures/hybrid_dag.pdf>`.
+To get an impression of all `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ steps of a run with **metaG** and **metaT** reads as input 
+using **hybrid assembly**, download :download:`this file <../figures/hybrid_dag.pdf>`.
 
 
