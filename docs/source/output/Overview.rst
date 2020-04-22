@@ -1,9 +1,8 @@
-
 .. _output:
 
-=========================
-Overview of IMP3's output 
-=========================
+=======================
+Overview of IMP3 output 
+=======================
 
 .. toctree::
    :maxdepth: 1
@@ -20,10 +19,11 @@ Overview of IMP3's output
    Binning
    Logs
 
-Once you run IMP3, it will fill the output directory with the intermediary outputs, the acutal :ref:`configuration <configuration>`
-and results. Before the end, it will compress some of the intermediary steps.
-Finally, it will make some summaries and visualizations (if you want).
-Here's an overview of the all outputs:
+While running, IMP3 will write the intermediary output and final results into the user-defined **output directory** (``outputdir``, see :ref:`configuration <configuration>`). 
+Before finishing IMP3 will compress some of the intermediary steps to reduce space. Finally, the IMP3 workflow will generate 
+summaries and visualizations (see :ref:`configuration <configuration>` if defined).
+
+An overview of the all outputs, files and their directory structure is given below:
 
 .. image:: ../figures/outputs.png
     :width: 720px
@@ -31,7 +31,6 @@ Here's an overview of the all outputs:
     :height: 1054px
     :alt: IMP3 outputs
 	
-You can run :ref:`reporting <run_report>` to also get more information on the run, together with the visualizations in a .html
-document. All outputs are explained in more detail in the next sections.
+The user can run :ref:`reporting <run_report>` to get more information on the run, together with the visualizations in HTML format. All outputs are explained in more detail in the next sections.
 
 
