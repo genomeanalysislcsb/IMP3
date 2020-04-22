@@ -25,7 +25,7 @@ Different steps in IMP3 require different input files. All input files are given
 
 - **MetaG** and/or **MetaT** paired-end or single-end raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files. Paired end read files are separated by ``<space>``.
 - **MetaG** and/or **MetaT** `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files (requires ``Contigs`` file, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
-- ``Contigs`` file in FASTA format (used for the mapping of the metaG und metaG raw files, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
+- ``Contigs`` file in *Fasta* format (used for the mapping of the metaG und metaG raw files, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
 - ``LongReads`` file in `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ (requires a ``LongReadTech`` description). ``LongReads`` are currently only supported with additional **metaG** reads.
 - ``LongReadTech`` description of used long read sequencing technology. Currently supported are ``nanopore`` and ``pacbio``.
 - ``Gff`` file based on the ``Contigs`` file (only required if the :ref:`Preprocessing <step_preprocessing>`, :ref:`Assembly <step_assembly>` and :ref:`Analysis <step_analysis>` steps are skipped and only the step :ref:`Binning <step_binning>` should performed).
@@ -147,12 +147,12 @@ Pre-processing: filtering
 -------------------------
 
 The IMP3 :ref:`Preprocessing <step_preprocessing>` step allows to map against a user-defined reference genome (e.g. host). 
-The user can set the Fasta file name of the reference genome (``filter``), which should be located or (soft-)linked to the :ref:`databases directory <ext_DBs>` (``db_path``)
-subfolder ``filtering``, by default this is a Fasta file ``hg38.fa`` within the directory ``db_path/filtering``. 
+The user can set the *Fasta* file name of the reference genome (``filter``), which should be located or (soft-)linked to the :ref:`databases directory <ext_DBs>` (``db_path``)
+subfolder ``filtering``, by default this is a *Fasta* file ``hg38.fa`` within the directory ``db_path/filtering``. 
 
 IMP3 will remove rRNA reads from **metaT** reads. The user can decide which databases to use for this. The default is
 to use the databases supplied by `SortMeRNA <https://bioinfo.lifl.fr/RNA/sortmerna/>`_. These databases should be available in 
-the :ref:`databases directory <ext_DBs>` in Fasta format.
+the :ref:`databases directory <ext_DBs>` in *Fasta* format.
 
 .. code-block:: yaml
 
@@ -267,9 +267,9 @@ Analysis: proteomics analysis preparation
 In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 provides several files for downstream **metaP** analysis.
 
 - The user can use the protein sequence output of `Prokka <http://www.vicbioinformatics.com/software.prokka.shtml>`_ directly as a search database for metaP analysis. 
-- IMP3 also provides a file with `Metaproteomics Analyzer <http://www.mpa.ovgu.de/>`_-conformant Fasta file headers, filtered to proteins having a minimum user-defined number of tryptic peptides (``filter_N_peptides``), with incomplete non-tryptic ends cut away. 
-- IMP3 will add a Fasta file with host (or other reference) protein sequences (which should be placed in the :ref:`databases directory <ext_DBs>`). 
-- IMP3 will generate optional (``insert_variants: true/false``) a Fasta protein sequence file with the protein isoforms by inserting variants called on the assembled contigs (see :ref:`beware <variants_metaP>`).
+- IMP3 also provides a file with `Metaproteomics Analyzer <http://www.mpa.ovgu.de/>`_-conformant *Fasta* file headers, filtered to proteins having a minimum user-defined number of tryptic peptides (``filter_N_peptides``), with incomplete non-tryptic ends cut away. 
+- IMP3 will add a *Fasta* file with host (or other reference) protein sequences (which should be placed in the :ref:`databases directory <ext_DBs>`). 
+- IMP3 will generate optional (``insert_variants: true/false``) a *Fasta* protein sequence file with the protein isoforms by inserting variants called on the assembled contigs (see :ref:`beware <variants_metaP>`).
 	  
 .. code-block:: yaml	  
 	
