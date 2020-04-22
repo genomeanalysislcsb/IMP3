@@ -30,10 +30,8 @@ Typically, IMP3 will use raw sequencing reads as :ref:`input <input_options>` an
     :alt: IMP3 steps
 
 Given the appropriate :ref:`input <input_options>`, most steps can be run independently. For instance, if the user has
-already processed reads and wants to assemble and annotate them. The user would  then select only ``assembly`` and ``analysis`` from the
- :ref:`steps <steps_overview>` (and potentially ``summary``). The user can also supply directly a given assembly to annotate and bin it. 
-Or an already annotated assembly just for binning etc. Just enter the appropriate :ref:`input <input_options>` data and define the ``steps``
-in the :ref:`config <configuration>` file and IMP3 will take care of it.
+already processed reads and wants to assemble and annotate them. The user would  then select only ``assembly`` and ``analysis`` from the :ref:`steps <steps_overview>` (and potentially ``summary``). The user can also supply directly a given assembly to annotate and bin it. 
+Or an already annotated assembly just for binning etc. Just enter the appropriate :ref:`input <input_options>` data and define the ``steps`` in the :ref:`config <configuration>` file and IMP3 will take care of it.
 
 To get an impression of all `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ steps of a run with **metaG** and **metaT** reads as input 
 using **hybrid assembly**, download :download:`this file <../figures/hybrid_dag.pdf>`.
