@@ -12,8 +12,6 @@ if "MaxBin" in BIN_STEPS:
     include:
         '../../Binning/MaxBin/maxbin.smk'
     include:
-        '../../Binning/MaxBin/maxbin_get_depth.smk'
-    include:
         '../../Binning/MaxBin/get_contig2bin.smk'
 ## MetaBAT
 if "MetaBAT" in BIN_STEPS:

@@ -1,6 +1,6 @@
 rule call_gene_depth:
     input:
-        "Analysis/annotation/annotation.filt.gff",
+        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         "Assembly/{type}.reads.sorted.bam"
     output:
         "Stats/{type}/annotation/{type}.annotation_cov.bed",
@@ -17,22 +17,12 @@ rule call_gene_depth:
     shell:
         """
         coverageBed -hist -abam {input[1]} -b <(awk '$4 < $5' {input[0]}) | grep -v "^all" > {output[0]}
+
         paste <(cat {output[0]} | cut -f9 | cut -f1 -d \";\" | sed -e \"s/ID=//g\") \
          <(cut -f10,11,12,13 {output[0]}) > {output[1]}
-        ## This code was adapted and modified from the CONCOCT script to calculate depth
-        ## It prints out a file that contains the average depth of all the genes
-        awk -v OFS='\t' 'BEGIN {{pc=""}}
-        {{
-            c=$1;
-            if (c == pc) {{
-                    cov=cov+$2*$5;
-            }} else {{
-                print pc,cov;
-                cov=$2*$5;
-                pc=c
-            }}
-        }} END {{print pc,cov}}' < {output[1]} | tail -n +2 > {output[2]}
-
+	
+	# Record average gene coverage
+	{SRCDIR}/calcAvgCoverage.pl {output[1]} > {output[2]}
 
         # Record gene length file
         cut -f 1,4 {output[1]} | uniq > {output[3]}
