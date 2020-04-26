@@ -321,13 +321,13 @@ while 1:
             else:
                 ranksum_dict[rank_dict[ctax]][0] += orgs[ctax]
                 rank_orgs[rank_dict[ctax]][ctax] = orgs[ctax]
-        print(ranksum_dict)
+ #       print(ranksum_dict)
         cranks = sorted(ranksum_dict.items(), key=lambda x:(x[1][0],x[1][1]), reverse = True)
         rankwin_dict = {}
         winnerList = []
         first = True
         for rank in cranks:
-            print(rank)
+#            print(rank)
             rank = rank[0]
             cdiv = shannonDiv(rank_orgs[rank],ranksum_dict[rank][0])
             if cdiv <= divthresh and cdiv >= 0:
