@@ -15,7 +15,7 @@ Some general notes on the **config file**:
 
 - The **order of the items** in the config file is **arbitrary**.
 - The config file does **not** need to contain all fields:
-- only two fields are required: ** :ref:`raws <input_options>` ** and an **output directory**. 
+- only two fields are **required**: :ref:`raws <input_options>` and an **output directory**. 
 - all other fields are optional and if emtpy the IMP3 default settings will be used. 
 - IMP3 will write the user-specified configuration including pre-defined fields to the output folder as ``sample.config.yaml``.
 
@@ -27,7 +27,7 @@ The user has to tell IMP3 where the **raw or input files** are located. (The def
 Different :ref:`steps <steps_overview>` in IMP3 require different input files. All input files are given as absolute paths.
 Input files can be:
 
-- ``Metagenomics`` and/or ``Metatranscriptomics`` paired-end or single-end raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files. Paired end read files are separated by ``<space>``, or
+- ``Metagenomics`` and/or ``Metatranscriptomics`` paired-end or single-end raw `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ files. Paired end read files are separated by ``<space>``, or
 - ``Alignment_metagenomics`` and/or ``Alignment_metatranscriptomics``: MetaG and/or MetaT `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files (requires ``Contigs`` file, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
 - ``Contigs`` file in FASTA format (used for the mapping of the metaG und metaG raw files, required if the :ref:`Preprocessing <step_preprocessing>` and :ref:`Assembly <step_assembly>` steps are skipped).
 - ``LongReads`` file in `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ (requires a ``LongReadTech`` description). ``LongReads`` are currently only supported with additional short **metaG** reads and with Spades assembler.
@@ -79,7 +79,7 @@ map them mapped against the human genome given as file ``hg38.fa`` in the databa
 
 If ``steps`` contains ``summary``, IMP3 will summarize the results. The user can define which steps should be taken for summary in the field ``summary_steps``. 
 The default is to extract summary statistics (``stats``) on all performed steps and to visualize them (``vis``). If ``summary_steps`` is empty, IMP3 will 
-not make summaries. Currently, the user can either choose ``stats`` or ``stats vis``. 
+not make summaries. Currently, the user can either choose ``"stats"`` or ``"stats vis"``. 
 
 .. code-block:: yaml
 
@@ -188,7 +188,7 @@ currently the only option to assemble **long and short metaG** reads together.
 
 For all assemblies, the user can set the minimal (``mink``) and maximal (``maxk``) *k*-mer size and the intervals between (``step``) for the multi 
 *k*-mer assemblies performed by both assemblers. IMP3 performs :ref:`iterative assembly <step_assembly>` and the steps are merged using the 
-`Cap3 <http://seq.cs.iastate.edu/cap3.html>`_ overlap assembler, which can be configured (``indentity``, ``overlap``).
+`CAP3 <http://seq.cs.iastate.edu/cap3.html>`_ overlap assembler, which can be configured (``indentity``, ``overlap``).
 
 All ``assembly`` config parameter are given below with default values:
 

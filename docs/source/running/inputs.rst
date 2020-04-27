@@ -21,7 +21,8 @@ All inputs are defined in the :ref:`config file <configuration>`.
 Reads
 -----
 
-The ``Metagenomics`` and ``Metatranscriptomics`` input fields expect two or three `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ or gzipped `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ files, 
+The ``Metagenomics`` and ``Metatranscriptomics`` input fields expect two or three `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ or
+gzipped `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ files, 
 separated by a space. The first two files should be the forward and reverse reads, if IMP3 analysis should start from pre-processing reads. The reads 
 need to be in the same order in both files. 
 
@@ -41,7 +42,7 @@ For processing the original raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_form
 If the user has **already pre-processed** reads, either for the :ref:`Assembly <step_assembly>` step or for further analysis,
 the user can pass one additional single ends file. The singleton read file is given last.
 
-**Note**: *In this case, the user should NOT include ``preprocessing`` in the IMP :ref:`steps <steps_overview>`.*
+**Note**: *In this case, the user should NOT include* ``preprocessing`` *in the IMP* :ref:`steps <steps_overview>`.
 
 .. code-block:: yaml
 
@@ -59,7 +60,7 @@ The user can also give only **metaG** or only **metaT** reads to IMP3, either ra
 If the user wishes to perform a **metaG** assembly including long reads, a single file of **already pre-processed** long-reads data (in `Fastq <https://en.wikipedia.org/wiki/FASTQ_format>`_ format). In this case, additionally the sequencing method 
 (possible values are ``nanopore`` and ``pacbio``) can be added.
 
-**Note**: *The long reads are only used by IMP3, if * ``metaspades`` * is chosen as assembler.*
+**Note**: *The long reads are only used by IMP3, if* ``metaspades`` *is chosen as assembler.*
 
 .. code-block:: yaml
 
