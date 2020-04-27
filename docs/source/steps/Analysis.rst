@@ -5,6 +5,9 @@
 IMP3 steps: Analysis
 ====================
 
+The Analysis step of IMP3 performs gene calling, functional annotation
+
+
 .. _prokkaC:
 
 -----------------

@@ -4,19 +4,29 @@
 Running IMP3
 ============
 
-You can run IMP3 by calling Snakemake with the appropriate settings:
+You can run IMP3 by calling `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ with the appropriate settings:
 
 .. code-block:: console
 
-  snakemake /path/to/IMP3/Snakefile --configfile config.file.yaml --use-conda --conda-prefix /path/to/IMP3/conda --cores corenumber
+  snakemake /path/to/IMP3/Snakefile --configfile /path/to/config.file.yaml --use-conda --conda-prefix /path/to/IMP3/conda --cores corenumber
 
-All paths can be relative or absolute. ``--cores`` specifies the number of threads you want to maximally use at the same time in addition to the
-thread running the main snakemake (but note :ref:`extra limitations <hardware>` set in the config file).
+``Snakefile`` defines your workflow that you want to execute.
+
+``--configfile`` specifies the config file for your sample. More info you can find :ref:`here <configuration>`.
+
+``--use-conda`` enables `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ to use `conda <https://docs.conda.io/en/latest/>`_ environments defined for your workflow.
+
+``--conda-prefix`` path to your IMP3 conda directory for the IMP3 conda environments.
+
+``--cores`` specifies the number of threads you want to maximally use at the same time in addition to the
+thread running the main ``snakemake`` command (but note :ref:`extra limitations <hardware>` set in the config file).
+
+All paths can be relative or absolute. 
 
 .. _run_report:
 
-If you'd like to have a **report** which lists all conda environments, rules and running stats, in addition
-to the visual outputs, run snakemake with the ``--report`` option:
+If you'd like to have a **report** which lists all IMP3 conda environments, rules and running stats, in addition
+to the visual outputs, run `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ with the ``--report`` option:
 
 .. code-block:: console
 
