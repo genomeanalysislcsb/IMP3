@@ -25,16 +25,7 @@ rule call_contig_depth:
         echo "Depth calculation done" >> {log}
 
         ## This method of depth calculation was adapted and modified from the CONCOCT code
-        awk -v OFS='\t' 'BEGIN {{pc=""}}
-        {{
-        c=$1;
-        if (c == pc) {{
-        cov=cov+$2*$5;
-        }} else {{
-        print pc,cov;
-        cov=$2*$5;
-        pc=c}}
-        }} END {{print pc,cov}}' $TMP_DEPTH | tail -n +2 > {output[1]}
+	{SRCDIR}/calcAvgCoverage.pl $TMP_DEPTH {input[1]} > {output[1]}	
 
         echo "Remove the temporary file" >> {log}
         rm $TMP_DEPTH

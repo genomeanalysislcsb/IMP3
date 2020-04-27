@@ -10,6 +10,7 @@ my @warn = ();
 foreach my $infile (@ARGV){
 	print STDOUT "Reading ".$infile."\n";
 	open (INFILE, "$infile") or die $!;
+	my $crisprct=0;
 	while(my $line=<INFILE>){
 		chomp($line);
 		next if $line =~/#/;
@@ -17,13 +18,20 @@ foreach my $infile (@ARGV){
 		my $attr = pop @tabs;
 		my $tabstr = join(";",@tabs);
 		my @attrs = split(";",$attr);
+		# note=CRISPR with 19 repeat units;rpt_family=CRISPR;rpt_type=direct
+		if ($attrs[0] =~ /^note=CRISPR/){
+			$crisprct++;
+			$attr="ID=CRISPR_".$crisprct.";locus_tag=CRISPR_".$crisprct.";".join(";",@attrs);
+			@attrs = split(";",$attr);
+		}
 		my $id = "";
 		my @tmpattr = ();
+
 		foreach my $anno (@attrs){
 			if($anno =~ /^ID=/){
 				($id = $anno) =~ s/^ID=//;
 			}else{
-#				print STDOUT $anno."\n";
+				#print STDERR $anno."\n";
 				if($anno ne ""){
 					my @annname=split("=",$anno);
 					if($annname[0] =~ /-/){
@@ -31,7 +39,7 @@ foreach my $infile (@ARGV){
 						$annname[0] =~ s/-/_/g;
 						$anno=join("=",@annname);
 						push @warn,"$old_annname was replaced by $annname[0].";
-					}	
+					}
 					push @tmpattr,$anno;
 				}
 			}
