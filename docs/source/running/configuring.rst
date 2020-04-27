@@ -255,7 +255,7 @@ Analysis: proteomics analysis preparation
 
 In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 provides several files for downstream **metaP** analysis.
 
-- The user can use the protein sequence output of `Prokka <http://www.vicbioinformatics.com/software.prokka.shtml>`_ directly as a search database for metaP analysis (not recommended). 
+- The user can use the protein sequence output of `prokka <http://www.vicbioinformatics.com/software.prokka.shtml>`_ directly as a search database for metaP analysis (not recommended). 
 - IMP3 also provides a file with `Metaproteomics Analyzer <http://www.mpa.ovgu.de/>`_-conformant FASTA file headers, filtered to proteins having a minimum user-defined number of tryptic peptides (``filter_N_peptides``), with incomplete non-tryptic ends cut away. 
 - IMP3 will add a FASTA file with host (or other reference) protein sequences (which should be placed in the :ref:`databases directory <ext_DBs>`). The provided host protein FASTA file should be consistent with the requirements of the proteomics software the user intends to use.
 - IMP3 will optionally (``insert_variants: true/false``) generate a FASTA protein sequence file with the protein isoforms by inserting variants called on the assembled contigs (but :ref:`beware <variants_metaP>`).
