@@ -1,13 +1,12 @@
-###
-IMP
-###
+#####
+IMP 3
+#####
 
-The Integrated Meta-omic Pipeline (IMP) is developed to perform large-scale, reproducible and automated integrative reference free analysis of metagenomic and metatranscriptomic data. IMP also performs single omic (i.e. metagenomic-only and metatrancriptomic-only) analysis as an additional functionality.
+The Integrated Meta-Omics Pipeline, IMP, is a reproducible and modular pipeline for large-scale integrated analysis of coupled metagenomic and metatranscriptomic data. IMP3 incorporates read preprocessing, assembly (including optional iterative co-assembly of metagenomic and metatranscriptomic data), analysis of microbial community structure (taxonomy) and function (gene functions and abundances), binning, as well as summaries and visualizations.
 
-*************************
-Documentation and website
-*************************
+*************
+Documentation
+*************
 
-All documentation and resources can be found : `here <http://r3lab.uni.lu/web/imp/doc.html>`_.
+The documentation can be found `here <https://imp3.readthedocs.io/en/latest/index.html>`_.
 
-All components used to develop IMP workflow care addressed under the  `R3lab frozen pages <http://r3lab.uni.lu/frozen/imp>`_.
