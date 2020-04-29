@@ -20,7 +20,7 @@ Overview of IMP3 output
    Logs
 
 While running, IMP3 will write the intermediary output and final results into the user-defined **output directory** (``outputdir``, see :ref:`configuration <configuration>`). 
-Before finishing IMP3 will compress some of the intermediary steps to reduce space. Finally, the IMP3 workflow will generate 
+Before finishing, IMP3 will compress some of the intermediary steps to reduce space. Finally, the IMP3 workflow will generate 
 summaries and visualizations (see :ref:`configuration <configuration>` if defined).
 
 An overview of the all outputs, files and their directory structure is given below:

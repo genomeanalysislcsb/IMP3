@@ -8,12 +8,16 @@ IMP3 output: Analysis
 Annotation
 ----------
 
-The results of the :ref:`Analysis <step_analysis>` are written into the ``Analysis`` directory within in the defined ``outputdir``, see
+IMP3 writes the results of the :ref:`Analysis <step_analysis>` into the ``Analysis`` directory within in the defined ``outputdir``, see
 :ref:`configuration <configuration>`. 
 
-The gene annotation results are in the ``annotation`` subdirectory:
+The gene annotation results are in the ``annotation`` subdirectory.
 
-The `GFF3 <http://gmod.org/wiki/GFF3>`_ file ``annotation_CDS_RNA_hmms.gff`` is the final annotation file and contains all gene annotations (including mRNAs, rRNAs and tRNAs) with the functional annotations and gene descriptions. 
+............
+The GFF file
+............
+
+The `GFF3 <http://gmod.org/wiki/GFF3>`_ file ``annotation_CDS_RNA_hmms.gff`` is the final annotation file and contains all gene annotations (including mRNAs, rRNAs, tRNAs and CRISPR arrays) with the functional annotations and gene descriptions. 
 The file is in `standard GFF format <https://www.ensembl.org/info/website/upload/gff.html>`_ with nine columns:
 
 - 1: contig ID, 
@@ -24,17 +28,23 @@ The file is in `standard GFF format <https://www.ensembl.org/info/website/upload
 - 6: a score ("." if no score is reported), 
 - 7: the feature's direction or sense ("+" or "-"), 
 - 8: frame (0 for CDS, "." for other features), 
-- 9: attributes (each attribute starts with a key followed by "=", e.g. "ID=", attributes are separated by ";" 
+- 9: attributes (each attribute starts with a key followed by "=", e.g. "ID=", attributes are separated by ";" )
     
 The most important attributes of column *9* are:
 
 - **ID**, which is used in other gene-based outputs,
-- **partial**, which contains information from the used gene-caller(`Prodigal <https://github.com/hyattpd/Prodigal>`_) about whether the open reading frames are complete:
+- **partial**, which contains information from the gene-caller (`Prodigal <https://github.com/hyattpd/Prodigal>`_) about whether the open reading frames are complete:
     - *00* means both start and stop codons were found, 
     - *11* means neither were found, 
     - *01* means the right-most end is incomplete - i.e. missing stop-codon for +strand features, missing start-codon for -strand features, 
     - *10* means the left-most end is incomplete - i.e. missing start-codon for +strand features, missing stop-codon for -strand features, and 
-- **the results of the HMM searches**, named with the HMM database name provided in the **config file**, e.g. ``essential=`` for the essential genes.
+- **the results of the HMM searches**, named with the HMM database name provided in the **config file**, e.g. *essential=* for the essential genes.
+
+The functional annotation of the genes by `HMMer <http://hmmer.org/>`_ produces a number of intermediary outputs. With the results summarized 
+in ``annotation_CDS_RNA_hmms.gff``, the intermediary files are archived and compressed in ``intermediary.tar.gz``.
+......................
+Reads per gene / group
+......................
 
 The annotated features are used to determine the numbers of reads mapping to the features and to groups of features that share the
 same functional annotation using `featureCounts <http://bioinf.wehi.edu.au/featureCounts/>`_:
@@ -50,23 +60,29 @@ same functional annotation using `featureCounts <http://bioinf.wehi.edu.au/featu
 - In addition, summaries of the numbers of reads that were mapped and overlapped with the features are found in the respective files ending on ``tsv.summary``. 
 - If only **metaT** reads were used as input, there will be no data for rRNA, because rRNA has been filtered out.
 
-The *Fasta* file for downstream **metaP** analysis is called ``proteomics.final.faa``. The *Fasta* header for the protein sequences is in a format that
-should work with most proteomics search engines and analysis tools, in particular the `MetaProteomeAnalyzer <http://www.mpa.ovgu.de/>`_ . If the user chose to add 
-host proteins (see :ref:`configuration <configuration>`, the provided host protein *Fasta* file should also consistent to the requirements of the used proteomics software.
-As an intermediary step (without host proteins) a file named ``proteomics.proteins.faa`` is generated.
+.......................................
+Proteomics databases and gene sequences
+.......................................
 
-The proteomics file is a cleaned version of ``prokka.faa``. In addition to the amino-acid sequences, `prokka <https://github.com/tseemann/prokka>`_ 
-also outputs the CDS as ``prokka.ffn``, the contigs in ``prokka.fna`` and - with a slightly different header - in ``prokka.fsa``, as well
-as a logfile ``prokka.log``, a summary of the number of analysed contigs and annotated features ``prokka.txt``, a tabular output
-with all features ``prokka.tsv``, and a sort-of flat version of the same information in ``prokka.tbl``, and a `GFF <http://gmod.org/wiki/GFF3>`_ file with
-lots of commented lines (starting with "#") ``prokka.gff``, which is actually the foundation of the `GFF <http://gmod.org/wiki/GFF3>`_ file described above.
+IMP3 output can be used for downstream **metaP** analysis:
+
+- ``proteomics.final.faa``: the FASTA file for downstream **metaP** analysis. The FASTA header for the protein sequences is in a format that
+should work with most proteomics search engines and analysis tools, in particular the `MetaProteomeAnalyzer <http://www.mpa.ovgu.de/>`_ .
+- As an intermediary step (without host proteins), a file named ``proteomics.proteins.faa`` is generated.
+
+The proteomics file is a cleaned version of ``prokka.faa``. `prokka <https://github.com/tseemann/prokka>`_ outputs a few more files:
+- ``prokka.ffn`` with the CDS,
+- ``prokka.fna`` with the contigs (also present in ``prokka.fsa`` with a slightly different header),
+- ``prokka.log``, a logfile, 
+- ``prokka.txt``, a summary of the number of analysed contigs and annotated features,
+- ``prokka.tsv``, a tabular output with all features,
+- ``prokka.tbl``, a sort-of flat version of the same information,
+- ``prokka.gff``, a `GFF <http://gmod.org/wiki/GFF3>`_ file with lots of commented lines (starting with "#"), which is actually the foundation of the `GFF <http://gmod.org/wiki/GFF3>`_ file described above.
+
 An intermediary step between this file and the final `GFF <http://gmod.org/wiki/GFF3>`_ is ``annotation.filt.gff`` which contains all the information of the
 original prokka output minus the comments. Depending on the planned further analysis steps, the user may also see indices for some of the sequences
 (``prokka.<faa|ffn>.<suffix>``). If the IMP3 :ref:`Binning <step_binning>` is run, IMP3 will add a file containing the link between the gene IDs
 as given by `prokka <https://github.com/tseemann/prokka>`_ and the format required by `DASTool <https://github.com/cmks/DAS_Tool>`_, called ``annotation_CDS_RNA_hmms.contig2ID.tsv``.
-
-The functional annotation of the genes by `HMMer <http://hmmer.org/>`_ produces a number of intermediary outputs. With the results summarized 
-in ``annotation_CDS_RNA_hmms.gff``, the intermediary files are archived and compressed in ``intermediary.tar.gz``.
 
 ----
 SNPs
