@@ -27,6 +27,11 @@ outplot             <- snakemake@output # "Visualization/Assembly_length_hist.pn
 print("Loading data.")
 load(stats_image)
 
+min0 <- function(x){
+  min(x[x>0])
+}
+
+
 ###################################################################################################
 ## plot
 ###################################################################################################
@@ -57,7 +62,7 @@ par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
 depth_hist_log <- list()
 for(type in types){
   depth_hist_log[[type]] <- hist(log10(depthAssStat[[type]]$depth),
-                         breaks=seq(from=log10(min(sapply(depthAssStat,function(x) min(x$depth)))),
+                         breaks=seq(from=log10(min(sapply(depthAssStat,function(x) min0(x$depth)))),
                                     to=log10(max(sapply(depthAssStat,function(x) max(x$depth)))),
                                     length.out = 100),plot=F)
 }
