@@ -1,0 +1,44 @@
+############################################################
+# MultiQC Config
+############################################################
+# Based on config_defaults.yaml from MultiQC (v1.8)
+
+##############################
+# Info
+##############################
+
+title: "IMP3 processing summary"
+subtitle: "MultiQC report"
+intro_text: "Please not that only the output of tools supported by MultiQC has been included in this report."
+# report_comment: "For more information please see the sources listed below:"
+report_header_info:
+    - IMP3 Docs: "https://imp3.readthedocs.io/en/impiris" # TODO
+    - MultiQC Docs: "https://multiqc.info/docs"
+    # TODO: would be nice to have here some sample info
+
+# Logo
+custom_logo: null # TODO
+custom_logo_url: null # TODO
+custom_logo_title: null # TODO
+
+##############################
+# Output
+##############################
+
+data_format: 'tsv'
+force: true
+make_data_dir: true
+zip_data_dir: true
+data_dump_file: true
+export_plots: false
+plots_force_flat: false
+plots_force_interactive: true
+
+##############################
+# Tools
+##############################
+
+# FastQC
+
+# Prokka
+prokka_fn_snames: true

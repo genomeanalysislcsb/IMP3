@@ -45,6 +45,10 @@ if "vis" in SUM_STEPS:
         output:
             touch('status/visualization.done')
 
+if "multiqc" in SUM_STEPS:
+    include:
+        '../../Summary/MultiQC.smk'
+    sum_target.append("status/multiqc.done")
 
 # master command
 rule SUMMARY:
