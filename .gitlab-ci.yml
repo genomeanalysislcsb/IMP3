@@ -1,19 +1,26 @@
+# disable CI for this branch (added to each job via "extends")
+.skip_branch:
+    except:
+        variables:
+            - $CI_COMMIT_REF_NAME =~ /^IMPiris_VG.*$/
+
 stages:
-  - dag
-  - init
-  - preprocessing
-  - assembly
-  - analysis
-  - binning
-  - manual
+    - dag
+    - init
+    - preprocessing
+    - assembly
+    - analysis
+    - binning
+    - manual
 
 databases:
+    extends: .skip_branch
     stage: manual
     when: manual
     script:
-      - pip3.4 install --editable . --user
-      - mkdir -p $CI_PROJECT_DIR/$CI_BUILD_ID
-      - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d $CI_PROJECT_DIR/$CI_BUILD_ID init
+        - pip3.4 install --editable . --user
+        - mkdir -p $CI_PROJECT_DIR/$CI_BUILD_ID
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d $CI_PROJECT_DIR/$CI_BUILD_ID init
 
 
 before_script:
@@ -21,11 +28,13 @@ before_script:
 
 # INIT
 i-cl:
-  stage: init
-  script:
-    - pytest
+    extends: .skip_branch
+    stage: init
+    script:
+        - pytest
 
 i-with-another-filter:
+    extends: .skip_branch
     stage: init
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db init --index $CI_PROJECT_DIR/test/small.fa
@@ -35,111 +44,132 @@ i-with-another-filter:
 # DAG
 # see if the snakemake graph is resolving to the end
 dag-mgmt-default:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
 
 dag-mgmt-maxbin:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -b maxbin -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -b maxbin -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
 
 dag-mgmt-idba:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -a idba -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -a idba -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
 
 dag-mgmt-nf:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
 
 dag-mgmt-nf2:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n" --no-filtering
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n" --no-filtering
+
 
 dag-mg-default:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
 
 dag-mg-nf:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
 
 dag-mg-nf2:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n" --no-filtering
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n" --no-filtering
+
 
 dag-mt-default:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db run -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db run -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
 
 dag-mt-nf:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
 
 dag-mt-nf2:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n" --no-filtering
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db run -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n" --no-filtering
 
 
 dag-mgmt-no-binning:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -b no run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -b no run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID -x "snakemake -n"
 
 dag-mt-no-binning:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -b no run -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -b no run -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
 
 
 dag-mg-no-binning:
-  stage: dag
-  script:
-    - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -b no run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
+    extends: .skip_branch
+    stage: dag
+    script:
+        - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -b no run -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics -x "snakemake -n"
 
 
 # PREPROCESSING
 p-mgmt-default:
+    extends: .skip_branch
     stage: preprocessing
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db preprocessing -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-step
 
 
-
 p-mgmt-nf:
+    extends: .skip_branch
     stage: preprocessing
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db preprocessing -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-step
 
 
 p-mg-default:
+    extends: .skip_branch
     stage: preprocessing
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db preprocessing -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq  -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics --single-step
 
 
 p-mg-nf:
+    extends: .skip_branch
     stage: preprocessing
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db preprocessing -m $CI_PROJECT_DIR/test/MG.R1.small.fq -m $CI_PROJECT_DIR/test/MG.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics --single-step
 
 
 p-mt-default:
+    extends: .skip_branch
     stage: preprocessing
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db preprocessing -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics --single-step
 
 
 p-mt-nf:
+    extends: .skip_branch
     stage: preprocessing
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/no_filtering.conf.json -d /mnt/data/db preprocessing -t $CI_PROJECT_DIR/test/MT.R1.small.fq -t $CI_PROJECT_DIR/test/MT.R2.small.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-omics --single-step
@@ -147,13 +177,14 @@ p-mt-nf:
 
 # Assembly
 a-mgmt-idba:
+    extends: .skip_branch
     stage: manual
     when: manual
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -a idba assembly  -m /mnt/data/input/assembly-megahit/mg.r1.preprocessed.fq -m /mnt/data/input/assembly-megahit/mg.r2.preprocessed.fq -m /mnt/data/input/assembly-megahit/mg.se.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.r1.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.r2.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.se.preprocessed.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-step
 
-
 a-mg-idba:
+    extends: .skip_branch
     stage: manual
     when: manual
     script:
@@ -166,23 +197,26 @@ a-mt-idba:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -a idba assembly  -t /mnt/data/input/assembly-megahit/mt.r1.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.r2.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.se.preprocessed.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-step --single-omics
 
 a-mgmt-megahit:
+    extends: .skip_branch
     stage: assembly
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -a megahit assembly -m /mnt/data/input/assembly-megahit/mg.r1.preprocessed.fq -m /mnt/data/input/assembly-megahit/mg.r2.preprocessed.fq -m /mnt/data/input/assembly-megahit/mg.se.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.r1.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.r2.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.se.preprocessed.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-step
 
 a-mg-megahit:
+    extends: .skip_branch
     stage: assembly
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -a megahit assembly -m /mnt/data/input/assembly-megahit/mg.r1.preprocessed.fq -m /mnt/data/input/assembly-megahit/mg.r2.preprocessed.fq -m /mnt/data/input/assembly-megahit/mg.se.preprocessed.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-step --single-omics
 
-
 a-mt-megahit:
+    extends: .skip_branch
     stage: assembly
     script:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -a megahit assembly -t /mnt/data/input/assembly-megahit/mt.r1.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.r2.preprocessed.fq -t /mnt/data/input/assembly-megahit/mt.se.preprocessed.fq -o $CI_PROJECT_DIR/$CI_BUILD_ID --single-step --single-omics
 
-
+# Analysis
 an-mgmt:
+    extends: .skip_branch
     stage: analysis
     script:
         - mkdir -p $CI_PROJECT_DIR/$CI_BUILD_ID
@@ -190,6 +224,7 @@ an-mgmt:
         - impy -e IMP_SUDO=sudo -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db analysis --data-dir $CI_PROJECT_DIR/$CI_BUILD_ID --single-step
 
 an-mg:
+    extends: .skip_branch
     stage: analysis
     script:
         - mkdir -p $CI_PROJECT_DIR/$CI_BUILD_ID
@@ -197,13 +232,14 @@ an-mg:
         - impy -e IMP_SUDO=sudo -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db analysis --data-dir $CI_PROJECT_DIR/$CI_BUILD_ID --single-step --single-omics
 
 an-mt:
+    extends: .skip_branch
     stage: analysis
     script:
         - mkdir -p $CI_PROJECT_DIR/$CI_BUILD_ID
         - cp -r /mnt/data/input/analysis-mt/* $CI_PROJECT_DIR/$CI_BUILD_ID
         - impy -e IMP_SUDO=sudo -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db analysis --data-dir $CI_PROJECT_DIR/$CI_BUILD_ID --single-step --single-omics
 
-
+# Binning
 # binny-mgmt:
 #     stage: binning
 #     script:
@@ -218,8 +254,8 @@ an-mt:
 #         - cp -r /mnt/data/input/binny-mg/* $CI_PROJECT_DIR/$CI_BUILD_ID
 #         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db binning --data-dir $CI_PROJECT_DIR/$CI_BUILD_ID --single-step --single-omics
 
-
 maxbin-mgmt:
+    extends: .skip_branch
     stage: manual
     when: manual
     script:
@@ -228,6 +264,7 @@ maxbin-mgmt:
         - impy -s . -c $CI_PROJECT_DIR/test/default.conf.json -d /mnt/data/db -b maxbin binning --data-dir $CI_PROJECT_DIR/$CI_BUILD_ID --single-step
 
 maxbin-mg:
+    extends: .skip_branch
     stage: manual
     when: manual
     script:
