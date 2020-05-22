@@ -25,6 +25,8 @@ rule plasflow_input:
         runtime = "00:10:00",
         mem = MEMCORE,
         minlen=config["plasflow"]["minlen"]
+    conda:
+        ENVDIR + "/IMP_fasta.yaml"
     message:
         "Plasmid prediction w/ PlasFlow: {input}"
     shell:
