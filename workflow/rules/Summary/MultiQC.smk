@@ -18,8 +18,11 @@ if MG or MT:
     else:
         assert len(MG) == 2 and len(MT) == 2
     MQC_FASTQC_R = expand("{rtype}_fastqc", rtype=MQC_FASTQC_R_RAW)
-    if 'preprocessing' in IMP_STEPS:
+    if "preprocessing" in IMP_STEPS:
         MQC_FASTQC_R += expand("{rtype}.preprocessed_fastqc", rtype=MQC_FASTQC_R_PROC)
+# SortMeRNA
+if PREPROCESSING_FILTERING and MT and len(MT) > 1: # TODO
+    MQC_MODULES.append("sortmerna")
 # Prokka
 if "analysis" in IMP_STEPS:
     MQC_MODULES.append("prokka")
@@ -32,6 +35,11 @@ rule multiqc_report:
             type=MQC_FASTQC_T,
             rtype=MQC_FASTQC_R
         ) if (MG or MT) else [],
+        # SortMeRNA
+        sortmerna=[
+            "Preprocessing/mt.pe.trimmed.rna.log",
+            "Preprocessing/mt.se.trimmed.rna.log",
+        ] if PREPROCESSING_FILTERING and MT and len(MT) > 1 else [],  # TODO
         # Prokka
         prokka=["Analysis/annotation/prokka.txt"] if "analysis" in IMP_STEPS else [],
     output:
@@ -56,16 +64,7 @@ rule multiqc_report:
         """
         > {output.include}
         > {output.exclude}
-        # for file in {input.fastqc} 
-        # do
-        #     if [ -s ${{file}} ] && [ ! $(unzip -l -q ${{file}} | grep -q \"No errors\") ]
-        #     then
-        #         echo ${{file}} >> {output.include}
-        #     else
-        #         echo ${{file}} >> {output.exclude}
-        #     fi
-        # done
-        echo '{input.fastqc} {input.prokka}' | sed 's/\s\+/\\n/g' >> {output.include}
+        echo '{input}' | sed 's/\s\+/\\n/g' >> {output.include}
         multiqc --file-list {output.include} {params.modules} --config {params.configfile} --filename {params.filename} &> {log}
         """
 
