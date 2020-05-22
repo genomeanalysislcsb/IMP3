@@ -30,7 +30,7 @@ rule shut_mongo:
         touch("status/DB_filling.done")
     params:
         port = config["mongo_port"],
-    message: "shut_mongo: killing mongod on config["mongo_port"]."
+    message: "shut_mongo: killing mongod on {port}.".format(port=config["mongo_port"])
     shell:
         """
         mongod --dbpath {input[0]} --port {params.port} --shutdown
@@ -56,7 +56,7 @@ rule mongoDB_bins:
     params:
         ass = ASS,
         sample = SAMPLE,
-        binners = config["Binning"]["Binners"],
+        binners = config["binning"]["binners"],
         dbs = config["hmm_DBs"],
         user = config["mongo_user"],
         password = config["mongo_password"],
@@ -79,7 +79,7 @@ rule mongoDB_contigs:
     params:
         ass = ASS,
         sample = SAMPLE,
-        binners = config["Binning"]["Binners"],
+        binners = config["binning"]["binners"],
         dbs = config["hmm_DBs"],
         user = config["mongo_user"],
         password = config["mongo_password"],
@@ -92,7 +92,3 @@ rule mongoDB_contigs:
     conda: ENVDIR + "/IMP_multi.yaml"
     script:
         SRCDIR + "/mongify_contigs_single_IMP3.py"
-
-
-        
-
