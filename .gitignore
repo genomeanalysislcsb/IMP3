@@ -22,3 +22,5 @@ oldrules/*
 IMP2to3/*
 rules/CRISPR
 condai/
+# slurm log files
+**/slurm-*.out
