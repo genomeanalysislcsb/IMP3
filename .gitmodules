@@ -1,0 +1,3 @@
+[submodule "submodules/PathoFact"]
+	path = submodules/PathoFact
+	url = ssh://git@git-r3lab-server.uni.lu:8022/laura.denies/PathoFact.git
