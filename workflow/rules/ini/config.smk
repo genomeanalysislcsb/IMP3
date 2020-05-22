@@ -38,6 +38,13 @@ shell.executable("bash")
 # custom configuration file
 CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "../../../config/userconf.imp.yaml")
 
+# some relevant paths
+SRCDIR = srcdir("../../scripts")
+BINDIR = srcdir("../../bin")
+ENVDIR = srcdir("../../envs")
+CONFIGDIR = srcdir("../../../config")
+MODULDIR = srcdir("../../../submodules")
+
 # merge 2 configurations files together
 if os.path.exists(CUSTOM_CONFIG_PATH):
     #print("reading configuration from "+CUSTOM_CONFIG_PATH)
@@ -45,12 +52,39 @@ if os.path.exists(CUSTOM_CONFIG_PATH):
         data = yaml.load(rhandle)
         config = dict_merge(config, data)
 
+# PathoFact -- BEGIN
+# Relevant for input/output data
+config["pathofact"]["sample"] = ["pathofact"]
+config["pathofact"]["project"] = "pathofact"
+config["pathofact"]["workflow"] = "complete"
+config["pathofact"]["datadir"] = os.path.join(
+    os.path.abspath(os.path.expandvars(os.environ.get("OUTPUTDIR", config['outputdir']))),
+    "Analysis", "annotation"
+)
+# Paths for data/tools
+config["pathofact"]["scripts"] = os.path.abspath(os.path.join(MODULDIR, "PathoFact/scripts"))
+config["pathofact"]["deeparg"] = os.path.abspath(os.path.join(MODULDIR, "PathoFact/submodules/deeparg-ss/deepARG.py"))
+config["pathofact"]["deepvirfinder"] = os.path.abspath(os.path.join(MODULDIR, "PathoFact/submodules/DeepVirFinder/dvf.py"))
+config["pathofact"]["tox_hmm"] = os.path.abspath(os.path.join(MODULDIR, "PathoFact/databases/toxins/combined_Toxin.hmm"))
+config["pathofact"]["tox_lib"] = os.path.abspath(os.path.join(MODULDIR, "PathoFact/databases/library_HMM_Toxins.csv"))
+config["pathofact"]["vir_hmm"] = os.path.abspath(os.path.join(MODULDIR, "PathoFact/databases/virulence/Virulence_factor.hmm"))
+config["pathofact"]["vir_domains"] = os.path.abspath(os.path.join(MODULDIR, "PathoFact/databases/models_and_domains"))
+# Set mem
+config["pathofact"]["mem"] = dict()
+config["pathofact"]["mem"]["normal_mem_per_core_gb"] = str(os.environ.get("MEMCORE", config['mem']['normal_mem_per_core_gb'])) + "G"
+config["pathofact"]["mem"]["big_mem_cores"] = os.environ.get("BIGCORENO", config['mem']['big_mem_cores'])
+config["pathofact"]["mem"]["big_mem_per_core_gb"] = str(os.environ.get("BIGMEMCORE", config['mem']['big_mem_per_core_gb'])) + "G"
+# print(config["pathofact"])
+# PathoFact -- END
+
+# config validation
 validate(config,schema="../../../schemas/schema.imp.yaml")
 
 # some parameters
-SRCDIR = srcdir("../../scripts")
-BINDIR = srcdir("../../bin")
-ENVDIR = srcdir("../../envs")
+# SRCDIR = srcdir("../../scripts")
+# BINDIR = srcdir("../../bin")
+# ENVDIR = srcdir("../../envs")
+# CONFIGDIR = srcdir("../../../config")
 
 # get parameters from the command line
 # output
@@ -136,4 +170,3 @@ if not os.path.isabs(TMPDIR):
     TMPDIR = os.path.join(OUTPUTDIR, TMPDIR)
 if not os.path.exists(TMPDIR):
     os.makedirs(TMPDIR)
-

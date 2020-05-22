@@ -12,6 +12,10 @@ include:
     '../../../Analysis/prepProteomics.smk'
 include:
     '../../../Analysis/featureCount.smk'
+include:
+    '../../../Analysis/PathoFact.smk'
+include:
+    '../../../Analysis/PlasFlow.smk'
 
 # master command
 rule ANALYSIS:
@@ -25,6 +29,15 @@ rule ANALYSIS:
         "Analysis/annotation/mt.CDS_counts.tsv",
         expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split()),
         "Analysis/annotation/intermediary.tar.gz",
-        "Analysis/annotation/proteomics.final.faa"
+        "Analysis/annotation/proteomics.final.faa",
+        # PathoFact
+        [
+            "Analysis/annotation/pathofact.tsv", # output summary
+            "Analysis/annotation/pathofact.tar.gz" # original output archive
+        ] if config["pathofact"]["enabled"] else [
+            "Analysis/annotation/pathofact.notdone"
+        ],
+        # PlasFlow
+        "Analysis/annotation/plasflow.tsv" if config["plasflow"]["enabled"] else "Analysis/annotation/plasflow.notdone",
     output:
         touch('status/analysis.done')

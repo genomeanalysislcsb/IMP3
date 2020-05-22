@@ -110,3 +110,16 @@ binning:
     perp: 30
     cutoff: 1000
 krakendb: minikraken2
+pathofact:
+  enabled: true # set
+  size_fasta: 10000 # set
+  signalp: "/mnt/irisgpfs/projects/ecosystem_biology/local_tools/SignalP/signalp-4.1/signalp"
+  plasflow_threshold: 0.7 # set
+  runtime:
+    short: "00:5:00" # set
+    medium: "01:00:00" # set
+    long: "04:00:00" # set
+plasflow: # change only parameters marked with "set"
+  enabled: true # set
+  threshold: 0.7 # set; only used if PathoFact is disabled
+  minlen: 1000 # set; only used if PathoFact is disabled

@@ -3,128 +3,139 @@ __default__:
   nodes: ""
   mem_per_cpu: "--mem-per-cpu "
   partition: "-p batch"
-  quality: "-qos qos-batch"
+  quality: "-q qos-batch"
   runtime: "-t"
   threads: "-n"
 
 mg_filtering:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 mt_filtering:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 trimming:
   nodes: "-N 1"
 
 bwa_index:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 mapping_on_assembly:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 index_bam:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 megahit_assembly_from_preprocessing:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 megahit_assembly_from_unmapped:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 metaspades_assembly_from_preprocessing:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 metaspades_assembly_from_unmapped:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 cap3:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 extract_unmapped_from_megahit:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 extract_unmapped_from_hybrid_assembly:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 megahit_hybrid_assembly_1:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 megahit_hybrid_assembly_2:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 metaspades_hybrid_assembly_1:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 metaspades_hybrid_assembly_2:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 collapse_hybrid_assemblies:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 extract_unmapped:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 DAS_tool:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 prepare_gridReads:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 grid:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 vizbin:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 vizbin_mt:
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 kraken_contigs:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 kraken_reads:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
 GTDBtk_bins_single:
   nodes: "-N 1"
   partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  quality: "-q qos-bigmem"
 
+# PathoFact
+run_PLASMID:
+  nodes: "-N 1"
+  partition: "-p bigmem"
+  quality: "-q qos-bigmem"
 
+run_VirSorter:
+  nodes: "-N 1"
+  partition: "-p bigmem"
+  quality: "-q qos-bigmem"
 
-
-
+run_VirFinder:
+  nodes: "-N 1"
+  partition: "-p bigmem"
+  quality: "-q qos-bigmem"

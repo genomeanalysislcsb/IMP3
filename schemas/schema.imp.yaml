@@ -216,3 +216,82 @@ properties:
             minimum: 1
   krakendb:
     type: string
+  pathofact:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      sample:
+        type: array
+        items:
+          type: string
+      project:
+        type: string
+      datadir:
+        type: string
+      size_fasta:
+        type: number
+        minimum: 100
+        default: 10000
+      workflow:
+        type: string
+        default: "complete"
+      signalp:
+        type: string
+      deeparg:
+        type: string
+      deepvirfinder:
+        type: string
+      tox_hmm:
+        type: string
+      tox_lib:
+        type: string
+      vir_hmm:
+        type: string
+      vir_domains:
+        type: string
+      scripts:
+        type: string
+      plasflow_threshold:
+        type: number
+        default: 0.7
+        minimum: 0
+        maximum: 1
+      runtime:
+        type: object
+        properties:
+          short:
+            type: string
+            default: "00:5:00"
+          medium:
+            type: string
+            default: "01:00:00"
+          long:
+            type: string
+            default: "04:00:00"
+      mem:
+        type: object
+        properties:
+          normal_mem_per_core_gb:
+            type: string
+          big_mem_cores:
+            type: number
+            minimum: 1
+          big_mem_per_core_gb:
+            type: string
+  plasflow:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      threshold:
+        type: number
+        default: 0.7
+        minimum: 0.0
+        maximum: 1.0
+      minlen:
+        type: number
+        default: 1000
+        minimum: 1000
