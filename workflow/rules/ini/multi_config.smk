@@ -79,7 +79,7 @@ if any([not os.path.isdir(path) for path in samples['path'].tolist()]):
     
 multi_config = {}
 for sam in samples['sample']:
-    spath = samples.loc[samples['sample']==sam, "path"].iat[0] + "/full.config.yaml"
+    spath = samples.loc[samples['sample']==sam, "path"].iat[0] + "/sample.config.yaml"
     if os.path.exists(spath):
 #        print("reading configuration from "+ spath)
         with open(spath, 'r') as rhandle:
