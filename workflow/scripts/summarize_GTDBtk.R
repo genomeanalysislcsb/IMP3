@@ -91,7 +91,7 @@ for(bin in setdiff(binTab$selected_by_DASTool,"")){
   gtdb_dir <- paste0("Binning/selected_DASTool_bins/",bin,"/GTDB/classify/")
   if(file.exists(gtdb_dir)){
     tfile <- paste0(gtdb_dir,
-                    list.files(path=dtdb_dir,
+                    list.files(path=gtdb_dir,
                                pattern=".*summary.tsv"))
     if(tfile == gtdb_dir){
       stop(paste0("missing GTDBtk output for bin ",bin," - expecting summary.tsv file in ", tfile, "."))
