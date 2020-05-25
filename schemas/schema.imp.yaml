@@ -258,6 +258,10 @@ properties:
         default: 0.7
         minimum: 0
         maximum: 1
+      plasflow_minlen:
+        type: number
+        default: 1000
+        minimum: 100
       runtime:
         type: object
         properties:

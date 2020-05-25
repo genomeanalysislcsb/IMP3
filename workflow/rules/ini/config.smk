@@ -74,6 +74,9 @@ config["pathofact"]["mem"] = dict()
 config["pathofact"]["mem"]["normal_mem_per_core_gb"] = str(os.environ.get("MEMCORE", config['mem']['normal_mem_per_core_gb'])) + "G"
 config["pathofact"]["mem"]["big_mem_cores"] = os.environ.get("BIGCORENO", config['mem']['big_mem_cores'])
 config["pathofact"]["mem"]["big_mem_per_core_gb"] = str(os.environ.get("BIGMEMCORE", config['mem']['big_mem_per_core_gb'])) + "G"
+# Parameters for PlasFlow
+config["pathofact"]["plasflow_threshold"] = config["plasflow"]["threshold"]
+config["pathofact"]["plasflow_minlen"] = config["plasflow"]["minlen"]
 # print(config["pathofact"])
 # PathoFact -- END
 

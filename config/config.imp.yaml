@@ -114,12 +114,11 @@ pathofact:
   enabled: true
   size_fasta: 10000
   signalp: "signalp"
-  plasflow_threshold: 0.7
   runtime:
     short: "00:5:00"
     medium: "01:00:00"
     long: "04:00:00"
 plasflow:
   enabled: true
-  threshold: 0.7 # used only if PathoFact is disabled
-  minlen: 1000 # used only if PathoFact is disabled
+  threshold: 0.7 # also used for PathoFact
+  minlen: 1000 # also used for PathoFact
