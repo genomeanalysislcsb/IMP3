@@ -1,6 +1,6 @@
 # MultiQC summary report
 
-from os.path import splitext
+from os.path import splitext, isfile
 
 MQC_MODULES = []
 
@@ -20,8 +20,17 @@ if MG or MT:
     MQC_FASTQC_R = expand("{rtype}_fastqc", rtype=MQC_FASTQC_R_RAW)
     if "preprocessing" in IMP_STEPS:
         MQC_FASTQC_R += expand("{rtype}.preprocessed_fastqc", rtype=MQC_FASTQC_R_PROC)
+# Trimmomatic/CutAdapt
+if 'preprocessing' in IMP_STEPS and (not config['nextseq'] or not isfile(DBPATH + "/adapters/adapters.done")):
+    # CutAdapt: TODO
+    if config['nextseq'] and not isfile(DBPATH + "/adapters/adapters.done"):
+        MQC_MODULES.append("cutadapt")
+        # MQC_CUTADAPT_R = [] # TODO
+    # Trimmomatic
+    else:
+        MQC_MODULES.append("trimmomatic")
 # SortMeRNA
-if PREPROCESSING_FILTERING and MT and len(MT) > 1: # TODO
+if PREPROCESSING_FILTERING and MT and len(MT) > 1:
     MQC_MODULES.append("sortmerna")
 # Prokka
 if "analysis" in IMP_STEPS:
@@ -34,14 +43,27 @@ rule multiqc_report:
             'Stats/{type}/{type}.{rtype}.zip',
             type=MQC_FASTQC_T,
             rtype=MQC_FASTQC_R
-        ) if (MG or MT) else [],
+        ) if "fastqc" in MQC_MODULES else [],
+        # CutAdapt: TODO
+        # cutadapt=expand(
+        #     "logs/preprocessing_nextseq_trimming.{type}.{rtype}.log",
+        #     type=MQC_FASTQC_T,
+        #     rtype=MQC_CUTADAPT_R
+        # ) if "cutadapt" in MQC_MODULES else [],
+        # Trimmomatic
+        trimmomatic=expand(
+            "logs/preprocessing_trimming.{type}.log",
+            type=MQC_FASTQC_T
+        ) if "trimmomatic" in MQC_MODULES else [],
         # SortMeRNA
         sortmerna=[
             "Preprocessing/mt.pe.trimmed.rna.log",
-            "Preprocessing/mt.se.trimmed.rna.log",
-        ] if PREPROCESSING_FILTERING and MT and len(MT) > 1 else [],  # TODO
+            "Preprocessing/mt.se.trimmed.rna.log"
+        ] if "sortmerna" in MQC_MODULES else [],
         # Prokka
-        prokka=["Analysis/annotation/prokka.txt"] if "analysis" in IMP_STEPS else [],
+        prokka=[
+            "Analysis/annotation/prokka.txt"
+        ] if "prokka" in MQC_MODULES else [],
     output:
         include='Stats/multiqc_files.txt',
         exclude='Stats/multiqc_files_excluded.txt',

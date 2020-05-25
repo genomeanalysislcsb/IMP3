@@ -40,5 +40,14 @@ plots_force_interactive: true
 
 # FastQC
 
+# CutAdapt
+
+# Trimmomatic
+trimmomatic:
+    s_name_filenames: true
+
+# SortMeRNA
+
 # Prokka
-prokka_fn_snames: true
+prokka:
+    prokka_fn_snames: true
