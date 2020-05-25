@@ -12,9 +12,13 @@ subtitle: "MultiQC report"
 intro_text: "Please not that only the output of tools supported by MultiQC has been included in this report."
 # report_comment: "For more information please see the sources listed below:"
 report_header_info:
-    - IMP3 Docs: "https://imp3.readthedocs.io/en/impiris" # TODO
-    - MultiQC Docs: "https://multiqc.info/docs"
-    # TODO: would be nice to have here some sample info
+    - IMP3 cocs: "https://imp3.readthedocs.io/en/impiris" # TODO
+    - MultiQC cocs: "https://multiqc.info/docs"
+    - Keyword "mg": "Metagenomics"
+    - Keyword "mt": "Metatranscriptomics"
+    - Keyword "pe": "paired-end reads"
+    - Keyword "se": "single-end reads"
+    # TODO: sample info
 
 # Logo
 custom_logo: null # TODO
@@ -51,3 +55,5 @@ trimmomatic:
 # Prokka
 prokka:
     prokka_fn_snames: true
+
+# featureCounts

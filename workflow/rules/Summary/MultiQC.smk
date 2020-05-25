@@ -2,30 +2,29 @@
 
 from os.path import splitext, isfile
 
+##############################
+# Help variables
 MQC_MODULES = []
-
 # FastQC
 if MG or MT:
     MQC_MODULES.append("fastqc")
-    # data type: mg, mt or both
-    MQC_FASTQC_T = TYPES
     # read type: PE or SE or both, raw and processed
-    MQC_FASTQC_R_RAW  = ["r1", "r2"]
-    MQC_FASTQC_R_PROC = ["r1", "r2", "se"]
+    MQC_FASTQC_RTYPES_RAW  = ["r1", "r2"]
+    MQC_FASTQC_RTYPES_PROC = ["r1", "r2", "se"]
     if not (MG and MT) and (len(MG) <= 1 or len(MT) <= 1):
-        MQC_FASTQC_R_RAW  = ["se"]
-        MQC_FASTQC_R_PROC = ["se"]
+        MQC_FASTQC_RTYPES_RAW  = ["se"]
+        MQC_FASTQC_RTYPES_PROC = ["se"]
     else:
         assert len(MG) == 2 and len(MT) == 2
-    MQC_FASTQC_R = expand("{rtype}_fastqc", rtype=MQC_FASTQC_R_RAW)
+    MQC_FASTQC_RTYPES = expand("{rtype}_fastqc", rtype=MQC_FASTQC_RTYPES_RAW)
     if "preprocessing" in IMP_STEPS:
-        MQC_FASTQC_R += expand("{rtype}.preprocessed_fastqc", rtype=MQC_FASTQC_R_PROC)
+        MQC_FASTQC_RTYPES += expand("{rtype}.preprocessed_fastqc", rtype=MQC_FASTQC_RTYPES_PROC)
 # Trimmomatic/CutAdapt
 if 'preprocessing' in IMP_STEPS and (not config['nextseq'] or not isfile(DBPATH + "/adapters/adapters.done")):
     # CutAdapt: TODO
     if config['nextseq'] and not isfile(DBPATH + "/adapters/adapters.done"):
         MQC_MODULES.append("cutadapt")
-        # MQC_CUTADAPT_R = [] # TODO
+        # MQC_CUTADAPT_RTYPES = [] # TODO
     # Trimmomatic
     else:
         MQC_MODULES.append("trimmomatic")
@@ -35,25 +34,49 @@ if PREPROCESSING_FILTERING and MT and len(MT) > 1:
 # Prokka
 if "analysis" in IMP_STEPS:
     MQC_MODULES.append("prokka")
+# featureCounts
+if "analysis" in IMP_STEPS:
+    MQC_MODULES.append("featureCounts")
+    MQC_FC_CTYPES = ["%s_counts" % s for s in ["rRNA","CDS"]] + ["%s.counts" % s for s in config["hmm_DBs"].split()]
 
+##############################
+# Input processing
+localrules: multiqc_freaturecounts
+
+rule multiqc_freaturecounts:
+    input:
+        "Analysis/annotation/{type}.{ctype}.tsv.summary"
+    output:
+        temp("Analysis/annotation/{type}.{ctype}.multiqc.summary")
+    wildcard_constraints:
+        type="|".join(TYPES),
+        ctype="|".join(MQC_FC_CTYPES)
+    shell:
+        """
+        ctype=$(echo \"{wildcards.ctype}\" | sed \"s/\(\.\|_\)counts//\");
+        sed \"s/^Status\\t.*/Status\\t{wildcards.type}.${{ctype}}/\" {input} > {output}
+        """
+
+##############################
+# MultiQC report
 rule multiqc_report:
     input:
         # FastQC
         fastqc=expand(
             'Stats/{type}/{type}.{rtype}.zip',
-            type=MQC_FASTQC_T,
-            rtype=MQC_FASTQC_R
+            type=TYPES,
+            rtype=MQC_FASTQC_RTYPES
         ) if "fastqc" in MQC_MODULES else [],
         # CutAdapt: TODO
         # cutadapt=expand(
         #     "logs/preprocessing_nextseq_trimming.{type}.{rtype}.log",
-        #     type=MQC_FASTQC_T,
-        #     rtype=MQC_CUTADAPT_R
+        #     type=TYPES,
+        #     rtype=MQC_CUTADAPT_RTYPES
         # ) if "cutadapt" in MQC_MODULES else [],
         # Trimmomatic
         trimmomatic=expand(
             "logs/preprocessing_trimming.{type}.log",
-            type=MQC_FASTQC_T
+            type=TYPES
         ) if "trimmomatic" in MQC_MODULES else [],
         # SortMeRNA
         sortmerna=[
@@ -64,6 +87,12 @@ rule multiqc_report:
         prokka=[
             "Analysis/annotation/prokka.txt"
         ] if "prokka" in MQC_MODULES else [],
+        # featureCounts
+        featurecounts=expand(
+            "Analysis/annotation/{type}.{ctype}.multiqc.summary",
+            type=TYPES,
+            ctype=MQC_FC_CTYPES
+        ) if "featureCounts" in MQC_MODULES else [],
     output:
         include='Stats/multiqc_files.txt',
         exclude='Stats/multiqc_files_excluded.txt',
@@ -90,6 +119,7 @@ rule multiqc_report:
         multiqc --file-list {output.include} {params.modules} --config {params.configfile} --filename {params.filename} &> {log}
         """
 
+# MultiQC report status
 localrules: multiqc_done
 rule multiqc_done:
     input:
