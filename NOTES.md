@@ -15,6 +15,7 @@ This branch has been derived from the branch `IMPiris`.
 ```bash
 # clone project
 git clone -b IMPiris_VG ssh://git@git-r3lab-server.uni.lu:8022/IMP/imp3.git IMP3_VG
+# update submodules
 git submodule update --init --recursive
 
 # create conda env
@@ -40,22 +41,25 @@ Follow installation instructions for `PathoFact`: see the `README.md` in `submod
 Using dada from `test/`
 
 ```bash
-# dry-run
+# dry-run (-n)
 conda activate IMP_PF
-snakemake -s Snakefile -rpn --cores 1 --configfile test/config.imp.yaml --use-conda --conda-prefix ${CONDA_PREFIX}/IMP
+snakemake -s Snakefile -rp --cores 1 --configfile test/config.imp.yaml --use-conda --conda-prefix ${CONDA_PREFIX}/IMP -n
 ```
 
 Example for `test/config.imp.yaml`:
 ```yaml
-steps: "preprocessing assembly analysis"
+steps: "preprocessing assembly analysis summary"
 preprocessing_filtering: true
 tmp_dir: tmp
 raws: 
-  Metagenomics: "/mnt/irisgpfs/projects/ecosystem_biology/local_tools/IMP3_VG/test/Reads/test.mg.1.fastq /mnt/irisgpfs/projects/ecosystem_biology/local_tools/IMP3_VG/test/Reads/test.mg.2.fastq"
-  Metatranscriptomics: "/mnt/irisgpfs/projects/ecosystem_biology/local_tools/IMP3_VG/test/Reads/test.mt.1.fastq /mnt/irisgpfs/projects/ecosystem_biology/local_tools/IMP3_VG/test/Reads/test.mt.2.fastq"
+  Metagenomics: "PathToIMP3/test/Reads/test.mg.1.fastq PathToIMP3/test/Reads/test.mg.2.fastq"
+  Metatranscriptomics: "PathToIMP3/test/Reads/test.mt.1.fastq PathToIMP3/test/Reads/test.mt.2.fastq"
 sample: test
-outputdir: "/mnt/irisgpfs/projects/ecosystem_biology/local_tools/IMP3_VG/test/testrun_imp"
-summarydir: "/mnt/irisgpfs/projects/ecosystem_biology/local_tools/IMP3_VG/test/testrun_imp/summary"
-summary_steps: "stats DB vis"
-db_path: "/mnt/irisgpfs/projects/ecosystem_biology/local_tools/IMP3_VG/databases"
+outputdir: "PathToIMP3/test/testrun_imp"
+summarydir: "PathToIMP3/test/testrun_imp/summary"
+summary_steps: "multiqc"
+db_path: "PathToIMP3/databases"
+pathofact:
+  signalp: "PathToSignalP/signalp"
 ```
+Repalce `PathToIMP3` and `PathToSignalP` with your paths.
