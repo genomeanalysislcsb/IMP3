@@ -8,15 +8,15 @@ SORTME_MEM = int(MEMCORE[:-1]) * 1000
 
 FILTER_RNA_SHELL = """
 TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
-merge-paired-reads.sh {input[0]} {input[1]} $TMP_R12.fq &> {log}
-sortmerna --ref {params.ref} --reads $TMP_R12.fq --fastx --aligned $TMP_R12.rrna \
---other $TMP_R12.rrna_filt -a {threads} --paired_in -m {params.sortmernamem} --log &>> {log}
-unmerge-paired-reads.sh $TMP_R12.rrna.fq {output[3]} {output[4]} &>> {log}
-unmerge-paired-reads.sh $TMP_R12.rrna_filt.fq {output[0]} {output[1]} &>> {log}
+merge-paired-reads.sh {input[0]} {input[1]} ${{TMP_R12}}.fq &> {log}
+sortmerna --ref {params.ref} --reads ${{TMP_R12}}.fq --fastx --aligned ${{TMP_R12}}.rrna \
+--other ${{TMP_R12}}.rrna_filt -a {threads} --paired_in -m {params.sortmernamem} --log &>> {log}
+unmerge-paired-reads.sh ${{TMP_R12}}.rrna.fq {output[3]} {output[4]} &>> {log}
+unmerge-paired-reads.sh ${{TMP_R12}}.rrna_filt.fq {output[0]} {output[1]} &>> {log}
 sortmerna --ref {params.ref} --reads {input[2]} --fastx --aligned Preprocessing/mt.se.trimmed.rna \
 --other Preprocessing/mt.se.trimmed.rna_filtered -a {threads} -m {params.sortmernamem} --log &>> {log}
-cp $TMP_R12.rrna.log {output.stats_pe}
-rm $TMP_R12*
+cp ${{TMP_R12}}.rrna.log {output.stats_pe} && sed -i \"s@${{TMP_R12}}@mt.pe@g\" {output.stats_pe}
+rm ${{TMP_R12}}*
 """
 
 rule filter_rna:
