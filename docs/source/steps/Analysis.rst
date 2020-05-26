@@ -38,18 +38,57 @@ the user chooses to reach consistent annotations, we've disabled the prokka-base
 Prokka also spends considerable time to convert its output into genbank format. As IMP3 has no need for genbank-formatted
 data, we've disabled this.
 
+.. _step_analysis_pathofact:
+
+-----------------------
+Analysis with PathoFact
+-----------------------
+
+``PathoFact`` is used for the prediction of virulence factors, bacterial toxins and
+antimicrobial resistance genes.
+The workflow of this tool also includes plasmid prediction using ``PlasFlow``
+(see :ref:`here <step_analysis_plasmids>`).
+``PathoFact`` takes as input a contig FASTA file,
+the corresponding FASTA file of protein sequences,
+and a mapping file of contig and protein IDs which is generated from the GFF file.
+For more information about the tool, see the corresponding
+`publication <https://www.biorxiv.org/content/10.1101/2020.03.24.006148v1>`_.
+This analysis step is optional: the user can disable it in the ``config`` file.
+
+.. _step_analysis_plasmids:
+
+------------------
+Plasmid prediction
+------------------
+
+Plasmid prediction is performed using ``PlasFlow`` which classifies genomic sequences
+based on their genomic signature, i.e. *k*-mer frequencies, using neural network models.
+The tool takes as input a contig FASTA file and outputs the prediction for each given genomic sequence.
+The contigs should be filtered by length prior to the analysis
+as *k*-mer based approaches do not perform well on shorter sequences.
+The threshold for minimum contig length can be set in the ``config`` file.
+The user can also specify the assignment probability threshold for the predictions,
+i.e. if the probability is lower than the threshold then the contig is labelled as unclassified.
+For more information about the tool, see the corresponding
+`publication <https://pubmed.ncbi.nlm.nih.gov/29346586/>`_ and
+the documentation in the `repository <https://github.com/smaegol/PlasFlow>`_.
+``PlasFlow`` can be run as part of the ``PathoFact`` analysis
+(see :ref:`here <step_analysis_pathofact>`)
+or independently.
+This analysis step is optional: the user can disable it in the ``config`` file.
+
 .. _HMMs:
 
 --------------------
 Annotation with HMMs
 --------------------
 
-
-
-
+*TODO*
 
 .. _variants_metaP:
 
 ---------------------------
 Variants for metaP searches
 ---------------------------
+
+*TODO*

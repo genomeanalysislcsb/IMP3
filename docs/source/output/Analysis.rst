@@ -42,6 +42,52 @@ The most important attributes of column *9* are:
 
 The functional annotation of the genes by `HMMer <http://hmmer.org/>`_ produces a number of intermediary outputs. With the results summarized 
 in ``annotation_CDS_RNA_hmms.gff``, the intermediary files are archived and compressed in ``intermediary.tar.gz``.
+
+.. _output_analysis_pathofact:
+
+................
+PathoFact report
+................
+
+The results of ``PathoFact`` can be found in ``Analysis/annotation/pathofact.tsv``.
+This summary report contains the following columns:
+
+- 1: ``Gene_Name``: protein ID (as in the given protein FASTA file)
+- 2: ``Contig_Name``: contig ID (as in the given contig FASTA file)
+- 3: ``SignalP``: ``SignalP`` prediction ("N" - no signal peptide, "Y" - signal peptide)
+- 4: ``Toxin_prediction``: "pathogenic" or "non-pathogenic"
+- 5: ``Toxin_confidence_level``
+- 6: ``Virulence_factor_prediction``: "Pathogenic", "Non-Pathogenic" or "-"
+- 7: ``Virulence_confidence_level``
+- 8: ``AMR_prediction``
+- 9: ``AMR_Category``
+- 10: ``MGE_prediction``: mobile genetic element prediction:
+    - "chromosome": labelled as chromosome and not labelled as phage
+    - "plasmid": labelled as plasmid and not labelled as phage
+    - "phage": labelled as phage anot as chromosome/plasmid
+    - "unclassified": not labelled as plasmid/chromosome or phage
+    - "ambiguous": otherwise
+
+.. More detailed description should be addded by Laura
+
+.. _output_analysis_plasflow:
+
+.........................
+Plasmid prediction report
+.........................
+
+The results of plasmid prediction using ``PlasFlow`` can be found in
+``Analysis/annotation/plasflow.tsv``.
+The table is the `original output file <https://github.com/smaegol/PlasFlow>`_
+of ``PlasFlow`` without the columns containing internal contig
+and class label IDs (``contig_id`` and ``id``).
+The remaining columns are:
+
+- 1: ``contig_name``: contig ID (as in the given contig FASTA file)
+- 2: ``contig_length``: contig length (in bp)
+- 3: ``label``: prediction result consisting of the class label ("chomosome", "plasmid", or "unclassified") and the taxon label (e.g. "Firmicutes")
+- the remaining columns contain the classification probabilities for all classes included in the models of ``PlasFlow``
+
 ......................
 Reads per gene / group
 ......................
