@@ -400,8 +400,8 @@ If ``steps`` contains ``summary``, IMP3 will summarize the results.
 The user can define which steps should be taken for summary in the field ``summary_steps``. 
 The default, ``"stats vis"``, is to extract summary statistics (``stats``) on all performed steps and to visualize them (``vis``).
 The step ``stats`` can also be used alone without ``vis``.
-Additionally, a ``MultiQC`` report can be created (``multiqc``) by summarizing the output and statistics of some tools used in the pipeline,
-e.g. ``FastQC`` and ``SortMeRNA``.
+Additionally, a ``MultiQC`` report can be created (``multiqc``) by summarizing the output of some tools used in the pipeline.
+Currently, the report includes the statistics of the following tools: ``FastQC``, ``Trimmomatic``, ``SortMeRNA``, ``Prokka``, and ``featureCounts``.
 If ``summary_steps`` is empty, IMP3 will not make summaries.
 
 .. code-block:: yaml
