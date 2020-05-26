@@ -247,10 +247,52 @@ If the database contains models that are named with the functional entity + _ + 
     Resfams:
       cutoff: ""
       trim: ""
+
+-------------------
+Analysis: PathoFact
+-------------------
+
+In the IMP3 :ref:`Analysis <step_analysis>` step, ``PathoFact`` is used for
+the prediction of virulence factors, bacterial toxins and antimicrobial resistance genes.
+This step is optional and can be disabled (parameter ``enabled``).
+To speed up the analysis, the input is splitted into multiple files
+containing the specified number of sequences (parameter ``size_fasta``).
+Since the dependency ``SignalP`` cannot be installed automatically,
+the path to it's binary should be specified (parameter ``signalp``).
+Finally, if the analysis is performed on a cluster,
+the runtime for short, medium and long steps can be adjusted
+(parameters in ``runtime``, format ``hours:minutes:seconds``).
+
+.. code-block:: yaml	  
 	
+  pathofact:
+    enabled: true
+    size_fasta: 10000
+    signalp: "signalp"
+    runtime:
+      short: "00:5:00"
+      medium: "01:00:00"
+      long: "04:00:00"
+
+----------------------------
+Analysis: Plasmid prediction
+----------------------------
+
+In the IMP3 :ref:`Analysis <step_analysis>` step, plasmid prediction is done by ``PlasFlow``
+which can be run with by ``PathoFact`` (if enabled) or independently.
+This step is optional and can be disabled (parameter ``enabled``).
+The user can specify the prediction probability threshold (parameter ``threshold``)
+and the minimal contig length (parameter ``minlen``).
+
+.. code-block:: yaml
+
+  plasflow:
+    enabled: true
+    threshold: 0.7
+    minlen: 1000
 	
 -----------------------------------------
-Analysis: proteomics analysis preparation
+Analysis: Proteomics analysis preparation
 -----------------------------------------
 
 In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 provides several files for downstream **metaP** analysis.
