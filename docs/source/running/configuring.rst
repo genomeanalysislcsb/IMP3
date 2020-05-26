@@ -19,6 +19,8 @@ Some general notes on the **config file**:
 - all other fields are optional and if emtpy the IMP3 default settings will be used. 
 - IMP3 will write the user-specified configuration including pre-defined fields to the output folder as ``sample.config.yaml``.
 
+.. _configuration_inoutdirs:
+
 -------------------------------
 Inputs, outputs and directories
 -------------------------------
@@ -64,6 +66,7 @@ databases.
   tmp_dir: /path/to/tmp (default: tmp)
   db_path: "/path/to/IMP_DBs"
 
+.. _configuration_steps:
 
 ----------
 IMP3 steps
@@ -77,15 +80,7 @@ most commonly a host genome). The default setting (``preprocessing_filter: true`
 map them mapped against the human genome given as file ``hg38.fa`` in the database directory under ``db_path``. The user can set ``preprocessing_filtering`` to 
 ``false`` to skip this step, and the trimmed, unfiltered reads will directly go into the :ref:`Assembly <step_assembly>` step.
 
-If ``steps`` contains ``summary``, IMP3 will summarize the results. The user can define which steps should be taken for summary in the field ``summary_steps``. 
-The default is to extract summary statistics (``stats``) on all performed steps and to visualize them (``vis``). If ``summary_steps`` is empty, IMP3 will 
-not make summaries. Currently, the user can either choose ``"stats"`` or ``"stats vis"``. 
-
-.. code-block:: yaml
-
-  steps: "preprocessing assembly analysis binning taxonomy summary"
-  preprocessing_filtering: true
-  summary_steps: "stats vis"
+If ``steps`` contains ``summary``, IMP3 will summarize the results. See :ref:`here <configuration_summary>` for more details.
 
 .. _hardware:
 
@@ -119,10 +114,15 @@ Currently you need to have both kinds of cores, if you run IMP3 in :ref:`cluster
     big_mem_cores: 8
     big_mem_per_core_gb: 200
 
+.. _configuration_preprocessing:
 
-------------------------
+--------------
+Pre-processing
+--------------
+
+........................
 Pre-processing: trimming 
-------------------------
+........................
 
 For the IMP3 :ref:`Preprocessing <step_preprocessing>` step, IMP3 uses `Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`_ for read trimming.
 The user can set all ``trimmomatic`` options (defaults given below).
@@ -147,10 +147,9 @@ add to reads that are shorter than the run cycles.
     target_length: 40
   nextseq: false
 
-
--------------------------
+.........................
 Pre-processing: filtering 
--------------------------
+.........................
 
 The IMP3 :ref:`Preprocessing <step_preprocessing>` step allows to map against a user-defined reference genome (e.g. host). 
 The user can set the file name (minus suffix) of the reference genome (``filter``), which should be located or (soft-)linked to the :ref:`databases directory <ext_DBs>` (``db_path``)
@@ -174,8 +173,9 @@ the :ref:`databases directory <ext_DBs>` in FASTA format.
       - silva-arc-23s-id98
       - silva-bac-23s-id98
       - silva-euk-28s-id98
-	  
-	  
+
+.. _configuration_assembly:
+
 --------
 Assembly
 --------
@@ -193,7 +193,7 @@ For all assemblies, the user can set the minimal (``mink``) and maximal (``maxk`
 All ``assembly`` config parameter are given below with default values:
 
 .. code-block:: yaml
-	  
+
   assembly: 
     hybrid: true
     assembler: megahit
@@ -204,10 +204,15 @@ All ``assembly`` config parameter are given below with default values:
       identity: 98
       overlap: 100
 
+.. _configuration_analysis:
 
--------------------------
-Analysis: gene annotation
--------------------------
+--------
+Analysis
+--------
+
+.........................
+Analysis: Gene annotation
+.........................
 
 In the IMP3 :ref:`Analysis <step_analysis>` step, the predicted genes will be annotated using `hmmer <http://hmmer.org/>`_ and a set of HMM databases. 
 The **HMM databases** must be present in the :ref:`databases directory <ext_DBs>`. The database name given in the ``hmm_DBs`` field must match the directory 
@@ -222,8 +227,8 @@ Regarding the naming convention, some HMM databases contain multiple models for 
 If the database contains models that are named with the functional entity + _ + another identifier, e.g. KO00033_1, the user can set
 **trim** to ``--trimall`` and IMP3 will remove the underscore and last part of the identifier.
 
-.. code-block:: yaml	  
-	  
+.. code-block:: yaml
+
   hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
   hmm_settings: 
     KEGG:
@@ -248,9 +253,11 @@ If the database contains models that are named with the functional entity + _ + 
       cutoff: ""
       trim: ""
 
--------------------
+.. _configuration_analysis_pathofact:
+
+...................
 Analysis: PathoFact
--------------------
+...................
 
 In the IMP3 :ref:`Analysis <step_analysis>` step, ``PathoFact`` is used for
 the prediction of virulence factors, bacterial toxins and antimicrobial resistance genes.
@@ -263,8 +270,8 @@ Finally, if the analysis is performed on a cluster,
 the runtime for short, medium and long steps can be adjusted
 (parameters in ``runtime``, format ``hours:minutes:seconds``).
 
-.. code-block:: yaml	  
-	
+.. code-block:: yaml
+
   pathofact:
     enabled: true
     size_fasta: 10000
@@ -274,9 +281,11 @@ the runtime for short, medium and long steps can be adjusted
       medium: "01:00:00"
       long: "04:00:00"
 
-----------------------------
+.. _configuration_analysis_plasmids:
+
+............................
 Analysis: Plasmid prediction
-----------------------------
+............................
 
 In the IMP3 :ref:`Analysis <step_analysis>` step, plasmid prediction is done by ``PlasFlow``
 which can be run with by ``PathoFact`` (if enabled) or independently.
@@ -290,10 +299,10 @@ and the minimal contig length (parameter ``minlen``).
     enabled: true
     threshold: 0.7
     minlen: 1000
-	
------------------------------------------
+
+.........................................
 Analysis: Proteomics analysis preparation
------------------------------------------
+.........................................
 
 In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 provides several files for downstream **metaP** analysis.
 
@@ -301,29 +310,29 @@ In the IMP3 :ref:`Analysis <step_analysis>` step, IMP3 provides several files fo
 - IMP3 also provides a file with `Metaproteomics Analyzer <http://www.mpa.ovgu.de/>`_-conformant FASTA file headers, filtered to proteins having a minimum user-defined number of tryptic peptides (``filter_N_peptides``), with incomplete non-tryptic ends cut away. 
 - IMP3 will add a FASTA file with host (or other reference) protein sequences (which should be placed in the :ref:`databases directory <ext_DBs>`). The provided host protein FASTA file should be consistent with the requirements of the proteomics software the user intends to use.
 - IMP3 will optionally (``insert_variants: true/false``) generate a FASTA protein sequence file with the protein isoforms by inserting variants called on the assembled contigs (but :ref:`beware <variants_metaP>`).
-	  
-.. code-block:: yaml	  
-	
+
+.. code-block:: yaml
+
   proteomics:
     filter_N_peptides: 2
     host_proteome: "hostproteomefile"
     insert_variants: false
-  
 
-------------------------------------------
-Analysis: mapped reads per gene / function
-------------------------------------------
+..........................................
+Analysis: Mapped reads per gene / function
+..........................................
 
 In the IMP3 :ref:`Analysis <step_analysis>` step, `featureCounts <http://subread.sourceforge.net/>`_ is used count the numbers of **metaG** and/or 
 **metaT** reads mapping to coding sequences and other annotated functional categories that can be used for downstream differential expression / abundance 
 analyses. Per default, IMP3 assumes **metaG** reads to **not be strand-specific** ``mg: 0`` and **metaT** reads to be **stranded in the truSeq way** ``mt: 2``. 
-	  
-.. code-block:: yaml	  
-	
+
+.. code-block:: yaml
+
   featureCountsStranding:
     mt: 2
     mg: 0  
 
+.. _configuration_taxonomy:
 
 --------
 Taxonomy
@@ -335,11 +344,13 @@ database available in the :ref:`databases directory <ext_DBs>` and give its name
 
 If the :ref:`Taxonony <step_taxonomy>` and :ref:`Analysis <step_analysis>` steps are performed, IMP3 will search 
 the predicted genes by default for the mOTUs2-marker genes. The default COGs can be customized (field ``COGS``).
-	  
+
 .. code-block:: yaml
 
   krakendb: minikraken2
   COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
+
+.. _configuration_binning:
 
 -------
 Binning
@@ -357,7 +368,7 @@ Each binner comes with a few parameters that the user can configure:
 - The minimum contig lengths ``cutoff`` for `MetaBAT2 <https://bitbucket.org/berkeleylab/metabat/src/master/>`_ is **1500**. 
 - The default minimum contig lengths ``cutoff`` for `MaxBin2 <https://sourceforge.net/projects/maxbin2/>`_ is **1000**.
 - :ref:`Binny <wtf_is_binny>` uses the minimum contig lengths cutoff of ``vizbin`` (default **1000**).
-- If :ref:`VizBin <http://claczny.github.io/VizBin/> output should be included into the summary, :ref:`Binny <wtf_is_binny>` has to be chosen.
+- If :ref:`VizBin <http://claczny.github.io/VizBin/>` output should be included into the summary, :ref:`Binny <wtf_is_binny>` has to be chosen.
 
 .. code-block:: yaml
 
@@ -379,3 +390,21 @@ Each binner comes with a few parameters that the user can configure:
       perp: 30
       cutoff: 1000
 
+.. _configuration_summary:
+
+-------
+Summary
+-------
+
+If ``steps`` contains ``summary``, IMP3 will summarize the results.
+The user can define which steps should be taken for summary in the field ``summary_steps``. 
+The default, ``"stats vis"``, is to extract summary statistics (``stats``) on all performed steps and to visualize them (``vis``).
+The step ``stats`` can also be used alone without ``vis``.
+Additionally, a ``MultiQC`` report can be created (``multiqc``) by summarizing the output and statistics of some tools used in the pipeline,
+e.g. ``FastQC`` and ``SortMeRNA``.
+If ``summary_steps`` is empty, IMP3 will not make summaries.
+
+.. code-block:: yaml
+
+  steps: "preprocessing assembly analysis binning taxonomy summary"
+  summary_steps: "stats vis multiqc"
