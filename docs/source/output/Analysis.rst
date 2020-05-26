@@ -70,7 +70,7 @@ This summary report contains the following columns:
 
 .. More detailed description should be addded by Laura
 
-.. _output_analysis_plasflow:
+.. _output_analysis_plasmids:
 
 .........................
 Plasmid prediction report
