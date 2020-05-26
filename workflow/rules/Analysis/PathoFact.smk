@@ -74,7 +74,7 @@ rule pathofact_summary:
     message:
         "Pathofact summary from {input}"
     shell:
-        "sed 's/,/\\t/g' {input} > {output}"
+        "sed 's/,/\\t/g' {input} | cut -f2- > {output}"
 
 # Compress PathoFact's output
 rule pathofact_compress:
