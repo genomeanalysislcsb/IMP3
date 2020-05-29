@@ -1,0 +1,38 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: IMP proteomics Snakemake configuration file
+
+type: object
+
+properties:
+  mem:
+    type: object
+    properties:
+      normal_mem_per_core_gb:
+        type: number
+        minimum: 0
+      big_mem_total_gb:
+        type: number
+        minimum: 0
+      big_mem_cores:
+        type: number
+        minimum: 1
+      big_mem_per_core_gb:
+        type: number
+        minimum: 0
+  tmp_dir:
+    type: string
+  raws:
+    type: object
+    properties:
+      Proteins:
+        type: string
+      ThermoRaw:
+        type: string
+  sample:
+    type: string
+  outputdir:
+    type: string
+  db_path:
+    type: string
+    pattern: "^/.+$"

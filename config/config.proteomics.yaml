@@ -1,0 +1,13 @@
+raws: 
+    Proteins: "sample.faa"
+    ThermoRaw: "XXX"
+sample: "test"
+outputdir: ""
+tmp_dir: "tmp"
+db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
+mem:
+    normal_mem_per_core_gb: 4
+    big_mem_total_gb: 1600
+    big_mem_cores: 8
+    big_mem_per_core_gb: 200
+# TODO: other tools
