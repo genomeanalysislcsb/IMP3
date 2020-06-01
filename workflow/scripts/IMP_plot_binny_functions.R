@@ -238,7 +238,7 @@ plotHeight = 1000
 
 ## binny functions
 find.cutoff <- function(data,k=2,proba=0.5) {
-  model <- try(normalmixEM(x=data, k=k,maxrestarts=50))
+  model <- try(normalmixEM(x=data, k=k,maxrestarts=50,verb=F),silent=T)
   if(class(model)!="try-error"){
     i <- which.min(model$mu)
     f <- function(x) {
@@ -269,7 +269,7 @@ muClus <- function(clusterName,cRes,resFile,recDepth){
       cRes$cluster[cRes$contig %in% subs1$contig] <- paste(gsub("D","E",cRes$cluster[cRes$contig %in% subs1$contig]),1,sep=".")
     } else if(num1/uni1<=1.2){
       cRes$cluster[cRes$contig %in% subs1$contig] <- paste(gsub("D","C",cRes$cluster[cRes$contig %in% subs1$contig]),1,sep=".")
-    } else {
+    } else if(recDepth <= 10){
       cRes$cluster[cRes$contig %in% subs1$contig] <- paste(cRes$cluster[cRes$contig %in% subs1$contig],1,sep=".")
       cRes <- muClus(unique(cRes$cluster[cRes$contig %in% subs1$contig]),cRes,resFile,recDepth+1)
       print(recDepth)
@@ -281,7 +281,7 @@ muClus <- function(clusterName,cRes,resFile,recDepth){
       cRes$cluster[cRes$contig %in% subs2$contig] <- paste(gsub("D","E",cRes$cluster[cRes$contig %in% subs2$contig]),2,sep=".")
     } else if(num2/uni2<=1.2){
       cRes$cluster[cRes$contig %in% subs2$contig] <- paste(gsub("D","C",cRes$cluster[cRes$contig %in% subs2$contig]),2,sep=".")
-    } else {
+    } else if(recDepth <= 10){
       cRes$cluster[cRes$contig %in% subs2$contig] <- paste(cRes$cluster[cRes$contig %in% subs2$contig],2,sep=".")
       cRes <- muClus(unique(cRes$cluster[cRes$contig %in% subs2$contig]),cRes,resFile,recDepth+1)
       print(recDepth)
