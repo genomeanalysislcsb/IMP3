@@ -63,10 +63,9 @@ colnames(MG.depth) <- c("contig", "MG_depth")
 
 ## gff annotation file
 print("Read in gff3 annotation file")
-annot <- readGff3(annot_file, isRightOpen = FALSE)
+annot <- readGff3(annot_file, isRightOpen = FALSE, quiet=TRUE)
 
 # extract only interesting information
-# this needs to be adapted to the new format -AHB
 print("Processing gff3 annotation file")
 dbs <- setdiff(unique(unlist(lapply(parseGffAttributes(annot),names))),c("ID","inference","locus_tag","product","note","Name","gene"))
 annot.1 <- as.data.frame(
@@ -251,7 +250,8 @@ if(!"essential" %in% colnames(annot.1)){
             j<-j+1
           }
           write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob1Cluster",pk,nn,bb,"tsv",sep=".")),
+                      paste0(cluster_dir,paste("/blob1Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
+                                                                                                  bb)),"tsv",sep=".")),
                       sep="\t",row.names=F,quote=F)
           
           BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
@@ -332,7 +332,8 @@ if(!"essential" %in% colnames(annot.1)){
             j<-j+1
           }
           write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob2Cluster",pk,nn,bb,"tsv",sep=".")),
+                      paste0(cluster_dir,paste("/blob2Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
+                                                                                                  bb)),"tsv",sep=".")),
                       sep="\t",row.names=F,quote=F)
           
           BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
@@ -412,7 +413,8 @@ if(!"essential" %in% colnames(annot.1)){
             j<-j+1
           }
           write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob3Cluster",pk,nn,bb,"tsv",sep=".")),
+                      paste0(cluster_dir,paste("/blob3Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
+                                                                                                  bb)),"tsv",sep=".")),
                       sep="\t",row.names=F,quote=F)
           
           BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
@@ -480,6 +482,8 @@ if(!"essential" %in% colnames(annot.1)){
     }
     
     #save results
+    clusterRes$cluster <- gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
+                                                       clusterRes$cluster))
     write.table(clusterRes,
                 paste("contigs2clusters",pk,nn,"tsv",sep="."),
                 sep="\t",row.names=F,quote=F)
