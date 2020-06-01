@@ -256,7 +256,7 @@ find.cutoff <- function(data,k=2,proba=0.5) {
   }
 }
 
-muClus <- function(clusterName,cRes,resFile){
+muClus <- function(clusterName,cRes,resFile,recDepth){
   covcol <- which(colnames(contigInfo)=="MG_depth")
   dInfo <- contigInfo[cRes$cluster==clusterName,]
   if(dip.test(log10(1+dInfo[,covcol][dInfo$essentialGene!="notEssential"]))$p.value<0.05){
@@ -271,7 +271,8 @@ muClus <- function(clusterName,cRes,resFile){
       cRes$cluster[cRes$contig %in% subs1$contig] <- paste(gsub("D","C",cRes$cluster[cRes$contig %in% subs1$contig]),1,sep=".")
     } else {
       cRes$cluster[cRes$contig %in% subs1$contig] <- paste(cRes$cluster[cRes$contig %in% subs1$contig],1,sep=".")
-      cRes <- muClus(unique(cRes$cluster[cRes$contig %in% subs1$contig]),cRes,resFile)
+      cRes <- muClus(unique(cRes$cluster[cRes$contig %in% subs1$contig]),cRes,resFile,recDepth+1)
+      print(recDepth)
     }
     subs2 <- dInfo[log10(1+dInfo[,covcol])>=cuto,]
     num2 <- length(unlist(sapply(subs2$essentialGene[subs2$essentialGene!="notEssential"],function(x) unlist(strsplit(x,split=";")))))
@@ -282,7 +283,8 @@ muClus <- function(clusterName,cRes,resFile){
       cRes$cluster[cRes$contig %in% subs2$contig] <- paste(gsub("D","C",cRes$cluster[cRes$contig %in% subs2$contig]),2,sep=".")
     } else {
       cRes$cluster[cRes$contig %in% subs2$contig] <- paste(cRes$cluster[cRes$contig %in% subs2$contig],2,sep=".")
-      cRes <- muClus(unique(cRes$cluster[cRes$contig %in% subs2$contig]),cRes,resFile)
+      cRes <- muClus(unique(cRes$cluster[cRes$contig %in% subs2$contig]),cRes,resFile,recDepth+1)
+      print(recDepth)
     }
   } else {
     cRes$cluster[cRes$contig %in% dInfo$contig] <- gsub("^.","B",cRes$cluster[cRes$contig %in% dInfo$contig])

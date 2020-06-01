@@ -209,7 +209,7 @@ if(!"essential" %in% colnames(annot.1)){
                 paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),
                 sep="\t",col.names=F,row.names=F,quote=F)
     for(ds in unique(clusterRes$cluster[grep("D",clusterRes$cluster)])){
-      clusterRes <- muClus(ds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")))
+      clusterRes <- muClus(ds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
     }
     
     #second iteration of clustering on clusters with more than 20% duplicated essential genes 
@@ -283,7 +283,7 @@ if(!"essential" %in% colnames(annot.1)){
                                                                        gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
                                                                        sep=".")
           for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")))
+            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
           }
         }else{
           print(paste("Cluster",bb,"too small for knn-approach.\n"))
@@ -364,7 +364,7 @@ if(!"essential" %in% colnames(annot.1)){
                                                                        gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
                                                                        sep=".")
           for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")))
+            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
           }
         }else{
           print(paste("Cluster",bb,"too small for knn-approach.\n"))
@@ -446,7 +446,7 @@ if(!"essential" %in% colnames(annot.1)){
                                                                        gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
                                                                        sep=".")
           for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")))
+            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
           }
         }else{
           print(paste("Cluster",bb,"too small for knn-approach.\n"))
