@@ -12,10 +12,16 @@ databases/*
 tmp/*
 IMPnew/*
 IMPAnna/*
-bin/*
 lib/*
 docker/*
 conda/*
 test/*
 dependencies/*
 rules/Archiving/*
+READMEconda
+conda/
+test/*
+oldrules/*
+IMP2to3/*
+rules/CRISPR
+condai/
