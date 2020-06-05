@@ -81,8 +81,30 @@ create_tmp_dir(TMPDIR, OUTPUTDIR)
 SAMPLE = get_sample(config, OUTPUTDIR)
 
 # input files
-PROTEINS = os.environ.get("PROTEINS", config["raws"]["Proteins"])
-THERMORAW = os.environ.get("THERMORAW", config["raws"]["ThermoRaw"])
+I_PROTEINS = os.environ.get("PROTEINS", config["raws"]["Proteins"])
+I_THERMORAW = os.environ.get("THERMORAW", config["raws"]["ThermoRaw"])
+
+# data
+PROTEINS  = "proteins.faa"
+PROTEINS_PROC  = "proteins/proteins_processed.faa"
+
+THERMORAW_NAMES = [os.path.splitext(os.path.basename(f))[0] for f in I_THERMORAW]
+THERMORAW = expand("thermo/thermo__{bname}.raw", bname=THERMORAW_NAMES)
+THERMOMGF = expand("thermo/thermo__{bname}.mgf", bname=THERMORAW_NAMES)
+
+PROTEINS_DECOY = "proteins/proteins_processed_concatenated_target_decoy.fasta"
+
+SEARCHGUI_PAR  = "searchgui/searchgui.par"
+SEARCHGUI_ZIP  = "searchgui/searchgui.zip"
+
+PEPTIDESHAKER_ZIP = "peptideshaker/peptideshaker.cpsx.zip"
+PEPTIDESHAKER_REPORT = "peptideshaker/report.done"
+
+# tools
+SEARCHGUI_JAR = os.path.join(BINDIR, config["searchgui"]["jar"].format(version=config["searchgui"]["version"]))
+SEARCHGUI_PAR_PARAMS = " ".join(["-%s %s" % (k, "'%s'" % v if isinstance(v, str) else str(v)) for k, v in config["searchgui"]["par"].items()])
+
+PEPTIDESHAKER_JAR = os.path.join(BINDIR, config["peptideshaker"]["jar"].format(version=config["peptideshaker"]["version"]))
 
 ##################################################
 # RULES
@@ -91,31 +113,75 @@ localrules: prepare_input_data, ALL
 
 rule ALL:
     input:
-        data=["proteins.faa", "thermo.raw"],
-        thermo=["thermo.mgf", "thermo-metadata.json"],
-        searchgui=["searchgui.par"],
+        data=[PROTEINS, PROTEINS_PROC] + THERMORAW,
+        thermo=THERMOMGF,
+        searchgui=[PROTEINS_DECOY, SEARCHGUI_PAR, SEARCHGUI_ZIP],
+        peptideshaker=[PEPTIDESHAKER_ZIP, PEPTIDESHAKER_REPORT]
 
+#########################
+# Input data
+#########################
 rule prepare_input_data:
     input:
+        I_PROTEINS,
+        I_THERMORAW
+    output:
         PROTEINS,
         THERMORAW
-    output:
-        "proteins.faa",
-        "thermo.raw"
     threads: 1
     message: "Preparing input."
     run:
         prepare_input_files(input, output)
 
+rule proc_faa:
+    input:
+        PROTEINS
+    output:
+        PROTEINS_PROC
+    log:
+        "logs/proteins_processing.log"
+    params:
+        runtime = "01:00:00",
+        mem = MEMCORE
+    message:
+        "Processing proteins FASTA: {input} => {output}"
+    run:
+        with open(log[0], "w") as lfile, open(input[0], "r") as ifile, open(output[0], "w") as ofile:
+            record = ""
+            for line in ifile:
+                # new record starts
+                if re.match(">", line):
+                    # save last record
+                    if record != "":
+                        ofile.write(record)
+                    # start new record
+                    record = line
+                # seq.
+                else:
+                    # seq. was okay so far
+                    if record != "":
+                        # found "*" in seq. (not last char): skip this record
+                        if re.search("\*(?!$)", line):
+                            lfile.write("Found '*' in %s: skipping\n" % record.split("\n")[0])
+                            record = ""
+                        # record is still okay: save seq.
+                        else:
+                            record += line
+
+
+#########################
+# ThermoRawFileParser
+#########################
 # https://github.com/compomics/ThermoRawFileParser
 rule thermorawfileparser:
     input:
-        "thermo.raw"
+        "thermo/thermo__{bname}.raw"
     output:
-        mgf="thermo.mgf",
-        json="thermo-metadata.json"
+        "thermo/thermo__{bname}.mgf"
     log:
-        "logs/ThermoRawFileParser.log"
+        "logs/ThermoRawFileParser__{bname}.log"
+    wildcard_constraints:
+        bname="|".join(THERMORAW_NAMES)
     params:
         runtime = "01:00:00", # TODO
         mem = MEMCORE
@@ -125,133 +191,172 @@ rule thermorawfileparser:
     message:
         "ThermoRawFileParser: {input} -> {output}"
     shell:
-        "mono ${{CONDA_PREFIX}}/bin/ThermoRawFileParser.exe -i={input} -o=$(dirname {output[0]}) -f=0 -m=0 &> {log}"
+        "mono ${{CONDA_PREFIX}}/bin/ThermoRawFileParser.exe -i={input} -o=$(dirname {output}) -f=0 -m=0 &> {log}"
 
-# http://compomics.github.io/projects/searchgui.html
-rule searchgui_config:
-    input:
-        "proteins.faa"
+#########################
+# SearchGUI
+#########################
+# http://compomics.github.io/projects/searchgui/wiki/SearchCLI
+# https://github.com/compomics/searchgui
+
+rule searchgui_download:
     output:
-        "searchgui.par"
+        archive=temp(os.path.join(BINDIR, "SearchGUI_%s.zip" % config["peptideshaker"]["version"])),
+        jar=SEARCHGUI_JAR
     log:
-        "logs/SearchGUI_params.log"
+        "logs/SearchGUI_download.log"
     params:
-        runtime = "01:00:00", # TODO
-        mem = MEMCORE
+        runtime = "01:00:00",
+        mem = MEMCORE,
+        url = config["searchgui"]["url"].format(version=config["searchgui"]["version"])
+    threads: 1
+    message:
+        "Downloading SearchGUI from {params.url}"
+    shell:
+        "wget -O {output.archive} {params.url} &> {log} && "
+        "tar -xzvf {output.archive} -C {BINDIR} &>> {log}"
+
+rule searchgui_decoy:
+    input:
+        faa=PROTEINS_PROC,
+        jar=SEARCHGUI_JAR
+    output:
+        PROTEINS_DECOY
+    log:
+        "logs/SearchGUI_decoy.log"
+    params:
+        runtime = "01:00:00",
+        mem = MEMCORE,
+        tmpdir = TMPDIR,
+        logdir = "logs/SearchGUI_decoy"
     threads: 1
     conda:
         os.path.join(ENVDIR, "IMP_proteomics.yaml")
     message:
-        "Prepare parameter file for SearchGUI: {input} -> {output}"
+        "SearchGUI decoy: {input} -> {output}"
+    shell:
+        "java -Xmx{params.mem} -cp {input.jar} eu.isas.searchgui.cmd.FastaCLI -in {input.faa} -decoy -temp_folder {params.tmpdir} -log {params.logdir} &> {log}"
+
+rule searchgui_config:
+    input:
+        fasta=PROTEINS_DECOY,
+        jar=SEARCHGUI_JAR
+    output:
+        SEARCHGUI_PAR
+    log:
+        "logs/SearchGUI_params.log"
+    params:
+        runtime = "01:00:00",
+        mem = MEMCORE,
+        params = SEARCHGUI_PAR_PARAMS,
+        tmpdir = TMPDIR,
+        logdir = "logs/SearchGUI_params"
+    threads: 1
+    conda:
+        os.path.join(ENVDIR, "IMP_proteomics.yaml")
+    message:
+        "SearchGUI parameters: {input} -> {output}"
+    shell:
+        "java -Xmx{params.mem} -cp {input.jar} eu.isas.searchgui.cmd.IdentificationParametersCLI -out {output} -db {input.fasta} "
+        "{params.params} -temp_folder {params.tmpdir} -log {params.logdir} &> {log}"
+
+rule searchgui_search:
+    input:
+        par=SEARCHGUI_PAR,
+        mgf=THERMOMGF,
+        jar=SEARCHGUI_JAR
+    output:
+        SEARCHGUI_ZIP
+    log:
+        "logs/SearchGUI_search.log"
+    params:
+        runtime = "01:00:00",
+        mem = MEMCORE,
+        tmpdir = TMPDIR,
+        logdir = "logs/SearchGUI_search"
+    threads: 10
+    conda:
+        os.path.join(ENVDIR, "IMP_proteomics.yaml")
+    message:
+        "SearchGUI search: {input.par}, {input.mgf}"
     shell:
         """
-        JAR=$(find ${{CONDA_PREFIX}} -type f -name "SearchGUI*.jar" | head -n 1)
-        echo "SearchGUI: ${{JAR}}"
-        if [ -z "${{JAR}}" ]
-        then
-            echo "Could not find the JAR file for SearchGUI in ${{CONDA_PREFIX}}"
-        else
-            java -Xmx{params.mem} -cp ${{JAR}} eu.isas.searchgui.cmd.IdentificationParametersCLI \
-            -out {output} \
-            -db {input} \
-            -prec_tol 10 \
-            -prec_ppm 1 \
-            -frag_tol 0.5 \
-            -frag_ppm 0 \
-            -digestion 0 \
-            -enzyme "Trypsin" \
-            -specificity 0 \
-            -mc 1 \
-            -fixed_mods "Carbamidomethylation of C" \
-            -variable_mods "Oxidation of M" \
-            -min_charge 2 \
-            -max_charge 4 \
-            -fi "b" \
-            -ri "y" \
-            -min_isotope 0 \
-            -max_isotope 1 \
-            -import_peptide_length_min 7 \
-            -import_peptide_length_max 50 \
-            -xtandem_noise_suppr 0 \
-            -xtandem_quick_acetyl 1 \
-            -xtandem_quick_pyro 1 \
-            -xtandem_refine 1 \
-            -msgf_instrument 1 \
-            -msgf_fragmentation 1 \
-            -msgf_protocol 0 \
-            -msgf_min_pep_length 7 \
-            -msgf_min_pep_length 50 \
-            -msgf_num_ptms 3 \
-            -comet_num_ptms 3
-        fi
+        java -Xmx{params.mem} -cp {input.jar} eu.isas.searchgui.cmd.SearchCLI \
+            -spectrum_files $(dirname {input.mgf[0]}) \
+            -output_folder $(dirname {output}) \
+            -id_params {input.par} \
+            -xtandem 1 \
+            -msgf 1 \
+            -comet 1 \
+            -andromeda 0 \
+            -threads {threads} \
+            -output_default_name "searchgui" \
+            -output_option 0 \
+            -output_data 1 \
+            -output_date 0 \
+            -log {params.logdir} \
+            &> {log} && touch {output}
         """
 
-# rule searchgui:
-#     input:
-#         TODO
-#     output:
-#         TODO
-#     log:
-#         TODO
-#     params:
-#         runtime = "01:00:00", # TODO
-#         mem = MEMCORE
-#     threads: 1
-#     conda:
-#         TODO
-#     message:
-#         TODO
-#     shell:
-#         """
-#         java -Xmx${MEM}G -cp $SG_DIR/SearchGUI-3.3.17.jar eu.isas.searchgui.cmd.SearchCLI \
-#         -spectrum_files "$MGF_DIR" \
-#         -output_folder "$OUT_DIR" \
-#         -id_params "$OUT_DIR/${PREFIX}_params.par" \
-#         -xtandem 1 \
-#         -msgf 1 \
-#         -comet 1 \
-#         -andromeda 0 \
-#         -threads $THREADS \
-#         -output_default_name "$PREFIX" \
-#         -output_option 0 \
-#         -output_data 1 \
-#         -output_date 1 \
-#         -log "$LOG"
-#         """
+#########################
+# PeptideShaker
+#########################
+# http://compomics.github.io/projects/peptide-shaker
 
-# # http://compomics.github.io/projects/peptide-shaker
-# rule peptideshaker:
-#     input:
-#         TODO
-#         # searchgui output
-#     output:
-#         TODO
-#     log:
-#         TODO
-#     params:
-#         runtime = "01:00:00", # TODO
-#         mem = MEMCORE
-#     threads: 1
-#     conda:
-#         TODO
-#     message:
-#         TODO
-#     shell:
-#         TODO: split
-#         TODO: find jar
-#         """
-#         # Load search data into PeptideShaker.
-#         java -Xmx${MEM}G -cp $PS_DIR/PeptideShaker-1.16.44.jar eu.isas.peptideshaker.cmd.PeptideShakerCLI \
-#             -experiment "$PREFIX" \
-#             -sample "1" \
-#             -replicate "1" \
-#             -identification_files "$INPUT" \
-#             -out "$OUT_DIR/${PREFIX}.cpsx" \
-#             -zip "$OUT_DIR/${PREFIX}.cpsx.zip" \
-#             -threads $THREADS # >> $LOG/${PREFIX}_ps_stdout.txt 2>&1
-#         # Create PeptideShaker reports.
-#         java -Xmx${MEM}G -cp $PS_DIR/PeptideShaker-1.16.44.jar eu.isas.peptideshaker.cmd.ReportCLI \
-#             -in "$OUT_DIR/${PREFIX}.cpsx.zip" \
-#             -out_reports "$OUT_DIR" \
-#             -reports 6,9  # >> $LOG/${PREFIX}_ps_report_stdout.txt 2>&1
-#         """
+rule peptideshaker_download:
+    output:
+        archive=temp(os.path.join(BINDIR, "PeptideShaker_%s.zip" % config["peptideshaker"]["version"])),
+        jar=PEPTIDESHAKER_JAR
+    log:
+        "logs/PeptideShaker_download.log"
+    params:
+        runtime = "01:00:00",
+        mem = MEMCORE,
+        url = config["peptideshaker"]["url"].format(version=config["peptideshaker"]["version"])
+    threads: 1
+    message:
+        "Downloading PeptideShaker from {params.url}"
+    shell:
+        "wget -O {output.archive} {params.url} &> {log} && "
+        "unzip {output.archive} -d {BINDIR} &>> {log}"
+
+rule peptideshaker_load:
+    input:
+        searchgui=SEARCHGUI_ZIP,
+        jar=PEPTIDESHAKER_JAR
+    output:
+        PEPTIDESHAKER_ZIP
+    log:
+        "logs/PeptideShaker_load.log"
+    params:
+        runtime = "01:00:00",
+        mem = MEMCORE
+    threads: 10
+    conda:
+        os.path.join(ENVDIR, "IMP_proteomics.yaml")
+    message:
+        "PeptideShaker load SearchGUI results: {input.searchgui}"
+    shell:
+        "java -Xmx{params.mem} -cp {input.jar} eu.isas.peptideshaker.cmd.PeptideShakerCLI "
+        "-identification_files {input.searchgui} -experiment 'peptideshaker' -sample 'peptideshaker' -replicate 1 "
+        "-zip {output} -threads {threads} &> {log}"
+
+rule peptideshaker_report:
+    input:
+        archive=PEPTIDESHAKER_ZIP,
+        jar=PEPTIDESHAKER_JAR
+    output:
+        PEPTIDESHAKER_REPORT
+    log:
+        "logs/PeptideShaker_report.log"
+    params:
+        runtime = "01:00:00",
+        mem = MEMCORE
+    threads: 10
+    conda:
+        os.path.join(ENVDIR, "IMP_proteomics.yaml")
+    message:
+        "PeptideShaker report: {input.archive}"
+    shell:
+        "java -Xmx{params.mem} -cp {input.jar} eu.isas.peptideshaker.cmd.ReportCLI -in {input.archive} -out_reports $(dirname {output}) -reports 6,9 &> {log} && "
+        "touch {output}"

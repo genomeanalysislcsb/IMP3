@@ -28,7 +28,9 @@ properties:
       Proteins:
         type: string
       ThermoRaw:
-        type: string
+        type: array
+        items:
+          type: string
   sample:
     type: string
   outputdir:

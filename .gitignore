@@ -24,3 +24,6 @@ rules/CRISPR
 condai/
 # slurm log files
 **/slurm-*.out
+# specific tools in bin/
+workflow/bin/PeptideShaker*/**
+workflow/bin/SearchGUI*/**

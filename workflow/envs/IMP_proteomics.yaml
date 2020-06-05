@@ -1,22 +1,19 @@
 name: IMP_proteomics
 channels:
-  - conda-forge
   - bioconda
+  - conda-forge
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=0_gnu
   - alsa-lib=1.1.5=h516909a_1002
-  - ca-certificates=2020.4.5.1=hecc5488_0
-  - certifi=2020.4.5.1=py38h32f6830_0
   - fontconfig=2.13.1=h1056068_1002
   - freetype=2.10.2=he06d7ca_0
   - gettext=0.19.8.1=hc5be6a0_1002
   - giflib=5.2.1=h516909a_2
   - icu=67.1=he1b5a44_0
-  - jpeg=9c=h14c3975_1001
+  - jpeg=9d=h516909a_0
   - lcms2=2.9=hbd6801e_2
-  - ld_impl_linux-64=2.34=h53a641e_4
   - libffi=3.2.1=he1b5a44_1007
   - libgcc-ng=9.2.0=h24d8f2e_2
   - libgomp=9.2.0=h24d8f2e_2
@@ -30,21 +27,9 @@ dependencies:
   - libxml2=2.9.10=h72b56ed_1
   - lz4-c=1.9.2=he1b5a44_1
   - mono=5.14.0.177=he1b5a44_1001
-  - ncurses=6.1=hf484d3e_1002
   - openjdk=11.0.1=h600c080_1018
-  - openssl=1.1.1g=h516909a_0
-  - peptide-shaker=2.0.1.alpha=h516909a_0
-  - pip=20.1.1=py_1
   - pthread-stubs=0.4=h14c3975_1001
-  - python=3.8.2=he5300dc_7_cpython
-  - python_abi=3.8=1_cp38
-  - readline=8.0=hf8c457e_0
-  - searchgui=4.0.1.alpha=h516909a_0
-  - setuptools=46.4.0=py38h32f6830_0
-  - sqlite=3.30.1=hcee41ef_0
   - thermorawfileparser=1.2.3=0
-  - tk=8.6.10=hed695b0_0
-  - wheel=0.34.2=py_1
   - xorg-fixesproto=5.0=h14c3975_1002
   - xorg-inputproto=2.3.2=h14c3975_1002
   - xorg-kbproto=1.0.7=h14c3975_1002
