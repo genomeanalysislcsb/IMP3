@@ -485,11 +485,11 @@ if(!"essential" %in% colnames(annot.1)){
     clusterRes$cluster <- gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
                                                        clusterRes$cluster))
     write.table(clusterRes,
-                paste("contigs2clusters",pk,nn,"tsv",sep="."),
+                paste0(binny_dir,paste("/contigs2clusters",pk,nn,"tsv",sep=".")),
                 sep="\t",row.names=F,quote=F)
-    write.table(clusterRes[grep("^[PGOL]",clusterRes$cluster),],
-                "scaffold2bin.tsv",
-                sep="\t",row.names=F,quote=F)
+    # write.table(clusterRes[grep("^[PGOL]",clusterRes$cluster),],
+    #            "scaffold2bin.tsv",
+    #            sep="\t",row.names=F,quote=F)
     save(list=c("contigInfo","coco","pk","nn","essAnno","find.cutoff","muClus","clusterRes"),
          file=paste0(binny_dir,paste("/clusteringWS",pk,nn,"Rdata",sep=".")))
     saveRDS(clusterRes,paste0(binny_dir,paste("/contigs2clusters",pk,nn,"RDS",sep=".")))
@@ -497,7 +497,7 @@ if(!"essential" %in% colnames(annot.1)){
     print("Saved tables. Plotting final map now.")
     #plot final map
     essPal <- colorRampPalette(brewer.pal(11,"Spectral"))(111)[111:1]
-    png(paste("finalClusterMap",pk,nn,"png",sep="."),width=17,height=17,pointsize=7,res=300,units = "cm")
+    png(paste0(binny_dir,paste("/finalClusterMap",pk,nn,"png",sep=".")),width=17,height=17,pointsize=7,res=300,units = "cm")
     layout(matrix(1:2,nrow=1,ncol=2),c(5/6,1/6))
     par(mar=rep(1,4),pty="s")
     plot(contigInfo[,coco],pch=16,cex=0.25,ann=F,axes=F,bty="o")
