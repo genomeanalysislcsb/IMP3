@@ -107,24 +107,24 @@ if(length(types)>1){
   par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
   plot(perContM$depth.mg,perContM$depth.mt,
        pch=16,cex=0.2,log="xy",
-       las=1,xlim=c(min(depthAssStat[["mg"]]$depth)/11,max(depthAssStat[["mg"]]$depth)/1.2),xaxs="i",
-       ylim=c(min(depthAssStat[["mt"]]$depth)/11,max(depthAssStat[["mt"]]$depth)/1.2),yaxs="i",
+       las=1,xlim=c(min0(depthAssStat[["mg"]]$depth)/11,max(depthAssStat[["mg"]]$depth)/1.2),xaxs="i",
+       ylim=c(min0(depthAssStat[["mt"]]$depth)/11,max(depthAssStat[["mt"]]$depth)/1.2),yaxs="i",
        ylab="",
        xlab="contig coverage depth (metaG)",cex.lab=9/7,axes=F,
        col=plotcol)
   points(perContM$depth.mg[perContM$depth.mt==0],
-         rep(min(depthAssStat[["mt"]]$depth)/10,length(which(perContM$depth.mt==0))),
+         rep(min0(depthAssStat[["mt"]]$depth)/10,length(which(perContM$depth.mt==0))),
          pch=16,cex=0.2,
          col=plotcol[perContM$depth.mt==0])
-  points(rep(min(depthAssStat[["mg"]]$depth)/10,length(which(perContM$depth.mg==0))),
+  points(rep(min0(depthAssStat[["mg"]]$depth)/10,length(which(perContM$depth.mg==0))),
          perContM$depth.mt[perContM$depth.mg==0],
          pch=16,cex=0.2,
          col=plotcol[perContM$depth.mg==0])
   mtext("contig coverage depth (metaT)",2,2.8,cex=9/7)
   axis(1,
-       at=c(min(depthAssStat[["mg"]]$depth)/10,10^c(-3:8)),
+       at=c(min0(depthAssStat[["mg"]]$depth)/10,10^c(-3:8)),
        labels=c(0,format(10^c(-3:8),scientific=T,digits = 2)),lwd=0.5,las=1)
-  axis(2,at=c(min(depthAssStat[["mt"]]$depth)/10,10^c(-3:8)),
+  axis(2,at=c(min0(depthAssStat[["mt"]]$depth)/10,10^c(-3:8)),
        labels=c(0,format(10^c(-3:8),scientific=T,digits = 2)),lwd=0.5,las=1)
   box(bty="o")
   dev.off()
@@ -135,14 +135,14 @@ if(length(types)>1){
   par("mar"=c(2.9,4,0.5,0.5),tcl="-0.3",mgp=c(1.7,0.5,0),lwd=0.5)
   plot(perContM$GC,perContM$depth,
        pch=16,cex=0.2,log="y",
-       las=1,ylim=c(min(depthAssStat[[1]]$depth)/11,max(depthAssStat[[1]]$depth)/1.2),yaxs="i",
+       las=1,ylim=c(min0(depthAssStat[[1]]$depth)/11,max(depthAssStat[[1]]$depth)/1.2),yaxs="i",
        xlim=c(0,100),xaxs="i",
        ylab="",
        xlab="contig %GC",cex.lab=9/7,axes=F,
        col=brewer.pal(9,"Purples")[7])
   if(any(perContM$depth==0)){
     points(perContM$GC[perContM$depth==0],
-           rep(min(depthAssStat[[1]]$depth)/10,length(which(perContM$depth==0))),
+           rep(min0(depthAssStat[[1]]$depth)/10,length(which(perContM$depth==0))),
            pch=16,cex=0.2,
            col=brewer.pal(9,"Purples")[7])
   }

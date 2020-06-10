@@ -35,7 +35,7 @@ rule metaspades_assembly_from_preprocessing:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
-    conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
+    conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_metaspades_assembly_from_preprocessing.mt.log"
     message: "metaspades_assembly_from_preprocessing: Performing mt assembly step 1 from preprocessed reads using MetaSpades"
     shell:
@@ -54,7 +54,7 @@ rule metaspades_assembly_from_unmapped:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
-    conda: ROOT_DIR + "/envs/IMP_assembly.yaml"
+    conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_metaspades_assembly_from_unmapped.mt.log"
     message: "metaspades_assembly_from_unmapped: Performing mt assembly step 2 from unmapped reads using METASPADES"
     shell:
