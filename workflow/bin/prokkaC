@@ -234,7 +234,7 @@ my(@Options, $quiet, $debug, $kingdom, $fast, $force, $outdir, $prefix, $cpus, $
              $genus, $species, $strain, $plasmid, 
              $usegenus, $proteins, $hmms, $centre, $scaffolds,
              $rfam, $norrna, $notrna, $rnammer, $rawproduct, $noanno, $accver,
-	     $metagenome, $compliant, $listdb, $citation);
+	     $metagenome, $compliant, $listdb, $citation, $enforceLength);
 
 $dbdir = $ENV{'PROKKA_DBDIR'} || abs_path("$FindBin::RealBin/../db");
 
@@ -440,10 +440,10 @@ while (my $seq = $fin->next_seq) {
     next;
   }
   $ncontig++;
-  if ($id =~ m/\|/) {
-    msg("Changing illegal '|' to '_' in sequence name: $id");
-    $id =~ s/\|/_/g;
-  }
+  #if ($id =~ m/\|/) {
+  #  msg("Changing illegal '|' to '_' in sequence name: $id");
+  #  $id =~ s/\|/_/g;
+  #}
   if (exists $seq{$id}) {
     err("Uh oh! Sequence file '$in' contains duplicate sequence ID:", $seq->id);
   }
@@ -452,7 +452,7 @@ while (my $seq = $fin->next_seq) {
   if ($centre) {  
     $id = sprintf "gnl|$centre|${contigprefix}%d", $ncontig;
   }
-  if (length($id) > $MAXCONTIGIDLEN) {
+  if (length($id) > $MAXCONTIGIDLEN && $enforceLength) {
     msg("Contig ID must <= $MAXCONTIGIDLEN chars long: $id");
     err("Please rename your contigs OR try '--centre X --compliant' to generate clean contig names.");
   }
@@ -1765,6 +1765,7 @@ sub setOptions {
     {OPT=>"norrna!",  VAR=>\$norrna, DEFAULT=>0, DESC=>"Don't run rRNA search"},
     {OPT=>"notrna!",  VAR=>\$notrna, DEFAULT=>0, DESC=>"Don't run tRNA search"},
     {OPT=>"rnammer!",  VAR=>\$rnammer, DEFAULT=>0, DESC=>"Prefer RNAmmer over Barrnap for rRNA prediction"},
+    {OPT=>"enforceNameLength!",  VAR=>\$enforceLength, DEFAULT=>0, DESC=>"Enforce 37 character ID length"}, # added by AHB to allow longer contig names
   );
 
   (!@ARGV) && (usage(1));
