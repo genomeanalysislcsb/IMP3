@@ -22,7 +22,7 @@ rule mapping_on_assembly:
     message: "mapping_on_assembly: Mapping {wildcards.type} reads on merged assembly."
     shell:
         """
-        SAMHEADER="@RG\\tID:{SAMPLE}\\tSM:MG"
+        SAMHEADER="@RG\\tID:{SAMPLE}\\tSM:{wildcards.type}"
         PREFIX=Assembly/{wildcards.type}.reads
         # merge paired and se
         samtools merge --threads {threads} -f $PREFIX.merged.bam \

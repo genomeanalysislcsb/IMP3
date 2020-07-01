@@ -144,9 +144,9 @@ def reads_input_files(wildcards):
                     base += rna_filtered_fq_mt_files
         else:
             if len(MG) == 3 and wildcards.type == 'mg':
-                base += ["mg.se.fq"]
+                base += ["Preprocessing/mg.se.fq"]
             if len(MT) == 3 and wildcards.type == 'mt':
-                base += ["mt.se.fq"]		
+                base += ["Preprocessing/mt.se.fq"]		
     elif MGaln or MTaln:
         base = bam_files
     return expand(base, type=wildcards.type)
