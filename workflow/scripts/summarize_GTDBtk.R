@@ -88,26 +88,23 @@ if("gridTab" %in% ls()) binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool
 ###################################################################################################
 print("Reading GTDBtk results.")
 for(bin in setdiff(binTab$selected_by_DASTool,"")){
-  gtdb_dir <- paste0("Binning/selected_DASTool_bins/",bin,"/GTDB/classify/")
-  if(file.exists(gtdb_dir)){
-    tfile <- paste0(gtdb_dir,
-                    list.files(path=gtdb_dir,
+  if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/GTDB/classify"))){
+    tfile <- paste0("Binning/selected_DASTool_bins/",
+                    bin,"/GTDB/classify/",
+                    list.files(path=paste0("Binning/selected_DASTool_bins/",
+                                           bin,"/GTDB/classify/"),
                                pattern=".*summary.tsv"))
-    if(tfile == gtdb_dir){
-      stop(paste0("missing GTDBtk output for bin ",bin," - expecting summary.tsv file in ", tfile, "."))
-    }else{
-      if(!"gtdbTab" %in% ls()){
-        gtdbTab <- data.frame("bin"=bin,
+    if(!"gtdbTab" %in% ls()){
+      gtdbTab <- data.frame("bin"=bin,
                             read.delim(tfile,
                                        stringsAsFactors=F)[,-1],
                             stringsAsFactors = F)
-      }else{
-        gtdbTab <- rbind(gtdbTab,
+    }else{
+      gtdbTab <- rbind(gtdbTab,
                        data.frame("bin"=bin,
                                   read.delim(tfile,
                                              stringsAsFactors=F)[,-1],
                                   stringsAsFactors = F))
-      }
     }
   }
 }

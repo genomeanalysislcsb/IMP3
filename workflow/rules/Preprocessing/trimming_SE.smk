@@ -36,7 +36,7 @@ if config['nextseq']:
         message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
         shell:
             """
-            cutadapt --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} {input} >> {log} 2>&1
+            cutadapt --nextseq-trim={config[trimmomatic][trailing]} -o {output} {input} >> {log} 2>&1
             gzip {input} >> {log} 2>&1
             """
 else:

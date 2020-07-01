@@ -63,9 +63,10 @@ colnames(MG.depth) <- c("contig", "MG_depth")
 
 ## gff annotation file
 print("Read in gff3 annotation file")
-annot <- readGff3(annot_file, isRightOpen = FALSE, quiet=TRUE)
+annot <- readGff3(annot_file, isRightOpen = FALSE)
 
 # extract only interesting information
+# this needs to be adapted to the new format -AHB
 print("Processing gff3 annotation file")
 dbs <- setdiff(unique(unlist(lapply(parseGffAttributes(annot),names))),c("ID","inference","locus_tag","product","note","Name","gene"))
 annot.1 <- as.data.frame(
@@ -209,7 +210,7 @@ if(!"essential" %in% colnames(annot.1)){
                 paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),
                 sep="\t",col.names=F,row.names=F,quote=F)
     for(ds in unique(clusterRes$cluster[grep("D",clusterRes$cluster)])){
-      clusterRes <- muClus(ds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
+      clusterRes <- muClus(ds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")))
     }
     
     #second iteration of clustering on clusters with more than 20% duplicated essential genes 
@@ -250,8 +251,7 @@ if(!"essential" %in% colnames(annot.1)){
             j<-j+1
           }
           write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob1Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
-                                                                                                  bb)),"tsv",sep=".")),
+                      paste0(cluster_dir,paste("/blob1Cluster",pk,nn,bb,"tsv",sep=".")),
                       sep="\t",row.names=F,quote=F)
           
           BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
@@ -283,7 +283,7 @@ if(!"essential" %in% colnames(annot.1)){
                                                                        gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
                                                                        sep=".")
           for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
+            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")))
           }
         }else{
           print(paste("Cluster",bb,"too small for knn-approach.\n"))
@@ -332,8 +332,7 @@ if(!"essential" %in% colnames(annot.1)){
             j<-j+1
           }
           write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob2Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
-                                                                                                  bb)),"tsv",sep=".")),
+                      paste0(cluster_dir,paste("/blob2Cluster",pk,nn,bb,"tsv",sep=".")),
                       sep="\t",row.names=F,quote=F)
           
           BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
@@ -364,7 +363,7 @@ if(!"essential" %in% colnames(annot.1)){
                                                                        gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
                                                                        sep=".")
           for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
+            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")))
           }
         }else{
           print(paste("Cluster",bb,"too small for knn-approach.\n"))
@@ -413,8 +412,7 @@ if(!"essential" %in% colnames(annot.1)){
             j<-j+1
           }
           write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob3Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
-                                                                                                  bb)),"tsv",sep=".")),
+                      paste0(cluster_dir,paste("/blob3Cluster",pk,nn,bb,"tsv",sep=".")),
                       sep="\t",row.names=F,quote=F)
           
           BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
@@ -446,7 +444,7 @@ if(!"essential" %in% colnames(annot.1)){
                                                                        gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
                                                                        sep=".")
           for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
+            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")))
           }
         }else{
           print(paste("Cluster",bb,"too small for knn-approach.\n"))
@@ -482,14 +480,12 @@ if(!"essential" %in% colnames(annot.1)){
     }
     
     #save results
-    clusterRes$cluster <- gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
-                                                       clusterRes$cluster))
     write.table(clusterRes,
-                paste0(binny_dir,paste("/contigs2clusters",pk,nn,"tsv",sep=".")),
+                paste("contigs2clusters",pk,nn,"tsv",sep="."),
                 sep="\t",row.names=F,quote=F)
-    # write.table(clusterRes[grep("^[PGOL]",clusterRes$cluster),],
-    #            "scaffold2bin.tsv",
-    #            sep="\t",row.names=F,quote=F)
+    write.table(clusterRes[grep("^[PGOL]",clusterRes$cluster),],
+                "scaffold2bin.tsv",
+                sep="\t",row.names=F,quote=F)
     save(list=c("contigInfo","coco","pk","nn","essAnno","find.cutoff","muClus","clusterRes"),
          file=paste0(binny_dir,paste("/clusteringWS",pk,nn,"Rdata",sep=".")))
     saveRDS(clusterRes,paste0(binny_dir,paste("/contigs2clusters",pk,nn,"RDS",sep=".")))
@@ -497,7 +493,7 @@ if(!"essential" %in% colnames(annot.1)){
     print("Saved tables. Plotting final map now.")
     #plot final map
     essPal <- colorRampPalette(brewer.pal(11,"Spectral"))(111)[111:1]
-    png(paste0(binny_dir,paste("/finalClusterMap",pk,nn,"png",sep=".")),width=17,height=17,pointsize=7,res=300,units = "cm")
+    png(paste("finalClusterMap",pk,nn,"png",sep="."),width=17,height=17,pointsize=7,res=300,units = "cm")
     layout(matrix(1:2,nrow=1,ncol=2),c(5/6,1/6))
     par(mar=rep(1,4),pty="s")
     plot(contigInfo[,coco],pch=16,cex=0.25,ann=F,axes=F,bty="o")

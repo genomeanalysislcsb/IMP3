@@ -249,11 +249,11 @@ if("mg" %in% types){
           axes=F,log="y",ylab="",pch=16,cex=0.5,border=box_col)
   text(1:length(unique(cont2binC$bin[cont2binC$depth>0])),
        rep(min(cont2binC$depth[cont2binC$depth>0])*0.9,length(unique(cont2binC$bin[cont2binC$depth>0]))),
-       labels = paste(zeroC,"0s"),cex=0.5)
+       labels = paste(zeroC,"0s"))
   mtext("contig coverage depths",2,3.2,cex=9/7)
   axis(2,las=1,lwd=0.5)
   axis(1,at=1:length(unique(cont2binC$bin[cont2binC$depth>0])),
-       labels=plotnames,las=2,lwd=0.5,cex=0.5)
+       labels=plotnames,las=2,lwd=0.5)
   box()
   dev.off()
 }

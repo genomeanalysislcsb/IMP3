@@ -25,10 +25,8 @@ if "assembly" in IMP_STEPS:
         tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
 if CONTIGS:
     tax_ctrl = ["Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS]
-    if MG or MT:
-        tax_ctrl.append(expand("Analysis/taxonomy/kraken/{type}.kraken.{outfile}",type=TYPES,outfile=["output","report"]))
-        if "analysis" in IMP_STEPS:
-            tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
+    if (MG or MT) and "analysis" in IMP_STEPS:
+        tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
 if "binning" in IMP_STEPS:
     tax_ctrl.append("status/taxonomy_GTDBtk.done")
 
