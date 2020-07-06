@@ -125,7 +125,7 @@ rule prepare_input_data:
         CONTIGS,
         MGaln
     output:
-        "assembly.fa",
+        "intermediary/assembly.fa",
         "reads.sorted.bam"
     threads: 1
     params:
@@ -135,6 +135,21 @@ rule prepare_input_data:
     message: "Preparing input."
     run:
         prepare_input_files(input, output)
+
+rule format_assembly:
+    input:
+        "intermediary/assembly.fa"
+    output:
+        "assembly.fa"
+    threads: 1
+    params:
+        runtime = "4:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    message: "Preparing assembly."
+    conda: ENVDIR + "/IMP_fasta.yaml"
+    shell:
+       "fasta_formatter -i {input} -o {output} -w 80" 
 
 # contig depth
 rule call_contig_depth:
