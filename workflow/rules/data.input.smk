@@ -166,6 +166,7 @@ rule check_assembly_input:
             touch {output[0]}
           else
             fasta_formatter -i {input} -o {output[1]} -w 80
+            touch {output[0]}
           fi
         else
           echo "ERROR: Assembly is empty." && exit 1
