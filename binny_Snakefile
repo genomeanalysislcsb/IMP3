@@ -118,7 +118,7 @@ localrules: prepare_input_data, ALL, prepare_binny
 rule ALL:
     input:
         "intermediary.tar.gz",
-        "scaffold2bin.tsv"
+        "contigs2bin.tsv"
 
 rule prepare_input_data:
     input:
@@ -377,8 +377,8 @@ rule tar_binny_files:
         intermediary/finalClusterMap.{pk}.{nn}.png".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
     output:
         "intermediary.tar.gz",
-        expand("contigs2clusters.{pk}.{nn}.tsv \
-        finalClusterMap.{pk}.{nn}.png".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
+        "contigs2bin.tsv",
+        "finalClusterMap.png"
     threads: 1
     params:
         runtime = "8:00:00",
