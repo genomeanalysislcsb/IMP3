@@ -21,7 +21,7 @@ if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
             'Binning/DAStool/translate2DAStool.smk'
     
 
-localrules: prepare_input_data, check_inputs, check_read_se_input, check_assembly_input, check_read_r_input, check_longread_input
+localrules: check_inputs, check_read_se_input, check_assembly_input, check_read_r_input, check_longread_input
 
 # outputs (input for workflow) to be generated (in rule)
 input_files_list = []
@@ -84,25 +84,47 @@ if MG and len(MG) == 1:
 if not 'preprocessing' in IMP_STEPS and MT and len(MT) == 2:
     fake_output.append("Preprocessing/mt.se.fq")
 
+localrules: prepare_input_data_touch
 
-rule prepare_input_data:
+rule prepare_input_data_touch:
     input:
         get_ori_files
     output:
-        input_files_list,
-        symlinked_output_list,
         fake_output
-    threads: 1
-    params:
-        runtime = "4:00:00",
-        mem = MEMCORE
-    message: "Preparing input."
+    message:
+        "Prepare input: touch"
     run:
-        prepare_input_files(input, input_files_list)
         if fake_output:
             touch_fake_output(fake_output)
+
+localrules: prepare_input_data_symlink
+
+rule prepare_input_data_symlink:
+    input:
+        get_ori_files
+    output:
+        symlinked_output_list
+    message:
+        "Prepare input: symlinks"
+    run:
         if symlinks_list:
             symlink_input_files(symlinks_list)
+
+rule prepare_input_data_copy:
+    input:
+        get_ori_files
+    output:
+        input_files_list
+    threads: 5
+    params:
+        runtime = "1:00:00",
+        mem = MEMCORE
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    message:
+        "Prepare input: decompress/copy"
+    script:
+        os.path.join(SRCDIR, "prepare_input_files.py")
 
 checked_files_list = ["status/" + f.split("/")[-1] + ".checked" for f in input_files_list]
 
