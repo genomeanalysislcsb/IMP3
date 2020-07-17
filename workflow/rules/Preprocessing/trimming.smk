@@ -41,7 +41,7 @@ if config['nextseq']:
         shell:
             """
             cutadapt --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} {input} >> {log} 2>&1
-            gzip {input} >> {log} 2>&1
+            pigz -p {threads} {input} >> {log} 2>&1
             """
 else:
     rule trimming:
