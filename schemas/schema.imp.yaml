@@ -127,6 +127,11 @@ properties:
         enum:
           - megahit
           - metaspades
+    merger:
+      type: string
+      enum:
+        - cap3
+        - flye
     mink:
       type: number
       minimum: 3

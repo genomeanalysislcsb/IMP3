@@ -52,6 +52,7 @@ sortmerna:
 assembly: 
   hybrid: true
   assembler: megahit
+  merger: cap3
   mink: 25
   maxk: 99
   step: 4
