@@ -55,7 +55,19 @@ metaspades_assembly_from_unmapped:
   partition: "-p bigmem"
   quality: "-q qos-bigmem"
 
-cap3:
+merge_assembly_cap3:
+  partition: "-p bigmem"
+  quality: "-q qos-bigmem"
+
+merge_assembly_flye:
+  partition: "-p bigmem"
+  quality: "-q qos-bigmem"
+
+merge_hybrid_assembly_cap3:
+  partition: "-p bigmem"
+  quality: "-q qos-bigmem"
+
+merge_hybrid_assembly_flye:
   partition: "-p bigmem"
   quality: "-q qos-bigmem"
 
