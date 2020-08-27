@@ -357,13 +357,12 @@ rule binny:
         intermediary/contigs2clusters.{pk}.{nn}.tsv \
         intermediary/contigs2clusters.{pk}.{nn}.RDS \
         intermediary/finalClusterMap.{pk}.{nn}.png \
-        intermediary/clusteringWS.{pk}.{nn}.Rdata".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"]),
-        "intermediary/binny_WS.Rdata"
+        intermediary/clusteringWS.{pk}.{nn}.Rdata".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
     params:
         plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",
         binnydir="intermediary/",
         runtime = "24:00:00",
-        mem = MEMCORE
+        mem = BIGMEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_binning.yaml" 
     log: "logs/binning_binny.log"
