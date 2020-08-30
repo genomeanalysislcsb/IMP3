@@ -27,7 +27,7 @@ rule megahit_assembly_from_preprocessing:
         'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
         'Assembly/intermediary/{type}.megahit_preprocessed.1.fa'
     params:
-        runtime = "24:00:00",
+        runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_assembly.yaml"
@@ -46,7 +46,7 @@ rule megahit_assembly_from_unmapped:
         'Assembly/intermediary/{type}.megahit_unmapped.2/final.contigs.fa',
         'Assembly/intermediary/{type}.megahit_unmapped.2.fa'
     params:
-        runtime = "24:00:00",
+        runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_assembly.yaml"

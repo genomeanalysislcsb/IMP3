@@ -60,6 +60,12 @@ collapse_hybrid_assemblies:
 extract_unmapped:
   partition: "-l highmem"
 
+call_contig_depth:
+  partition: "-l highmem"
+
+call_gene_depth:
+  partition: "-l highmem"
+
 DAS_tool:
   partition: "-l highmem"
 
@@ -73,6 +79,9 @@ vizbin:
   partition: "-l highmem"
 
 vizbin_mt:
+  partition: "-l highmem"
+
+binny:
   partition: "-l highmem"
 
 kraken_contigs:

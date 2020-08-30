@@ -124,7 +124,7 @@ GTDBtk_bins_single:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
-call_contig_depth:
+binny:
   nodes: "-N 1"
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"

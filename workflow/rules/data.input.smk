@@ -42,7 +42,7 @@ elif MT and len(MT) == 3:
     input_files_list.append("Preprocessing/mt.r2.fq")
     input_files_list.append("Preprocessing/mt.se.fq")
 if CONTIGS and not "assembly" in IMP_STEPS:
-    input_files_list.append("Assembly/%s.assembly.merged.fa" %ASS)
+    input_files_list.append("tmp/%s.assembly.merged.fa" %ASS)
     if MGaln:
         input_files_list.append("Assembly/mg.reads.sorted.bam")
     if MTaln:
@@ -147,15 +147,27 @@ rule check_read_se_input:
         
 rule check_assembly_input:
     input:
-        "Assembly/{ass}.assembly.merged.fa"
+        "tmp/{ass}.assembly.merged.fa"
     output:
-        "status/{ass}.assembly.merged.fa.checked"
+        "status/{ass}.assembly.merged.fa.checked",
+        "Assembly/{ass}.assembly.merged.fa"
     priority: 10
-    message: "Checking assembly."
+    params:
+        runtime = "4:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    message: "Checking and formatting assembly."
+    conda: ENVDIR + "/IMP_fasta.yaml"
     shell:
         """
         if [ -s {input} ]; then
-          touch {output}
+          if [ $((`wc -l < {input}`/2)) != `grep ">" -c {input}` ]; then
+            mv {input} {output[1]}
+            touch {output[0]}
+          else
+            fasta_formatter -i {input} -o {output[1]} -w 80
+            touch {output[0]}
+          fi
         else
           echo "ERROR: Assembly is empty." && exit 1
         fi

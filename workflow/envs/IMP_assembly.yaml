@@ -2,19 +2,20 @@ name: IMP_assembly
 channels:
   - bioconda
   - conda-forge
-  - imp
+  - conda-forge/label/cf201901
+  - bioconda/label/cf201901
   - defaults
+  - r
 dependencies:
+  - cap3=10.2011=1
+  - megahit=1.2.9=h8b12597_0
+  - spades=3.14.0=h2d02072_0
   - _libgcc_mutex=0.1=main
   - bzip2=1.0.8=h516909a_1
   - ca-certificates=2019.11.28=hecc5488_0
-  - cap3=10.2011=1
   - certifi=2019.11.28=py37hc8dfbb8_1
   - libffi=3.2.1=he1b5a44_1006
-  - libgcc-ng=9.1.0=hdf63c60_0
-  - libstdcxx-ng=9.1.0=hdf63c60_0
   - llvm-openmp=8.0.1=hc9558a2_0
-  - megahit=1.2.9=h8b12597_0
   - ncurses=6.1=hf484d3e_1002
   - openmp=8.0.1=0
   - openssl=1.1.1d=h516909a_0
@@ -23,11 +24,11 @@ dependencies:
   - python_abi=3.7=1_cp37m
   - readline=8.0=hf8c457e_0
   - setuptools=41.4.0=py37_0
-  - spades=3.13.1=h2d02072_2
   - sqlite=3.30.1=hcee41ef_0
   - tk=8.6.9=hed695b0_1003
   - wheel=0.33.6=py37_0
   - xz=5.2.4=h14c3975_1001
   - zlib=1.2.11=h516909a_1006
-prefix: /work/projects/ecosystem_biology/local_tools/minicondaESB/envs/IMP_assembly
+  - libgcc-ng=9.1.0=hdf63c60_0
+  - libstdcxx-ng=9.1.0=hdf63c60_0
 

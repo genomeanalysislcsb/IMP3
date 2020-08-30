@@ -118,14 +118,14 @@ localrules: prepare_input_data, ALL, prepare_binny
 rule ALL:
     input:
         "intermediary.tar.gz",
-        "scaffold2bin.tsv"
+        "contigs2bin.tsv"
 
 rule prepare_input_data:
     input:
         CONTIGS,
         MGaln
     output:
-        "assembly.fa",
+        "intermediary/assembly.fa",
         "reads.sorted.bam"
     threads: 1
     params:
@@ -135,6 +135,21 @@ rule prepare_input_data:
     message: "Preparing input."
     run:
         prepare_input_files(input, output)
+
+rule format_assembly:
+    input:
+        "intermediary/assembly.fa"
+    output:
+        "assembly.fa"
+    threads: 1
+    params:
+        runtime = "4:00:00",
+        mem = "--mem-per-cpu " + MEMCORE,
+        partition = "-p batch --qos qos-batch"
+    message: "Preparing assembly."
+    conda: ENVDIR + "/IMP_fasta.yaml"
+    shell:
+       "fasta_formatter -i {input} -o {output} -w 80" 
 
 # contig depth
 rule call_contig_depth:
@@ -339,17 +354,15 @@ rule binny:
         expand("intermediary/reachabilityDistanceEstimates.{pk}.{nn}.tsv \
         intermediary/clusterFirstScan.{pk}.{nn}.tsv \
         intermediary/bimodalClusterCutoffs.{pk}.{nn}.tsv \
-        contigs2clusters.{pk}.{nn}.tsv \
+        intermediary/contigs2clusters.{pk}.{nn}.tsv \
         intermediary/contigs2clusters.{pk}.{nn}.RDS \
-        finalClusterMap.{pk}.{nn}.png \
-        intermediary/clusteringWS.{pk}.{nn}.Rdata".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"]),
-        "scaffold2bin.tsv",
-        "intermediary/binny_WS.Rdata"
+        intermediary/finalClusterMap.{pk}.{nn}.png \
+        intermediary/clusteringWS.{pk}.{nn}.Rdata".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
     params:
         plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",
         binnydir="intermediary/",
         runtime = "24:00:00",
-        mem = MEMCORE
+        mem = BIGMEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_binning.yaml" 
     log: "logs/binning_binny.log"
@@ -359,9 +372,12 @@ rule binny:
 
 rule tar_binny_files:
     input:
-        "scaffold2bin.tsv"
+        expand("intermediary/contigs2clusters.{pk}.{nn}.tsv \
+        intermediary/finalClusterMap.{pk}.{nn}.png".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
     output:
-        "intermediary.tar.gz"
+        "intermediary.tar.gz",
+        "contigs2bin.tsv",
+        "finalClusterMap.png"
     threads: 1
     params:
         runtime = "8:00:00",
@@ -371,5 +387,7 @@ rule tar_binny_files:
     message: "tar_binny_files: Compressing intermediary files from binny."
     shell:
        """
-       tar cvzf {output} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1
+       cp {input[0]} {output[1]}
+       cp {input[1]} {output[2]}
+       tar cvzf {output[0]} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1
        """

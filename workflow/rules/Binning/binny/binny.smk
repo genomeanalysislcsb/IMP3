@@ -39,7 +39,7 @@ rule binny:
     log: "logs/binning_binny.log"
     message: "binny: Running Binny."
     script:
-        SRCDIR + "/binny_only.R"
+        SRCDIR + "/binny.R"
 
 rule tar_binny_files:
     input:
