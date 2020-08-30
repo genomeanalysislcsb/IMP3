@@ -33,7 +33,7 @@ rule binny:
         plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",
         binnydir="Binning/binny",
         runtime = "24:00:00",
-        mem = MEMCORE
+        mem = BIGMEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_binning.yaml" 
     log: "logs/binning_binny.log"
