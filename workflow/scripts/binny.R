@@ -140,7 +140,7 @@ if(!"essential" %in% colnames(annot.1)){
     contigInfo <- merge(contigInfo,essAnno,by.x=1,by.y=1,all.x=T)
     contigInfo$essentialGene[is.na(contigInfo$essentialGene)] <- "notEssential"
     hmm2 <- data.frame("gene"=rep(c("glyS","proS","pheT","rpoC"),each=2),
-                       "HMM"=paste("TIGR",c("00388","00389","00408","00409","00471","00472","02386","02386"),sep=""),
+                       "HMM"=paste("TIGR",c("00388","00389","00408","00409","00471","00472","02386","02387"),sep=""),
                         stringsAsFactors=F)
     for(hmm in hmm2$HMM) contigInfo$essentialGene <- gsub(hmm,hmm2$gene[hmm2$HMM==hmm],contigInfo$essentialGene)    
 
@@ -510,7 +510,7 @@ if(!"essential" %in% colnames(annot.1)){
                      stringsAsFactors=F)
     i <- 1
     for(clus in unique(clusterRes$cluster)){
-      uni <- length(unique(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";"))))))
+      uni <- length(unique(unlist(lapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";"))))))
       cI$essNum[i] <- uni
       rownames(cI)[i] <- clus
       cI$medX[i] <- median(contigInfo[clusterRes$cluster==clus,coco[1]])

@@ -134,4 +134,8 @@ call_gene_depth:
   partition: "-p bigmem"
   quality: "-qos qos-bigmem"
 
+call_contig_depth:
+  nodes: "-N 1"
+  partition: "-p bigmem"
+  quality: "-qos qos-bigmem"
 

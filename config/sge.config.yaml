@@ -96,5 +96,5 @@ GTDBtk_bins_single:
 dRep_simple:
   partition: "-l highmem"
 
-
-
+call_contig_depth:
+  partition: "-l highmem"
