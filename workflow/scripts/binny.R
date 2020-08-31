@@ -139,7 +139,11 @@ if(!"essential" %in% colnames(annot.1)){
     
     contigInfo <- merge(contigInfo,essAnno,by.x=1,by.y=1,all.x=T)
     contigInfo$essentialGene[is.na(contigInfo$essentialGene)] <- "notEssential"
-    
+    hmm2 <- data.frame("gene"=rep(c("glyS","proS","pheT","rpoC"),each=2),
+                       "HMM"=paste("TIGR",c("00388","00389","00408","00409","00471","00472","02386","02387"),sep=""),
+                        stringsAsFactors=F)
+    for(hmm in hmm2$HMM) contigInfo$essentialGene <- gsub(hmm,hmm2$gene[hmm2$HMM==hmm],contigInfo$essentialGene)    
+
     print("DONE: Incorporating VizBin and annotation data")
     save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     
@@ -166,7 +170,7 @@ if(!"essential" %in% colnames(annot.1)){
                 row.names=F,col.names=F,quote=F,sep="\t",append=T)
     #DBscan
     cdb <- dbscan(contigInfo[,coco],est,pk)
-    
+    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     #count contigs in clusters and document clustering steps
     pdf(paste0(binny_dir,paste("/scatterPlot1",pk,nn,"pdf",sep=".")))
     plot(contigInfo[,coco],pch=16,cex=0.25,ann=F,axes=F)
@@ -293,7 +297,7 @@ if(!"essential" %in% colnames(annot.1)){
       }
     }
     dev.off()
-    
+    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     #third iteration of clustering on clusters with more than 20% duplicated essential genes
     ### - reachability estimates are based on nth nearest neighbour (independent of number of neighbouring points)
     ### - neighbouring points are increased by 2 again
@@ -374,7 +378,7 @@ if(!"essential" %in% colnames(annot.1)){
       }
     }
     dev.off()
-    
+    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     #fourth iteration of clustering on clusters with more than 20% duplicated essential genes
     ### - reachability estimates are based on nth nearest neighbour (independent of number of neighbouring points)
     ### - neighbouring points are increased by 2 again
@@ -456,27 +460,27 @@ if(!"essential" %in% colnames(annot.1)){
       }
     }
     dev.off()
-    
+    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     #assignment of final names to clusters
     ### based on completeness
-    #### "P": more than 100/109 essential genes, less than 115 essential genes in total (<14% duplicated genes, >92% complete)
-    #### "G": more than 71/109 essential genes (>65% complete), less than 20% in duplicate
-    #### "O": more than 51/109 essential genes (>47% complete), less than 20% in duplicate
-    #### "L": more than 31/109 essential genes (>28% complete), less than 20% in duplicate
-    #### "C": at least 1/109 essential genes (>= 1% complete), less than 20% in duplicate
+    #### "P": more than 96/107 essential genes, less than 115 essential genes in total (<8% duplicated genes, >90% complete)
+    #### "G": more than 70/107 essential genes (>66% complete), less than 20% in duplicate
+    #### "O": more than 53/107 essential genes (>50% complete), less than 20% in duplicate
+    #### "L": more than 35/107 essential genes (>33% complete), less than 20% in duplicate
+    #### "C": at least 1/107 essential genes (>= 1% complete), less than 20% in duplicate
     #### "E": no essential genes
-    #### "B": at least 1/109 essential genes (>= 1% complete), at least 20% in duplicate
+    #### "B": at least 1/107 essential genes (>= 1% complete), at least 20% in duplicate
     #### "N": noise
     for(clus in grep("C",unique(clusterRes$cluster),value=T)){
       uni <- length(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";")))))
       ess <- length(unique(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";"))))))
-      if(uni>100&ess<115){
+      if(uni>96&ess<115){
         clusterRes$cluster[clusterRes$cluster == clus] <- gsub("C","P",clus)
-      } else if(uni>71){
+      } else if(uni>70){
         clusterRes$cluster[clusterRes$cluster == clus] <- gsub("C","G",clus)
-      } else if(uni>51){
+      } else if(uni>53){
         clusterRes$cluster[clusterRes$cluster == clus] <- gsub("C","O",clus)
-      } else if(uni>31){
+      } else if(uni>35){
         clusterRes$cluster[clusterRes$cluster == clus] <- gsub("C","L",clus)
       }
     }
@@ -493,10 +497,10 @@ if(!"essential" %in% colnames(annot.1)){
     save(list=c("contigInfo","coco","pk","nn","essAnno","find.cutoff","muClus","clusterRes"),
          file=paste0(binny_dir,paste("/clusteringWS",pk,nn,"Rdata",sep=".")))
     saveRDS(clusterRes,paste0(binny_dir,paste("/contigs2clusters",pk,nn,"RDS",sep=".")))
-    
+    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     print("Saved tables. Plotting final map now.")
     #plot final map
-    essPal <- colorRampPalette(brewer.pal(11,"Spectral"))(111)[111:1]
+    essPal <- colorRampPalette(brewer.pal(11,"Spectral"))(109)[109:1]
     png(paste0(binny_dir,paste("/finalClusterMap",pk,nn,"png",sep=".")),width=17,height=17,pointsize=7,res=300,units = "cm")
     layout(matrix(1:2,nrow=1,ncol=2),c(5/6,1/6))
     par(mar=rep(1,4),pty="s")
@@ -506,7 +510,7 @@ if(!"essential" %in% colnames(annot.1)){
                      stringsAsFactors=F)
     i <- 1
     for(clus in unique(clusterRes$cluster)){
-      uni <- length(unique(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";"))))))
+      uni <- length(unique(unlist(lapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";"))))))
       cI$essNum[i] <- uni
       rownames(cI)[i] <- clus
       cI$medX[i] <- median(contigInfo[clusterRes$cluster==clus,coco[1]])
@@ -527,8 +531,9 @@ if(!"essential" %in% colnames(annot.1)){
       rm(pc)
     }
     par(mar=c(3,3,3,1),pty="m")
-    plotcolors(cbind(c(colorRampPalette(brewer.pal(11,"Spectral"))(109),"black"),c(colorRampPalette(brewer.pal(11,"Spectral"))(109),"black")))
-    hi <- hist(cI$essNum,breaks=0:109,plot=F)
+    plotcolors(cbind(c(colorRampPalette(brewer.pal(11,"Spectral"))(107),"black"),c(colorRampPalette(brewer.pal(11,"Spectral"))(107),"black")))
+    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    hi <- hist(cI$essNum,breaks=0:107,plot=F)
     a <- apply(cbind(hi$counts,hi$breaks[-length(hi$breaks)]+1),1,function(x) lines(c(0.5,(x[1]*1.9/max(hi$counts[-1]))+0.5),c(rep(x[2],2))))
     abline(h=c(101.5,71.5,51.5,31.5,1.5),col=c(rep("grey20",4),"grey80"),lty=2)
     axis(1,seq(from=0.5,to=2.4,length.out=3),labels=c(0,max(hi$counts[-1])/2,max(hi$counts[-1])))
