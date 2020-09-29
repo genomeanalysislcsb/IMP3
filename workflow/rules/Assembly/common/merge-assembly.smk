@@ -54,12 +54,13 @@ elif config["assembly"]["merger"] == "flye":
         shell:
             """
             # genome size estimation in Mb
-            genomesize=$(grep -v "^>" {input[0]} | awk '{{sum += length}} END {{printf \"%.0f\\n\", sum/1e+6}}')
+            # genomesize=$(grep -v "^>" {input[0]} | awk '{{sum += length}} END {{printf \"%.0f\\n\", sum/1e+6}}')
             # rename contigs in input files
             awk '/^>/{{print \">input1_contig_\" ++i; next}}{{print}}' {input.i1} > {output.i1tmp}
             awk '/^>/{{print \">input2_contig_\" ++i; next}}{{print}}' {input.i2} > {output.i2tmp}
             # consensus assembly
-            flye --subassemblies {output.i1tmp} {output.i2tmp} -o $(dirname {output.flye}) -g \"${{genomesize}}m\" -t {threads} -i {params.iters}
+            # flye --subassemblies {output.i1tmp} {output.i2tmp} -o $(dirname {output.flye}) -g \"${{genomesize}}m\" -t {threads} -i {params.iters}
+            flye --subassemblies {output.i1tmp} {output.i2tmp} -o $(dirname {output.flye}) -t {threads} -i {params.iters}
             # rename contigs
             awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' {output.flye} > {output.final}
             """
