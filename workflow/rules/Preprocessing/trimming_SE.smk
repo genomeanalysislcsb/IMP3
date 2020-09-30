@@ -5,6 +5,7 @@ if config['nextseq']:
             DBPATH + "/adapters/adapters.done"
         output:
             'Preprocessing/{type}.se.trimmoed.fq'
+        threads: 10
         params:
             runtime="12:00:00",
             mem = MEMCORE
@@ -28,6 +29,7 @@ if config['nextseq']:
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
+        threads: 10
         params:
             runtime="12:00:00",
             mem = MEMCORE
@@ -46,6 +48,7 @@ else:
             DBPATH + "/adapters/adapters.done"
         output:
             'Preprocessing/{type}.se.trimmed.fq'
+        threads: 10
         params:
             runtime="12:00:00",
             mem = MEMCORE

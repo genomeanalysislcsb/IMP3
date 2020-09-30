@@ -9,6 +9,7 @@ if config['nextseq']:
             'Preprocessing/{type}.se1.trimmoed.fq',
             'Preprocessing/{type}.r2.trimmoed.fq',
             'Preprocessing/{type}.se2.trimmoed.fq'
+        threads: 10
         params:
             runtime="12:00:00",
             mem = MEMCORE
@@ -32,6 +33,7 @@ if config['nextseq']:
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
+        threads: 10
         params:
             runtime="12:00:00",
             mem = MEMCORE
@@ -54,6 +56,7 @@ else:
             'Preprocessing/{type}.se1.trimmed.fq',
             'Preprocessing/{type}.r2.trimmed.fq',
             'Preprocessing/{type}.se2.trimmed.fq'
+        threads: 10
         params:
             runtime="12:00:00",
             mem = MEMCORE
