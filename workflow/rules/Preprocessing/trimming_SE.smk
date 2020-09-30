@@ -4,7 +4,7 @@ if config['nextseq']:
             'Preprocessing/{type}.se.fq',
             DBPATH + "/adapters/adapters.done"
         output:
-            'Preprocessing/{type}.se.trimmed.fq'
+            'Preprocessing/{type}.se.trimmoed.fq'
         params:
             runtime="12:00:00",
             mem = MEMCORE
@@ -24,11 +24,10 @@ if config['nextseq']:
 
     rule nextseq_trimming:
         input:
-            'Preprocessing/{type}.{read}.trimmed.fq'
+            'Preprocessing/{type}.{read}.trimmoed.fq'
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
-            'Preprocessing/{type}.{read}.trimmed.fq.gz'
-        threads: 5
+            'Preprocessing/{type}.{read}.trimmoed.fq.gz'
         params:
             runtime="12:00:00",
             mem = MEMCORE
