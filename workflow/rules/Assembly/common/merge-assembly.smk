@@ -37,8 +37,6 @@ else:
         params:
             sample = SAMPLE
         threads: 1
-        log:
-            "logs/assembly_skip_merge_assembly_cap3.log"
         message:
             "skip_merge_assembly_cap3: Not merging assemblies, copying {input[0]}."
         shell:
