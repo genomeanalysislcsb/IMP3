@@ -1,4 +1,4 @@
-if config["assembly"]["merger"] == "cap3":
+if config["assembly"]["merge"]:
     rule merge_assembly_cap3:
         input:
             'Assembly/intermediary/%s.%s_preprocessed.1.fa' % (ASS, IMP_ASSEMBLER),
@@ -26,41 +26,20 @@ if config["assembly"]["merger"] == "cap3":
             cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \
             awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' > $NAME_fin.merged.fa
             """ % (ASS,ASS)
-elif config["assembly"]["merger"] == "flye":
-    rule merge_assembly_flye:
+else:
+    localrules: skip_merge_assembly_cap3
+    rule skip_merge_assembly_cap3:
         input:
-            i1='Assembly/intermediary/%s.%s_preprocessed.1.fa' % (ASS, IMP_ASSEMBLER),
-            i2='Assembly/intermediary/%s.%s_unmapped.2.fa' % (ASS, IMP_ASSEMBLER),
+            'Assembly/intermediary/%s.%s_preprocessed.1.fa' % (ASS, IMP_ASSEMBLER),
+            'Assembly/intermediary/%s.%s_unmapped.2.fa' % (ASS, IMP_ASSEMBLER),
         output:
-            # temp files (processed input)
-            i1tmp=temp("Assembly/intermediary/common_merge_flye/input.1.fasta"),
-            i2tmp=temp("Assembly/intermediary/common_merge_flye/input.2.fasta"),
-            # intermediate files
-            flye="Assembly/intermediary/common_merge_flye/assembly.fasta",
-            # final files
-            final='Assembly/%s.assembly.merged.fa' % ASS,
+            'Assembly/%s.assembly.merged.fa' % ASS,
         params:
-            runtime = "24:00:00",
-            mem = BIGMEMCORE,
-            sample = SAMPLE,
-            iters = 0
-        threads: BIGCORENO
-        conda:
-            os.path.join(ENVDIR, "IMP_assembly.yaml")
+            sample = SAMPLE
+        threads: 1
         log:
-            "logs/assembly_merge_assembly_flye.log"
+            "logs/assembly_skip_merge_assembly_cap3.log"
         message:
-            "merge_assembly_flye: Merging assemblies."
+            "skip_merge_assembly_cap3: Not merging assemblies, copying {input[0]}."
         shell:
-            """
-            # genome size estimation in Mb
-            # genomesize=$(grep -v "^>" {input[0]} | awk '{{sum += length}} END {{printf \"%.0f\\n\", sum/1e+6}}')
-            # rename contigs in input files
-            awk '/^>/{{print \">input1_contig_\" ++i; next}}{{print}}' {input.i1} > {output.i1tmp}
-            awk '/^>/{{print \">input2_contig_\" ++i; next}}{{print}}' {input.i2} > {output.i2tmp}
-            # consensus assembly
-            # flye --subassemblies {output.i1tmp} {output.i2tmp} -o $(dirname {output.flye}) -g \"${{genomesize}}m\" -t {threads} -i {params.iters}
-            flye --subassemblies {output.i1tmp} {output.i2tmp} -o $(dirname {output.flye}) -t {threads} -i {params.iters}
-            # rename contigs
-            awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' {output.flye} > {output.final}
-            """
+            "awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' {input[0]} > {output}"

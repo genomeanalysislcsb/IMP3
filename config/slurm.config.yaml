@@ -59,15 +59,7 @@ merge_assembly_cap3:
   partition: "-p bigmem"
   quality: "-q qos-bigmem"
 
-merge_assembly_flye:
-  partition: "-p bigmem"
-  quality: "-q qos-bigmem"
-
 merge_hybrid_assembly_cap3:
-  partition: "-p bigmem"
-  quality: "-q qos-bigmem"
-
-merge_hybrid_assembly_flye:
   partition: "-p bigmem"
   quality: "-q qos-bigmem"
 
