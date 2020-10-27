@@ -73,7 +73,8 @@ def _process_file(fname, inp, outfilename):
     # ungunzip
     if os.path.splitext(fname)[-1] in ['.gz', '.gzip']:
         with open(outfilename, 'wb') as whandle, gzip.open(inp, 'rb') as rhandle:
-            whandle.write(rhandle.read())
+            shutil.copyfileobj(rhandle, whandle)
+#            whandle.write(rhandle.read())
     # unbzip2
     elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
         shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
