@@ -90,7 +90,7 @@ rule concatenate_mapped_unmapped:
     output:
         'Assembly/intermediary/mt.metaspades_preprocessed.1.final.contig.fa'
     params:
-        runtime = "120:00:00",
+        runtime = "02:00:00",
         mem = MEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_assembly.yaml"
