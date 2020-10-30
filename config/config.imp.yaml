@@ -52,7 +52,7 @@ sortmerna:
 assembly: 
   hybrid: true
   assembler: megahit
-  merge: true # merge(assembly A, assembly B from reads not mapping to A) w/ cap3
+  merge: "flye" # how to do merge(assembly A, assembly B from reads not mapping to A)
   mink: 25
   maxk: 99
   step: 4

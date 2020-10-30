@@ -128,8 +128,14 @@ properties:
           - megahit
           - metaspades
     merge:
-      type: boolean
-      default: true
+      type: string
+      enum:
+        - null
+        - ""
+        - "concat"
+        - "cap3"
+        - "flye"
+      default: "cap3"
     mink:
       type: number
       minimum: 3
