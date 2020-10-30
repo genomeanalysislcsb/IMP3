@@ -12,7 +12,7 @@ if config["assembly"]["merge"] is None or config["assembly"]["merge"] == "":
             "skip_merge_assembly: Use the primary assembly only."
         shell:
             "awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' {input} > {output}"
-if config["assembly"]["merge"] == "concat":
+elif config["assembly"]["merge"] == "concat":
     localrules: merge_assembly_concat
     rule merge_assembly_concat:
         input:
@@ -27,7 +27,7 @@ if config["assembly"]["merge"] == "concat":
             "merge_assembly_concat: Merging assemblies."
         shell:
             "cat {input} | awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' > {output}"
-if config["assembly"]["merge"] == "cap3":
+elif config["assembly"]["merge"] == "cap3":
     rule merge_assembly_cap3:
         input:
             'Assembly/intermediary/%s.%s_preprocessed.1.fa' % (ASS, IMP_ASSEMBLER),
@@ -55,7 +55,7 @@ if config["assembly"]["merge"] == "cap3":
             cat $NAME.cat.fa.cap.contigs $NAME.cat.fa.cap.singlets | \
             awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' > $NAME_fin.merged.fa
             """ % (ASS,ASS)
-if config["assembly"]["merge"] == "flye":
+elif config["assembly"]["merge"] == "flye":
     rule merge_assembly_flye:
         input:
             i1='Assembly/intermediary/%s.%s_preprocessed.1.fa' % (ASS, IMP_ASSEMBLER),
@@ -75,7 +75,8 @@ if config["assembly"]["merge"] == "flye":
             runtime = "24:00:00",
             mem = BIGMEMCORE,
             sample = SAMPLE,
-            iters = 0
+            iters = 0,
+            minoverlap = 1000,
         threads: BIGCORENO
         conda:
             os.path.join(ENVDIR, "IMP_assembly.yaml")
@@ -91,7 +92,7 @@ if config["assembly"]["merge"] == "flye":
             awk '/^>/{{print \">input2_contig_\" ++i; next}}{{print}}' {input.i2} > {output.i2}
             cat {output.i1} {output.i2} > {output.i12}
             # consensus assembly
-            flye --subassemblies {output.i1tmp} {output.i2tmp} -o $(dirname {output.flye}) -t {threads} -i {params.iters} --min-overlap 1000 1>&2
+            flye --subassemblies {output.i1tmp} {output.i2tmp} -o $(dirname {output.flye}) -t {threads} -i {params.iters} --min-overlap {params.minoverlap} 1>&2
             # align input contigs to to assembly | get unmapped contigs | get contig IDs
             flye-minimap2 -ax asm5 {output.flye} {output.i12} | samtools view -f 4 - | cut -f1 > {output.uids}
             # filter input contigs by contig ID
