@@ -40,19 +40,19 @@ def get_ori_files(wildcards):
         out = inputs
     return(out)
 		
-def prepare_input_files(inputs, outputs):
-    """
-    Prepare file names from input into snakemake pipeline.
-    """
-    if len(inputs) != len(outputs):
-        raise OSError("//Inputs and outputs are not of the same length: %s <> %s" % (', '.join(inputs), ', '.join(outputs)))
-    for infilename, outfilename in zip(inputs, outputs):
-        _, fname1 = os.path.split(infilename)
-        _process_file(fname1, infilename, outfilename)
-    # check if r1,r2 are in outputs, if yes, check if both have the same number of lines
-    # quickcheck samtools for bam input
-    # for bam and assembly check number of SQ headers and contigs are equal
-    # for assembly and gff file check that they match
+# def prepare_input_files(inputs, outputs):
+#     """
+#     Prepare file names from input into snakemake pipeline.
+#     """
+#     if len(inputs) != len(outputs):
+#         raise OSError("//Inputs and outputs are not of the same length: %s <> %s" % (', '.join(inputs), ', '.join(outputs)))
+#     for infilename, outfilename in zip(inputs, outputs):
+#         _, fname1 = os.path.split(infilename)
+#         _process_file(fname1, infilename, outfilename)
+#     # check if r1,r2 are in outputs, if yes, check if both have the same number of lines
+#     # quickcheck samtools for bam input
+#     # for bam and assembly check number of SQ headers and contigs are equal
+#     # for assembly and gff file check that they match
 
 def symlink_input_files(data):
     for infilename, outfilename in data:
@@ -64,22 +64,22 @@ def touch_fake_output(files):
         print('touching', outfile)
         Path(outfile).touch()
 
-def _process_file(fname, inp, outfilename):
-    """
-    Write the input to the output. Handle raw, zip, or bzip input files.
-    """
-    print(inp, '=>', outfilename)
-    import bz2
-    # ungunzip
-    if os.path.splitext(fname)[-1] in ['.gz', '.gzip']:
-        with open(outfilename, 'wb') as whandle, gzip.open(inp, 'rb') as rhandle:
-            whandle.write(rhandle.read())
-    # unbzip2
-    elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
-        shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
-    # copy
-    else:
-        shutil.copy(inp, outfilename)
+# def _process_file(fname, inp, outfilename):
+#     """
+#     Write the input to the output. Handle raw, zip, or bzip input files.
+#     """
+#     print(inp, '=>', outfilename)
+#     import bz2
+#     # ungunzip
+#     if os.path.splitext(fname)[-1] in ['.gz', '.gzip']:
+#         with open(outfilename, 'wb') as whandle, gzip.open(inp, 'rb') as rhandle:
+#             whandle.write(rhandle.read())
+#     # unbzip2
+#     elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
+#         shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
+#     # copy
+#     else:
+#         shutil.copy(inp, outfilename)
 
 # PREPROCESSING:
 def no_filtering_input(wildcards):
