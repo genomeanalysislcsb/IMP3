@@ -13,10 +13,12 @@
 #   1) snakemake env. (name OR path)
 #   2) snakemake config file (see config/config.imp.yaml)
 #   3) snakemake slurm config file (see config/slurm.config.yaml)
+#   4) snakemake conda prefix (path: where to install conda env.s)
 
 SMK_ENV=$1 # conda activate will fail if not specified correctly
 SMK_CONFIG=$2
 SMK_SLURM=$3
+SMK_PREFIX=$4
 SMK_JOBS=5
 SMK_CLUSTER="sbatch --partition {cluster.partition} --qos {cluster.qos} {cluster.nodes} \
 --mem-per-cpu {params.mem} -n {threads} -t {params.runtime} --job-name={cluster.job-name}"
@@ -34,7 +36,9 @@ for ff in ${SMK_CONFIG} ${SMK_SLURM}; do
     fi
 done
 
+echo "snakemake conda prefix: ${SMK_PREFIX}"
+
 # Pipeline
 snakemake -s Snakefile -rp --jobs ${SMK_JOBS} --local-cores 1 \
---configfile ${SMK_CONFIG} --use-conda \
+--configfile ${SMK_CONFIG} --use-conda --conda-prefix ${SMK_PREFIX} \
 --cluster-config ${SMK_SLURM} --cluster "${SMK_CLUSTER}"
