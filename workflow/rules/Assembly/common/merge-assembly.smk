@@ -92,8 +92,8 @@ elif config["assembly"]["merge"] == "flye":
             awk '/^>/{{print \">input2_contig_\" ++i; next}}{{print}}' {input.i2} > {output.i2}
             cat {output.i1} {output.i2} > {output.i12}
             # consensus assembly
-            flye --subassemblies {output.i1tmp} {output.i2tmp} -o $(dirname {output.flye}) -t {threads} -i {params.iters} --min-overlap {params.minoverlap} 1>&2
-            # align input contigs to to assembly | get unmapped contigs | get contig IDs
+            flye --subassemblies {output.i1} {output.i2} -o $(dirname {output.flye}) -t {threads} -i {params.iters} --min-overlap {params.minoverlap} 1>&2
+            # align input contigs to assembly | get unmapped contigs | get contig IDs
             flye-minimap2 -ax asm5 {output.flye} {output.i12} | samtools view -f 4 - | cut -f1 > {output.uids}
             # filter input contigs by contig ID
             seqkit grep -w 0 --by-name -f {output.uids} {output.i12} -o {output.ufna}
