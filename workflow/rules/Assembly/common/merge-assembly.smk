@@ -96,7 +96,7 @@ elif config["assembly"]["merge"] == "flye":
             # align input contigs to assembly | get unmapped contigs | get contig IDs
             flye-minimap2 -ax asm5 {output.flye} {output.i12} | samtools view -f 4 - | cut -f1 > {output.uids}
             # filter input contigs by contig ID
-            seqkit grep -w 0 --by-name -f {output.uids} {output.i12} -o {output.ufna}
+            seqkit grep -w 60 --by-name -f {output.uids} {output.i12} -o {output.ufna}
             # add unmapped contigs | rename contigs
             cat {output.flye} {output.ufna} | awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' > {output.final}
             ) &> {log}
