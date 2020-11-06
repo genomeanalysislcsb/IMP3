@@ -1,4 +1,4 @@
-elif config["assembly"]["merge"] is None or config["assembly"]["merge"] == "":
+if config["assembly"]["merge"] is None or config["assembly"]["merge"] == "":
     localrules: skip_merge_hybrid_assembly
     rule skip_merge_hybrid_assembly:
         input:
