@@ -354,13 +354,13 @@ if(file.exists(bin_in_file)){
   binTab <- read.delim(bin_in_file,
                        stringsAsFactors=F,header = T)
   
-  rnas_bin_tab <- matrix(0,nrow=length(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]),
+  rnas_bin_tab <- as.data.frame(matrix(0,nrow=length(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]),
                          ncol=14,
                          dimnames=list(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""],
                                        c("complete_16S","partial_16S","complete_23S","partial_23S",
                                          "any_5S","tRNAs","mean_coverage_depth","genes",
                                          "expressed_genes","essential_genes","unique_essential_genes",
-                                         "mOTU_phyla","mOTU_genera","mOTUs")))
+                                         "mOTU_phyla","mOTU_genera","mOTUs"))),stringsAsFactors=F)
   for(bin in binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""&!is.na(binTab$selected_by_DASTool)]){
     if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"))){
       contigs_temp <- read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"),
