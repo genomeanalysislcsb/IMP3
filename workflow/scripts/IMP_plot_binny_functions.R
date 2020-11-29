@@ -1,243 +1,11 @@
 #!/bin/R
 
 ###################################################################################################
-## This file contains all the functions required for all the plots
-## 
+## This file contains the functions required for binny
 ###################################################################################################
 
-## calculate coverage using the "traditional" method
-get_coverage=function(reads_mapped, length, read_len){
-    M <- reads_mapped
-    L <- length
-    R <- read_len
-
-    # coverage*contig length/read length
-    C <- (M*L)/R
-    return(C)
-}
-
-####################################################################
-## Contig based "RPKM" values, similar to used in
-## Muller et al. (2014, Nat. Comm.), ## only here it
-## is applied to
-## every contig
-contig_rpkm=function(reads_mapped, length){
-    N <- sum(reads_mapped, na.rm=T)
-    R <- reads_mapped
-    L <- length
-
-    # reads mapped/([length of contig]/1000)/([total reads]/10^6)
-    R/(L/1000)/(N/10^6)
-}
-
-####################################################################
-## Calculate variant density:
-## i)  Traditional variats per kilo base
-## ii) Normalized by contig rpkm (Muller et al., 2014)
-var_density=function(variants, length, reads_mapped){
-    V <- variants
-    L <- length
-    rpkmC <- contig_rpkm(reads_mapped, L)
-
-    D <- (V/L)/1000/rpkmC
-    return(D)
-}
-
-####################################################################
-## Calculate gene density
-gene_density=function(total_genes, length){
-    G <- total_genes
-    L <- length
-
-    C <- (G)/(L/1000)
-    return(C)
-}
-####################################################################
-## Calculate coding density
-coding_density=function(total_len_genes, length){
-    G <- total_len_genes
-    L <- length
-
-    C <- G/L
-    return(C)
-}
-
-####################################################################
-## Calculate N50
-get_n50=function(lengths){
-    x=lengths
-    x[cumsum(x) > sum(x, na.rm=T)/2][1]
-}
-
-
-####################################################################
-## Get assembly statistics
-get_stats=function(dat){
-    contigs <- nrow(dat)
-    N50 <- get_n50(dat$length)
-    max_len <- max(dat$length)
-    mean_len <- mean(dat$length)
-    med_len <- median(dat$length)
-    #MG_mapped <- sum(dat$MG_mapped)
-    #MT_mapped <- sum(dat$MT_mapped)
-    total_length <- sum(dat$length, na.rm=T)
-    return(c(contigs,N50,max_len,mean_len,med_len,total_length))
-}
-
-
-####################################################################
-## Function to scale data between 0 and 1 (for plotting)
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-
-####################################################################
-## Filter out outliers and set them as floor/ceiling value (min/max)
-outliers=function(z, dist){
-    z[is.infinite(z)] <- max(z[is.finite(z)])
-    z[which(z > mean(z) + dist*sd(z))] = round(mean(z) + dist*sd(z))
-    z[which(z < mean(z) - dist*sd(z))] = round(mean(z) - dist*sd(z))
-    return(z)
-}
-
-####################################################################
-## Function to name files
-name_plot=function(name){
-    filename <- paste(out_dir, name, sep='/')
-    return(filename)
-}
-
-####################################################################
-# Function to obtain number of character (char) occurences
-# within string
-countCharOccurrences <- function(char, s) {
-    s2 <- gsub(char,"",s)
-    return (nchar(s) - nchar(s2))
-}
-
-####################################################################
-# Function to output filename without the path
-get_file_name <- function(file_path){
-    n <- countCharOccurrences('/', as.character(file_path))
-    filename <- str_split_fixed(file_path, "/", n+1)[n+1]
-    return(filename)
-}
-
-####################################################################
-# Function to obtain filtering information (contained in file names)
-filtering <- function(file){
-    n <- countCharOccurrences("\\.", as.character(file))
-    filter <- str_split_fixed(file, "\\.", n+1)[n]
-    return(filter)
-}
-
-## Function for white background theme with no axes
-theme_nothing <- function(base_size = 12, base_family = "Helvetica")
-  {
-  theme_bw(base_size = base_size, base_family = base_family) %+replace%
-      theme(
-	    panel.border = element_rect(fill="NA", colour="NA"),
-            legend.text = element_text(size=base_size*1.5, hjust=1.2, vjust=1), 
-            legend.title = element_text(size=base_size*2,face="bold",hjust=0),
-	    legend.key = element_rect(fill="NA", colour="white"),
-	    legend.key.width = unit(1.2, "cm"),
-	    legend.key.height = unit(1, "cm"),
-	    legend.position = "right",
-	    legend.direction = "vertical",
-	    legend.box = "vertical",
-            line = element_blank(),
-            rect             = element_blank(),
-            axis.ticks.margin = unit(0, "lines"),
-	    axis.text.x=element_blank(),
-	    axis.text.y=element_blank(),
-            axis.ticks=element_blank(),
-            axis.title.x=element_blank(),
-            axis.title.y=element_blank()
-           )
-}
-
-## Function for black background theme with no axes
-theme_black <- function(base_size = 12, base_family = "Helvetica")
-  {
-  theme_bw(base_size = base_size, base_family = base_family) %+replace%
-      theme(
-	    panel.background = element_rect(fill="black", colour="black"),
-	    panel.border = element_rect(fill="NA", colour="NA"),
-            legend.text = element_text(size=base_size*1.5), 
-            legend.title = element_text(size=base_size*2,face="bold",hjust=0),
-	    legend.key = element_rect(fill="NA", colour="white"),
-	    legend.key.height = unit(1, "cm"),
-	    legend.key.width = unit(1.2, "cm"),
-	    legend.position = "right",
-	    legend.direction = "vertical",
-	    legend.box = "vertical",
-            line = element_blank(),
-            axis.ticks.margin = unit(0, "lines"),
-	    axis.text.x=element_blank(),
-	    axis.text.y=element_blank(),
-            axis.ticks=element_blank(),
-            axis.title.x=element_blank(),
-            axis.title.y=element_blank()
-           )
-}
-
-## Function for gray background theme with no axes
-theme_gray <- function(base_size = 12, base_family = "Helvetica")
-  {
-  theme_bw(base_size = base_size, base_family = base_family) %+replace%
-      theme(
-	    panel.background = element_rect(fill="gray25", colour="gray25"),
-            line             = element_blank(),
-            axis.ticks.margin = unit(0, "lines"),
-	    axis.text.x=element_blank(),
-	    axis.text.y=element_blank(),
-            axis.ticks=element_blank(),
-            axis.title.x=element_blank(),
-            axis.title.y=element_blank()
-           )
-}
-
-## Function for beanplot
-mgmt.beanplot <- function(MG.dat, MT.dat, ylabel = expression(log[10]*~"count")) {
-	var1 <-log10(c(MG.dat, MT.dat))
-	var1[is.infinite(var1)]=NA
-	var2 <- c(rep("MG", length(MG.dat)), rep("MT", length(MT.dat)))
-	var <- data.frame(var1, var2)
-	
-	par(lend = 1, mai = c(0.8, 0.8, 0.5, 0.5))
-	beanplot(var1 ~ var2, 
-		 data= var,  
-		 side = "both",
-		 log = "auto",
-	what=c(1,1,1,0), 
-	border = NA, 
-	col = list("blue", c("red", "white")),
-	bw = "nrd0", 
-	ylab = ylabel)
-	legend("bottomleft", fill = c("blue", "red"), legend = c("MG", "MT"))
-}
-## Set maximum value for plots based on standard deviation
-set_max_sd=function(x, dist){
-    max_val <- mean(x, na.rm=T) + dist*sd(x, na.rm=T)
-    return(max_val)
-}
-
-## Set maximum value for plots based on percentage
-set_max_perc=function(x, percentage){
-    max_val <- max(x[is.finite(x)], na.rm=T)*(percentage/100)
-}
-
-## Special string for length
-log10len <- expression(bold(atop("Contig length", paste("(",log[10], bp, ")"))))
-
-## Metagenomic and metatranscriptomic labels
-mgmt_labs <- c("metagenomic","metatranscriptomic")
-
-## Set plot height and width
-
-plotWidth = 1200
-plotHeight = 1000
-
-## binny functions
-find.cutoff <- function(data,k=2,proba=0.5) {
+### cut-off between two modes
+find_cutoff <- function(data,k=2,proba=0.5) {
   model <- try(normalmixEM(x=data, k=k,maxrestarts=50,verb=F),silent=T)
   if(class(model)!="try-error"){
     i <- which.min(model$mu)
@@ -256,12 +24,13 @@ find.cutoff <- function(data,k=2,proba=0.5) {
   }
 }
 
+### recursive function to split clusters according to depth
 muClus <- function(clusterName,cRes,resFile,recDepth){
   print(recDepth)
   covcol <- which(colnames(contigInfo)=="MG_depth")
   dInfo <- contigInfo[cRes$cluster==clusterName,]
   if(dip.test(log10(1+dInfo[,covcol][dInfo$essentialGene!="notEssential"]))$p.value<0.05){
-    cuto <- find.cutoff(log10(1+dInfo[,covcol][dInfo$essentialGene!="notEssential"]))
+    cuto <- find_cutoff(log10(1+dInfo[,covcol][dInfo$essentialGene!="notEssential"]))
     write.table(t(c(clusterName,cuto)),resFile,append=T,row.names=F,col.names=F,quote=F,sep="\t")
     subs1 <- dInfo[log10(1+dInfo[,covcol])<cuto,]
     num1 <- length(unlist(sapply(subs1$essentialGene[subs1$essentialGene!="notEssential"],function(x) unlist(strsplit(x,split=";")))))
@@ -295,4 +64,104 @@ muClus <- function(clusterName,cRes,resFile,recDepth){
   return(cRes)
 }
 
-
+### one binny iteration:
+binny_iteration <- function(pk_i, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir){
+  for(bb in unique(cRes$cluster[grep("B",cRes$cluster)])){
+    bbInfo <- cInfo[cRes$cluster==bb,]
+    #### estimate EST for current cluster:
+    if(nrow(bbInfo)>nn){ #check if there are enough contigs
+      sknBB <- sort(knn.dist(bbInfo[,coco],nn)[,nn])
+      if(length(sknBB>10)){ #check if there are enough contigs
+        sdknBB <- runsd(sknBB,10)
+        plot(sdknBB,sknBB)
+        plot(sdknBB)
+        abline(h=quantile(sdknBB,0.975))
+        estBB <- sort(sknBB)[min(which(sdknBB>quantile(sdknBB,0.975)&sknBB>median(sknBB)))]
+        if(is.na(estBB)){
+          estBB <- sort(sknBB)[max(sdknBB)]
+          print(paste(bb,": EST could not be estimated."))
+        }
+        plot(sknBB)
+        abline(h=estBB)
+        
+        #### record EST:
+        write.table(t(c(bb,estBB)),
+                    paste0(binny_dir,paste("/reachabilityDistanceEstimates",pk,nn,"tsv",sep=".")),
+                    row.names=F,col.names=F,quote=F,sep="\t",append=T)
+        #### run DBscan on current cluster:
+        BBcdb <- dbscan(bbInfo[,coco],estBB,pk_i)
+        
+        #### plot current cluster with new subclusters:
+        plot(bbInfo[,coco],pch=16,cex=0.25,ann=F)
+        j <- 1
+        BBcdbTab <- data.frame("cluster"=names(table(BBcdb$cluster)),"contigs"=0,"numberEss"=0,"uniqueEss"=0,stringsAsFactors=F)
+        for(i in names(table(BBcdb$cluster))) { #iterate over subclusters
+          points(bbInfo[BBcdb$cluster==i,coco],pch=16,cex=0.4,col=c("grey",colors(distinct=T))[j])
+          BBcdbTab$contigs[BBcdbTab$cluster==i] <- table(BBcdb$cluster)[names(table(BBcdb$cluster))==i]
+          BBcdbTab$numberEss[BBcdbTab$cluster==i] <- length(unlist(sapply(bbInfo$essentialGene[bbInfo$essentialGene!="notEssential"&
+                                                                                                 BBcdb$cluster==i],
+                                                                          function(x) unlist(strsplit(x,split=";")))))
+          BBcdbTab$uniqueEss[BBcdbTab$cluster==i] <- length(unique(unlist(sapply(bbInfo$essentialGene[bbInfo$essentialGene!="notEssential"&
+                                                                                                        BBcdb$cluster==i],
+                                                                                 function(x) unlist(strsplit(x,split=";"))))))
+          j<-j+1
+        }
+        #### document clusters with simplified names (if they went into loops)
+        write.table(BBcdbTab,
+                    paste0(cluster_dir,paste("/blob1Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
+                                                                                                bb)),"tsv",sep=".")),
+                    sep="\t",row.names=F,quote=F)
+        
+        #### assign bins to contigs
+        ##### use some temporary dataframes: for noise
+        BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
+        BBclusterRes$cluster[BBcdb$cluster==0] <- "N" # noise as N
+        ##### write into table that should be returned in the end
+        cRes$cluster[cRes$contig %in% BBclusterRes$contig[BBclusterRes$cluster=="N"]] <- "N"
+        
+        ##### use some temporary dataframes: for clusters without essential genes
+        BBemptyClus <- BBcdbTab$cluster[BBcdbTab$uniqueEss==0&BBcdbTab$cluster!=0]
+        BBclusterRes$cluster[BBcdb$cluster %in% BBemptyClus] <- paste("E",BBcdb$cluster[BBcdb$cluster %in% BBemptyClus],sep="")
+        BBemptyCont <- BBclusterRes$contig[BBcdb$cluster %in% BBemptyClus]
+        ##### write into table that should be returned in the end
+        cRes$cluster[cRes$contig %in% BBemptyCont] <- paste(gsub("B","E",bb),
+                                                            gsub("E","",unlist(sapply(cRes$contig[cRes$contig %in% BBemptyCont],
+                                                                                      function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
+                                                            sep=".")
+        
+        ##### use some temporary dataframes: for clusters with essential genes and less than 20% duplication
+        BBcloseClus <- BBcdbTab$cluster[BBcdbTab$numberEss/BBcdbTab$uniqueEss<=1.2&BBcdbTab$cluster!=0]
+        BBclusterRes$cluster[BBcdb$cluster %in% BBcloseClus] <- paste("C",BBcdb$cluster[BBcdb$cluster %in% BBcloseClus],sep="")
+        BBcloseCont <- BBclusterRes$contig[BBcdb$cluster %in% BBcloseClus]
+        if(length(BBcloseCont>0)) print(paste("new cluster in",bb,"\n"))
+        ##### write into table that should be returned in the end
+        cRes$cluster[cRes$contig %in% BBcloseCont] <- paste(gsub("B","C",bb), #replace old B with C, as they're not anymore overcomplete
+                                                            gsub("C","",unlist(sapply(cRes$contig[cRes$contig %in% BBcloseCont],
+                                                                                      function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
+                                                            sep=".")
+        
+        ##### use some temporary dataframes: for clusters with more than 20% duplication of essential genes
+        BBduClus <- BBcdbTab$cluster[BBcdbTab$numberEss/BBcdbTab$uniqueEss>1.2&BBcdbTab$cluster!=0]
+        BBclusterRes$cluster[BBcdb$cluster %in% BBduClus] <- paste("D",BBcdb$cluster[BBcdb$cluster %in% BBduClus],sep="")
+        BBduCont <- BBclusterRes$contig[BBcdb$cluster %in% BBduClus]
+        uniD <- unique(paste(gsub("B","D",bb),
+                             gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],
+                                                       function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
+                             sep="."))
+        ##### write into table that should be returned in the end
+        cRes$cluster[cRes$contig %in% BBduCont] <- paste(gsub("B","D",bb), #replace old B for new D to go into splitting by depth
+                                                         gsub("D","",unlist(sapply(cRes$contig[cRes$contig %in% BBduCont],
+                                                                                   function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
+                                                         sep=".")
+        for(bds in uniD){
+          cRes <- muClus(bds,cRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1) #overwriting cRes
+        }
+      }else{
+        print(paste("Cluster",bb,"too small for knn-approach.\n"))
+      }
+    }else{
+      print(paste("Cluster",bb,"too small for knn-approach.\n"))
+    }
+  }
+  cRes #return result for all clusters
+}
