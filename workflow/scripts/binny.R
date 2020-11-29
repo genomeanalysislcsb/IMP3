@@ -179,6 +179,7 @@ if(!"essential" %in% colnames(annot.1)){
                 row.names=F,col.names=F,quote=F,sep="\t",append=T)
     ### run DBscan with reachibility distance
     cdb <- dbscan(contigInfo[,coco],est,pk)
+
     # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     ### count contigs and essential genes in clusters and plot coordinates with cluster membership
     pdf(paste0(binny_dir,paste("/scatterPlot1",pk,nn,"pdf",sep=".")))
@@ -245,7 +246,7 @@ if(!"essential" %in% colnames(annot.1)){
     #### - neighbouring points are increased by 2
     pk2 <- pk + 2
     pdf(paste0(binny_dir,paste("/scatterPlots2",pk,nn,"pdf",sep=".")))
-    clusterRes <- binny_iteration <- function(pk2, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
+    clusterRes <- binny_iteration(pk2, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
     dev.off()
     # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     
@@ -254,7 +255,7 @@ if(!"essential" %in% colnames(annot.1)){
     #### - neighbouring points are increased by 2 again
     pk4 <- pk + 4
     pdf(paste0(binny_dir,paste("/scatterPlots3",pk,nn,"pdf",sep=".")))
-    clusterRes <- binny_iteration <- function(pk4, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
+    clusterRes <- binny_iteration(pk4, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
     dev.off()
     # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     
@@ -263,7 +264,7 @@ if(!"essential" %in% colnames(annot.1)){
     ### - neighbouring points are increased by 2 again
     pk6 <- pk + 6
     pdf(paste0(binny_dir,paste("/scatterPlots4",pk,nn,"pdf",sep=".")))
-    clusterRes <- binny_iteration <- function(pk4, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
+    clusterRes <- binny_iteration(pk4, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
     dev.off()
     # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     
