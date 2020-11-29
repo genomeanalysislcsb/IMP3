@@ -314,7 +314,7 @@ rule vizbin:
     message: "vizbin: Running VizBin."
     shell:
         """
-        TMP_VIZBIN=$(mktemp --tmpdir=Analysis -dt "VIZBIN_XXXXXX")
+        TMP_VIZBIN=$(mktemp --tmpdir=intermediary -dt "VIZBIN_XXXXXX")
         java -jar {BINDIR}/VizBin-dist.jar \
          -a {config[binning][vizbin][dimension]} \
          -c {config[binning][vizbin][cutoff]} \
