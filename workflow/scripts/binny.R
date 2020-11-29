@@ -1,4 +1,7 @@
 #!/bin/R
+###################################################################################################
+## Set log
+###################################################################################################
 log <- file(snakemake@log[[1]], open="wt")
 sink(log)
 sink(log, type="message")
@@ -8,7 +11,7 @@ sink(log, type="message")
 ###################################################################################################
 libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
 .libPaths(libs)
-.libPaths()
+#.libPaths()
 print("Loading required R libraries")
 library(genomeIntervals)
 library(ggplot2)
@@ -31,7 +34,7 @@ library(mixtools)
 library(gclus)
 
 ###################################################################################################
-## Files now come from snakemake
+## Input file locations from snakemake
 ###################################################################################################
 
 cluster_dir         <- snakemake@input[["outdir"]]
@@ -65,7 +68,7 @@ colnames(MG.depth) <- c("contig", "MG_depth")
 print("Read in gff3 annotation file")
 annot <- readGff3(annot_file, isRightOpen = FALSE, quiet=TRUE)
 
-# extract only interesting information
+# extract only interesting information, i.e start and end of genes
 print("Processing gff3 annotation file")
 dbs <- setdiff(unique(unlist(lapply(parseGffAttributes(annot),names))),c("ID","inference","locus_tag","product","note","Name","gene"))
 annot.1 <- as.data.frame(
@@ -89,14 +92,16 @@ if (nrow(annot.1[is.na(annot.1$start),]) != 0) {
 # Replace non-annotated genes with NA
 annot.1[,2:3] <- sapply(annot.1[2:3], as.character)
 annot.1[,2:3] <- sapply(annot.1[2:3], as.numeric)
-save.image(paste0(binny_dir,"/binny_WS.Rdata"))
 
-# create annotation table
+# save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+
+# create annotation table with essential genes
 if(!"essential" %in% colnames(annot.1)){
+  # if no essential genes are found, binny is ended
   for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
     system(paste0("touch ",o))
   }
-  print("no essential genes. Ending Binny")
+  print("no essential genes. Ending Binny.")
   system("touch binny.error")
 }else{
   print("Creating annotation table")
@@ -104,13 +109,16 @@ if(!"essential" %in% colnames(annot.1)){
   annot.E.prelim <- annot.E.prelim[!is.na(annot.E.prelim$essential),]
   annot.E.prelim$essential <- as.character(annot.E.prelim$essential)
   annot.E.prelim$contig <- as.character(annot.E.prelim$contig)
-  save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+  # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+  
+# read vizbin coordinates
   
   print("Reading in vizbin coordinates")
   coords <- read.table(coords_file, colClasses=c("factor", "numeric", "numeric"),
                        sep="\t", col.names=c("contig", "x", "y"))
   
   if(nrow(coords)==0 | length(intersect(annot.E.prelim$contig,coords$contig))==0 ){
+    # if no coordinates exist, or non of the essential genes are on contigs with coordinates, binny ends.
     for(o in setdiff(unlist(all_outputs),paste0(binny_dir,"/binny_WS.Rdata"))){
       system(paste0("touch ",o))
     }
@@ -118,60 +126,62 @@ if(!"essential" %in% colnames(annot.1)){
     print("no vizbin coordinates for essential genes. Ending Binny")
   }else{
     print("DONE: Reading data")
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     
     ###################################################################################################
-    ## Incorporate coordinates from vizbin
+    ## Merge coordinates, essential gene annotations, and metagenomic depth
     ###################################################################################################
-    print("START: Incorporating VizBin and annotation data")
+    print("START: Incorporating VizBin, depth, and annotation data")
     
+    # depth and coordinates per contig
     vb_dat <- merge(MG.depth, coords, by=c("contig"), all=T, incomparables=NA)
     vb_dat <- vb_dat[!is.na(vb_dat$x),]
     vb_dat$MG_depth[is.na(vb_dat$MG_depth)] <- 0
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     
+    # per-contig data and essential genes
     contigInfo <- vb_dat
     contigInfo$contig <- as.character(contigInfo$contig)
     annot.E <- annot.E.prelim[annot.E.prelim$contig %in% vb_dat$contig,]
     essAnno <- aggregate(annot.E$essential,list(annot.E$contig),function(x) paste(x,sep=";",collapse=";"))
     colnames(essAnno) <- c("contig","essentialGene")
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     
     contigInfo <- merge(contigInfo,essAnno,by.x=1,by.y=1,all.x=T)
     contigInfo$essentialGene[is.na(contigInfo$essentialGene)] <- "notEssential"
+    # some genes have more than one model, unify these here.
     hmm2 <- data.frame("gene"=rep(c("glyS","proS","pheT","rpoC"),each=2),
                        "HMM"=paste("TIGR",c("00388","00389","00408","00409","00471","00472","02386","02387"),sep=""),
                         stringsAsFactors=F)
     for(hmm in hmm2$HMM) contigInfo$essentialGene <- gsub(hmm,hmm2$gene[hmm2$HMM==hmm],contigInfo$essentialGene)    
 
     print("DONE: Incorporating VizBin and annotation data")
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     
     ###################################################################################################
-    ## binny
+    ## binny - 1st iteration
     ###################################################################################################
     
     print("START: Running binny on VizBin data")
-    # Handle missing and infinite values
-    #vb_dat[is.na(vb_dat)] <- 0
     
-    # auto clustering
+    #### find which columns contain coordinates
     coco <- c(which(colnames(contigInfo)=="x"),which(colnames(contigInfo)=="y"))
-    #estimate reachability distance (based on number of neighbouting points)
-    skn <- sort(knn.dist(contigInfo[,coco],pk)[,pk])
-    sdkn <- runsd(skn,10)
-    est <- sort(skn)[min(which(sdkn>quantile(sdkn,0.975)&skn>median(skn)))]
-    #document estimated reachability distances
+    ### automated estimate of reachability distance (based on number of neighbouring points)
+    skn <- sort(knn.dist(contigInfo[,coco],pk)[,pk]) #sort distance of neighbouring points
+    sdkn <- runsd(skn,10) #calculate running standard deviation between 10 neighbouring points
+    est <- sort(skn)[min(which(sdkn>quantile(sdkn,0.975)&skn>median(skn)))] #find the first jump in distances at the higher end
+    #### document estimated reachability distances
     write.table(t(c("scan","reachabilityDist")),
                 paste0(binny_dir,paste("/reachabilityDistanceEstimates",pk,nn,"tsv",sep=".")),
                 row.names=F,col.names=F,quote=F,sep="\t")
     write.table(t(c("first",est)),
                 paste0(binny_dir,paste("/reachabilityDistanceEstimates",pk,nn,"tsv",sep=".")),
                 row.names=F,col.names=F,quote=F,sep="\t",append=T)
-    #DBscan
+    ### run DBscan with reachibility distance
     cdb <- dbscan(contigInfo[,coco],est,pk)
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
-    #count contigs in clusters and document clustering steps
+
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    ### count contigs and essential genes in clusters and plot coordinates with cluster membership
     pdf(paste0(binny_dir,paste("/scatterPlot1",pk,nn,"pdf",sep=".")))
     plot(contigInfo[,coco],pch=16,cex=0.25,ann=F,axes=F)
     j <- 1
@@ -179,301 +189,105 @@ if(!"essential" %in% colnames(annot.1)){
     for(i in names(table(cdb$cluster))) {
       points(contigInfo[cdb$cluster==i,coco],pch=16,cex=0.4,col=c("grey",colors(distinct=T))[j])
       cdbTab$contigs[cdbTab$cluster==i] <- table(cdb$cluster)[names(table(cdb$cluster))==i]
-      cdbTab$numberEss[cdbTab$cluster==i] <- length(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&cdb$cluster==i],function(x) unlist(strsplit(x,split=";")))))
-      cdbTab$uniqueEss[cdbTab$cluster==i] <- length(unique(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&cdb$cluster==i],function(x) unlist(strsplit(x,split=";"))))))
+      cdbTab$numberEss[cdbTab$cluster==i] <- length(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&
+                                                                                             cdb$cluster==i],
+                                                                  function(x) unlist(strsplit(x,split=";")))))
+      cdbTab$uniqueEss[cdbTab$cluster==i] <- length(unique(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&
+                                                                                                    cdb$cluster==i],
+                                                                         function(x) unlist(strsplit(x,split=";"))))))
       j<-j+1
     }
     box()
     dev.off()
     
+    ### initialize tables for cluster membership
     write.table(cdbTab,paste0(binny_dir,paste("/clusterFirstScan",pk,nn,"tsv", sep=".")),
                 sep="\t",row.names=F,quote=F)
     write.table(t(c("clusterName","cutoff")),paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),
                 sep="\t",row.names=F,col.names=F,quote=F)
     
-    #assign clusters to contigs 
-    ### names are "N" for contigs recognized as noise
-    #### "E" for clusters without essential genes
-    #### "C" for clusters with less than or equal to 20% duplicated essential genes
-    #### "D" for clusters with more than 20% duplicated essential genes
-    clusterRes <- data.frame("contig"=contigInfo$contig,"cluster"="x",stringsAsFactors=F)
-    clusterRes$cluster[cdb$cluster==0] <- "N"
-    
+    ### assign bin names to contigs 
+    #### names are "N" for contigs recognized as noise by DBscan
+    #### all other bins keep their DBscan number and get a letter at the front
+    #### "E" for bins without essential genes
+    #### "C" for bins with less than or equal to 20% duplicated essential genes
+    #### "D" for bins with more than 20% duplicated essential genes
+    clusterRes <- data.frame("contig"=contigInfo$contig,
+                             "cluster"="x",
+                             stringsAsFactors=F)
+    #### N:
+    clusterRes$cluster[cdb$cluster==0] <- "N" #DBscan calls noise clusters "0"
+    #### E:
     emptyClus <- cdbTab$cluster[cdbTab$uniqueEss==0&cdbTab$cluster!=0]
     clusterRes$cluster[cdb$cluster %in% emptyClus] <- paste("E",cdb$cluster[cdb$cluster %in% emptyClus],sep="")
-    
+    #### C:
     closeClus <- cdbTab$cluster[cdbTab$numberEss/cdbTab$uniqueEss<=1.2&cdbTab$cluster!=0]
     clusterRes$cluster[cdb$cluster %in% closeClus] <- paste("C",cdb$cluster[cdb$cluster %in% closeClus],sep="")
-    
+    #### D:
     duClus <- cdbTab$cluster[cdbTab$numberEss/cdbTab$uniqueEss>1.2&cdbTab$cluster!=0]
     clusterRes$cluster[cdb$cluster %in% duClus] <- paste("D",cdb$cluster[cdb$cluster %in% duClus],sep="")
     
-    #cut clusters by metagenomic coverage depth, document cut-offs
+    ### cut clusters by metagenomic coverage depth, document cut-offs
+    #### initialise output file
     write.table(t(c("cluster","cutoff")),
                 paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),
                 sep="\t",col.names=F,row.names=F,quote=F)
+    ### put each cluster with detected duplications into depth-cutting:
     for(ds in unique(clusterRes$cluster[grep("D",clusterRes$cluster)])){
       clusterRes <- muClus(ds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
     }
     
-    #second iteration of clustering on clusters with more than 20% duplicated essential genes 
-    ### - reachability estimates are based on nth nearest neighbour (independent of number of neighbouring points)
-    ### - neighbouring points are increased by 2
+    ###################################################################################################
+    ## binny - iterations, for bins with more than 20% duplicated essential genes
+    ###################################################################################################
+    
+    ### 2nd iteration:
+    #### - reachability estimates are based on nth nearest neighbour (independent of number of neighbouring points)
+    #### - neighbouring points are increased by 2
     pk2 <- pk + 2
     pdf(paste0(binny_dir,paste("/scatterPlots2",pk,nn,"pdf",sep=".")))
-    for(bb in unique(clusterRes$cluster[grep("B",clusterRes$cluster)])){
-      bbInfo <- contigInfo[clusterRes$cluster==bb,]
-      if(nrow(bbInfo)>nn){
-        sknBB <- sort(knn.dist(bbInfo[,coco],nn)[,nn])
-        if(length(sknBB>10)){
-          sdknBB <- runsd(sknBB,10)
-          plot(sdknBB,sknBB)
-          plot(sdknBB)
-          abline(h=quantile(sdknBB,0.975))
-          estBB <- sort(sknBB)[min(which(sdknBB>quantile(sdknBB,0.975)&sknBB>median(sknBB)))]
-          if(is.na(estBB)){
-            estBB <- sort(sknBB)[max(sdknBB)]
-            print("estBB could not be found")
-          }
-          plot(sknBB)
-          abline(h=estBB)
-          
-          write.table(t(c(bb,estBB)),
-                      paste0(binny_dir,paste("/reachabilityDistanceEstimates",pk,nn,"tsv",sep=".")),
-                      row.names=F,col.names=F,quote=F,sep="\t",append=T)
-          BBcdb <- dbscan(bbInfo[,coco],estBB,pk2)
-          
-          plot(bbInfo[,coco],pch=16,cex=0.25,ann=F)
-          j <- 1
-          BBcdbTab <- data.frame("cluster"=names(table(BBcdb$cluster)),"contigs"=0,"numberEss"=0,"uniqueEss"=0,stringsAsFactors=F)
-          for(i in names(table(BBcdb$cluster))) {
-            points(bbInfo[BBcdb$cluster==i,coco],pch=16,cex=0.4,col=c("grey",colors(distinct=T))[j])
-            BBcdbTab$contigs[BBcdbTab$cluster==i] <- table(BBcdb$cluster)[names(table(BBcdb$cluster))==i]
-            BBcdbTab$numberEss[BBcdbTab$cluster==i] <- length(unlist(sapply(bbInfo$essentialGene[bbInfo$essentialGene!="notEssential"&BBcdb$cluster==i],function(x) unlist(strsplit(x,split=";")))))
-            BBcdbTab$uniqueEss[BBcdbTab$cluster==i] <- length(unique(unlist(sapply(bbInfo$essentialGene[bbInfo$essentialGene!="notEssential"&BBcdb$cluster==i],function(x) unlist(strsplit(x,split=";"))))))
-            j<-j+1
-          }
-          write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob1Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
-                                                                                                  bb)),"tsv",sep=".")),
-                      sep="\t",row.names=F,quote=F)
-          
-          BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
-          BBclusterRes$cluster[BBcdb$cluster==0] <- "N"
-          clusterRes$cluster[clusterRes$contig %in% BBclusterRes$contig[BBclusterRes$cluster=="N"]] <- "N"
-          
-          BBemptyClus <- BBcdbTab$cluster[BBcdbTab$uniqueEss==0&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBemptyClus] <- paste("E",BBcdb$cluster[BBcdb$cluster %in% BBemptyClus],sep="")
-          BBemptyCont <- BBclusterRes$contig[BBcdb$cluster %in% BBemptyClus]
-          clusterRes$cluster[clusterRes$contig %in% BBemptyCont] <- paste(gsub("B","E",bb),
-                                                                          gsub("E","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBemptyCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                          sep=".")
-          
-          BBcloseClus <- BBcdbTab$cluster[BBcdbTab$numberEss/BBcdbTab$uniqueEss<=1.2&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBcloseClus] <- paste("C",BBcdb$cluster[BBcdb$cluster %in% BBcloseClus],sep="")
-          BBcloseCont <- BBclusterRes$contig[BBcdb$cluster %in% BBcloseClus]
-          if(length(BBcloseCont>0)) print(paste("new cluster in",bb,"\n"))
-          clusterRes$cluster[clusterRes$contig %in% BBcloseCont] <- paste(gsub("B","C",bb),
-                                                                          gsub("C","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBcloseCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                          sep=".")
-          
-          BBduClus <- BBcdbTab$cluster[BBcdbTab$numberEss/BBcdbTab$uniqueEss>1.2&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBduClus] <- paste("D",BBcdb$cluster[BBcdb$cluster %in% BBduClus],sep="")
-          BBduCont <- BBclusterRes$contig[BBcdb$cluster %in% BBduClus]
-          uniD <- unique(paste(gsub("B","D",bb),
-                               gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                               sep="."))
-          clusterRes$cluster[clusterRes$contig %in% BBduCont] <- paste(gsub("B","D",bb),
-                                                                       gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                       sep=".")
-          for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
-          }
-        }else{
-          print(paste("Cluster",bb,"too small for knn-approach.\n"))
-        }
-      }else{
-        print(paste("Cluster",bb,"too small for knn-approach.\n"))
-      }
-    }
+    clusterRes <- binny_iteration(pk2, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
     dev.off()
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
-    #third iteration of clustering on clusters with more than 20% duplicated essential genes
-    ### - reachability estimates are based on nth nearest neighbour (independent of number of neighbouring points)
-    ### - neighbouring points are increased by 2 again
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    
+    ###third iteration of clustering on clusters with more than 20% duplicated essential genes
+    #### - reachability estimates are based on nth nearest neighbour (independent of number of neighbouring points)
+    #### - neighbouring points are increased by 2 again
     pk4 <- pk + 4
     pdf(paste0(binny_dir,paste("/scatterPlots3",pk,nn,"pdf",sep=".")))
-    for(bb in unique(clusterRes$cluster[grep("B",clusterRes$cluster)])){
-      bbInfo <- contigInfo[clusterRes$cluster==bb,]
-      if(nrow(bbInfo)>nn){
-        sknBB <- sort(knn.dist(bbInfo[,coco],nn)[,nn])
-        if(length(sknBB>10)){
-          sdknBB <- runsd(sknBB,10)
-          plot(sdknBB,sknBB)
-          plot(sdknBB)
-          abline(h=quantile(sdknBB,0.975))
-          estBB <- sort(sknBB)[min(which(sdknBB>quantile(sdknBB,0.975)&sknBB>median(sknBB)))]
-          if(is.na(estBB)){
-            estBB <- sort(sknBB)[max(sdknBB)]
-            print("estBB could not be found")
-          }
-          plot(sknBB)
-          abline(h=estBB)
-          
-          write.table(t(c(bb,estBB)),
-                      paste0(binny_dir,paste("/reachabilityDistanceEstimates",pk,nn,"tsv",sep=".")),
-                      row.names=F,col.names=F,quote=F,sep="\t",append=T)
-          BBcdb <- dbscan(bbInfo[,coco],estBB,pk4)
-          
-          plot(bbInfo[,coco],pch=16,cex=0.25,ann=F)
-          j <- 1
-          BBcdbTab <- data.frame("cluster"=names(table(BBcdb$cluster)),"contigs"=0,"numberEss"=0,"uniqueEss"=0,stringsAsFactors=F)
-          for(i in names(table(BBcdb$cluster))) {
-            points(bbInfo[BBcdb$cluster==i,coco],pch=16,cex=0.4,col=c("grey",colors(distinct=T))[j])
-            BBcdbTab$contigs[BBcdbTab$cluster==i] <- table(BBcdb$cluster)[names(table(BBcdb$cluster))==i]
-            BBcdbTab$numberEss[BBcdbTab$cluster==i] <- length(unlist(sapply(bbInfo$essentialGene[bbInfo$essentialGene!="notEssential"&BBcdb$cluster==i],function(x) unlist(strsplit(x,split=";")))))
-            BBcdbTab$uniqueEss[BBcdbTab$cluster==i] <- length(unique(unlist(sapply(bbInfo$essentialGene[bbInfo$essentialGene!="notEssential"&BBcdb$cluster==i],function(x) unlist(strsplit(x,split=";"))))))
-            j<-j+1
-          }
-          write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob2Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
-                                                                                                  bb)),"tsv",sep=".")),
-                      sep="\t",row.names=F,quote=F)
-          
-          BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
-          BBclusterRes$cluster[BBcdb$cluster==0] <- "N"
-          clusterRes$cluster[clusterRes$contig %in% BBclusterRes$contig[BBclusterRes$cluster=="N"]] <- "N"
-          
-          BBemptyClus <- BBcdbTab$cluster[BBcdbTab$uniqueEss==0&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBemptyClus] <- paste("E",BBcdb$cluster[BBcdb$cluster %in% BBemptyClus],sep="")
-          BBemptyCont <- BBclusterRes$contig[BBcdb$cluster %in% BBemptyClus]
-          clusterRes$cluster[clusterRes$contig %in% BBemptyCont] <- paste(gsub("B","E",bb),
-                                                                          gsub("E","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBemptyCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                          sep=".")
-          
-          BBcloseClus <- BBcdbTab$cluster[BBcdbTab$numberEss/BBcdbTab$uniqueEss<=1.2&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBcloseClus] <- paste("C",BBcdb$cluster[BBcdb$cluster %in% BBcloseClus],sep="")
-          BBcloseCont <- BBclusterRes$contig[BBcdb$cluster %in% BBcloseClus]
-          if(length(BBcloseCont>0)) print(paste("new cluster in",bb,"\n"))
-          clusterRes$cluster[clusterRes$contig %in% BBcloseCont] <- paste(gsub("B","C",bb),
-                                                                          gsub("C","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBcloseCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                          sep=".")
-          BBduClus <- BBcdbTab$cluster[BBcdbTab$numberEss/BBcdbTab$uniqueEss>1.2&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBduClus] <- paste("D",BBcdb$cluster[BBcdb$cluster %in% BBduClus],sep="")
-          BBduCont <- BBclusterRes$contig[BBcdb$cluster %in% BBduClus]
-          uniD <- unique(paste(gsub("B","D",bb),
-                               gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                               sep="."))
-          clusterRes$cluster[clusterRes$contig %in% BBduCont] <- paste(gsub("B","D",bb),
-                                                                       gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                       sep=".")
-          for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
-          }
-        }else{
-          print(paste("Cluster",bb,"too small for knn-approach.\n"))
-        }
-      }else{
-        print(paste("Cluster",bb,"too small for knn-approach.\n"))
-      }
-    }
+    clusterRes <- binny_iteration(pk4, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
     dev.off()
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    
     #fourth iteration of clustering on clusters with more than 20% duplicated essential genes
     ### - reachability estimates are based on nth nearest neighbour (independent of number of neighbouring points)
     ### - neighbouring points are increased by 2 again
     pk6 <- pk + 6
     pdf(paste0(binny_dir,paste("/scatterPlots4",pk,nn,"pdf",sep=".")))
-    for(bb in unique(clusterRes$cluster[grep("B",clusterRes$cluster)])){
-      bbInfo <- contigInfo[clusterRes$cluster==bb,]
-      if(nrow(bbInfo)>nn){
-        sknBB <- sort(knn.dist(bbInfo[,coco],nn)[,nn])
-        if(length(sknBB>10)){
-          sdknBB <- runsd(sknBB,10)
-          plot(sdknBB,sknBB)
-          plot(sdknBB)
-          abline(h=quantile(sdknBB,0.975))
-          estBB <- sort(sknBB)[min(which(sdknBB>quantile(sdknBB,0.975)&sknBB>median(sknBB)))]
-          if(is.na(estBB)){
-            estBB <- sort(sknBB)[max(sdknBB)]
-            print("estBB could not be found")
-          }
-          plot(sknBB)
-          abline(h=estBB)
-          
-          write.table(t(c(bb,estBB)),
-                      paste0(binny_dir,paste("/reachabilityDistanceEstimates",pk,nn,"tsv",sep=".")),
-                      row.names=F,col.names=F,quote=F,sep="\t",append=T)
-          BBcdb <- dbscan(bbInfo[,coco],estBB,pk6)
-          
-          plot(bbInfo[,coco],pch=16,cex=0.25,ann=F)
-          j <- 1
-          BBcdbTab <- data.frame("cluster"=names(table(BBcdb$cluster)),"contigs"=0,"numberEss"=0,"uniqueEss"=0,stringsAsFactors=F)
-          for(i in names(table(BBcdb$cluster))) {
-            points(bbInfo[BBcdb$cluster==i,coco],pch=16,cex=0.4,col=c("grey",colors(distinct=T))[j])
-            BBcdbTab$contigs[BBcdbTab$cluster==i] <- table(BBcdb$cluster)[names(table(BBcdb$cluster))==i]
-            BBcdbTab$numberEss[BBcdbTab$cluster==i] <- length(unlist(sapply(bbInfo$essentialGene[bbInfo$essentialGene!="notEssential"&BBcdb$cluster==i],function(x) unlist(strsplit(x,split=";")))))
-            BBcdbTab$uniqueEss[BBcdbTab$cluster==i] <- length(unique(unlist(sapply(bbInfo$essentialGene[bbInfo$essentialGene!="notEssential"&BBcdb$cluster==i],function(x) unlist(strsplit(x,split=";"))))))
-            j<-j+1
-          }
-          write.table(BBcdbTab,
-                      paste0(cluster_dir,paste("/blob3Cluster",pk,nn,gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
-                                                                                                  bb)),"tsv",sep=".")),
-                      sep="\t",row.names=F,quote=F)
-          
-          BBclusterRes <- data.frame("contig"=bbInfo$contig,"cluster"="x",stringsAsFactors=F)
-          BBclusterRes$cluster[BBcdb$cluster==0] <- "N"
-          clusterRes$cluster[clusterRes$contig %in% BBclusterRes$contig[BBclusterRes$cluster=="N"]] <- "N"
-          
-          BBemptyClus <- BBcdbTab$cluster[BBcdbTab$uniqueEss==0&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBemptyClus] <- paste("E",BBcdb$cluster[BBcdb$cluster %in% BBemptyClus],sep="")
-          BBemptyCont <- BBclusterRes$contig[BBcdb$cluster %in% BBemptyClus]
-          clusterRes$cluster[clusterRes$contig %in% BBemptyCont] <- paste(gsub("B","E",bb),
-                                                                          gsub("E","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBemptyCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                          sep=".")
-          
-          BBcloseClus <- BBcdbTab$cluster[BBcdbTab$numberEss/BBcdbTab$uniqueEss<=1.2&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBcloseClus] <- paste("C",BBcdb$cluster[BBcdb$cluster %in% BBcloseClus],sep="")
-          BBcloseCont <- BBclusterRes$contig[BBcdb$cluster %in% BBcloseClus]
-          if(length(BBcloseCont>0)) print(paste("new cluster in",bb,"\n"))
-          clusterRes$cluster[clusterRes$contig %in% BBcloseCont] <- paste(gsub("B","C",bb),
-                                                                          gsub("C","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBcloseCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                          sep=".")
-          
-          BBduClus <- BBcdbTab$cluster[BBcdbTab$numberEss/BBcdbTab$uniqueEss>1.2&BBcdbTab$cluster!=0]
-          BBclusterRes$cluster[BBcdb$cluster %in% BBduClus] <- paste("D",BBcdb$cluster[BBcdb$cluster %in% BBduClus],sep="")
-          BBduCont <- BBclusterRes$contig[BBcdb$cluster %in% BBduClus]
-          uniD <- unique(paste(gsub("B","D",bb),
-                               gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                               sep="."))
-          clusterRes$cluster[clusterRes$contig %in% BBduCont] <- paste(gsub("B","D",bb),
-                                                                       gsub("D","",unlist(sapply(clusterRes$contig[clusterRes$contig %in% BBduCont],function(x)BBclusterRes$cluster[BBclusterRes$contig==x]))),
-                                                                       sep=".")
-          for(bds in uniD){
-            clusterRes <- muClus(bds,clusterRes,paste0(binny_dir,paste("/bimodalClusterCutoffs",pk,nn,"tsv",sep=".")),1)
-          }
-        }else{
-          print(paste("Cluster",bb,"too small for knn-approach.\n"))
-        }
-      }else{
-        print(paste("Cluster",bb,"too small for knn-approach.\n"))
-      }
-    }
+    clusterRes <- binny_iteration(pk4, cRes=clusterRes, cInfo=contigInfo, coco=coco, pk=pk, nn=nn, binny_dir=binny_dir, cluster_dir=cluster_dir)
     dev.off()
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
-    #assignment of final names to clusters
-    ### based on completeness
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    
+    ###################################################################################################
+    ## Assignment of final names to clusters
+    ###################################################################################################
+    ### based on completeness, the C is replaced by:
     #### "P": more than 96/107 essential genes, less than 115 essential genes in total (<8% duplicated genes, >90% complete)
     #### "G": more than 70/107 essential genes (>66% complete), less than 20% in duplicate
     #### "O": more than 53/107 essential genes (>50% complete), less than 20% in duplicate
     #### "L": more than 35/107 essential genes (>33% complete), less than 20% in duplicate
+    ### which leaves: 
     #### "C": at least 1/107 essential genes (>= 1% complete), less than 20% in duplicate
     #### "E": no essential genes
     #### "B": at least 1/107 essential genes (>= 1% complete), at least 20% in duplicate
     #### "N": noise
-    for(clus in grep("C",unique(clusterRes$cluster),value=T)){
-      uni <- length(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";")))))
-      ess <- length(unique(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";"))))))
+    for(clus in grep("C",unique(clusterRes$cluster),value=T)){ #iterate over all bins excep: overcomplete (B), void of essential genes (E), or noise (N)
+      uni <- length(unique(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&
+                                                             clusterRes$cluster==clus],
+                                  function(x) unlist(strsplit(x,split=";")))))) # number of different essential genes
+      ess <- length(unlist(sapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&
+                                                                    clusterRes$cluster==clus],
+                                         function(x) unlist(strsplit(x,split=";"))))) # number of all essential genes
       if(uni>96&ess<115){
         clusterRes$cluster[clusterRes$cluster == clus] <- gsub("C","P",clus)
       } else if(uni>70){
@@ -485,21 +299,29 @@ if(!"essential" %in% colnames(annot.1)){
       }
     }
     
-    #save results
+    ###################################################################################################
+    ## Save results
+    ###################################################################################################
+    ### change bin names that went into long refinement loops
     clusterRes$cluster <- gsub("(2.){8,}","2222.",gsub("(1.){8,}","1111.",
                                                        clusterRes$cluster))
+    ### save bins to contig table for all contigs
     write.table(clusterRes,
                 paste0(binny_dir,paste("/contigs2clusters",pk,nn,"tsv",sep=".")),
                 sep="\t",row.names=F,quote=F)
     # write.table(clusterRes[grep("^[PGOL]",clusterRes$cluster),],
     #            "scaffold2bin.tsv",
     #            sep="\t",row.names=F,quote=F)
-    save(list=c("contigInfo","coco","pk","nn","essAnno","find.cutoff","muClus","clusterRes"),
+    
+    ### save used functions and values + result in data object
+    save(list=c("contigInfo","coco","pk","nn","essAnno","find_cutoff","muClus","clusterRes"),
          file=paste0(binny_dir,paste("/clusteringWS",pk,nn,"Rdata",sep=".")))
+    ### save just bins to contig table as R object
     saveRDS(clusterRes,paste0(binny_dir,paste("/contigs2clusters",pk,nn,"RDS",sep=".")))
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     print("Saved tables. Plotting final map now.")
-    #plot final map
+    
+    ### plot final map
     essPal <- colorRampPalette(brewer.pal(11,"Spectral"))(109)[109:1]
     png(paste0(binny_dir,paste("/finalClusterMap",pk,nn,"png",sep=".")),width=17,height=17,pointsize=7,res=300,units = "cm")
     layout(matrix(1:2,nrow=1,ncol=2),c(5/6,1/6))
@@ -510,7 +332,9 @@ if(!"essential" %in% colnames(annot.1)){
                      stringsAsFactors=F)
     i <- 1
     for(clus in unique(clusterRes$cluster)){
-      uni <- length(unique(unlist(lapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&clusterRes$cluster==clus],function(x) unlist(strsplit(x,split=";"))))))
+      uni <- length(unique(unlist(lapply(contigInfo$essentialGene[contigInfo$essentialGene!="notEssential"&
+                                                                    clusterRes$cluster==clus],
+                                         function(x) unlist(strsplit(x,split=";"))))))
       cI$essNum[i] <- uni
       rownames(cI)[i] <- clus
       cI$medX[i] <- median(contigInfo[clusterRes$cluster==clus,coco[1]])
@@ -532,7 +356,7 @@ if(!"essential" %in% colnames(annot.1)){
     }
     par(mar=c(3,3,3,1),pty="m")
     plotcolors(cbind(c(colorRampPalette(brewer.pal(11,"Spectral"))(107),"black"),c(colorRampPalette(brewer.pal(11,"Spectral"))(107),"black")))
-    save.image(paste0(binny_dir,"/binny_WS.Rdata"))
+    # save.image(paste0(binny_dir,"/binny_WS.Rdata"))
     hi <- hist(cI$essNum,breaks=0:107,plot=F)
     a <- apply(cbind(hi$counts,hi$breaks[-length(hi$breaks)]+1),1,function(x) lines(c(0.5,(x[1]*1.9/max(hi$counts[-1]))+0.5),c(rep(x[2],2))))
     abline(h=c(101.5,71.5,51.5,31.5,1.5),col=c(rep("grey20",4),"grey80"),lty=2)
@@ -543,7 +367,11 @@ if(!"essential" %in% colnames(annot.1)){
     dev.off()
     print("binny done")
     
-    rm(list=c("contigInfo","coco","pk","nn","clusterRes","essPal","cI","cI2","hi","a","clus","ess","BBduClus","BBclusterRes","BBduCont","uniD","BBcloseClus","BBcloseCont","BBemptyClus","BBemptyCont","BBcdbTab","bbInfo","estBB","BBcdb","sknBB","emptyClus","closeClus","cdbTab","skn","sdkn","est","sdknBB","pk2","pk4","pk6"))
+    ### remove intermediate results
+    rm(list=c("contigInfo","coco","pk","nn","clusterRes",
+              "essPal","cI","cI2","hi","a","clus","ess",
+              "emptyClus","closeClus","cdbTab","skn","sdkn","est",
+              "pk2","pk4","pk6"))
     
     
     ####################################################################
