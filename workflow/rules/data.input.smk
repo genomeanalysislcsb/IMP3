@@ -21,7 +21,7 @@ if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
             'Binning/DAStool/translate2DAStool.smk'
     
 
-localrules: prepare_input_data, check_inputs, check_read_se_input, check_assembly_input, check_read_r_input, check_longread_input
+localrules: check_inputs, check_read_se_input, check_assembly_input, check_read_r_input, check_longread_input
 
 # outputs (input for workflow) to be generated (in rule)
 input_files_list = []
@@ -42,7 +42,7 @@ elif MT and len(MT) == 3:
     input_files_list.append("Preprocessing/mt.r2.fq")
     input_files_list.append("Preprocessing/mt.se.fq")
 if CONTIGS and not "assembly" in IMP_STEPS:
-    input_files_list.append("tmp/%s.assembly.merged.fa" %ASS)
+    input_files_list.append("Assembly/%s.assembly.merged.fa" %ASS)
     if MGaln:
         input_files_list.append("Assembly/mg.reads.sorted.bam")
     if MTaln:
@@ -84,25 +84,47 @@ if MG and len(MG) == 1:
 if not 'preprocessing' in IMP_STEPS and MT and len(MT) == 2:
     fake_output.append("Preprocessing/mt.se.fq")
 
+localrules: prepare_input_data_touch
 
-rule prepare_input_data:
+rule prepare_input_data_touch:
     input:
         get_ori_files
     output:
-        input_files_list,
-        symlinked_output_list,
         fake_output
-    threads: 1
-    params:
-        runtime = "4:00:00",
-        mem = MEMCORE
-    message: "Preparing input."
+    message:
+        "Prepare input: touch"
     run:
-        prepare_input_files(input, input_files_list)
         if fake_output:
             touch_fake_output(fake_output)
+
+localrules: prepare_input_data_symlink
+
+rule prepare_input_data_symlink:
+    input:
+        get_ori_files
+    output:
+        symlinked_output_list
+    message:
+        "Prepare input: symlinks"
+    run:
         if symlinks_list:
             symlink_input_files(symlinks_list)
+
+rule prepare_input_data_copy:
+    input:
+        get_ori_files
+    output:
+        input_files_list
+    threads: 5
+    params:
+        runtime = "1:00:00",
+        mem = MEMCORE
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    message:
+        "Prepare input: decompress/copy"
+    script:
+        os.path.join(SRCDIR, "prepare_input_files.py")
 
 checked_files_list = ["status/" + f.split("/")[-1] + ".checked" for f in input_files_list]
 
@@ -147,27 +169,15 @@ rule check_read_se_input:
         
 rule check_assembly_input:
     input:
-        "tmp/{ass}.assembly.merged.fa"
-    output:
-        "status/{ass}.assembly.merged.fa.checked",
         "Assembly/{ass}.assembly.merged.fa"
+    output:
+        "status/{ass}.assembly.merged.fa.checked"
     priority: 10
-    params:
-        runtime = "4:00:00",
-        mem = "--mem-per-cpu " + MEMCORE,
-        partition = "-p batch --qos qos-batch"
-    message: "Checking and formatting assembly."
-    conda: ENVDIR + "/IMP_fasta.yaml"
+    message: "Checking assembly."
     shell:
         """
         if [ -s {input} ]; then
-          if [ $((`wc -l < {input}`/2)) != `grep ">" -c {input}` ]; then
-            mv {input} {output[1]}
-            touch {output[0]}
-          else
-            fasta_formatter -i {input} -o {output[1]} -w 80
-            touch {output[0]}
-          fi
+          touch {output}
         else
           echo "ERROR: Assembly is empty." && exit 1
         fi

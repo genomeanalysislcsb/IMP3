@@ -1,141 +1,131 @@
 __default__: 
-  call: "sbatch"
   nodes: ""
-  mem_per_cpu: "--mem-per-cpu "
-  partition: "-p batch"
-  quality: "-qos qos-batch"
-  runtime: "-t"
-  threads: "-n"
+  partition: "batch"
+  qos: "normal"
+  job-name: "IMP3.{rule}"
+
+prepare_input_data_copy:
+  nodes: "-N 1"
+  partition: "batch"
+  qos: "normal"
 
 mg_filtering:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 mt_filtering:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 trimming:
   nodes: "-N 1"
 
 bwa_index:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 mapping_on_assembly:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 index_bam:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 megahit_assembly_from_preprocessing:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "long"
 
 megahit_assembly_from_unmapped:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "long"
 
 metaspades_assembly_from_preprocessing:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "long"
 
 metaspades_assembly_from_unmapped:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "long"
 
-cap3:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+merge_assembly_cap3:
+  partition: "bigmem"
+  qos: "long"
+
+merge_hybrid_assembly_cap3:
+  partition: "bigmem"
+  qos: "long"
 
 extract_unmapped_from_megahit:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 extract_unmapped_from_hybrid_assembly:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 megahit_hybrid_assembly_1:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "long"
 
 megahit_hybrid_assembly_2:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "long"
 
 metaspades_hybrid_assembly_1:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "long"
 
 metaspades_hybrid_assembly_2:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "long"
 
 collapse_hybrid_assemblies:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 extract_unmapped:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 DAS_tool:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 prepare_gridReads:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 grid:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 vizbin:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 vizbin_mt:
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 kraken_contigs:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 kraken_reads:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
+  partition: "bigmem"
+  qos: "normal"
 
 GTDBtk_bins_single:
   nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
-
-binny:
-  nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
-
-call_gene_depth:
-  nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
-
-call_contig_depth:
-  nodes: "-N 1"
-  partition: "-p bigmem"
-  quality: "-qos qos-bigmem"
-
+  partition: "bigmem"
+  qos: "normal"
