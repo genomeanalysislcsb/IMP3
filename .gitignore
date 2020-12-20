@@ -5,6 +5,8 @@
 docs/build
 conf/userconfig.imp.json
 output/*
+*stderr
+*stdout
 db
 __pycache__
 gitold/
@@ -21,7 +23,11 @@ rules/Archiving/*
 READMEconda
 conda/
 test/*
+test*
 oldrules/*
 IMP2to3/*
 rules/CRISPR
 condai/
+runIMP3_tmux.sh
+config/config.test.yaml
+testoutput/ 

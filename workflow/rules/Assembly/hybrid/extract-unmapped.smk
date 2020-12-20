@@ -38,7 +38,7 @@ rule extract_unmapped_from_megahit:
         'Assembly/intermediary/{type}.r1.unmapped.fq',
         'Assembly/intermediary/{type}.r2.unmapped.fq',
         'Assembly/intermediary/{type}.se.unmapped.fq'
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -63,7 +63,7 @@ rule extract_unmapped_from_hybrid_assembly:
         'Assembly/intermediary/mgmt.r1.{assembler}_hybrid.{type}.unmapped.fq',
         'Assembly/intermediary/mgmt.r2.{assembler}_hybrid.{type}.unmapped.fq',
         'Assembly/intermediary/mgmt.se.{assembler}_hybrid.{type}.unmapped.fq'
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO

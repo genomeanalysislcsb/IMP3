@@ -9,8 +9,8 @@ if config['nextseq']:
             'Preprocessing/{type}.se1.trimmoed.fq',
             'Preprocessing/{type}.r2.trimmoed.fq',
             'Preprocessing/{type}.se2.trimmoed.fq'
-        threads: 10
-        params:
+        threads: getThreads(10)
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -33,8 +33,8 @@ if config['nextseq']:
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
-        threads: 10
-        params:
+        threads: getThreads(10)
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -56,8 +56,8 @@ else:
             'Preprocessing/{type}.se1.trimmed.fq',
             'Preprocessing/{type}.r2.trimmed.fq',
             'Preprocessing/{type}.se2.trimmed.fq'
-        threads: 10
-        params:
+        threads: getThreads(10)
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -82,7 +82,7 @@ rule cat_se_trimmed:
     output:
         'Preprocessing/{type}.se.trimmed.fq'
     threads: 1
-    params:
+    resources:
         runtime="12:00:00",
         mem = MEMCORE
 #    log: "logs/preprocessing_cat_se_trimmed.{type}.log"

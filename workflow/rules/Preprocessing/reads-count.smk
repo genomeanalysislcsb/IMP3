@@ -3,7 +3,7 @@ rule reads_count:
         reads=reads_input_files
     output:
         report('Stats/{type}/{type}.read_counts.txt',category="Preprocessing")
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
@@ -19,7 +19,7 @@ rule reads_gzip:
         togz=gather_reads
     output:
         "status/preprocessing_{type}.reads.compressed"
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
@@ -37,10 +37,10 @@ rule gzip_ori_files:
     wildcard_constraints:
         read="r.",
         type="m."
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 5
+    threads: getThreads(5)
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message: "gzip_ori_files: Gzipping fastq files {input}."
@@ -53,10 +53,10 @@ rule gzip_files:
         'Preprocessing/{type}.{read}.{stage}.fq'
     output:
         "Preprocessing/{type}.{read}.{stage}.fq.gz"
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 5
+    threads: getThreads(5)
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message: "gzip_files: Gzipping fastq files {input}."
@@ -68,7 +68,7 @@ checkpoint reads_gziped:
         'Stats/{type}/{type}.read_counts.txt'
     output:
         "status/preprocessing_{type}.reads.detected"
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1

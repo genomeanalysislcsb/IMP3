@@ -5,10 +5,11 @@ rule feature_count:
     output:
         "Analysis/annotation/{type}.{db}.counts.tsv"
     params:
-        lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        lambda wildcards: config["featureCountsStranding"][wildcards.type]
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 8
+    threads: getThreads(8)
     conda: ENVDIR + "/IMP_annotation.yaml"
     log: "logs/analysis_feature_count.{type}.{db}.log"
     message: "feature_count: Quantifying {wildcards.db} with {wildcards.type} reads."
@@ -24,10 +25,11 @@ rule feature_count_gene:
     output:
         "Analysis/annotation/{type}.{feature}_counts.tsv"
     params:
-        lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        lambda wildcards: config["featureCountsStranding"][wildcards.type]
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 8
+    threads: getThreads(8)
     conda: ENVDIR + "/IMP_annotation.yaml"
     log: "logs/analysis_feature_count_gene.{feature}.{type}.genes.log"
     message: "feature_count_gene: Quantifying {wildcards.feature} with {wildcards.type} reads."

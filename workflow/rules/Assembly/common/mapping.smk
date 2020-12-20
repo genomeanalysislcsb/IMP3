@@ -13,7 +13,7 @@ rule mapping_on_assembly:
         'Assembly/%s.assembly.merged.fa' % ASS
     output:
         'Assembly/{type}.reads.sorted.bam'
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -40,7 +40,7 @@ rule index_bam:
         '{sorted_bam}'
     output:
         '{sorted_bam}.bai'
-    params:
+    resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     threads: 1

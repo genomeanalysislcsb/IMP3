@@ -6,7 +6,7 @@ rule allmotulinks:
     output:
         "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
     threads: 1
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
 #    log: "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
@@ -22,10 +22,11 @@ rule fetchmg:
         "Analysis/annotation/prokka.faa"
     output:
         expand("Analysis/taxonomy/mOTU_links/intermediary/marker_genes/{COG}.fna",COG=COGS_LIST)
-    threads: 6
-    params:
+    threads: getThreads(6)
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary/marker_genes"
     log: "logs/analysis_fetchmg.log"
     conda: ENVDIR + "/IMP_annotation.yaml"
@@ -42,7 +43,7 @@ rule get_present_mOTUs:
     output:
         "Analysis/taxonomy/mOTU_links/intermediary/all.mOTUs.present"
     threads: 1
-    params:
+    resources:
         runtime = "1:00:00",
         mem = MEMCORE
 #    log: "logs/analysis_get_present_mOTUs.log"
@@ -58,9 +59,10 @@ rule extract_mOTU_db_genes:
     output:
         expand("Analysis/taxonomy/mOTU_links/intermediary/{COG}.present.DBgenes.fna",COG=COGS_LIST)
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary",
         outname = "present.DBgenes",
         coglist = ",".join(map(str, COGS_LIST)),
@@ -84,7 +86,7 @@ rule blast_mOTU_db_genes:
     output:
         "Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHits.tsv",
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_taxonomy.yaml"
@@ -106,9 +108,10 @@ rule parse_blast_mOTU:
     output:
         "Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHitPhylogeny.tsv"
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         metaphy = "/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
         refphy = "/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
     conda: ENVDIR + "/IMP_taxonomy.yaml"
@@ -123,9 +126,10 @@ rule tar_intermediary_mOTU:
     output:
         "Analysis/taxonomy/mOTU_links/intermediary.tar.gz"
     threads: 1
-    params:
+    resources:
         runtime = "8:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         intermediary = "Analysis/taxonomy/mOTU_links/intermediary/"
     log: "logs/mOTUlinks_tar_intermediary.log"
     message: "tar_intermediary_mOTU: Compressing intermediary steps of mOTU linking."

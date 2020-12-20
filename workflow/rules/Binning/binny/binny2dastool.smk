@@ -5,7 +5,7 @@ rule binny_pgol_table:
         "Binning/binny/clusterFiles.tar.gz"
     output:
         "Binning/binny/scaffold2bin.tsv"
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     threads: 1

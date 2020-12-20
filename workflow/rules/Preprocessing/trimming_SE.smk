@@ -6,7 +6,7 @@ if config['nextseq']:
         output:
             'Preprocessing/{type}.se.trimmoed.fq'
         threads: 10
-        params:
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -29,8 +29,8 @@ if config['nextseq']:
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
-        threads: 10
-        params:
+        threads: getThreads(10)
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -48,8 +48,8 @@ else:
             DBPATH + "/adapters/adapters.done"
         output:
             'Preprocessing/{type}.se.trimmed.fq'
-        threads: 10
-        params:
+        threads: getThreads(10)
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"

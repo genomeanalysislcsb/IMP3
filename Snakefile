@@ -1,4 +1,6 @@
 # include global functions
+ROOTDIR = srcdir("/")
+
 include:
     "workflow/rules/function.definitions.smk"
 
@@ -140,6 +142,20 @@ elif MTaln:
 else:
     raise Exception('No input data.')
 
+# clean up at the end
+if EMAIL == "":
+    onsuccess:
+        shell("mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv snakejob.* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log")
+else:
+    onsuccess:
+        shell('mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; (  mv snakejob.* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; echo "$(date) {config[sessionName]}" | mail -s "IMP3 finished" {EMAIL} ')
+    onerror:
+        shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 exited with error" {EMAIL} ')
+    onstart:
+        shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 started" {EMAIL} ')
+
+
+
 # master command summary and archiving
 inputs_all = ['status/inputs.done','status/workflow.done']
 if "summary" in IMP_STEPS:
@@ -147,6 +163,7 @@ if "summary" in IMP_STEPS:
     include:
         "workflow/rules/modules/common/Summary.smk"
 
+localrules: workflow, ALL
 
 # master command
 rule ALL:
@@ -156,7 +173,6 @@ rule ALL:
         touch('status/all.done')
 
 
-localrules: workflow, ALL
 # master command workflow
 rule workflow:
     input:

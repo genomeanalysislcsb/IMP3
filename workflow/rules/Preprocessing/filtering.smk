@@ -31,7 +31,7 @@ rule mg_filtering:
         expand('Preprocessing/mg.{read}.trimmed.{{filterstep}}.fq',read=["r1","r2","se"])
     wildcard_constraints:
         filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
-    params:
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -49,7 +49,7 @@ rule mt_filtering:
         expand('Preprocessing/mt.{read}.trimmed.rna_filtered.{{filterstep}}.fq',read=["r1","r2","se"])
     wildcard_constraints:
         filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
-    params:
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -64,7 +64,7 @@ rule symlink_mt_preprocessed_files:
         expand("Preprocessing/mt.{read}.trimmed.rna_filtered.{filtered}.fq",filtered=".".join([s + "_filtered" for s in FILTER]),read=["r1","r2","se"])
     output:
         expand('Preprocessing/mt.{read}.preprocessed.fq',read=["r1","r2","se"])
-    params:
+    resources:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1
@@ -79,7 +79,7 @@ rule symlink_mg_preprocessed_files:
         expand("Preprocessing/mg.{read}.trimmed.{filtered}.fq",filtered=".".join([s + "_filtered" for s in FILTER]),read=["r1","r2","se"])
     output:
         expand('Preprocessing/mg.{read}.preprocessed.fq',read=["r1","r2","se"])
-    params:
+    resources:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1

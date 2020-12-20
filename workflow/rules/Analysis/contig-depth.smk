@@ -8,7 +8,7 @@ rule call_contig_depth:
         "Stats/{type}/%s.assembly.contig_coverage.txt" % ASS,
         "Stats/{type}/%s.assembly.contig_depth.txt" % ASS,
         report("Stats/{type}/%s.assembly.contig_flagstat.txt" % ASS,category="Assembly")
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: 1

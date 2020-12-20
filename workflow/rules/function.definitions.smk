@@ -10,6 +10,15 @@ def open_output(filename):
 def workflow_ctrl(wildcards):
     return(["status/" + s + ".done" for s in IMP_STEPS if s != "summary"])
 
+def getThreads(max):
+    if workflow.cores:
+        realThreads = max if max <= workflow.cores else workflow.cores
+    elif workflow.nodes:
+        realThreads = max if max <= workflow.nodes else workflow.nodes
+    else:
+        realThreads = max
+    return realThreads
+
 # data input
 # inputs (original files) to use
 def get_ori_files(wildcards):

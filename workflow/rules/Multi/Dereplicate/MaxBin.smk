@@ -5,7 +5,7 @@ rule maxbin_contig2bin:
         "Dereplication/MaxBin/{sample}/maxbin_contig2bin.txt",
         "Dereplication/MaxBin/{sample}/scaffold2bin.tsv"
     threads: 1
-    params:
+    resources:
         runtime = "3:00:00",
         mem = MEMCORE
     log: "logs/dereplication_maxbin_contig2bin.{sample}.log"
@@ -28,7 +28,7 @@ rule maxbin_get_depth:
     output:
         "Dereplication/cross_mapping/{sample}.contig_depth0.{cross_sample}.txt"
     threads: 1
-    params:
+    resources:
         runtime = "3:00:00",
         mem = MEMCORE
     message: "maxbin_get_depth: Getting depth of coverage by {wildcards.cross_sample} on {wildcards.sample} contigs in Maxbin format."
@@ -68,8 +68,8 @@ rule maxbin:
     output:
        "Dereplication/MaxBin/{sample}/maxbin_res.log",
        "Dereplication/MaxBin/{sample}/maxbin_res.summary"
-    threads: 2
-    params:
+    threads: getThreads(2)
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"

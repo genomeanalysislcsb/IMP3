@@ -4,9 +4,10 @@ checkpoint collate_kraken:
     output:
         "Collection/multi_{type}.kraken.Rdata"
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE 
+    params:
         samples = lambda wildcards: samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"sample"],
         out_prefix = "Collection/multi_{wildcards.type}.kraken."
     log: "logs/collate_kraken_{type}.kraken.log"
@@ -23,9 +24,10 @@ rule collate_mOTUs:
         "Collection/multi_{type}.mOTUs.Rdata",
         expand("Collection/multi_{{type}}.mOTUs.{rank}.tsv",rank=["k","p","c","o","f","g","s"])
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         samples = lambda wildcards: samples.loc[[a and b for a,b in zip(samples.taxonomy == 1,samples[wildcards.type] == 1)],"sample"]
     log: "logs/collate_mOTUs_{type}.mOTUs.log"
     message: 'collate_mOTUs: collecting mOTUs {wildcards.type} data.'

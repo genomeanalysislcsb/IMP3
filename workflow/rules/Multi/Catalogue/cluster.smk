@@ -5,7 +5,7 @@ rule cp_seqs:
     output:
         temporary("Catalogue/{sample}.prokka.all.f{ext}")
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
 #    log: "logs/catalogue_cp.{sample}.{ext}.log"
@@ -25,7 +25,7 @@ rule get_complete_proteins:
         temporary("Catalogue/{sample}.complete_proteins.f{ext}"),
         temporary("Catalogue/{sample}.prokka.all.f{ext}.index")
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_bioperl.yaml"
@@ -45,7 +45,7 @@ rule cat:
     output:
         "Catalogue/multi_prokka.f{ext}"
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
 #    log: "logs/catalogue_cat.log"
@@ -62,9 +62,10 @@ rule cdhit:
     output:
         "Catalogue/catalogue.fasta"
     threads: BIGCORENO
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE,
+        mem = BIGMEMCORE
+    params:
         tmp = TMPDIR,
         cat = "Catalogue/catalogue",
         limmem = BIGMEMTOTAL * 1000 
@@ -85,9 +86,10 @@ rule mmSeqs:
         "Catalogue/aa_catalogue_cluster.tsv",
         "Catalogue/aa_catalogue.faa"
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE,
+        mem = BIGMEMCORE
+    params:
         tmp = TMPDIR,
         cat = "Catalogue/aa_catalogue"
     log: "logs/catalogue_mmSeqs.log"
@@ -107,9 +109,10 @@ rule extract_gff:
     output:
         temporary("Catalogue/catalogue.{sample}.gff")
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         tmp = TMPDIR
     log: "logs/catalogue_extract_gff.{sample}.log"
     message: 'collate_extract_gff: getting annotations for representative genes from {wildcards.sample} gff.'
@@ -124,9 +127,10 @@ rule cat_gff:
     output:
         temporary("Catalogue/catalogue.gff")
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         tmp = TMPDIR
     log: "logs/catalogue_cat_gff.log"
     message: 'collate_cat_gff: concatenating annotations for representative genes.'
@@ -146,9 +150,10 @@ rule extract_representative:
         temporary('Catalogue/{sample}.prokka.rep.faa.index'),
         temporary('Catalogue/{sample}.rep.names'),
         temporary('Catalogue/{sample}.rep.faa')
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         prok_p = lambda wildcards: samples.prokka_prefix[wildcards.sample] + "_"
     threads: 1
     conda: ENVDIR + "/IMP_bioperl.yaml"
@@ -168,7 +173,7 @@ rule concat_reprentatitves:
                 sample=samples.loc[samples.prokka_prefix == samples.prokka_prefix,"sample"])
     output:
         'Catalogue/catalogue.faa'
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     threads: 1

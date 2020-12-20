@@ -1,4 +1,8 @@
 steps: "preprocessing assembly analysis binning taxonomy summary"
+email: ""
+sessionName: ""
+sessionKind: ""
+settingsLocked: "false"
 preprocessing_filtering: true
 mem:
   normal_mem_per_core_gb: 4
@@ -111,3 +115,7 @@ binning:
     perp: 30
     cutoff: 1000
 krakendb: minikraken2
+locked_normalMem: 0
+locked_bigMem: 0
+locked_bigCores: 0
+locked_bigTotal: 0 

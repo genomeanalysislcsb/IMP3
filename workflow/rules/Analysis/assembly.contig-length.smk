@@ -4,7 +4,7 @@ rule assembly_contig_length:
     output:
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
         "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS)
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1

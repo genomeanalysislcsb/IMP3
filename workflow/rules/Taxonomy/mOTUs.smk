@@ -15,8 +15,8 @@ rule motus:
         "Preprocessing/{type}.se.preprocessed.fq"
     output:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
-    threads: 6
-    params:
+    threads: getThreads(6)
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_taxonomy.yaml"

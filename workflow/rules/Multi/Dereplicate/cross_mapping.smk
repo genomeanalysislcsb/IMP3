@@ -9,7 +9,7 @@ rule cross_mapping:
                 ext=["fa.amb","fa.bwt","fa.pac","fa.sa","fa.ann","fa"]))
     output:
         "Dereplication/cross_mapping/{cross_sample}.on.{sample}.sorted.bam"
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -41,7 +41,7 @@ rule call_contig_depth:
     output:
         "Dereplication/cross_mapping/{sample}.contig_depth.{cross_sample}.txt",
         "Dereplication/cross_mapping/{sample}.contig_flagstat.{cross_sample}.txt"
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     threads: 1

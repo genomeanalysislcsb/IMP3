@@ -12,7 +12,7 @@ rule megahit_hybrid_assembly_1:
         'Assembly/intermediary/mgmt.megahit_hybrid.1/final.contigs.fa',
         'Assembly/intermediary/mgmt.megahit_hybrid.1.fa',
         directory('Assembly/intermediary/mgmt.megahit_hybrid.1')
-    params:
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -50,7 +50,7 @@ rule megahit_hybrid_assembly_2:
         'Assembly/intermediary/mgmt.megahit_hybrid.2/final.contigs.fa',
         'Assembly/intermediary/mgmt.megahit_hybrid.2.fa',
         directory('Assembly/intermediary/mgmt.megahit_hybrid.2')
-    params:
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO

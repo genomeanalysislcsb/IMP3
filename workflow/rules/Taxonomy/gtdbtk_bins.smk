@@ -3,7 +3,7 @@ rule GTDBtk_bins_single:
         "Binning/selected_DASTool_bins/{clusterID}"
     output:
         directory("Binning/selected_DASTool_bins/{clusterID}/GTDB"),
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     conda: ENVDIR + "/IMP_gtdbtk.yaml"
@@ -34,7 +34,7 @@ rule GTDBtk_summarize:
         gather_GTDB_bins
     output:
         report("Stats/%s/%s.bins.tsv" % (ASS,ASS),category="Taxonomy")
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     log: "logs/taxonomy_GTDBtk_summarize.log"
@@ -54,7 +54,7 @@ if MG:
         output:
             "Binning/per_bin_results.tar.gz"
         threads: 1
-        params:
+        resources:
             runtime = "8:00:00",
             mem = MEMCORE
         log: "logs/taxonomy_bins_tar.log"
@@ -76,7 +76,7 @@ else:
         output:
             "Binning/per_bin_results.tar.gz"
         threads: 1
-        params:
+        resources:
             runtime = "8:00:00",
             mem = MEMCORE
         log: "logs/taxonomy_bins_tar.log"

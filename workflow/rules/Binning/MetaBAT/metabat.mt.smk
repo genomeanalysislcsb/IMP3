@@ -4,8 +4,8 @@ rule metabat:
     output:
         "Binning/MetaBAT/metabat_res",
 	"Binning/MetaBAT/scaffold2bin.tsv"
-    threads: 8
-    params:
+    threads: getThreads(8)
+    resources:
         runtime = "24:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"

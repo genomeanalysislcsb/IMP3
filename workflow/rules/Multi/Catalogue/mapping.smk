@@ -6,7 +6,7 @@ rule mapping_on_catalogue:
         expand("Catalogue/catalogue.{ext}",ext=["fasta.amb","fasta.bwt","fasta.pac","fasta.sa","fasta.ann","fasta"])
     output:
         'Catalogue/{sample}.{type}.reads.sorted.bam'
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -36,10 +36,11 @@ rule feature_count_cat:
     output:
         "Catalogue/{type}.counts.tsv"
     params:
-        lambda wildcards: config["catalogue"]["mapping"]["featureCountsStranding"][wildcards.type],
+        lambda wildcards: config["catalogue"]["mapping"]["featureCountsStranding"][wildcards.type]
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 8
+    threads: getThreads(8)
     conda: ENVDIR + "/IMP_annotation.yaml"
     log: "logs/catalogue_feature_count_cat.{type}.log"
     message: "feature_count_cat: Quantifying {wildcards.type} reads on the catalogue."
