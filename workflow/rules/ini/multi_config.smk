@@ -11,20 +11,20 @@ import subprocess
 import pandas as pd
 import fnmatch
 
-def dict_merge(a, b):
-    """
-    Deep merge 2 dicts together
-    """
-    if not isinstance(b, dict):
-        return b
-    result = deepcopy(a)
-    for k, v in b.items():
-        if k in result and isinstance(result[k], dict):
-            result[k] = dict_merge(result[k], v)
-        else:
-            result[k] = deepcopy(v)
-    return result
-
+# NOTE: not used
+# def dict_merge(a, b):
+#     """
+#     Deep merge 2 dicts together
+#     """
+#     if not isinstance(b, dict):
+#         return b
+#     result = deepcopy(a)
+#     for k, v in b.items():
+#         if k in result and isinstance(result[k], dict):
+#             result[k] = dict_merge(result[k], v)
+#         else:
+#             result[k] = deepcopy(v)
+#     return result
 
 # default configuration file
 configfile:
@@ -34,27 +34,26 @@ configfile:
 # default executable for snakmake
 shell.executable("bash")
 
-# custom configuration file
-CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "../../conf/userconf.multi.yaml")
+# NOTE: not used (rm os.environ.get() and path is not valid)
+# # custom configuration file
+# CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "../../conf/userconf.multi.yaml")
+# # merge 2 configurations files together
+# if os.path.exists(CUSTOM_CONFIG_PATH):
+#     print("reading configuration from "+CUSTOM_CONFIG_PATH)
+#     with open(CUSTOM_CONFIG_PATH, 'r') as rhandle:
+#         data = yaml.load(rhandle, Loader=yaml.SafeLoader)
+#         config = dict_merge(config, data)
 
-# merge 2 configurations files together
-if os.path.exists(CUSTOM_CONFIG_PATH):
-    print("reading configuration from "+CUSTOM_CONFIG_PATH)
-    with open(CUSTOM_CONFIG_PATH, 'r') as rhandle:
-        data = yaml.load(rhandle, Loader=yaml.SafeLoader)
-        config = dict_merge(config, data)
-
-
-# some parameters
+# relevant paths
 SRCDIR = srcdir("../../scripts")
 BINDIR = srcdir("../../bin")
 ENVDIR = srcdir("../../envs")
 
 # get parameters from the command line
 # output
-OUTPUTDIR = os.environ.get("OUTPUTDIR", config['outputdir'])
+OUTPUTDIR = config['outputdir']
 
-MULTI_STEPS = sorted(os.environ.get("MULTI_STEPS", config['steps']).split())
+MULTI_STEPS = sorted(config['steps'].split())
 
 try:
     samples = pd.read_csv(os.path.expandvars(config['sample_table']),sep="\t")
@@ -129,13 +128,12 @@ if not os.path.isabs(TMPDIR):
 if not os.path.exists(TMPDIR):
     os.makedirs(TMPDIR)
 
-DBPATH = os.environ.get("DBPATH", os.path.expandvars(config['db_path']))
+DBPATH = os.path.expandvars(config['db_path'])
 
 # hardware parameters
-BIGCORENO = os.environ.get("BIGCORENO", config['mem']['big_mem_cores'])
-BIGMEMTOTAL = os.environ.get("BIGMEMTOTAL", config['mem']['big_mem_total_gb'])
-MEMCORE = os.environ.get("MEMCORE", str(config['mem']['normal_mem_per_core_gb']) + "G")
-BIGMEMCORE = os.environ.get("BIGMEMCORE", str(config['mem']['big_mem_per_core_gb']) + "G")
+BIGCORENO   = config['mem']['big_mem_cores']
+BIGMEMTOTAL = config['mem']['big_mem_total_gb']
+MEMCORE     = str(config['mem']['normal_mem_per_core_gb']) + "G"
+BIGMEMCORE  = str(config['mem']['big_mem_per_core_gb']) + "G"
 
 SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
-
