@@ -9,7 +9,7 @@ spades.py --meta \
  --pe2-1 {input[3]} \
  --pe2-2 {input[4]} \
  --pe2-s {input[5]} \
-  {resources.contigs} \
+  {params.contigs} \
   -t {threads} \
   -m {BIGMEMTOTAL} \
   -k {KMER_STEPS} \
