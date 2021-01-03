@@ -6,7 +6,7 @@ if config['nextseq']:
         output:
             'Preprocessing/{type}.se.trimmoed.fq'
         params:
-            adapter = lambda wildcards: config["trimmomatic"]["adapter"][w.type]
+            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: 10
         resources:
             runtime="12:00:00",
@@ -51,7 +51,7 @@ else:
         output:
             'Preprocessing/{type}.se.trimmed.fq'
         params:
-            adapter = lambda wildcards: config["trimmomatic"]["adapter"][w.type]
+            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: getThreads(10)
         resources:
             runtime="12:00:00",

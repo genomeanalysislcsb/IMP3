@@ -81,12 +81,12 @@ rule ED_alncmd:
     input:
         alninputs
     output:
-        expand("{output_dir}/{sample}_alignment_commands.txt", output_dir="Analysis/taxonomy/EukDetect")
+        expand("{output_dir}/{{sample}}_alignment_commands.txt", output_dir="Analysis/taxonomy/EukDetect")
     params:
-        inputstring = construct_input(wildcards,input), 
         bam = "Analysis/taxonomy/EukDetect/aln/{sample}_aln_q30_lenfilter.sorted.bam",
         minreadlen = config["eukdetect"]["min_readlen"],
-        db = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna"
+        db = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna",
+        inputstring = lambda wildcards,input: construct_input(wildcards,input)
     shell:
         """
         echo bowtie2 --quiet --omit-sec-seq --no-discordant --no-unal -x {params.db} {params.inputstring}  \|
@@ -101,7 +101,7 @@ rule ED_runaln:
     output:
         "Analysis/taxonomy/EukDetect/aln/{sample}_aln_q30_lenfilter.sorted.bam"
     params:
-        inputstring = construct_input(wildcards,input),                            
+        inputstring = lambda wildcards,input: construct_input(wildcards,input),                            
         minreadlen = config["eukdetect"]["min_readlen"],
         db = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna"
     threads: 1
@@ -116,7 +116,7 @@ rule ED_runaln:
         bowtie2 --quiet --omit-sec-seq --no-discordant --no-unal -x {params.db} {params.inputstring} 2>> {log} |\
          perl -lane '$l =0; $F[5] =~ s/(\d+)[MX=DN]/$l+=$1/eg; print if $l > {params.minreadlen} or /^@/' |\
          samtools view -q 30 -bS - 2>> {log} |\
-         samtools sort -o {ouput} - 2>> {log}
+         samtools sort -o {output} - 2>> {log}
         """
 
 
@@ -249,7 +249,7 @@ rule ED_countreads:
     output:
         counts = "Analysis/taxonomy/EukDetect/filtering/{sample}_read_counts_and_mismatches.txt"
     params:
-        countscript = expand("{eukdetect_dir}/eukdetect/bam_to_pid.py", eukdetect_dir=config["eukdetect_dir"]),
+        countscript = expand("{eukdetect_dir}/eukdetect/bam_to_pid.py", eukdetect_dir=config["eukdetect"]["eukdetect_dir"]),
         ref = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna"
     threads: 1
     resources:
@@ -271,9 +271,9 @@ rule ED_taxonomize:
         primary_hits = "Analysis/taxonomy/EukDetect/{sample}_filtered_hits_table.txt",
         primary_taxonomy ="Analysis/taxonomy/EukDetect/{sample}_filtered_hits_taxonomy.txt"
     params:
-        script = expand("{eukdetect_dir}/eukdetect/count_primary_and_secondary.py", eukdetect_dir=config["eukdetect_dir"]),
-        taxid_link = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/busco_taxid_link.txt"
-        inherited_markers = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/specific_and_inherited_markers_per_taxid.txt"
+        script = expand("{eukdetect_dir}/eukdetect/count_primary_and_secondary.py", eukdetect_dir=config["eukdetect"]["eukdetect_dir"]),
+        taxid_link = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/busco_taxid_link.txt",
+        inherited_markers = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/specific_and_inherited_markers_per_taxid.txt",
         taxdb = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/taxa.sqlite"
     threads: 1
     resources:

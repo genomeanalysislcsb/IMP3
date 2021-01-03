@@ -2,7 +2,7 @@ rule nonpareil:
     input:
         'Preprocessing/mg.{read}.fq'
     output:
-        expand('Stats/mg/mg.{read}_nonpareil.{suffix}',suffix=["npa","npc","npl","npo"])
+        expand('Stats/mg/mg.{{read}}_nonpareil.{suffix}',suffix=["npa","npc","npl","npo"])
     resources:
         runtime = "8:00:00",
         mem = MEMCORE

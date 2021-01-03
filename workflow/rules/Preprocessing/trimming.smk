@@ -10,7 +10,7 @@ if config['nextseq']:
             'Preprocessing/{type}.r2.trimmoed.fq',
             'Preprocessing/{type}.se2.trimmoed.fq'
         params:
-            adapter = lambda wildcards: config["trimmomatic"]["adapter"][w.type]
+            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
@@ -59,7 +59,7 @@ else:
             'Preprocessing/{type}.r2.trimmed.fq',
             'Preprocessing/{type}.se2.trimmed.fq'
         params:
-            adapter = lambda wildcards: config["trimmomatic"]["adapter"][w.type]
+            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
