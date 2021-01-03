@@ -9,6 +9,9 @@ include:
 include:
     "../../../Preprocessing/trimming.smk"
 
+include:
+    "../../../Preprocessing/nonpareil.smk"
+
 # include filtering rule or not
 if PREPROCESSING_FILTERING:
     include:

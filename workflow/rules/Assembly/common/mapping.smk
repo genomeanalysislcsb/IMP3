@@ -28,7 +28,7 @@ rule mapping_on_assembly:
         samtools merge --threads {threads} -f $PREFIX.merged.bam \
          <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[0]} {input[1]} 2>> {log}| \
          samtools view --threads {threads} -bS -) \
-         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[2]} 2> {log}| \
+         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[2]} 2>> {log}| \
          samtools view --threads {threads} -bS -) 2>> {log}
         # sort
         samtools sort --threads {threads} -m {SAMTOOLS_MEM} $PREFIX.merged.bam > $PREFIX.sorted.bam 2>> {log}

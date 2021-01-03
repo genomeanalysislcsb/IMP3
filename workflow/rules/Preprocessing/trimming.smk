@@ -9,6 +9,8 @@ if config['nextseq']:
             'Preprocessing/{type}.se1.trimmoed.fq',
             'Preprocessing/{type}.r2.trimmoed.fq',
             'Preprocessing/{type}.se2.trimmoed.fq'
+        params:
+            adapter = lambda wildcards: config["trimmomatic"]["adapter"][w.type]
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
@@ -19,7 +21,7 @@ if config['nextseq']:
         shell:
             """
             trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
-             ILLUMINACLIP:{DBPATH}/adapters/{config[trimmomatic][adapter]}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
+             ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
              LEADING:{config[trimmomatic][leading]} \
              TRAILING:{config[trimmomatic][trailing]} \
              SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
@@ -56,6 +58,8 @@ else:
             'Preprocessing/{type}.se1.trimmed.fq',
             'Preprocessing/{type}.r2.trimmed.fq',
             'Preprocessing/{type}.se2.trimmed.fq'
+        params:
+            adapter = lambda wildcards: config["trimmomatic"]["adapter"][w.type]
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
@@ -66,7 +70,7 @@ else:
         shell:
             """
             trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
-             ILLUMINACLIP:{DBPATH}/adapters/{config[trimmomatic][adapter]}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
+             ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
              LEADING:{config[trimmomatic][leading]} \
              TRAILING:{config[trimmomatic][trailing]} \
              SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \

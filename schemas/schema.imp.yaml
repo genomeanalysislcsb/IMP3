@@ -90,7 +90,12 @@ properties:
     type: object
     properties:
       adapter:
-        type: string
+        type: object
+        properties:
+          mg:
+            type: string
+          mt:
+            type: string
       leading:
         type: number
         minimum: 0
@@ -241,3 +246,15 @@ properties:
             minimum: 1
   krakendb:
     type: string
+  eukdetect:
+    type: object
+    properties:
+      run_eukdetect:
+        type: boolean
+      eukdetect_dir:
+        type: string
+      database_dir:
+        type: string
+      min_readlen:
+        type: number
+        min: 60

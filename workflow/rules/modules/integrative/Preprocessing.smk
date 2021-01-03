@@ -7,6 +7,9 @@ include:
 include:
     '../../Preprocessing/reads-count.smk'
 
+include:
+    '../../Preprocessing/nonpareil.smk'
+
 # trimming rules
 include:
     "../../Preprocessing/trimming.smk"
