@@ -112,11 +112,17 @@ properties:
       filter:
         type: string
         pattern: "^[^_.]+$" 
-  sortmerna:
+  rnafiltering:
     type: object
     properties:
-       files:
+      files:
         type: array
+      tool:
+        type: string
+        enum:
+          - "sortmerna"
+          - "bbduk"
+        default: "sortmerna"
   assembly:
     type: object
     properties:

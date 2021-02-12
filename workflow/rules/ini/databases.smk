@@ -12,7 +12,7 @@ rule trimmomatic_adapters:
 
 rule sortmerna_databases:
     output:
-        expand("sortmerna/{files}.fasta", files=config["sortmerna"]["files"])
+        expand(os.path.join(DBPATH, "sortmerna/{files}.fasta"), files=config["rnafiltering"]["files"])
     shell:
         """
         TMPD=$(mktemp -d -t --tmpdir={tmp} "XXXXXX")
@@ -22,23 +22,21 @@ rule sortmerna_databases:
         mv $TMPD/rRNA_databases/*.fasta sortmerna/.
         rm -rf $TMPD
         """.format(
-            pkg_url=config["sortmerna"]["pkg_url"],
+            pkg_url=config["rnafiltering"]["pkg_url"],
             tmp=TMPDIR
         )
 
-
 rule sortmerna_databases_index:
     input:
-        expand("sortmerna/{files}.fasta", files=config["sortmerna"]["files"])
+        expand(os.path.join(DBPATH, "sortmerna/{files}.fasta"), files=config["rnafiltering"]["files"])
     output:
         expand(
-            "sortmerna/idx/{files}.{ext}",
-            files=config["sortmerna"]["files"],
-            ext=['bursttrie_0.dat', 'kmer_0.dat', 'pos_0.dat', 'stats'])
+            os.path.join(DBPATH, "sortmerna/idx/{files}.{ext}"),
+            files=config["rnafiltering"]["files"],
+            ext=['bursttrie_0.dat', 'kmer_0.dat', 'pos_0.dat', 'stats']
+        )
     run:
-        fastaindexed = expand(
-            "sortmerna/idx/{files}",
-            files=config["sortmerna"]["files"])
+        fastaindexed = [os.path.splitext(f)[0] for f in input]
         ref = ':'.join('%s,%s' % (a, b) for a, b in zip(input, fastaindexed))
         shell("mkdir -p sortmerna")
         shell("indexdb_rna --ref {ref}")

@@ -1,6 +1,6 @@
-FASTAFILES = expand("{path}/{files}.fasta", files=config["sortmerna"]["files"], path=DBPATH + "/sortmerna")
+FASTAFILES = expand("{path}/{files}.fasta", files=config["rnafiltering"]["files"], path=DBPATH + "/sortmerna")
 
-FASTAINDEXED = expand("{path}/idx/{files}", files=config["sortmerna"]["files"], path=DBPATH + "/sortmerna")
+FASTAINDEXED = expand("{path}/idx/{files}", files=config["rnafiltering"]["files"], path=DBPATH + "/sortmerna")
 
 REF = ':'.join('%s,%s' % (a, b) for a, b in zip(FASTAFILES, FASTAINDEXED))
 
@@ -18,31 +18,76 @@ FILTER_RNA_SHELL = """
   rm $TMP_R12*
 """
 
-rule filter_rna:
-    input:
-        'Preprocessing/mt.r1.trimmed.fq',
-        'Preprocessing/mt.r2.trimmed.fq',
-        'Preprocessing/mt.se.trimmed.fq',
-        expand(
-            "{db}/sortmerna/idx/{files}.{ext}",
-            files=config["sortmerna"]["files"],
-            ext=['bursttrie_0.dat', 'kmer_0.dat', 'pos_0.dat', 'stats'],
-            db=DBPATH)
-    output:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r1.trimmed.rna.fq',
-        'Preprocessing/mt.r2.trimmed.rna.fq',
-        'Preprocessing/mt.se.trimmed.rna.fq'
-    threads: 8
-    params:
-        ref = REF,
-        sortmernamem = str(SORTME_MEM),
-        runtime = "48:00:00",
-        mem = MEMCORE
-    conda: ENVDIR + "/IMP_preprocessing.yaml"
-    log: "logs/preprocessing_filter_rna.log"
-    message: "filter_rna: filtering rRNA from mt reads."
-    shell:
-        FILTER_RNA_SHELL
+if config["rnafiltering"]["tool"] == "sortmerna":
+    rule filter_rna_sortmerna:
+        input:
+            'Preprocessing/mt.r1.trimmed.fq',
+            'Preprocessing/mt.r2.trimmed.fq',
+            'Preprocessing/mt.se.trimmed.fq',
+            expand(
+                "{db}/sortmerna/idx/{files}.{ext}",
+                files=config["rnafiltering"]["files"],
+                ext=['bursttrie_0.dat', 'kmer_0.dat', 'pos_0.dat', 'stats'],
+                db=DBPATH)
+        output:
+            'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
+            'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
+            'Preprocessing/mt.se.trimmed.rna_filtered.fq',
+            'Preprocessing/mt.r1.trimmed.rna.fq',
+            'Preprocessing/mt.r2.trimmed.rna.fq',
+            'Preprocessing/mt.se.trimmed.rna.fq'
+        threads: 8
+        params:
+            ref = REF,
+            sortmernamem = str(SORTME_MEM),
+            runtime = "48:00:00",
+            mem = MEMCORE
+        conda:
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+        log:
+            "logs/preprocessing_filter_rna.log"
+        message:
+            "filter_rna: sortmerna: filtering rRNA from mt reads."
+        shell:
+            FILTER_RNA_SHELL
+elif config["rnafiltering"]["tool"] == "bbduk":
+    rule filter_rna_bbduk:
+        input:
+            r1='Preprocessing/mt.r1.trimmed.fq',
+            r2='Preprocessing/mt.r2.trimmed.fq',
+            se='Preprocessing/mt.se.trimmed.fq',
+            refs=expand(os.path.join(DBPATH, "sortmerna/{files}.fasta"), files=config["rnafiltering"]["files"])
+        output:
+            # reads unmapped to references
+            r1u='Preprocessing/mt.r1.trimmed.rna_filtered.fq',
+            r2u='Preprocessing/mt.r2.trimmed.rna_filtered.fq',
+            seu='Preprocessing/mt.se.trimmed.rna_filtered.fq',
+            # reads mapped to references
+            r1m='Preprocessing/mt.r1.trimmed.rna.fq',
+            r2m='Preprocessing/mt.r2.trimmed.rna.fq',
+            sem='Preprocessing/mt.se.trimmed.rna.fq',
+            # stats
+            stats_pe='Preprocessing/mt.pe.trimmed.rna_filtered.stats.txt',
+            stats_se='Preprocessing/mt.se.trimmed.rna_filtered.stats.txt'
+        threads: 8
+        params:
+            # sortmernamem = str(SORTME_MEM), # TODO
+            runtime = "24:00:00",
+            mem = MEMCORE,
+            params="k=27 qin=auto qout=auto rcomp=t ziplevel=9 ordered=t"
+        conda:
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+        log:
+            "logs/preprocessing_filter_rna.log"
+        message:
+            "filter_rna: bbmap/bbduk: filtering rRNA from mt reads."
+        shell:
+            # bbmap repo: https://github.com/BioInfoTools/BBMap/
+            # bbduk guide: https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/bbduk-guide/
+            """
+            (
+            refs=$(echo \"{input.refs}\" | tr ' ' ',') &&
+            bbduk.sh in={input.r1} in2={input.r2} out={output.r1u} out2={output.r2u} outm={output.r1m} outm2={output.r2m} ref=${{refs}} refstats={output.stats_pe} threads={threads} {params.params} &&
+            bbduk.sh in={input.se} out={output.seu} outm={output.sem} ref=${{refs}} refstats={output.stats_se} threads={threads} {params.params}
+            ) &> {log}
+            """
