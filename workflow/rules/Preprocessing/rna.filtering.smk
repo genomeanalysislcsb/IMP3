@@ -51,6 +51,8 @@ if config["rnafiltering"]["tool"] == "sortmerna":
         shell:
             FILTER_RNA_SHELL
 elif config["rnafiltering"]["tool"] == "bbduk":
+    # bbmap repo: https://github.com/BioInfoTools/BBMap/
+    # bbduk manual: https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/bbduk-guide/
     rule filter_rna_bbduk:
         input:
             r1='Preprocessing/mt.r1.trimmed.fq',
@@ -67,14 +69,18 @@ elif config["rnafiltering"]["tool"] == "bbduk":
             r2m='Preprocessing/mt.r2.trimmed.rna.fq',
             sem='Preprocessing/mt.se.trimmed.rna.fq',
             # stats
-            stats_pe='Preprocessing/mt.pe.trimmed.rna_filtered.stats.txt',
-            stats_se='Preprocessing/mt.se.trimmed.rna_filtered.stats.txt'
+            stats_pe='Preprocessing/mt.pe.trimmed.refstats.txt',
+            stats_se='Preprocessing/mt.se.trimmed.refstats.txt'
         threads: 8
         params:
-            # sortmernamem = str(SORTME_MEM), # TODO
-            runtime = "24:00:00",
+            runtime = "12:00:00",
             mem = MEMCORE,
-            params="k=27 qin=auto qout=auto rcomp=t ziplevel=9 ordered=t"
+            # from manual: ca. 85% of the machine’s physical memory
+            mem2="-Xmx%dg" % round(8 * int(MEMCORE[:-1]) * 0.85),
+            # filtering (trade-off between sens and spec, affects memory/runtime)
+            filt="k=27 qhdist=1 mkh=1", # (issue #12)
+            # incl. rev. complement, quality = auto, do not zip, keep read order
+            misc="rcomp=t qin=auto qout=auto ziplevel=1 ordered=t"
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log:
@@ -82,12 +88,10 @@ elif config["rnafiltering"]["tool"] == "bbduk":
         message:
             "filter_rna: bbmap/bbduk: filtering rRNA from mt reads."
         shell:
-            # bbmap repo: https://github.com/BioInfoTools/BBMap/
-            # bbduk guide: https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/bbduk-guide/
             """
             (
             refs=$(echo \"{input.refs}\" | tr ' ' ',') &&
-            bbduk.sh in={input.r1} in2={input.r2} out={output.r1u} out2={output.r2u} outm={output.r1m} outm2={output.r2m} ref=${{refs}} refstats={output.stats_pe} threads={threads} {params.params} &&
-            bbduk.sh in={input.se} out={output.seu} outm={output.sem} ref=${{refs}} refstats={output.stats_se} threads={threads} {params.params}
+            bbduk.sh in={input.r1} in2={input.r2} out={output.r1u} out2={output.r2u} outm={output.r1m} outm2={output.r2m} ref=${{refs}} refstats={output.stats_pe} threads={threads} {params.mem2} {params.filt} {params.misc} &&
+            bbduk.sh in={input.se} out={output.seu} outm={output.sem} ref=${{refs}} refstats={output.stats_se} threads={threads} {params.mem2} {params.filt} {params.misc}
             ) &> {log}
             """
