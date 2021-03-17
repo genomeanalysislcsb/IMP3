@@ -8,8 +8,8 @@ dependencies:
   - _libgcc_mutex=0.1=main
   - alsa-lib=1.1.5=h516909a_1001
   - bzip2=1.0.8=h516909a_1
-  - ca-certificates=2019.11.28=hecc5488_0
-  - certifi=2019.11.28=py37_0
+  - ca-certificates=2020.6.20=hecda079_0
+  - certifi=2020.6.20=py37hc8dfbb8_0
   - cutadapt=2.7=py37h516909a_0
   - dnaio=0.4.1=py37h516909a_0
   - fastqc=0.11.8=1
@@ -32,12 +32,14 @@ dependencies:
   - lz4-c=1.8.3=he1b5a44_1001
   - ncurses=6.1=hf484d3e_1002
   - openjdk=11.0.1=h46a85a0_1017
-  - openssl=1.1.1d=h516909a_0
+  - openssl=1.1.1g=h516909a_0
+  - pbzip2=1.1.13=0
   - perl=5.26.2=h516909a_1006
   - pigz=2.3.4=0
   - pip=19.3.1=py37_0
   - pthread-stubs=0.4=h14c3975_1001
   - python=3.7.3=h33d41f4_1
+  - python_abi=3.7=1_cp37m
   - readline=8.0=hf8c457e_0
   - setuptools=42.0.1=py37_0
   - sortmerna=2.1b=he860b03_4
@@ -64,5 +66,4 @@ dependencies:
   - xz=5.2.4=h14c3975_1001
   - zlib=1.2.11=h516909a_1006
   - zstd=1.4.3=h3b9ef0a_0
-prefix: /work/projects/ecosystem_biology/local_tools/minicondaESB/envs/IMP_preprocessing
 

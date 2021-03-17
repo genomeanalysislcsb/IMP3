@@ -40,10 +40,12 @@ rule gzip_ori_files:
     params:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 1
+    threads: 5
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message: "gzip_ori_files: Gzipping fastq files {input}."
-    run:
-        shell("gzip -q {input} || touch {input}")
+    shell:
+        "pigz -p {threads} -q {input} || touch {input}"
 
 
 rule gzip_files:
@@ -54,10 +56,12 @@ rule gzip_files:
     params:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 1
+    threads: 5
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message: "gzip_files: Gzipping fastq files {input}."
-    run:
-        shell("gzip -q {input}")                             
+    shell:
+        "pigz -p {threads} -q {input}"
 
 checkpoint reads_gziped:
     input:

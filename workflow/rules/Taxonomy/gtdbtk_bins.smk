@@ -13,7 +13,7 @@ rule GTDBtk_bins_single:
     shell:
         """
         export GTDBTK_DATA_PATH="{DBPATH}/GTDB_tk"
-        export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
+        export PYTHONPATH=$CONDA_PREFIX/lib/python3.8/site-packages
         gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
         """
 

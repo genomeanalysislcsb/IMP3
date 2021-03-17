@@ -1,7 +1,8 @@
 rule call_gene_depth:
     input:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-        "Assembly/{type}.reads.sorted.bam"
+        "Assembly/{type}.reads.sorted.bam",
+        "Stats/%s/%s.assembly.length.txt" % (ASS,ASS)
     output:
         "Stats/{type}/annotation/{type}.annotation_cov.bed",
         "Stats/{type}/annotation/{type}.gene_depth.hist",
@@ -9,14 +10,14 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.gene.len"
     params:
         runtime = "8:00:00",
-        mem = MEMCORE
+        mem = BIGMEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/analysis_call_gene_depth.{type}.log"
     message: "call_gene_depth: Getting data on gene coverage with {wildcards.type} reads."
     shell:
         """
-        coverageBed -hist -abam {input[1]} -b <(awk '$4 < $5' {input[0]}) | grep -v "^all" > {output[0]}
+        sortBed -g {input[2]} -i  {input[0]} | awk '$4 < $5' | coverageBed -hist -sorted -g {input[2]} -b {input[1]} -a "stdin" | grep -v "^all" > {output[0]}
 
         paste <(cat {output[0]} | cut -f9 | cut -f1 -d \";\" | sed -e \"s/ID=//g\") \
          <(cut -f10,11,12,13 {output[0]}) > {output[1]}
