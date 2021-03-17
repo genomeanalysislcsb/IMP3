@@ -12,6 +12,7 @@ rule nonpareil:
     threads: 1
     log: "logs/preprocessing_nonpareil.{read}.log"
     message: "nonpareil: processed {wildcards.read} fastq file."
+    conda: ENVDIR + "/IMP_nonpareil.yaml"
     shell:
         """
         nonpareil -s {input} -T kmer -f fastq -b {params.out1}.{wildcards.read}{params.out2} >> {log} 
@@ -27,6 +28,7 @@ rule nonpareil_curve:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
+    conda: ENVDIR + "/IMP_nonpareil.yaml"
     log: "logs/preprocessing_nonpareil_curve.{read}.log"
     message: "nonpareil_curve: processed {wildcards.read} data."
     script:

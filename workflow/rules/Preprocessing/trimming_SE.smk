@@ -31,7 +31,7 @@ if config['nextseq']:
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
-        threads: getThreads(10)
+        threads: 10
         resources:
             runtime="12:00:00",
             mem = MEMCORE
@@ -40,7 +40,8 @@ if config['nextseq']:
         message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
         shell:
             """
-            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} {input} >> {log} 2>&1
+            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \
+             --minimum-length {config[trimmomatic][minlen]} {input} >> {log} 2>&1
             pigz -p {threads} -q {input} >> {log} 2>&1
             """
 else:
@@ -52,7 +53,7 @@ else:
             'Preprocessing/{type}.se.trimmed.fq'
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
-        threads: getThreads(10)
+        threads: 10
         resources:
             runtime="12:00:00",
             mem = MEMCORE

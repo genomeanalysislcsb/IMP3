@@ -26,7 +26,7 @@
 
 #targets
 
-localrules: ED_alncmd, runall, ED_printaln, ED_aln, ED_filter
+localrules: ED_alncmd, ED_runall, ED_printaln, ED_aln, ED_filter
 
 rule ED_runall:
     input:
@@ -72,10 +72,10 @@ def alninputs(wildcards):
 
 def construct_input(wildcards,input):
     if len(input) == 2:
-        "-1 " + input[0] + " -2 " + input[1]
+        outs = "-1 " + input[0] + " -2 " + input[1]
     else:
-        "-U " + input[0]
-
+        outs = "-U " + input[0]
+    return outs
 
 rule ED_alncmd:
     input:
@@ -110,7 +110,7 @@ rule ED_runaln:
         mem = MEMCORE
     log: "logs/analysis_eukdetect_aln.{sample}.log"
     message: "runaln: Running mapping for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         bowtie2 --quiet --omit-sec-seq --no-discordant --no-unal -x {params.db} {params.inputstring} 2>> {log} |\
@@ -131,7 +131,7 @@ rule ED_bam2fastq:
         mem = MEMCORE
     log: "logs/analysis_eukdetect_bam2fastq.{sample}.log"
     message: "bam2fastq: Running bam2fastq for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         bedtools bamtofastq -i {input.bam} -fq {output} &>> {log}
@@ -148,7 +148,7 @@ rule ED_find_low_complexity:
         mem = MEMCORE
 #    log: "logs/analysis_eukdetect_find_low_complexity.{sample}.log"
     message: "find_low_complexity: Finding low complexity for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         cat {input.fq} | kz | awk '{{ if ($4<0.5) print $1 }}' > {output}
@@ -166,7 +166,7 @@ rule ED_remove_low_complexity:
         mem = MEMCORE
     log: "logs/analysis_eukdetect_remove_low_complexity.{sample}.log"
     message: "remove_low_complexity: Removing low complexity for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         samtools view -h {input.inbam} 2>> {log} | grep -v -f {input.drop_complex} 2>> {log} |\
@@ -185,7 +185,7 @@ rule ED_fixmate:
         mem = MEMCORE 
     log: "logs/analysis_eukdetect_fixmate.{sample}.log"
     message: "fixmate: Running fixmate for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         samtools sort -n {input.inbam} 2>> {log} | samtools fixmate -m - {output} 2>> {log}
@@ -202,7 +202,7 @@ rule ED_markdup:
         mem = MEMCORE
     log: "logs/analysis_eukdetect_markdup.{sample}.log"
     message: "markdup: Running markdup for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         samtools sort {input} 2>> {log} | samtools markdup -r -s - {output} 2>> {log}
@@ -219,7 +219,7 @@ rule ED_rmsort:
         mem = MEMCORE
     log: "logs/analysis_eukdetect_rmsort.{sample}.log"
     message: "rmsort: Running rmsort for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         samtools sort -o {output} {input} &>> {log}
@@ -236,7 +236,7 @@ rule ED_index:
         mem = MEMCORE
     log: "logs/analysis_eukdetect_index.{sample}.log"
     message: "index: Indexing bam for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         samtools index {input.bam} {output.bai} &>> {log}
@@ -257,7 +257,7 @@ rule ED_countreads:
         mem = MEMCORE
     log: "logs/analysis_eukdetect_countreads.{sample}.log"
     message: "countreads: Counting {wildcards.sample} reads for eukdetect."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         python {params.countscript} {input.bam} {params.ref} > {output.counts} 2>> {log}
@@ -281,7 +281,7 @@ rule ED_taxonomize:
         mem = MEMCORE
     log: "logs/analysis_eukdetect_taxonomize.{sample}.log"
     message: "taxonomize: Taxonomy of {wildcards.sample} reads for eukdetect."
-    conda: ENVDIR + "eukdetect.yaml"
+    conda: ENVDIR + "/eukdetect.yaml"
     shell:
         """
         python {params.script} --dbfile {params.taxdb} --taxid_link {params.taxid_link} \

@@ -33,6 +33,7 @@ rule PREPROCESSING:
         'Stats/mg/mg.r2.preprocessed_fastqc.zip',
         'Stats/mg/mg.se.preprocessed_fastqc.zip',
         'Stats/mg/mg.read_counts.txt',
-        'status/preprocessing_mg.reads.compressed'
+        'status/preprocessing_mg.reads.compressed',
+        expand('Stats/mg/mg.{read}_nonpareil.diversity.txt',read=["r1","r2"])
     output:
         touch('status/preprocessing.done')
