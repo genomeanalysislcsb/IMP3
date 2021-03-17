@@ -52,6 +52,7 @@ validate(config,schema="../../../schemas/schema.imp.yaml")
 SRCDIR = srcdir("../../scripts")
 BINDIR = srcdir("../../bin")
 ENVDIR = srcdir("../../envs")
+MODDIR = srcdir("../../../submodules") # git submodules
 
 # output
 OUTPUTDIR = os.path.abspath(os.path.expandvars(config['outputdir']))
