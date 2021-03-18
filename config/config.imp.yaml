@@ -63,11 +63,11 @@ annotation: "hmmer" # hmmer (default) / mantis
 mantis:
   # default HMMs
   default:
+    kofam_hmm_folder: "/mnt/isilon/projects/ecosystem_biology/data/hmm/kofam_mantis"
+    ncbi_hmm_folder: "/mnt/isilon/projects/ecosystem_biology/data/hmm/NCBI"
     nog_hmm_folder: "/mnt/isilon/projects/ecosystem_biology/data/hmm/eggnog_mantis/NOGT"
     pfam_hmm_folder: "/mnt/isilon/projects/ecosystem_biology/data/hmm/pfam"
-    kofam_hmm_folder: "/mnt/isilon/projects/ecosystem_biology/data/hmm/kofam_mantis"
     tigrfam_hmm_folder: "/mnt/isilon/projects/ecosystem_biology/data/hmm/tigrfam"
-    ncbi_hmm_folder: "/mnt/isilon/projects/ecosystem_biology/data/hmm/NCBI"
   # custom HMMs
   custom: [
     "/mnt/isilon/projects/ecosystem_biology/data/hmm/Cas/Burstein2016.Nature.Cas_db.hmm",
@@ -77,10 +77,10 @@ mantis:
     "/mnt/isilon/projects/ecosystem_biology/data/hmm/transportdb/transportdb_merged.hmm",
     "/mnt/isilon/projects/ecosystem_biology/data/hmm/resfams/Resfams-full.hmm"
   ]
-  # weights: <NOGT>_hmm_folder should be <NOGT>_weight
+  # weights: <name>_hmm_folder --> <name>_weight
   weights:
-    nog_weight: 0.8
     ncbi_weight: 0.9
+    nog_weight: 0.8
     pfam_weight: 0.9
     tigrfam_weight: 0.5
 hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
