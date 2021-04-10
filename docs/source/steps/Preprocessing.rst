@@ -1,4 +1,3 @@
-
 .. _step_preprocessing:
 
 =========================
@@ -13,11 +12,11 @@ Trimming
 ----------------
 
 Trimming is performed on both metaG and metaT reads. Trimming is performed by `Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`_.
-Trimmomatic trimming includes the removal of the defined adapters, removal of low-quality bases at the beginning and/or ends of the reads,
+`Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`_ trimming includes the removal of the defined adapters, removal of low-quality bases at the beginning and/or ends of the reads,
 and/or truncation of reads if the quality in a sliding window becomes too low, and/or complete removal of a read if the remaining length is
 too short.
-Trimmomatic may produce singletons from paired-end data, when one read is completely removed due to quality reasons. The singletons produced
-from the first and second reads are concatenated into one file. After the trimmometic step, there are therefore always
+`Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`_ may produce singletons from paired-end data, when one read is completely removed due to quality reasons. The singletons produced
+from the first and second reads are concatenated into one file. After the `Trimmomatic <http://www.usadellab.org/cms/?page=trimmomatic>`_ step, there are therefore always
 three output files for paired-end data, ``r1``, ``r2``, and ``se``.
 
 A user-defined step is the removal of trailing Gs that are commonly introduced by Nextseq machines when the sequenced DNA
