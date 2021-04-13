@@ -27,23 +27,67 @@ if config['nextseq']:
              MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]} > {log} 2>&1
             """
 
-    rule nextseq_trimming:
+    rule nextseq_trimming_se:
         input:
             'Preprocessing/{type}.{read}.trimmoed.fq'
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
+        wildcard_constraints:
+            read="se[1|2]"
         threads: 10
         params:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
-        log: "logs/preprocessing_nextseq_trimming.{type}.{read}.log"
+        log: "logs/preprocessing_nextseq_trimming_se.{type}.{read}.log"
         message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
         shell:
             """
-            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} {input} >> {log} 2>&1
+            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \
+             --minimum-length {config[trimmomatic][minlen]} {input} >> {log} 2>&1
             pigz -p {threads} {input} >> {log} 2>&1
+            """
+
+    rule nextseq_trimming_pe:
+        input:
+            'Preprocessing/{type}.r1.trimmoed.fq',
+            'Preprocessing/{type}.r2.trimmoed.fq'
+        output:
+            'Preprocessing/{type}.r1.trimmed.fq',
+            'Preprocessing/{type}.r2.trimmed.fq',
+            'Preprocessing/{type}.seCut.trimmed.fq',
+            'Preprocessing/{type}.r1.trimmoed.fq.gz',
+            'Preprocessing/{type}.r2.trimmoed.fq.gz'
+        threads: 10
+        params:
+            runtime="12:00:00",
+            mem = MEMCORE
+        conda: ENVDIR + "/IMP_preprocessing.yaml"
+        log: "logs/preprocessing_nextseq_trimming_pe.{type}.pe.log"
+        message: "trimming: Trimmming poly-G's off {wildcards.type} pe reads."
+        shell:
+            """
+            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} \
+             --minimum-length {config[trimmomatic][minlen]}:{config[trimmomatic][minlen]} \
+             -o {output[0]} -p {output[1]} --too-short-paired-output {output[2]} {input[0]} {input[1]} >> {log} 2>&1
+            pigz -p {threads} {input} >> {log} 2>&1
+            """
+    rule cat_se_trimmed:
+        input:
+            'Preprocessing/{type}.se1.trimmed.fq',
+            'Preprocessing/{type}.se2.trimmed.fq',
+            'Preprocessing/{type}.seCut.trimmed.fq'
+        output:
+            'Preprocessing/{type}.se.trimmed.fq'
+        threads: 1
+        params:
+            runtime="12:00:00",
+            mem = MEMCORE
+        message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
+        shell:
+            """
+            cat {input[0]} {input[1]} {input[2]} > {output}
             """
 else:
     rule trimming:
@@ -74,21 +118,18 @@ else:
              MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]} > {log} 2>&1
             """
 
-
-rule cat_se_trimmed:
-    input:
-        'Preprocessing/{type}.se1.trimmed.fq',
-        'Preprocessing/{type}.se2.trimmed.fq'
-    output:
-        'Preprocessing/{type}.se.trimmed.fq'
-    threads: 1
-    params:
-        runtime="12:00:00",
-        mem = MEMCORE
-#    log: "logs/preprocessing_cat_se_trimmed.{type}.log"
-    message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
-    shell:
-        """
-        cat {input[0]} {input[1]} > {output}
-#        gzip {input}
-        """
+    rule cat_se_trimmed:
+        input:
+            'Preprocessing/{type}.se1.trimmed.fq',
+            'Preprocessing/{type}.se2.trimmed.fq'
+        output:
+            'Preprocessing/{type}.se.trimmed.fq'
+        threads: 1
+        params:
+            runtime="12:00:00",
+            mem = MEMCORE
+        message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
+        shell:
+            """
+            cat {input[0]} {input[1]} > {output}
+            """
