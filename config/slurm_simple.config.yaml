@@ -5,7 +5,7 @@ __default__:
   mem_per_cpu: "--mem-per-cpu "  
   runtime: "-t "
   threads: "-c "
-  stdout: "-o dadasnake.{rule}.{wildcards}.stdout"
+  stdout: "-o IMP3.{rule}.{wildcards}.stdout"
 
 prepare_input_data_copy:
   nodes: "-N 1"
