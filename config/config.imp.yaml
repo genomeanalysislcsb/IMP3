@@ -5,10 +5,10 @@ sessionKind: ""
 settingsLocked: "false"
 preprocessing_filtering: true
 mem:
-  normal_mem_per_core_gb: 4
-  big_mem_total_gb: 1600
-  big_mem_cores: 8
-  big_mem_per_core_gb: 200
+  normal_mem_per_core_gb: 8
+  big_mem_total_gb: 180
+  big_mem_cores: 5
+  big_mem_per_core_gb: 36
 tmp_dir: tmp
 raws: 
   Metagenomics: ""
