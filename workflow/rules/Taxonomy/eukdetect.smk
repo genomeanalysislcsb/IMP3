@@ -225,22 +225,23 @@ rule ED_rmsort:
         samtools sort -o {output} {input} &>> {log}
         """	
 
-rule ED_index:
-    input:
-        bam = "Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexityfilter_dupfilter.sorted.bam"
-    output:
-        bai = "Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexityfilter_dupfilter.sorted.bam.bai"
-    threads: 1
-    resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_eukdetect_index.{sample}.log"
-    message: "index: Indexing bam for eukdetect on {wildcards.sample} reads."
-    conda: ENVDIR + "/eukdetect.yaml"
-    shell:
-        """
-        samtools index {input.bam} {output.bai} &>> {log}
-        """
+if not 'assembly' in IMP_STEPS and not 'analysis' in IMP_STEPS:
+    rule ED_index:
+        input:
+            bam = "Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexityfilter_dupfilter.sorted.bam"
+        output:
+            bai = "Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexityfilter_dupfilter.sorted.bam.bai"
+        threads: 1
+        resources:
+            runtime = "12:00:00",
+            mem = MEMCORE
+        log: "logs/analysis_eukdetect_index.{sample}.log"
+        message: "index: Indexing bam for eukdetect on {wildcards.sample} reads."
+        conda: ENVDIR + "/eukdetect.yaml"
+        shell:
+            """
+            samtools index {input.bam} {output.bai} &>> {log}
+            """
 
 rule ED_countreads:
     input:
