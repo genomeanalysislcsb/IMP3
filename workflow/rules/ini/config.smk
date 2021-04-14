@@ -140,7 +140,7 @@ if config['raws']['Alignment_metatranscriptomics']:
         MTaln = os.getcwd() + "/" + os.path.expandvars(config['raws']['Alignment_metatranscriptomics'])
 else:
     MTaln = config['raws']['Alignment_metatranscriptomics']
-if config['raws']['']:
+if config['raws']['Gff']:
     if os.path.isabs(os.path.expandvars(config['raws']['Gff'])):
         ANN = os.path.expandvars(config['raws']['Gff'])
     else:
