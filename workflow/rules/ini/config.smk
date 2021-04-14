@@ -104,13 +104,50 @@ if EMAIL != "":
         print("Your email address is not valid, you will not receive notifications.")
 
 # input
-MG = config['raws']['Metagenomics'].split()
-MT = config['raws']['Metatranscriptomics'].split()
-LONG = config['raws']['LongReads']
-CONTIGS = config['raws']['Contigs']
-MGaln = config['raws']['Alignment_metagenomics']
-MTaln = config['raws']['Alignment_metatranscriptomics']
-ANN = config['raws']['Gff']
+if config['raws']['Metagenomics']:
+    MG = [os.path.expandvars(x) if os.path.isabs(os.path.expandvars(x)) else os.getcwd() + "/" + os.path.expandvars(x) for x in config['raws']['Metagenomics'].split()]
+else:
+    MG = config['raws']['Metagenomics']
+if config['raws']['Metatranscriptomics']:
+    MT = [os.path.expandvars(x) if os.path.isabs(os.path.expandvars(x)) else os.getcwd() + "/" + os.path.expandvars(x) for x in config['raws']['Metatranscriptomics'].split()]    
+else:
+    MT = config['raws']['Metatranscriptomics']
+if config['raws']['LongReads']:
+    if os.path.isabs(os.path.expandvars(config['raws']['LongReads'])):
+        LONG = os.path.expandvars(config['raws']['LongReads'])
+    else:
+        LONG = os.getcwd() + "/" + os.path.expandvars(config['raws']['LongReads'])
+else:
+    LONG = config['raws']['LongReads']
+if config['raws']['Contigs']:
+    if os.path.isabs(os.path.expandvars(config['raws']['Contigs'])):
+        CONTIGS = os.path.expandvars(config['raws']['Contigs'])
+    else:
+        CONTIGS = os.getcwd() + "/" + os.path.expandvars(config['raws']['Contigs'])
+else:
+    CONTIGS = config['raws']['Contigs']
+if config['raws']['Alignment_metagenomics']:
+    if os.path.isabs(os.path.expandvars(config['raws']['Alignment_metagenomics'])):
+        MGaln = os.path.expandvars(config['raws']['Alignment_metagenomics'])
+    else:
+        MGaln = os.getcwd() + "/" + os.path.expandvars(config['raws']['Alignment_metagenomics'])
+else:
+    MGaln = config['raws']['Alignment_metagenomics']
+if config['raws']['Alignment_metatranscriptomics']:
+    if os.path.isabs(os.path.expandvars(config['raws']['Alignment_metatranscriptomics'])):
+        MTaln = os.path.expandvars(config['raws']['Alignment_metatranscriptomics'])
+    else:
+        MTaln = os.getcwd() + "/" + os.path.expandvars(config['raws']['Alignment_metatranscriptomics'])
+else:
+    MTaln = config['raws']['']
+if config['raws']['']:
+    if os.path.isabs(os.path.expandvars(config['raws']['Gff'])):
+        ANN = os.path.expandvars(config['raws']['Gff'])
+    else:
+        ANN = os.getcwd() + "/" + os.path.expandvars(config['raws']['Gff'])
+else:
+    ANN = config['raws']['Gff']
+
 SAMPLE = config['sample']
 if SAMPLE == "":
     SAMPLE = "_".join(OUTPUTDIR.split("/")[-2:])
