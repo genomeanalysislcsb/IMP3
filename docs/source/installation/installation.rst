@@ -4,7 +4,7 @@
 How to install IMP3
 ===================
 
-To install IMP3, you need [conda](https://www.anaconda.com/).
+To install IMP3, you need `conda <https://www.anaconda.com/>`_.
 
 1. Clone this repository to your disk:
 
