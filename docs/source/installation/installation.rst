@@ -113,7 +113,7 @@ You may in addition want to remove reads mapping to a host genome. Just like the
 - `Resfams <http://www.dantaslab.org/resfams/>`_
 - `essential genes <https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm>`_
 - `Pfam-A <ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hmm.gz>`_ *note*: please name the folder holding these Pfam or Pfam_A (avoid minus in the filename)
-- KEGG <ftp://ftp.genome.jp/pub/db/kofam/>`_
+- `KEGG <ftp://ftp.genome.jp/pub/db/kofam/>`_
 Contact us, if you're interested in more in-house databases.
 
 **taxonomy**:
