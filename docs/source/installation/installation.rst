@@ -35,6 +35,7 @@ If you don't have a recent version of snakemake in your path, you can install sn
 
 3. **optional, but highly recommended**: Set permissions / PATH:
 IMP3 is meant to be used by multiple users. Set the permissions accordingly. I'd suggest:
+
 - to have read access for all files for the users, **plus**:
 - read, write and execution rights for the conda subfolder
 - It can also be useful to make the default config.imp.yaml not writable once you've set the paths to the databases you want to use (see below).
