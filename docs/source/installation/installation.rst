@@ -25,8 +25,8 @@ At this point, you have all the scripts you need to run the workflow using snake
 
 - SNAKEMAKE_VIA_CONDA - set this to true, if you don't have snakemake in your path and want to install it via conda (recommended, because that way you have a current version). Leave empty, if you don't need an additional snakemake.
 - LOADING_MODULES - insert a bash command to load modules, if you need them to run conda. Leave empty, if you don't need to load a module.
-- SUBMIT_COMMAND - insert the bash command you'll usually use to submit a job to your cluster to run on a single cpu for a few days. You only need this, if you want to have the snakemake top instance running in a submitted job. You alternatively have the option to run it on the frontend via tmux. Leave empty, if you want to use this version and have [tmux](https://github.com/tmux/tmux/wiki) installed.
-- SCHEDULER - insert the name of the scheduler you want to use (currently `slurm` or `sge`). This determines the cluster config given to snakemake, e.g. the cluster config file for slurm is config/slurm.config.yaml or config/slurm_simple.config.yaml. Also check that the settings in this file is correct. If you have a different system, contact us ( https://git-r3lab.uni.lu/IMP/imp3/-/issues ) and feel free to submit new scheduler files.
+- SUBMIT_COMMAND - insert the bash command you'll usually use to submit a job to your cluster to run on a single cpu for a few days. You only need this, if you want to have the snakemake top instance running in a submitted job. You alternatively have the option to run it on the frontend via tmux. Leave empty, if you want to use this version and have `tmux <https://github.com/tmux/tmux/wiki/>`_ installed.
+- SCHEDULER - insert the name of the scheduler you want to use (currently `slurm` or `sge`). This determines the cluster config given to snakemake, e.g. the cluster config file for slurm is config/slurm.config.yaml or config/slurm_simple.config.yaml. Also check that the settings in this file is correct. If you have a different system, `contact us <https://git-r3lab.uni.lu/IMP/imp3/-/issues/>`_ and feel free to submit new scheduler files.
 - MAX_THREADS - set this to the maximum number of cores you want to be using in a run. If you don't set this, the default will be 50. Users can override this setting at runtime.
 - BIGMEM_CORES - set this to the maximum number of bigmem cores you want to be using in a run. If you don't set this, the default will be 5.
 - NORMAL_MEM_EACH - set the size of the RAM of one core of your normal copute nodes (e.g. 8G). If you're not planning to use binny to submit to a cluster, you don't need to set this.
@@ -109,10 +109,11 @@ You may in addition want to remove reads mapping to a host genome. Just like the
 **analysis**:
 
 - hmms: IMP3 assigns gene functions using HMMer3. For this, you need a subdirectory called hmm in your database directory. Each collection of HMMs you want to include must sit in its own subdirectory of hmm, which you specify in the config file, e.g. hmm_DBs: "Resfams essential". You can use multiple collections of HMMs, of course. Here are some suggestions:
-`Resfams: <http://www.dantaslab.org/resfams/>`_
-`essential genes: <https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm>`_
-`Pfam-A: <ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hmm.gz>`_ *note*: please name the folder holding these Pfam or Pfam_A (avoid minus in the filename)
-`KEGG: <ftp://ftp.genome.jp/pub/db/kofam/>`_
+
+- `Resfams <http://www.dantaslab.org/resfams/>`_
+- `essential genes <https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm>`_
+- `Pfam-A <ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hmm.gz>`_ *note*: please name the folder holding these Pfam or Pfam_A (avoid minus in the filename)
+- KEGG <ftp://ftp.genome.jp/pub/db/kofam/>`_
 Contact us, if you're interested in more in-house databases.
 
 **taxonomy**:
