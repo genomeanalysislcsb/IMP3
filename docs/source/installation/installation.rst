@@ -22,6 +22,7 @@ Change into the IMP3 directory:
 At this point, you have all the scripts you need to run the workflow using snakemake. You still need to download a number of databases, though (see point 7). If you want to use the **comfortable IMP3 wrapper**, follow the points 2-6. 
 
 2. Adjust the file VARIABLE_CONFIG to your requirements (have a tab between the variable name and your setting):
+
 - SNAKEMAKE_VIA_CONDA - set this to true, if you don't have snakemake in your path and want to install it via conda (recommended, because that way you have a current version). Leave empty, if you don't need an additional snakemake.
 - LOADING_MODULES - insert a bash command to load modules, if you need them to run conda. Leave empty, if you don't need to load a module.
 - SUBMIT_COMMAND - insert the bash command you'll usually use to submit a job to your cluster to run on a single cpu for a few days. You only need this, if you want to have the snakemake top instance running in a submitted job. You alternatively have the option to run it on the frontend via tmux. Leave empty, if you want to use this version and have [tmux](https://github.com/tmux/tmux/wiki) installed.
@@ -33,6 +34,7 @@ At this point, you have all the scripts you need to run the workflow using snake
 
 3. Decide how you want to run IMP3, if you let it submit jobs to the cluster:
 Only do one of the two:
+
 - if you want to submit the process running snakemake to the cluster:
 
 .. code-block:: console
@@ -86,6 +88,7 @@ I strongly suggest to **remove one line from the activation script** after the i
 7. Download databases:
 *note*: if you already have some of these databases, you don't need to download them again. You need to link them into the directory that keeps all of the databases, though. You may also not need all of these databases, if you don't run the steps that use them. Here, we list recommended databases for every step:
 **preprocessing**:
+
 - Trimmomatic adapters: You need a subdirectory in your database directory called adapters that hold the adapters you'd like to trim. You can find the latest versions `here <https://github.com/usadellab/Trimmomatic/tree/main/adapters/>`_ . We also `supply <https://webdav-r3lab.uni.lu/public/R3lab/IMP/Trimmomatic-Src-0.32.zip>`_ such a directory (from Trimmomatic v.0.32) that you'd just need to unzip. You may also want to use different adapters, which you can just supply in fasta format. You specify the adapter set in the config file.
 - genomes to filter your reads against: You should remove phiX174 sequences, as they are more than likely to come from the sequencing. You need to download this file and place it in a subdirectory of your database directory. In the config file, you specify the filtering file like so:
 
@@ -102,16 +105,20 @@ You may in addition want to remove reads mapping to a host genome. Just like the
     filter: "phiX174 hg38"
 
 - sortmeRNA databases: If you run IMP3 on metatranscriptomic reads, the rRNA reads are filtered by sortmeRNA. We supply these `here <https://webdav-r3lab.uni.lu/public/R3lab/IMP/sortmerna.2.0.tgz>`_ . You need to unzip this into your database directory, or manually download the sequences from https://github.com/biocore/sortmerna/tree/master/data/rRNA_databases and put them into a subdirectory in your database directory called sortmerna.
+
 **analysis**:
+
 - hmms: IMP3 assigns gene functions using HMMer3. For this, you need a subdirectory called hmm in your database directory. Each collection of HMMs you want to include must sit in its own subdirectory of hmm, which you specify in the config file, e.g. hmm_DBs: "Resfams essential". You can use multiple collections of HMMs, of course. Here are some suggestions:
 `Resfams: <http://www.dantaslab.org/resfams/>`_
 `essential genes: <https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm>`_
 `Pfam-A: <ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hmm.gz>`_ *note*: please name the folder holding these Pfam or Pfam_A (avoid minus in the filename)
 `KEGG: <ftp://ftp.genome.jp/pub/db/kofam/>`_
 Contact us, if you're interested in more in-house databases.
+
 **taxonomy**:
-* kraken: You will need a kraken2 database in your database directory (or a link to one). You can get many of those `here: <https://benlangmead.github.io/aws-indexes/k2/>`_ . You may also want to build your own. You just supply the name of the k2 database in the config file later, e.g. "krakendb: minikraken2"
-* GTDB_tk: If you have performed **binning**, you need the `GTDB database: <https://data.ace.uq.edu.au/public/gtdb/data/releases/release95/95.0/auxillary_files/>`_ . Store it in a subdirectory called GTDB_tk within your database directory.
+
+- kraken: You will need a kraken2 database in your database directory (or a link to one). You can get many of those `here: <https://benlangmead.github.io/aws-indexes/k2/>`_ . You may also want to build your own. You just supply the name of the k2 database in the config file later, e.g. "krakendb: minikraken2"
+- GTDB_tk: If you have performed **binning**, you need the `GTDB database: <https://data.ace.uq.edu.au/public/gtdb/data/releases/release95/95.0/auxillary_files/>`_ . Store it in a subdirectory called GTDB_tk within your database directory.
 
 
 
