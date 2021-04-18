@@ -118,8 +118,13 @@ Contact us, if you're interested in more in-house databases.
 
 **taxonomy**:
 
-- kraken: You will need a kraken2 database in your database directory (or a link to one). You can get many of those `here: <https://benlangmead.github.io/aws-indexes/k2/>`_ . You may also want to build your own. You just supply the name of the k2 database in the config file later, e.g. "krakendb: minikraken2"
-- GTDB_tk: If you have performed **binning**, you need the `GTDB database: <https://data.ace.uq.edu.au/public/gtdb/data/releases/release95/95.0/auxillary_files/>`_ . Store it in a subdirectory called GTDB_tk within your database directory.
+- kraken: You will need a kraken2 database in your database directory (or a link to one). You can get many of those `here: <https://benlangmead.github.io/aws-indexes/k2/>`_ . You may also want to build your own. You just supply the name of the k2 database in the config file later, e.g. 
+
+.. code-block:: yaml
+
+  krakendb: minikraken2"
+
+- GTDB_tk: If you have performed **binning**, you need the `GTDB database <https://data.ace.uq.edu.au/public/gtdb/data/releases/release95/95.0/auxillary_files/>`_ . Store it in a subdirectory called GTDB_tk within your database directory.
 
 
 
