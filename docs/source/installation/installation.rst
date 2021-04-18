@@ -64,6 +64,7 @@ If you want to use snakemake via conda (and you've set SNAKEMAKE_VIA_CONDA to tr
 
 5. **optional, but highly recommended**: Set permissions / PATH:
 IMP3 is meant to be used by multiple users. Set the permissions accordingly. I'd suggest:
+
 - to have read access for all files for the users, **plus**:
 - execution rights for the runIMP3 file and the .sh scripts in the subfolder submit_scripts
 - read, write and execution rights for the conda subfolder
