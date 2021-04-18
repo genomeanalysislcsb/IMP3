@@ -18,12 +18,12 @@ raws:
 sample: test
 outputdir: ""
 summarydir: ""
-summary_steps: "stats DB vis"
+summary_steps: "stats vis"
 mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
+db_path: "IMP_DBs"
 trimmomatic:
   adapter: "TruSeq3-PE"
   leading: 20

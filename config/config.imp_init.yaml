@@ -1,0 +1,7 @@
+steps: "preprocessing assembly analysis binning taxonomy summary"
+preprocessing_filtering: true
+tmp_dir: tmp
+raws: 
+  Metagenomics: "test/Reads/test.mg.1.fastq test/Reads/test.mg.2.fastq"
+sample: test
+outputdir: "IMP3init"
