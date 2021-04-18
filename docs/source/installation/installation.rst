@@ -118,7 +118,7 @@ Contact us, if you're interested in more in-house databases.
 
 **taxonomy**:
 
-- kraken: You will need a kraken2 database in your database directory (or a link to one). You can get many of those `here: <https://benlangmead.github.io/aws-indexes/k2/>`_ . You may also want to build your own. You just supply the name of the k2 database in the config file later, e.g. 
+- kraken: You will need a kraken2 database in your database directory (or a link to one). You can get many of those `here <https://benlangmead.github.io/aws-indexes/k2/>`_ . You may also want to build your own. You just supply the name of the k2 database in the config file later, e.g. 
 
 .. code-block:: yaml
 
