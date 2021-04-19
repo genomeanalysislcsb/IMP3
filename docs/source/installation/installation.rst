@@ -10,7 +10,7 @@ To install IMP3, you need `conda <https://www.anaconda.com/>`_.
 
 .. code-block:: console
 
-  git clone --single-branch --branch master https://git-r3lab.uni.lu/IMP/imp3 ./IMP3
+  git clone --single-branch --branch master https://git-r3lab.uni.lu/IMP/imp3.git ./IMP3
 
 Change into the IMP3 directory:
 
