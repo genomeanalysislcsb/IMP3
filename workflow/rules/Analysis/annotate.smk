@@ -63,7 +63,7 @@ rule mantis:
     message:
         "Mantis: annotate {input}"
     shell:
-        "(if [ -d {params.odir} ]; then ls -l {params.odir}; fi && python {MODDIR}/mantis/ run_mantis --target {input.faa} --output_folder {params.odir} --mantis_config {input.config} {params.params}) &> {log}"
+        "python {MODDIR}/mantis/ run_mantis --target {input.faa} --output_folder {params.odir} --mantis_config {input.config} {params.params} &> {log}"
 
 # Mantis: reformat consensus output (to be imported in Python/R)
 rule mantis_reformat_consensus:
@@ -77,8 +77,8 @@ rule mantis_reformat_consensus:
     message:
         "Mantis: reformat {input}"
     shell:
-        # merge annotations after "|", remove "|" separator
-        "paste <(cut -d '|' -f1 {input} | sed 's/\\t$//') <(cut -d '|' -f2 {input} | sed 's/^\\t//;s/\\t/;/g') > {output}"
+        # merge annotations after "|" and remove "|"
+        "paste <(cut -d '|' -f1 {input} | sed 's/\\t$//') <(cut -d '|' -f2- {input} | sed 's/^\\t//;s/\\t/,/g') > {output}"
 
 # GFF from HMMER output
 rule makegff:
@@ -119,16 +119,31 @@ rule makegff_mantis:
         "Mantis: create GFF from {input}"
     run:
         import re
+        import numpy
         import pandas
+        import warnings
         # read in
         gff   = pandas.read_csv(input.gff, sep="\t", header=None, names=["seqname", "source", "feature", "start", "end", "score", "strand", "frame", "attr"])
         annot = pandas.read_csv(input.mantis, sep="\t", header=0, index_col=0)
-        # keep only entries w/ annotation
-        gff   = gff.loc[gff.index.intersection(annot.index),:]
-        # GFF row names: extracted from attr column
+        annot.replace(to_replace=numpy.nan, value="N/A", inplace=True) # replace None by "N/A" (e.g. no "Links")
+        # to comply with the GFF attributes format:
+        #   replace ";" by "," (";" is used to concat attributes)
+        #   replace "=" by "-" ("=" is used to concat key/value pairs)
+        for cname in ["HMM_Hits", "Links"]:
+            annot[cname] = annot[cname].str.replace(';', ',', regex=True).replace('=', '-', regex=True)
+        # GFF row names = protein ID (extracted from attr column)
         gff.set_index(keys=gff.attr.map(lambda x: [re.sub("^ID=", "", a) for a in x.split(";") if re.match("ID=", a)][0]), inplace=True)
-        # add annotations
-        gff.loc[:,"attr"] = gff.loc[:,"attr"].astype(str) + ";" + annot.loc[gff.index,"Links"]
+        # protein IDs: difference/intersection w/ IDs from Mantis output
+        pids_both = gff.index.intersection(annot.index)
+        pids_diff = gff.index.difference(annot.index)
+        # add Mantis annotations
+        if len(pids_both) > 0:
+            gff.loc[pids_both,"attr"] = gff.loc[pids_both,"attr"].astype(str) + ";mantis_hmmhits=" + annot.loc[pids_both,"HMM_Hits"] + ";mantis_links=" + annot.loc[pids_both,"Links"]
+        else: # raise a warning if no proteins from the GFF have a Mantis annotation
+            warnings.warn("No proteins from %s could be annotated with Mantis (%s" % (input.gff, input.mantis))
+        # add missing Mantis annotations
+        if len(pids_diff) > 0:
+            gff.loc[pids_diff,"attr"] = gff.loc[pids_diff,"attr"].astype(str) + ";mantis_hmmhits=NA;mantis_links=NA"
         # save
         gff.to_csv(output[0], sep="\t", header=False, index=False)
 
