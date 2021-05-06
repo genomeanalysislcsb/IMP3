@@ -8,7 +8,7 @@ You can run IMP3 by calling `Snakemake <https://snakemake.readthedocs.io/en/stab
 
 .. code-block:: console
 
-  snakemake /path/to/IMP3/Snakefile --configfile /path/to/config.file.yaml --use-conda --conda-prefix /path/to/IMP3/conda --cores corenumber
+  snakemake -s /path/to/IMP3/Snakefile --configfile /path/to/config.file.yaml --use-conda --conda-prefix /path/to/IMP3/conda --cores corenumber
 
 ``Snakefile`` defines your workflow that you want to execute.
 
