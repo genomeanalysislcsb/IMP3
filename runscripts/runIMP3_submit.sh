@@ -128,9 +128,9 @@ elif [ "$CLUSTER" = true ]; then
     fi
     echo "Submitting workflow to cluster."
     if [ "$REPORT" = true ]; then
-        eval "${SUBMIT_COMMAND} $DIR/submit_scripts/runIMP3_withReport.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
+        eval "${SUBMIT_COMMAND} $DIR/runscripts/IMP3_withReport.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
     else
-        eval "${SUBMIT_COMMAND} $DIR/submit_scripts/runIMP3_withoutReport.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
+        eval "${SUBMIT_COMMAND} $DIR/runscripts/IMP3_withoutReport.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
     fi
 elif [ "$LAPTOP" = true ]; then
     echo "Running workflow in current session - don't use this setting except with small datasets and databases."

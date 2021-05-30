@@ -101,7 +101,10 @@ localrules: prepare_input_data_symlink
 
 rule prepare_input_data_symlink:
     input:
-        get_ori_files
+       expand([
+        'Preprocessing/{type}.r1.fq',
+        'Preprocessing/{type}.r2.fq',
+        'Preprocessing/{type}.se.fq'], type=TYPES) 
     output:
         symlinked_output_list
     message:

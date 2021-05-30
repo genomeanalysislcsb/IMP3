@@ -1,3 +1,14 @@
+if "preprocessing" in IMP_STEPS and int(config['trimmomatic']['minlen'])>=24:
+    nonpareil_cmd = """
+        nonpareil -s {input} -T kmer -f fastq -b {params.out1}.{wildcards.read}{params.out2} >> {log}
+        """
+else:
+   nonpareil_cmd = """
+        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "no_short_XXXXXX.fq")
+        seqkit seq {input} -j {threads} -m 24 >> $TMP_FILE
+        nonpareil -s $TMP_FILE -T kmer -f fastq -b {params.out1}.{wildcards.read}{params.out2} >> {log}
+        """ 
+
 rule nonpareil:
     input:
         'Preprocessing/mg.{read}.fq'
@@ -14,9 +25,7 @@ rule nonpareil:
     message: "nonpareil: processed {wildcards.read} fastq file."
     conda: ENVDIR + "/IMP_nonpareil.yaml"
     shell:
-        """
-        nonpareil -s {input} -T kmer -f fastq -b {params.out1}.{wildcards.read}{params.out2} >> {log} 
-        """
+        nonpareil_cmd
 
 rule nonpareil_curve:
     input:
