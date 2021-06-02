@@ -77,8 +77,8 @@ elif config["rnafiltering"]["tool"] == "bbduk":
             mem = MEMCORE,
             # from manual: ca. 85% of the machine’s physical memory
             mem2="-Xmx%dg" % round(8 * int(MEMCORE[:-1]) * 0.85),
-            # filtering (trade-off between sens and spec, affects memory/runtime)
-            filt="k=27 qhdist=1 mkh=1", # (issue #12)
+            # filtering params
+            filt=config["rnafiltering"]["bbduk"]["filt"],
             # incl. rev. complement, quality = auto, do not zip, keep read order
             misc="rcomp=t qin=auto qout=auto ziplevel=1 ordered=t"
         conda:
@@ -91,7 +91,7 @@ elif config["rnafiltering"]["tool"] == "bbduk":
             """
             (
             refs=$(echo \"{input.refs}\" | tr ' ' ',') &&
-            bbduk.sh in={input.r1} in2={input.r2} out={output.r1u} out2={output.r2u} outm={output.r1m} outm2={output.r2m} ref=${{refs}} refstats={output.stats_pe} threads={threads} {params.mem2} {params.filt} {params.misc} &&
+            bbduk.sh in1={input.r1} in2={input.r2} out1={output.r1u} out2={output.r2u} outm1={output.r1m} outm2={output.r2m} ref=${{refs}} refstats={output.stats_pe} threads={threads} {params.mem2} {params.filt} {params.misc} &&
             bbduk.sh in={input.se} out={output.seu} outm={output.sem} ref=${{refs}} refstats={output.stats_se} threads={threads} {params.mem2} {params.filt} {params.misc}
             ) &> {log}
             """

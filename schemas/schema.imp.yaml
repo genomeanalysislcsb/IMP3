@@ -123,6 +123,12 @@ properties:
           - "sortmerna"
           - "bbduk"
         default: "sortmerna"
+      bbduk:
+        type: object
+        properties:
+          filt:
+            type: string
+            default: "k=27 qhdist=1 mkh=1"
   assembly:
     type: object
     properties:
