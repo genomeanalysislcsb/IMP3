@@ -37,7 +37,7 @@ for(i in 1:length(input_files)){
                                           gsub("__.+","",tax_vec[length(tax_vec)])})
 }
 
-all_mOTU <- rbindlist(lapply(1:length(all_mOTU),function(x) data.frame(all_mOTU[[x]],
+all_mOTU <- rbindlist(lapply(1:length(all_mOTU),function(x) if(nrow(all_mOTU[[x]])>0) data.frame(all_mOTU[[x]],
                                                                       "sample"=names(all_mOTU)[x],
                                                                       stringsAsFactors = F)))
 

@@ -67,6 +67,7 @@ samples = samples.assign(mt=[1 if (multi_config[sam]['raws']['Metatranscriptomic
 if "collate" in MULTI_STEPS:
     COLL_STEPS = sorted(config['collection']['results'].split())
     samples = samples.assign(taxonomy=[1 if "taxonomy" in multi_config[sam]['steps'].split() and (multi_config[sam]['raws']['Metagenomics'].split() or multi_config[sam]['raws']['Metatranscriptomics'].split()) else 0 for sam in samples['sample']])
+    samples = samples.assign(EukDetect=[1 if "taxonomy" in multi_config[sam]['steps'].split() and (multi_config[sam]['raws']['Metagenomics'].split() or multi_config[sam]['raws']['Metatranscriptomics'].split()) and 'eukdetect' in multi_config[sam] and multi_config[sam]['eukdetect']['run_eukdetect'] else 0 for sam in samples['sample']])
     samples = samples.assign(stats=[1 if "summary" in multi_config[sam]['steps'].split() and "stats" in multi_config[sam]['summary_steps'].split() else 0 for sam in samples['sample']])
     for db in config['hmm_DBs'].split():        
         samples[db] = 0
@@ -91,7 +92,7 @@ if "dereplicate" in MULTI_STEPS:
         if not 'rebinning' in samples.columns:
             samples['rebinning'] = "yes"
 
-#print(samples)
+#print(samples.EukDetect)
 
 TYPES=config['omes'].split()
 
