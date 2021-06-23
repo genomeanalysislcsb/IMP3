@@ -11,20 +11,7 @@ import subprocess
 import pandas as pd
 import fnmatch
 
-# NOTE: not used
-# def dict_merge(a, b):
-#     """
-#     Deep merge 2 dicts together
-#     """
-#     if not isinstance(b, dict):
-#         return b
-#     result = deepcopy(a)
-#     for k, v in b.items():
-#         if k in result and isinstance(result[k], dict):
-#             result[k] = dict_merge(result[k], v)
-#         else:
-#             result[k] = deepcopy(v)
-#     return result
+
 
 # default configuration file
 configfile:
@@ -34,17 +21,8 @@ configfile:
 # default executable for snakmake
 shell.executable("bash")
 
-# NOTE: not used (rm os.environ.get() and path is not valid)
-# # custom configuration file
-# CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "../../conf/userconf.multi.yaml")
-# # merge 2 configurations files together
-# if os.path.exists(CUSTOM_CONFIG_PATH):
-#     print("reading configuration from "+CUSTOM_CONFIG_PATH)
-#     with open(CUSTOM_CONFIG_PATH, 'r') as rhandle:
-#         data = yaml.load(rhandle, Loader=yaml.SafeLoader)
-#         config = dict_merge(config, data)
 
-# relevant paths
+# some parameters
 SRCDIR = srcdir("../../scripts")
 BINDIR = srcdir("../../bin")
 ENVDIR = srcdir("../../envs")
@@ -89,6 +67,7 @@ samples = samples.assign(mt=[1 if (multi_config[sam]['raws']['Metatranscriptomic
 if "collate" in MULTI_STEPS:
     COLL_STEPS = sorted(config['collection']['results'].split())
     samples = samples.assign(taxonomy=[1 if "taxonomy" in multi_config[sam]['steps'].split() and (multi_config[sam]['raws']['Metagenomics'].split() or multi_config[sam]['raws']['Metatranscriptomics'].split()) else 0 for sam in samples['sample']])
+    samples = samples.assign(EukDetect=[1 if "taxonomy" in multi_config[sam]['steps'].split() and (multi_config[sam]['raws']['Metagenomics'].split() or multi_config[sam]['raws']['Metatranscriptomics'].split()) and 'eukdetect' in multi_config[sam] and multi_config[sam]['eukdetect']['run_eukdetect'] else 0 for sam in samples['sample']])
     samples = samples.assign(stats=[1 if "summary" in multi_config[sam]['steps'].split() and "stats" in multi_config[sam]['summary_steps'].split() else 0 for sam in samples['sample']])
     for db in config['hmm_DBs'].split():        
         samples[db] = 0
@@ -113,7 +92,7 @@ if "dereplicate" in MULTI_STEPS:
         if not 'rebinning' in samples.columns:
             samples['rebinning'] = "yes"
 
-#print(samples)
+#print(samples.EukDetect)
 
 TYPES=config['omes'].split()
 
@@ -131,9 +110,10 @@ if not os.path.exists(TMPDIR):
 DBPATH = os.path.expandvars(config['db_path'])
 
 # hardware parameters
-BIGCORENO   = config['mem']['big_mem_cores']
+BIGCORENO = config['mem']['big_mem_cores']
 BIGMEMTOTAL = config['mem']['big_mem_total_gb']
-MEMCORE     = str(config['mem']['normal_mem_per_core_gb']) + "G"
-BIGMEMCORE  = str(config['mem']['big_mem_per_core_gb']) + "G"
+MEMCORE = str(config['mem']['normal_mem_per_core_gb']) + "G"
+BIGMEMCORE = str(config['mem']['big_mem_per_core_gb']) + "G"
 
 SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
+
