@@ -27,7 +27,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
+db_path: "../IMP_DBs"
 trimmomatic:
   adapter: 
     mg: "TruSeq3-PE"
@@ -119,7 +119,7 @@ binning:
 krakendb: minikraken2
 eukdetect:
   run_eukdetect: true
-  eukdetect_dir: /data/idiv_biu/heintzbu/TOOLS/EukDetect
+  eukdetect_dir: ../EukDetect
   database_dir: eukdetect_database_v1
   min_readlen: 60 #eukdetect does not recommend pre-trimming, but I don't see why we should keep stuff we don't want
 locked_normalMem: 0
