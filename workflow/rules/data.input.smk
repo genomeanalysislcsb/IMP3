@@ -101,7 +101,10 @@ localrules: prepare_input_data_symlink
 
 rule prepare_input_data_symlink:
     input:
-        get_ori_files
+       expand([
+        'Preprocessing/{type}.r1.fq',
+        'Preprocessing/{type}.r2.fq',
+        'Preprocessing/{type}.se.fq'], type=TYPES) 
     output:
         symlinked_output_list
     message:
@@ -116,7 +119,7 @@ rule prepare_input_data_copy:
     output:
         input_files_list
     threads: 5
-    params:
+    resources:
         runtime = "1:00:00",
         mem = MEMCORE
     conda:
@@ -207,7 +210,7 @@ rule check_bam_input:
         "status/{type}.reads.sorted.bam.checked"
     priority: 10
     threads: 1
-    params:
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     message: "Checking {wildcards.type} alignment."
@@ -227,7 +230,7 @@ rule check_ann_input:
         "status/annotation_CDS_RNA_hmms.gff.checked"
     priority: 10
     threads: 1
-    params:
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     message: "Checking annotation."
