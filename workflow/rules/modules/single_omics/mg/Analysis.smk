@@ -16,7 +16,6 @@ include:
 # master command
 rule ANALYSIS:
     input:
-        expand("Stats/{type}/annotation/{type}.annotation_cov.bed", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.hist", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
         expand("Stats/{type}/annotation/{type}.gene.len", type=TYPES),
