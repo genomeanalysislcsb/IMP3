@@ -22,12 +22,12 @@ raws:
 sample: test
 outputdir: ""
 summarydir: ""
-summary_steps: "stats DB vis"
+summary_steps: "stats vis"
 mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
+db_path: "IMP_DBs"
 trimmomatic:
   adapter: 
     mg: "TruSeq3-PE"
@@ -44,7 +44,7 @@ trimmomatic:
   target_length: 40
 nextseq: false
 filtering:
-  filter: "phiX174 hg38"
+  filter: "phiX174"
 sortmerna:
   files:
     - rfam-5.8s-database-id98
@@ -58,7 +58,7 @@ sortmerna:
 assembly: 
   hybrid: true
   assembler: megahit
-  merge: "cap3" # how to do merge(assembly A, assembly B from reads not mapping to A); none or "" = use only assembly A
+  merge: "cap3" # how to do merge(assembly A, assembly B from reads not mapping to A); none or "" = use only assembly A or "concat" or "flye"
   mink: 25
   maxk: 99
   step: 4
