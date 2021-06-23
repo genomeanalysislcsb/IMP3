@@ -8,7 +8,7 @@ rule kraken_contigs:
     output:
         "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS,
         "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS
-    params:
+    resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     threads: KRAKTHREADS
@@ -28,7 +28,7 @@ rule kraken_parse:
     output:
         "Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS
     threads: 1
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_taxonomy.yaml"

@@ -9,7 +9,7 @@ rule kraken_reads:
     output:
         "Analysis/taxonomy/kraken/{type}.kraken.output",
         report("Analysis/taxonomy/kraken/{type}.kraken.report",category="Taxonomy")
-    params:
+    resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     threads: KRAKTHREADS 
