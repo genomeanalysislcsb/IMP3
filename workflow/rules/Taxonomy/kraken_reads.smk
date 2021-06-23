@@ -8,7 +8,7 @@ rule kraken_reads:
         "Preprocessing/{type}.r1.preprocessed.fq",
         "Preprocessing/{type}.r2.preprocessed.fq",
     output:
-        "Analysis/taxonomy/kraken/{type}.kraken.output",
+        "Analysis/taxonomy/kraken/{type}.kraken.output.gz",
         report("Analysis/taxonomy/kraken/{type}.kraken.report",category="Taxonomy")
     resources:
         runtime = "8:00:00",
@@ -20,6 +20,8 @@ rule kraken_reads:
     shell:
 	    """
 	    mkdir -p Analysis/taxonomy/kraken
-	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --paired --use-names --output {output[0]} --report {output[1]} {input} > {log} 2>&1
+            OUTP=${{{output[0]}%.gz}}
+	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --paired --use-names --output $OUTP --report {output[1]} {input} > {log} 2>&1
+            gzip $OUTP
 	    """
 
