@@ -5,8 +5,10 @@ if config['nextseq']:
             DBPATH + "/adapters/adapters.done"
         output:
             'Preprocessing/{type}.se.trimmoed.fq'
-        threads: 10
         params:
+            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
+        threads: 10
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -15,7 +17,7 @@ if config['nextseq']:
         shell:
             """
             trimmomatic SE -threads {threads} {input[0]} {output} \
-             ILLUMINACLIP:{DBPATH}/adapters/{config[trimmomatic][adapter]}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
+             ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
              LEADING:{config[trimmomatic][leading]} \
              TRAILING:{config[trimmomatic][trailing]} \
              SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
@@ -30,7 +32,7 @@ if config['nextseq']:
             'Preprocessing/{type}.{read}.trimmed.fq',
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
         threads: 10
-        params:
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -38,7 +40,8 @@ if config['nextseq']:
         message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
         shell:
             """
-            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} {input} >> {log} 2>&1
+            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \
+             --minimum-length {config[trimmomatic][minlen]} {input} >> {log} 2>&1
             pigz -p {threads} -q {input} >> {log} 2>&1
             """
 else:
@@ -48,8 +51,10 @@ else:
             DBPATH + "/adapters/adapters.done"
         output:
             'Preprocessing/{type}.se.trimmed.fq'
-        threads: 10
         params:
+            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
+        threads: 10
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -58,7 +63,7 @@ else:
         shell:
             """
             trimmomatic SE -threads {threads} {input[0]} {output} \
-             ILLUMINACLIP:{DBPATH}/adapters/{config[trimmomatic][adapter]}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
+             ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
              LEADING:{config[trimmomatic][leading]} \
              TRAILING:{config[trimmomatic][trailing]} \
              SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
