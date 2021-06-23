@@ -12,7 +12,7 @@ rule kraken_reads:
     resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: KRAKTHREADS 
+    threads: getThreads(KRAKTHREADS) 
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_reads.{type}.log"
     message: "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."

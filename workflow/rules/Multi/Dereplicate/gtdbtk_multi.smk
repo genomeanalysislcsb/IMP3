@@ -11,7 +11,7 @@ rule GTDBtk_bins:
     conda: ENVDIR + "/IMP_gtdbtk.yaml"
     log: "logs/dereplication_GTDBtk_bins.{clusterID}.log"
     message: "GTDBtk_bins: Classifiying {wildcards.clusterID} using GTDBtk."
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     shell:
         """
         mkdir -p {params.outdir} && cp {input} {params.outdir}

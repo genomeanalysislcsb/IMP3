@@ -11,7 +11,7 @@ rule kraken_contigs:
     resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: KRAKTHREADS
+    threads: getThreads(KRAKTHREADS)
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_contigs.log"
     message: "kraken_contigs: Running kraken2 on contigs against {config[krakendb]}."

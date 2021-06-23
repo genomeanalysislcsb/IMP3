@@ -15,7 +15,7 @@ rule megahit_hybrid_assembly_1:
     resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_megahit_hybrid_assembly_1.log"
     message: "megahit_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using MEGAHIT"
@@ -53,7 +53,7 @@ rule megahit_hybrid_assembly_2:
     resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_megahit_hybrid_assembly_2.log"
     message: "megahit_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using MEGAHIT"

@@ -41,7 +41,7 @@ rule extract_unmapped_from_megahit:
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_extract_unmapped_from_megahit.{type}.log"
     message: "extract_unmapped_from_megahit: Extracting unmapped {wildcards.type} reads from megahit assembly."
@@ -66,7 +66,7 @@ rule extract_unmapped_from_hybrid_assembly:
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_extract_unmapped_from_hybrid_assembly.{assembler}.{type}.log"
     message: "extract_unmapped_from_hybrid_assembly: Extracting unmapped {wildcards.type} reads from hybrid {wildcards.assembler} assembly."

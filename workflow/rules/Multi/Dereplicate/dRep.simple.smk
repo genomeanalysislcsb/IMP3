@@ -39,7 +39,7 @@ rule dRep_simple:
         directory("Dereplication/dRep_single_out/dereplicated_genomes"),
         expand("Dereplication/dRep_single_out/data_tables/{file}.csv",
                 file=["Chdb","Cdb","Sdb","Wdb","Widb","Ndb"])
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE

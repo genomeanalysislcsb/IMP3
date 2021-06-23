@@ -9,7 +9,7 @@ rule mapping_on_catalogue:
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/catalogue_mapping_on_catalogue.{type}.{sample}.log"
     message: "mapping_on_catalogue: Mapping {wildcards.type} reads on catalogue."

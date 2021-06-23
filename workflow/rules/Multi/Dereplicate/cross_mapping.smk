@@ -12,7 +12,7 @@ rule cross_mapping:
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/dereplicate_cross_mapping_{cross_sample}.on.{sample}.log"
     message: "cross_mapping: Mapping {wildcards.cross_sample} reads on {wildcards.sample} contigs."

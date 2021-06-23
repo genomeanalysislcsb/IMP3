@@ -118,7 +118,7 @@ rule prepare_input_data_copy:
         get_ori_files
     output:
         input_files_list
-    threads: 5
+    threads: getThreads(5)
     resources:
         runtime = "1:00:00",
         mem = MEMCORE

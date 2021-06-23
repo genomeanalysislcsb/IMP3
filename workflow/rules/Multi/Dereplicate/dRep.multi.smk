@@ -18,7 +18,7 @@ checkpoint dRep_multi:
         directory("Dereplication/dRep_multi_out/dereplicated_genomes"),
         expand("Dereplication/dRep_multi_out/data_tables/{file}.csv",
                 file=["Chdb","Cdb","Sdb","Wdb","Widb","Ndb"])
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_multi.yaml"
     resources:
         runtime = "12:00:00",

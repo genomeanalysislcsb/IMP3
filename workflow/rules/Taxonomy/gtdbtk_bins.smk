@@ -9,7 +9,7 @@ rule GTDBtk_bins_single:
     conda: ENVDIR + "/IMP_gtdbtk.yaml"
     log: "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
     message: "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     shell:
         """
         export GTDBTK_DATA_PATH="{DBPATH}/GTDB_tk"

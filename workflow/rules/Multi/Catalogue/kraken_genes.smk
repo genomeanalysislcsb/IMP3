@@ -11,7 +11,7 @@ rule kraken_cat:
     resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: KRAKTHREADS
+    threads: getThreads(KRAKTHREADS)
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_cat"
     message: "kraken_cat: Running kraken2 on genes from catalog against {config[catalogue][kraken][db]}."

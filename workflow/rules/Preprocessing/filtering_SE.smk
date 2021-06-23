@@ -20,7 +20,7 @@ rule mg_filtering:
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/preprocessing_mg_filtering.{filterstep}.log"
     message: "mg_filtering: Filtering mg reads to get {wildcards.filterstep}."

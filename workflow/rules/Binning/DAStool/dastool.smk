@@ -17,7 +17,7 @@ rule DAS_tool:
         "Binning/selected_DASTool_summary.txt",
         "Binning/selected_DASTool_scaffolds2bin.txt",
         directory("Binning/selected_DASTool_bins")
-    threads: 4
+    threads: getThreads(4)
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE

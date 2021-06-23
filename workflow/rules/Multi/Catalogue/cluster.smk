@@ -61,7 +61,7 @@ rule cdhit:
         "Catalogue/multi_prokka.ffn"
     output:
         "Catalogue/catalogue.fasta"
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE

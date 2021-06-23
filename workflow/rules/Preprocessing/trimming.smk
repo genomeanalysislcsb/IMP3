@@ -9,7 +9,7 @@ if config['nextseq']:
             'Preprocessing/{type}.se1.trimmoed.fq',
             'Preprocessing/{type}.r2.trimmoed.fq',
             'Preprocessing/{type}.se2.trimmoed.fq'
-        threads: 10
+        threads: getThreads(10)
         resources:
             runtime="12:00:00",
             mem = MEMCORE,
@@ -37,7 +37,7 @@ if config['nextseq']:
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
         wildcard_constraints:
             read="se[1|2]"
-        threads: 10
+        threads: getThreads(10)
         resources:
             runtime="12:00:00",
             mem = MEMCORE
@@ -64,7 +64,7 @@ if config['nextseq']:
             'Preprocessing/{type}.se2Cut.trimmed.fq',
             'Preprocessing/{type}.r1.trimmoed.fq.gz',
             'Preprocessing/{type}.r2.trimmoed.fq.gz'
-        threads: 10
+        threads: getThreads(10)
         resources:
             runtime="12:00:00",
             mem = MEMCORE
@@ -95,7 +95,7 @@ if config['nextseq']:
             'Preprocessing/{type}.r2Cut.trimmed.fq'
         output:
             'Preprocessing/{type}.se.trimmed.fq',
-        threads: 1
+        threads: getThreads(2)
         resources:
             runtime="12:00:00",
             mem = MEMCORE
@@ -117,7 +117,7 @@ else:
             'Preprocessing/{type}.se1.trimmed.fq',
             'Preprocessing/{type}.r2.trimmed.fq',
             'Preprocessing/{type}.se2.trimmed.fq'
-        threads: 10
+        threads: getThreads(10)
         resources:
             runtime="12:00:00",
             mem = MEMCORE,

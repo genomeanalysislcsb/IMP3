@@ -34,7 +34,7 @@ rule mg_filtering:
     resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/preprocessing_mg_filtering.{filterstep}.log"
     message: "mg_filtering: Filtering mg reads to get {wildcards.filterstep}."
@@ -52,7 +52,7 @@ rule mt_filtering:
     resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/preprocessing_mt_filtering.{filterstep}.log"
     message: "mt_filtering: Filtering mt reads to get {wildcards.filterstep}."

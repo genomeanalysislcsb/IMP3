@@ -16,7 +16,7 @@ rule mapping_on_assembly:
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_mapping_on_assembly.{type}.log"
     message: "mapping_on_assembly: Mapping {wildcards.type} reads on merged assembly."
