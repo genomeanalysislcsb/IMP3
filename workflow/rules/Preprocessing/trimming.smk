@@ -10,9 +10,10 @@ if config['nextseq']:
             'Preprocessing/{type}.r2.trimmoed.fq',
             'Preprocessing/{type}.se2.trimmoed.fq'
         threads: 10
-        params:
+        resources:
             runtime="12:00:00",
             mem = MEMCORE,
+        params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         conda: ENVDIR + "/IMP_preprocessing.yaml"
         log: "logs/preprocessing_trimming.{type}.log"
@@ -37,7 +38,7 @@ if config['nextseq']:
         wildcard_constraints:
             read="se[1|2]"
         threads: 10
-        params:
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -64,7 +65,7 @@ if config['nextseq']:
             'Preprocessing/{type}.r1.trimmoed.fq.gz',
             'Preprocessing/{type}.r2.trimmoed.fq.gz'
         threads: 10
-        params:
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -95,7 +96,7 @@ if config['nextseq']:
         output:
             'Preprocessing/{type}.se.trimmed.fq',
         threads: 1
-        params:
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -117,9 +118,10 @@ else:
             'Preprocessing/{type}.r2.trimmed.fq',
             'Preprocessing/{type}.se2.trimmed.fq'
         threads: 10
-        params:
+        resources:
             runtime="12:00:00",
             mem = MEMCORE,
+        params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         conda: ENVDIR + "/IMP_preprocessing.yaml"
         log: "logs/preprocessing_trimming.{type}.log"
@@ -142,7 +144,7 @@ else:
         output:
             'Preprocessing/{type}.se.trimmed.fq'
         threads: 1
-        params:
+        resources:
             runtime="12:00:00",
             mem = MEMCORE
         message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"

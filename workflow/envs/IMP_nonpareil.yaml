@@ -1,12 +1,12 @@
-name: IMP_nonpareil
+name: IMP_nonpareil 
 channels:
-  - conda-forge/label/cf201901
+  - bioconda
   - bioconda/label/cf201901
+  - conda-forge/label/cf201901
   - defaults
-  - r
 dependencies:
   - bzip2=1.0.6=h470a237_2
-  - ca-certificates=2018.11.29=ha4d7672_0
+  - ca-certificates=2021.4.13=h06a4308_1
   - cairo=1.14.12=he6fea26_5
   - curl=7.63.0=h74213dd_0
   - fontconfig=2.13.1=h65d0f4c_0
@@ -41,6 +41,7 @@ dependencies:
   - pthread-stubs=0.4=h470a237_1
   - r-base=3.4.1=4
   - readline=7.0=0
+  - seqkit=0.16.1=h9ee0642_0
   - tk=8.6.9=ha92aebf_0
   - xorg-kbproto=1.0.7=h470a237_2
   - xorg-libice=1.0.9=h470a237_4
@@ -54,3 +55,4 @@ dependencies:
   - xorg-xextproto=7.3.0=h470a237_2
   - xorg-xproto=7.0.31=h470a237_7
   - xz=5.2.4=h470a237_1
+  - zlib=1.2.11=h470a237_4

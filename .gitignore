@@ -30,4 +30,6 @@ rules/CRISPR
 condai/
 runIMP3_tmux.sh
 config/config.test.yaml
-testoutput/ 
+testoutput/
+runIMP3_multi_tmux.sh
+IMP3.initialised/ 

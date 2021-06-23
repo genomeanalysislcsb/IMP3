@@ -65,7 +65,7 @@ if MG or MT:
             "{file}.gz"
         threads: 1  
         resources:
-            runtime = "24:00:00",
+            runtime = "4:00:00",
             mem = MEMCORE
         message: "gzip: gzipping {wildcards.file}."
         shell:
@@ -79,7 +79,7 @@ rule tar_gzip_directory:
         "{directory}.tar.gz"
     threads: 1
     resources:
-        runtime = "24:00:00",
+        runtime = "4:00:00",
         mem = MEMCORE
     message: "tar_gzip: tarring and gzipping {wildcards.directory}."
     shell:
