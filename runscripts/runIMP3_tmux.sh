@@ -125,6 +125,11 @@ elif [ "$INITIAL" = true ]; then
     else
         snakemake --cores 1 -s $DIR/Snakefile --conda-create-envs-only --use-conda --conda-prefix $DIR/conda --configfile $CONFIGFILE --local-cores 1 $TARGET 
     fi
+    for i in `ls $DIR/conda/*/etc/conda/activate.d/activate-r-base.sh`
+      do
+        cp $i $i.org
+        sed 's/^R CMD javareconf/#R CMD javareconf/' $i.org >$i
+    done
 elif [ "$CLUSTER" = true ]; then
     if [ -z "$THREADS" ]; then
         THREADS=$MAX_THREADS
