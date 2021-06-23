@@ -48,7 +48,7 @@ checkpoint pre_grid:
 rule grid:
     input:
        "Dereplication/GRiD_multi/{clusterID}/contigs.fa",
-       "Dereplication/GRiD_multi/{clusterID}/reads.fastq"
+       "Dereplication/GRiD_multi/{clusterID}/reads.fastq.gz"
     output:
         "Dereplication/GRiD_multi/{clusterID}/grid/reads.GRiD.txt",
         "Dereplication/GRiD_multi/{clusterID}/grid/reads.pdf"
@@ -64,7 +64,7 @@ rule grid:
     message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput} -o {params.outdir} -g {input[0]} > {log} 2>&1
+        grid single -r {params.clusterInput} -e fastq.gz -o {params.outdir} -g {input[0]} > {log} 2>&1
         """
 
 rule prepare_gridBed:
@@ -89,7 +89,7 @@ rule prepare_gridReads:
                 raw_directory=samples.path[wildcards.sample]),
         "Dereplication/GRiD_multi/{sample}.{clusterID}/contigs.bed"
     output:
-        temporary("Dereplication/GRiD_multi/{sample}.{clusterID}/reads.fastq")
+        temporary("Dereplication/GRiD_multi/{sample}.{clusterID}/reads.fastq.gz")
     wildcard_constraints:
         sample="[^.]*"
     resources:
@@ -101,7 +101,7 @@ rule prepare_gridReads:
     conda: ENVDIR + "/IMP_mapping.yaml"
     shell:
         """
-        samtools view -b -F 5 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - > {output} 2>> {log} 
-        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - >> {output} 2>> {log}
-        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - >> {output} 2>> {log}
+        samtools view -b -F 5 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - > {output} 2>> {log} 
+        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - >> {output} 2>> {log}
+        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - >> {output} 2>> {log}
         """

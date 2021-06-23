@@ -72,7 +72,7 @@ checkpoint getBins:
 rule grid:
     input:
        "Binning/selected_DASTool_bins/{clusterID}/contigs.fa",
-       "Binning/selected_DASTool_bins/{clusterID}/reads.fastq"
+       "Binning/selected_DASTool_bins/{clusterID}/reads.fastq.gz"
     output:
         directory("Binning/selected_DASTool_bins/{clusterID}/grid")
     params:
@@ -86,7 +86,7 @@ rule grid:
     message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput}{wildcards.clusterID} -o {output} -g {input[0]} > {log} 2>&1
+        grid single -r {params.clusterInput}{wildcards.clusterID} -e fastq.gz -o {output} -g {input[0]} > {log} 2>&1
         """
 
 rule prepare_gridBed:
@@ -110,7 +110,7 @@ rule prepare_gridReads:
         "Assembly/mg.reads.sorted.bam",
         "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
     output:
-        "Binning/selected_DASTool_bins/{clusterID}/reads.fastq"
+        "Binning/selected_DASTool_bins/{clusterID}/reads.fastq.gz"
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
@@ -120,7 +120,7 @@ rule prepare_gridReads:
     conda: ENVDIR + "/IMP_mapping.yaml"
     shell:
         """
-        samtools view -b -F 5 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - > {output} 2>> {log} 
-        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - >> {output} 2>> {log}
-        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - >> {output} 2>> {log}
+        samtools view -b -F 5 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - > {output} 2>> {log} 
+        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - >> {output} 2>> {log}
+        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - >> {output} 2>> {log}
         """
