@@ -44,7 +44,7 @@ if MG or MT:
             reads_input_files
         output:
             'Stats/{type}/{type}.read_counts.txt'
-        params:
+        resources:
             runtime = "8:00:00",
             mem = MEMCORE
         threads: 1
@@ -60,7 +60,7 @@ elif MGaln or MTaln:
             reads_input_files
         output:
             'Stats/{type}/{type}.read_counts.txt'
-        params:
+        resources:
             runtime = "8:00:00",
             mem = MEMCORE
         threads: 1

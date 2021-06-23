@@ -30,7 +30,7 @@ if LONG:
             directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
-        params:
+        resources:
             runtime = "120:00:00",
             mem = BIGMEMCORE
         threads: BIGCORENO
@@ -49,7 +49,7 @@ else:
             directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
-        params:
+        resources:
             runtime = "120:00:00",
             mem = BIGMEMCORE
         threads: BIGCORENO
@@ -68,7 +68,7 @@ rule metaspades_assembly_from_unmapped:
         directory('Assembly/intermediary/{type}.metaspades_unmapped.2'),
         'Assembly/intermediary/{type}.metaspades_unmapped.2/contigs.fasta',
         'Assembly/intermediary/{type}.metaspades_unmapped.2.fa'
-    params:
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO

@@ -7,7 +7,7 @@ rule bwa_index:
         "{fasta}.pac",
         "{fasta}.sa",
         "{fasta}.ann"
-    params:
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1

@@ -8,7 +8,7 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.gene_depth.hist",
         "Stats/{type}/annotation/{type}.gene_depth.avg",
         "Stats/{type}/annotation/{type}.gene.len"
-    params:
+    resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     threads: 1

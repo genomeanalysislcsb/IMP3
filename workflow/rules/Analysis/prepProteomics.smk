@@ -8,9 +8,10 @@ if config['proteomics']['insert_variants']:
             predictions="Analysis/annotation/proteomics.proteins.faa",
             peptideTab="Analysis/annotation/proteomics.pos.tsv",
             addInfo="Analysis/annotation/proteomics.info"
-        params: 
+        resources: 
             runtime = "48:00:00",
-            mem = MEMCORE,
+            mem = MEMCORE
+        params:
             minPep = config['proteomics']['filter_N_peptides'],
             out = "Analysis/annotation/proteomics"
         conda: ENVDIR + "/IMP_bioperl.yaml"
@@ -30,9 +31,10 @@ elif config['proteomics']['filter_N_peptides']:
             "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
         output:
             "Analysis/annotation/proteomics.proteins.faa"
-        params: 
+        resources: 
             runtime = "4:00:00",
-            mem = MEMCORE,
+            mem = MEMCORE
+        params:
             minPep = config['proteomics']['filter_N_peptides']
         conda: ENVDIR + "/IMP_bioperl.yaml"
         threads: 1
@@ -49,7 +51,7 @@ else:
             "Analysis/annotation/prokka.faa"
         output:
             "Analysis/annotation/proteomics.proteins.faa"
-        params: 
+        resources: 
             runtime = "4:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_bioperl.yaml"
@@ -68,9 +70,10 @@ if config['proteomics']['host_proteome'].split():
             "Analysis/annotation/proteomics.proteins.faa"
         output:
             "Analysis/annotation/proteomics.final.faa"
-        params: 
+        resources: 
             runtime = "4:00:00",
-            mem = MEMCORE,
+            mem = MEMCORE
+        params:
             host = config['proteomics']['host_proteome'].split()
         threads: 1
         conda: ENVDIR + "/IMP_fasta.yaml"
@@ -86,7 +89,7 @@ else:
             "Analysis/annotation/proteomics.proteins.faa"
         output:
             "Analysis/annotation/proteomics.final.faa"
-        params: 
+        resources: 
             runtime = "4:00:00",
             mem = MEMCORE
         threads: 1

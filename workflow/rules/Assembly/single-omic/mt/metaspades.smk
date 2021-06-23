@@ -31,7 +31,7 @@ rule metaspades_assembly_from_preprocessing:
         directory('Assembly/intermediary/mt.metaspades_preprocessed.1'),
         'Assembly/intermediary/mt.metaspades_preprocessed.1/transcripts.fasta',
         'Assembly/intermediary/mt.metaspades_preprocessed.1.fa'
-    params:
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -50,7 +50,7 @@ rule metaspades_assembly_from_unmapped:
         directory('Assembly/intermediary/mt.metaspades_unmapped.2'),
         'Assembly/intermediary/mt.metaspades_unmapped.2/transcripts.fasta',
         'Assembly/intermediary/mt.metaspades_unmapped.2.fa'
-    params:
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO

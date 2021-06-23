@@ -18,7 +18,7 @@ rule DAS_tool:
         "Binning/selected_DASTool_scaffolds2bin.txt",
         directory("Binning/selected_DASTool_bins")
     threads: 4
-    params:
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"
@@ -49,7 +49,7 @@ rule format_protein_names:
     output:
         "Analysis/annotation/annotation.filt.contig2ID.tsv",
         "Binning/prokka.renamed.faa"
-    params:
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1

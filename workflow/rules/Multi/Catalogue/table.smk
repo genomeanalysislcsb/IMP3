@@ -8,9 +8,10 @@
 #    output:
 #        "Catalogue/catalogue_genesPerRep.tsv"
 #    threads: 1
-#    params:
+#    resources:
 #        runtime = "12:00:00",
-#        mem = MEMCORE,
+#        mem = MEMCORE
+#    params:
 #        sample = samples
 #    log: "logs/catalogue_cluster2tab.log"
 #    message: 'catalogue_cluster2tab: checking number of genes represented by each representative.'
@@ -24,9 +25,10 @@ rule gff2tab:
     output:
         "Catalogue/catalogue_anno.tsv"
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         dbs = config['hmm_DBs'].split()
     log: "logs/catalogue_gff2tab.log"
     message: 'gff2tab: extracting gff for catalogue info.'
@@ -39,9 +41,10 @@ rule catalogue_tab:
         getCatIn
     output:
         "Catalogue/catalogue.tsv"
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE,
+        mem = BIGMEMCORE
+    params:
         types = TYPES
     threads: 1
     log: "logs/catalogue_tab.log"

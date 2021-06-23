@@ -8,7 +8,7 @@ rule kraken_cat:
     output:
         "Catalogue/catalogue_kraken.output",
         "Catalogue/catalogue_kraken.report" 
-    params:
+    resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     threads: KRAKTHREADS
@@ -28,7 +28,7 @@ rule kraken_parse_cat:
     output:
         "Catalogue/catalogue_kraken.parsed.tsv" 
     threads: 1
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_taxonomy.yaml"

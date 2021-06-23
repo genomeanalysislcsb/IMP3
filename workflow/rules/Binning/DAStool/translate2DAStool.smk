@@ -4,7 +4,7 @@ rule get_proteins_DAStool:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "Binning/prokka.renamed.faa"
-    params:
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1

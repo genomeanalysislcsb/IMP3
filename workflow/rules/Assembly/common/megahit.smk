@@ -26,7 +26,7 @@ rule megahit_assembly_from_preprocessing:
         directory('Assembly/intermediary/{type}.megahit_preprocessed.1'),
         'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
         'Assembly/intermediary/{type}.megahit_preprocessed.1.fa'
-    params:
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO
@@ -45,7 +45,7 @@ rule megahit_assembly_from_unmapped:
         directory('Assembly/intermediary/{type}.megahit_unmapped.2'),
         'Assembly/intermediary/{type}.megahit_unmapped.2/final.contigs.fa',
         'Assembly/intermediary/{type}.megahit_unmapped.2.fa'
-    params:
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
     threads: BIGCORENO

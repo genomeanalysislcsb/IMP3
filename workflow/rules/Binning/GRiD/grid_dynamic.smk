@@ -17,7 +17,7 @@ if not "taxonomy" in IMP_STEPS:
             gather_bins
         output:
             report("Stats/%s/%s.bins.tsv" %(ASS,ASS),"Binning")
-        params:
+        resources:
             runtime = "12:00:00",
             mem = MEMCORE
         log: "logs/binning_GRID_summarize.log"
@@ -35,7 +35,7 @@ if not "taxonomy" in IMP_STEPS:
         output:
             "Binning/per_bin_results.tar.gz"
         threads: 1
-        params:
+        resources:
             runtime = "8:00:00",
             mem = MEMCORE
         log: "logs/binning_bins_tar.log"
@@ -56,7 +56,7 @@ checkpoint getBins:
         "Binning/selected_DASTool_summary.txt"
     output:
         "status/binning_GRiD.prepped"
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
@@ -76,7 +76,8 @@ rule grid:
     output:
         directory("Binning/selected_DASTool_bins/{clusterID}/grid")
     params:
-        clusterInput="Binning/selected_DASTool_bins/",
+        clusterInput="Binning/selected_DASTool_bins/"
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1
@@ -93,7 +94,7 @@ rule prepare_gridBed:
         "Binning/selected_DASTool_bins/{clusterID}/contigs.fa"
     output:
         "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     threads: 1
@@ -110,7 +111,7 @@ rule prepare_gridReads:
         "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
     output:
         "Binning/selected_DASTool_bins/{clusterID}/reads.fastq"
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: 1
