@@ -7,7 +7,7 @@ rule annotate:
         "Analysis/annotation/prokka.fna",
         "Analysis/annotation/prokka.ffn",
         "Analysis/annotation/prokka.fsa",
-    threads: getThreads(8)
+    threads: 1 
     resources:
         runtime = "8:00:00",
         mem = MEMCORE
@@ -30,5 +30,6 @@ rule annotate:
         LN1=1
         LN=$(($LN-$LN1))
         head -n $LN Analysis/annotation/prokka.gff | grep -v "^#" | sort | uniq | grep -v "^==" > {output[0]}
+        gzip Analysis/annotation/prokka.gff
         """
 
