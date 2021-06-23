@@ -20,9 +20,10 @@ checkpoint dRep_multi:
                 file=["Chdb","Cdb","Sdb","Wdb","Widb","Ndb"])
     threads: BIGCORENO
     conda: ENVDIR + "/IMP_multi.yaml"
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE,
+        mem = BIGMEMCORE
+    params:
         dir = "Dereplication/dRep_multi",
         out = "Dereplication/dRep_multi_out",
         db = config['db_path'],

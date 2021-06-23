@@ -6,7 +6,7 @@ rule no_filtering:
         'Preprocessing/{type}.r1.preprocessed.fq',
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq'
-    params:
+    resources:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1

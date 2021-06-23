@@ -9,9 +9,10 @@ rule dRep_sum_simple:
         "Dereplication/dRep_single_out/originalNdereplicated_bin_stats.tsv",
         report("Dereplication/dereplicated_bin_stats.tsv",category="Re-binning and dereplication")
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         sample = samples.loc[samples.bins == 1,"sample"].tolist()
     conda: ENVDIR + "/IMP_multi.yaml"
     log: "logs/dereplication_dRep_sum_simple.log"

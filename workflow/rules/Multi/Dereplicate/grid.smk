@@ -5,9 +5,10 @@ rule GRID_summarize:
                  sample=samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"])
     output:
         "Dereplication/dRep_multi/allSamples_bin_stats.tsv"
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         sample = samples.loc[[a and b for a,b in zip(samples.ass == 1,samples.rebinning == "yes")],"sample"].tolist()
     log: "logs/dereplication_GRID_summarize.log"
     message: "GRID_summarize: Summarizing binning results."
@@ -23,7 +24,7 @@ rule getMultiBins:
         indir="Dereplication/{sample}/selected_DASTool_bins"
     output:
         "status/dRep_multi_{sample}.dRep_multi.prepped"
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
@@ -52,10 +53,11 @@ rule grid:
         "Dereplication/GRiD_multi/{clusterID}/grid/reads.GRiD.txt",
         "Dereplication/GRiD_multi/{clusterID}/grid/reads.pdf"
     params:
-        clusterInput= "Dereplication/GRiD_multi/{clusterID}" ,
+        clusterInput= "Dereplication/GRiD_multi/{clusterID}",
+        outdir = "Dereplication/GRiD_multi/{clusterID}/grid"
+    resources:
         runtime = "24:00:00",
-        mem = BIGMEMCORE,
-        outdir = "Dereplication/GRiD_multi/{clusterID}/grid" 
+        mem = BIGMEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_grid.yaml"
     log: "logs/dereplication_grid.{clusterID}.log"
@@ -70,7 +72,7 @@ rule prepare_gridBed:
         "Dereplication/GRiD_multi/{clusterID}/contigs.fa"
     output:
         temporary("Dereplication/GRiD_multi/{clusterID}/contigs.bed")
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     threads: 1
@@ -90,7 +92,7 @@ rule prepare_gridReads:
         temporary("Dereplication/GRiD_multi/{sample}.{clusterID}/reads.fastq")
     wildcard_constraints:
         sample="[^.]*"
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: 1

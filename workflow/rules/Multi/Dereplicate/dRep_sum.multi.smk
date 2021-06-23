@@ -7,7 +7,7 @@ rule dRep_sum_multi:
         "Dereplication/dRep_multi_out/dereplicated_rebin_stats.tsv",
         report("Dereplication/rebinned_bin_stats.tsv",category="Re-binning and dereplication")
     threads: 1 
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_multi.yaml"
