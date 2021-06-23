@@ -12,20 +12,6 @@ import pandas as pd
 from pathlib import Path
 
 
-def dict_merge(a, b):
-    """
-    Deep merge 2 dicts together
-    """
-    if not isinstance(b, dict):
-        return b
-    result = deepcopy(a)
-    for k, v in b.items():
-        if k in result and isinstance(result[k], dict):
-            result[k] = dict_merge(result[k], v)
-        else:
-            result[k] = deepcopy(v)
-    return result
-
 def open_output(filename):
     return(open(OUTPUTDIR+'/'+filename, 'w+'))
 
@@ -36,16 +22,6 @@ shell.executable("bash")
 configfile:
     srcdir("config/config.binny.yaml")
 
-# custom configuration file
-CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE", "config/userconf.binny.yaml")
-
-# merge 2 configurations files together
-if os.path.exists(CUSTOM_CONFIG_PATH):
-    print("reading configuration from "+CUSTOM_CONFIG_PATH)
-    with open(CUSTOM_CONFIG_PATH, 'r') as rhandle:
-        data = yaml.load(rhandle)
-        config = dict_merge(config, data)
-
 # some parameters
 SRCDIR = srcdir("workflow/scripts")
 BINDIR = srcdir("workflow/bin")
@@ -53,26 +29,26 @@ ENVDIR = srcdir("workflow/envs")
 
 # get parameters from the command line
 # output
-OUTPUTDIR = os.environ.get("OUTPUTDIR", config['outputdir'])
+OUTPUTDIR = config['outputdir']
 
 # input
-CONTIGS = os.environ.get("CONTIGS", config['raws']['Contigs'])
-MGaln = os.environ.get("MGaln", config['raws']['Alignment_metagenomics'])
-SAMPLE = os.environ.get("SAMPLE", config['sample'])
+CONTIGS = config['raws']['Contigs']
+MGaln = config['raws']['Alignment_metagenomics']
+SAMPLE = config['sample']
 if SAMPLE == "":
     SAMPLE = "_".join(OUTPUTDIR.split("/")[-2:])
 SAMPLE = re.sub("_+","_",re.sub("[;|.-]","_",SAMPLE))
-DBPATH = os.environ.get("DBPATH", os.path.expandvars(config['db_path']))
+DBPATH = os.path.expandvars(config['db_path'])
 if not os.path.exists(DBPATH):
     os.makedirs(DBPATH)
 
 # hardware parameters
-MEMCORE = os.environ.get("MEMCORE", str(config['mem']['normal_mem_per_core_gb']) + "G")
-BIGMEMCORE = os.environ.get("BIGMEMCORE", str(config['mem']['big_mem_per_core_gb']) + "G")
+MEMCORE = str(config['mem']['normal_mem_per_core_gb']) + "G"
+BIGMEMCORE = str(config['mem']['big_mem_per_core_gb']) + "G"
 
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless a absolute path is set
-TMPDIR = os.environ.get("TMPDIR", config['tmp_dir'])
+TMPDIR = config['tmp_dir']
 if not os.path.isabs(TMPDIR):
     TMPDIR = os.path.join(OUTPUTDIR, TMPDIR)
 if not os.path.exists(TMPDIR):
@@ -105,7 +81,7 @@ def _process_file(fname, inp, outfilename):
     # ungunzip
     if os.path.splitext(fname)[-1] in ['.gz', '.gzip']:
         with open(outfilename, 'wb') as whandle, gzip.open(inp, 'rb') as rhandle:
-            whandle.write(rhandle.read())
+            shutil.copyfileobj(rhandle, whandle)
     # unbzip2
     elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
         shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
@@ -172,17 +148,7 @@ rule call_contig_depth:
         echo "Depth calculation done" >> {log}
 
         ## This method of depth calculation was adapted and modified from the CONCOCT code
-        awk -v OFS='\t' 'BEGIN {{pc=""}}
-        {{
-        c=$1;
-        if (c == pc) {{
-        cov=cov+$2*$5;
-        }} else {{
-        print pc,cov;
-        cov=$2*$5;
-        pc=c}}
-        }} END {{print pc,cov}}' $TMP_DEPTH | tail -n +2 > {output}
-
+        perl {SRCDIR}/calcAvgCoverage.pl $TMP_DEPTH {input} >{output}	
         echo "Remove the temporary file" >> {log}
         rm $TMP_DEPTH
         """
@@ -292,11 +258,13 @@ rule mergegff:
     params:
         runtime = "8:00:00",
         mem = MEMCORE
+    conda: ENVDIR + "/IMP_annotation.yaml"
     threads: 1
     log: "logs/analysis_mergegff.log"
     message: "mergegff: Merging gffs with hmmer results."
     shell:
         """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         {SRCDIR}/mergegffs.pl {output} {input} > {log} 2>&1
         """
 
