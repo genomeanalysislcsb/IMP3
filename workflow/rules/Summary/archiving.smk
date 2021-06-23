@@ -19,7 +19,7 @@ rule sync_final:
     output:
         SUMDIR
     threads: 1
-    params:
+    resources:
         runtime = "24:00:00",
         mem = MEMCORE
     message: "Synching {OUTPUTDIR} to {SUMDIR}"
@@ -64,8 +64,8 @@ if MG or MT:
         output:
             "{file}.gz"
         threads: 1  
-        params:
-            runtime = "24:00:00",
+        resources:
+            runtime = "4:00:00",
             mem = MEMCORE
         message: "gzip: gzipping {wildcards.file}."
         shell:
@@ -78,8 +78,8 @@ rule tar_gzip_directory:
     output:
         "{directory}.tar.gz"
     threads: 1
-    params:
-        runtime = "24:00:00",
+    resources:
+        runtime = "4:00:00",
         mem = MEMCORE
     message: "tar_gzip: tarring and gzipping {wildcards.directory}."
     shell:

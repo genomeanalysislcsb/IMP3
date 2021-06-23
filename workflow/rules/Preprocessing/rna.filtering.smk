@@ -35,10 +35,11 @@ rule filter_rna:
         'Preprocessing/mt.r1.trimmed.rna.fq',
         'Preprocessing/mt.r2.trimmed.rna.fq',
         'Preprocessing/mt.se.trimmed.rna.fq'
-    threads: 8
+    threads: getThreads(8)
     params:
         ref = REF,
         sortmernamem = str(SORTME_MEM),
+    resources:
         runtime = "48:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_preprocessing.yaml"
