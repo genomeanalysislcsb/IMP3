@@ -11,6 +11,9 @@ db
 __pycache__
 gitold/
 databases/*
+runIMP3
+IMP_DBs
+IMP_DBs/*
 tmp/*
 IMPnew/*
 IMPAnna/*

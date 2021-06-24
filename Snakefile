@@ -1,5 +1,5 @@
 # include global functions
-ROOTDIR = srcdir("/")
+ROOTDIR = srcdir(".")
 
 include:
     "workflow/rules/function.definitions.smk"

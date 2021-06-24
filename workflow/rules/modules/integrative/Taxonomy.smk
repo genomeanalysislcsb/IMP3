@@ -11,7 +11,8 @@ include:
 include:
     "../../Taxonomy/gtdbtk_bins.smk"
 if config['eukdetect']['run_eukdetect']:
-    "../../Taxonomy/eukdetect.smk"
+    include:
+        "../../Taxonomy/eukdetect.smk"
 
 # master command
 if MG or MT:

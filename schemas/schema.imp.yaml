@@ -85,7 +85,6 @@ properties:
     type: string
   db_path:
     type: string
-    pattern: "^/.+$"
   trimmomatic:
     type: object
     properties:

@@ -12,15 +12,16 @@ rule kraken_reads:
     resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
+    params:
+        tmp_out= lamda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
     threads: getThreads(KRAKTHREADS) 
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_reads.{type}.log"
     message: "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."
     shell:
 	    """
-            OUTP=${{{output[0]}%.gz}}
 	    mkdir -p Analysis/taxonomy/kraken
-	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names --output $OUTP --report {output[1]} {input} > {log} 2>&1
-	    gzip $OUTP
+	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names --output {params.tmp_out} --report {output[1]} {input} > {log} 2>&1
+	    gzip {params.tmp_out}
             """
 
