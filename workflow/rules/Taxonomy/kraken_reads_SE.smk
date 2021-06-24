@@ -13,7 +13,7 @@ rule kraken_reads:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     params:
-        tmp_out= lamda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
+        tmp_out= lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
     threads: getThreads(KRAKTHREADS) 
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_reads.{type}.log"

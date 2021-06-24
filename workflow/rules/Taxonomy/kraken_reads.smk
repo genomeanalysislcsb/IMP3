@@ -14,7 +14,7 @@ rule kraken_reads:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     params:
-        tmp_out= lamda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
+        tmp_out= lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
     threads: getThreads(KRAKTHREADS) 
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_reads.{type}.log"
@@ -22,7 +22,7 @@ rule kraken_reads:
     shell:
 	    """
 	    mkdir -p Analysis/taxonomy/kraken
-	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --paired --use-names --output $OUTP --report {params.tmp_out} {input} > {log} 2>&1
+	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --paired --use-names --output {params.tmp_out} --report {output[1]} {input} > {log} 2>&1
             gzip {params.tmp_out}
 	    """
 
