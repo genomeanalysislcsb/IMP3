@@ -7,6 +7,7 @@ rule annotate:
         "Analysis/annotation/prokka.fna",
         "Analysis/annotation/prokka.ffn",
         "Analysis/annotation/prokka.fsa",
+        "Analysis/annotation/prokka.gff.gz"
     threads: 1 
     resources:
         runtime = "8:00:00",

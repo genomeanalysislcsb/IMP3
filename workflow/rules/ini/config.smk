@@ -33,7 +33,7 @@ if config['sessionKind'] == "cluster":
         ini_bigTotal = config['locked_bigTotal']
 
         if ini_normalMem == 0 or ini_bigMem == 0 or ini_bigCores == 0:
-            raise Exception("You're attempting to submit IMP3 to a cluster and but you've requested 0 cores or 0G memory per core. Ask the person who set up IMP3 to specify proper values in " + ROOTDIR + "VARIABLE_CONFIG")
+            raise Exception("You're attempting to submit IMP3 to a cluster and but you've requested 0 cores or 0G memory per core. Ask the person who set up IMP3 to specify proper values in " + ROOTDIR + "/VARIABLE_CONFIG")
         config['mem']['normal_mem_per_core_gb'] = int(ini_normalMem)
         config['mem']['big_mem_per_core_gb'] = int(ini_bigMem)
         config['mem']['big_mem_cores'] = int(ini_bigCores)
@@ -57,7 +57,7 @@ elif config['sessionKind'] == "dryrun":
         config['mem']['big_mem_cores'] = int(ini_bigCores)
         config['mem']['big_mem_total_gb'] = max(int(ini_bigTotal), int(config['mem']['big_mem_cores']) * int(config['mem']['big_mem_per_core_gb']))
         if ini_normalMem == 0 or ini_bigMem == 0 or ini_bigCores == 0:
-            print("You've requested 0 cores or 0G memory per core. Ask the person who set up IMP3 to specify proper values in " + ROOTDIR + "VARIABLE_CONFIG")
+            print("You've requested 0 cores or 0G memory per core. Ask the person who set up IMP3 to specify proper values in " + ROOTDIR + "/VARIABLE_CONFIG")
         else: 
             print("These memory requirements would be used:")
             print("normal mem: " + str(config['mem']['normal_mem_per_core_gb']) + "G")
@@ -153,6 +153,9 @@ if SAMPLE == "":
     SAMPLE = "_".join(OUTPUTDIR.split("/")[-2:])
 SAMPLE = re.sub("_+","_",re.sub("[;|.-]","_",SAMPLE))
 DBPATH = os.path.expandvars(config['db_path'])
+print(ROOTDIR)
+if not os.path.isabs(DBPATH):
+    DBPATH = os.path.join(ROOTDIR, DBPATH)
 if not os.path.exists(DBPATH):
     os.makedirs(DBPATH)
     

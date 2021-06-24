@@ -25,6 +25,7 @@ rule vizbin:
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
+    conda: ENVDIR + "/IMP_annotation.yaml" 
     threads: 1
     log: "logs/binning_vizbin.%s.log" %ASS
     message: "vizbin: Running VizBin."
