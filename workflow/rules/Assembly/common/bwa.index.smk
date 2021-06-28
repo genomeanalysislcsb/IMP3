@@ -9,12 +9,12 @@ rule bwa_index:
         "{fasta}.ann"
     resources:
         runtime = "24:00:00",
-        mem = BIGMEMCORE
+        mem = MEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/assembly_bwa_index.{fasta}.log"
+#    log: "logs/assembly_bwa_index.log"
     message: "bwa_index: Indexing {wildcards.fasta} for bwa."
     shell:
         """
-        bwa index {wildcards.fasta} > {log} 2>&1
+        bwa index {wildcards.fasta} 
         """

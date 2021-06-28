@@ -8,7 +8,7 @@ rule annotate:
         "Analysis/annotation/prokka.ffn",
         "Analysis/annotation/prokka.fsa",
         "Analysis/annotation/prokka.gff.gz"
-    threads: 1 
+    threads: getThreads(12) 
     resources:
         runtime = "8:00:00",
         mem = MEMCORE
