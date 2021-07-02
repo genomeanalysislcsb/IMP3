@@ -2,7 +2,7 @@ SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
 
 FILTERING_CMD = """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
-        bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} 2>> {log} | samtools view --threads {threads} -bS - > $TMP_FILE 2>> {log}
+        bwa-mem2 mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} 2>> {log} | samtools view --threads {threads} -bS - > $TMP_FILE 2>> {log}
         samtools merge --threads {threads} -u - \
          <(samtools view --threads {threads} -u  -f 4 -F 264 $TMP_FILE 2>> {log}) \
          <(samtools view --threads {threads} -u -f 8 -F 260 $TMP_FILE 2>> {log}) \
@@ -12,7 +12,7 @@ FILTERING_CMD = """
          bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]} >> {log} 2>&1
         if [[ -s {input[2]} ]]
          then
-         bwa mem -v 1 -t {threads} {input[3]} {input[2]} 2>> {log} | \
+          bwa-mem2  mem -v 1 -t {threads} {input[3]} {input[2]} 2>> {log} | \
           samtools view --threads {threads} -bS - 2>> {log} | \
           samtools view --threads {threads} -uf 4 - 2>> {log} | \
           bamToFastq -i stdin -fq {output[2]} >> {log} 2>&1

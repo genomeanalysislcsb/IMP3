@@ -1,21 +1,24 @@
 FASTAFILES = expand("{path}/{files}.fasta", files=config["sortmerna"]["files"], path=DBPATH + "/sortmerna")
 
-FASTAINDEXED = expand("{path}/idx/{files}", files=config["sortmerna"]["files"], path=DBPATH + "/sortmerna")
-
-REF = ':'.join('%s,%s' % (a, b) for a, b in zip(FASTAFILES, FASTAINDEXED))
+REF = ' '.join('--ref %s' % (a) for a in zip(FASTAFILES))
 
 SORTME_MEM = int(MEMCORE[:-1]) * 1000
 
 FILTER_RNA_SHELL = """
   TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
-  merge-paired-reads.sh {input[0]} {input[1]} $TMP_R12.fq > {log} 2>&1
-  sortmerna --ref {params.ref} --reads $TMP_R12.fq --fastx --aligned $TMP_R12.rrna \
-   --other $TMP_R12.rrna_filt -a {threads} --paired_in -m {params.sortmernamem} >> {log} 2>&1
-  unmerge-paired-reads.sh $TMP_R12.rrna.fq {output[3]} {output[4]} >> {log} 2>&1
-  unmerge-paired-reads.sh $TMP_R12.rrna_filt.fq {output[0]} {output[1]} >> {log} 2>&1
-  sortmerna --ref {params.ref} --reads {input[2]} --fastx --aligned Preprocessing/mt.se.trimmed.rna \
-   --other Preprocessing/mt.se.trimmed.rna_filtered -a {threads} -m {params.sortmernamem} >> {log} 2>&1
-  rm $TMP_R12*
+  if [ -d {TMPDIR}/kvdb ]; then rm -Rf {TMPDIR}/kvdb; fi 
+  sortmerna {params.ref} --reads {input[0]} --reads {input[1]} --workdir tmp --fastx --aligned {TMPDIR}/$TMP_R12.rrna \
+   --other {TMPDIR}/$TMP_R12.rrna_filt --threads {threads} --idx-dir {DBPATH}/sortmerna --otu_map --paired_in -m {params.sortmernamem} >> {log} 2>&1
+  otufile=`find . -name otu_map.txt`
+  touch Preprocessing/otu_map.txt
+  cp $otufile Preprocessing/
+  if [ -s $otufile ]; then echo "# WARNING: OTU from sortmerna file does not exists" >status/sortmerna.warning; fi
+  {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna.fq {output[3]} {output[4]} >> {log} 2>&1
+  {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna_filt.fq {output[0]} {output[1]} >> {log} 2>&1
+  rm -f {TMPDIR}/kvdb/*
+  sortmerna {params.ref} --reads {input[2]} --fastx --aligned Preprocessing/mt.se.trimmed.rna --idx-dir {DBPATH}/sortmerna --workdir {TMPDIR} \
+   --other Preprocessing/mt.se.trimmed.rna_filtered --threads {threads} -m {params.sortmernamem} >> {log} 2>&1
+  rm -Rf {TMPDIR}/$TMP_R12* 
 """
 
 rule filter_rna:
@@ -34,14 +37,15 @@ rule filter_rna:
         'Preprocessing/mt.se.trimmed.rna_filtered.fq',
         'Preprocessing/mt.r1.trimmed.rna.fq',
         'Preprocessing/mt.r2.trimmed.rna.fq',
-        'Preprocessing/mt.se.trimmed.rna.fq'
+        'Preprocessing/mt.se.trimmed.rna.fq',
+	'Preprocessing/otu_map.txt'
     threads: getThreads(8)
-    params:
-        ref = REF,
-        sortmernamem = str(SORTME_MEM),
     resources:
         runtime = "48:00:00",
         mem = MEMCORE
+    params:
+        ref = REF,
+        sortmernamem = str(SORTME_MEM)
     conda: ENVDIR + "/IMP_preprocessing.yaml"
     log: "logs/preprocessing_filter_rna.log"
     message: "filter_rna: filtering rRNA from mt reads."

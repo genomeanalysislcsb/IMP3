@@ -216,7 +216,7 @@ def filtering_mt_input(wildcards):
 def filtering_filter(wildcards):
     return ancient(expand(
             "{dir}/filtering/{filter}.{ext}", filter=wildcards.filterstep.split(".")[-1].split("_")[0],
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
+            ext=['fa', 'fa.bwt.2bit.64'], dir=DBPATH))
 
 
 # for archiving checkpoint:

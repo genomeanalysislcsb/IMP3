@@ -3,7 +3,7 @@ rule mapping_on_catalogue:
         lambda wildcards: expand("{raw_directory}/Preprocessing/{{type}}.{read}.preprocessed.fq",
                 raw_directory=samples.loc[samples["sample"] == wildcards.sample,"path"],
                 read=["r1","r2","se"]),
-        expand("Catalogue/catalogue.{ext}",ext=["fasta.amb","fasta.bwt","fasta.pac","fasta.sa","fasta.ann","fasta"])
+        expand("Catalogue/catalogue.{ext}",ext=["fasta.bwt.2bit.64","fasta"])
     output:
         'Catalogue/{sample}.{type}.reads.sorted.bam'
     resources:

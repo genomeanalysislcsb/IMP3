@@ -2,7 +2,7 @@ SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
 
 FILTERING_CMD = """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
-        bwa mem -v 1 -t {threads} {input[1]} {input[0]} 2>> {log} | \
+        bwa-mem2 mem -v 1 -t {threads} {input[1]} {input[0]} 2>> {log} | \
           samtools view --threads {threads} -bS - 2>> {log} | \
           samtools view --threads {threads} -uf 4 - 2>> {log} | \
           bamToFastq -i stdin -fq {output} >> {log} 2>&1
