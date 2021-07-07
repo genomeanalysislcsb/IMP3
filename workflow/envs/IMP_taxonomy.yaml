@@ -73,7 +73,7 @@ dependencies:
   - pandas=0.25.2=py37hb3f55d8_0
   - pango=1.42.4=ha030887_1
   - pcre=8.43=he1b5a44_0
-  - perl=5.26.2=h516909a_1006
+  - perl=5.26.2
   - pip=19.3.1=py37_0
   - pixman=0.38.0=h516909a_1003
   - pthread-stubs=0.4=h14c3975_1001

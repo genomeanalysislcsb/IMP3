@@ -10,6 +10,7 @@ __default__:
 
 bwa_index:
   stdout: "-o IMP3.{rule}.stdout"
+  nodes: "-N 1"
 
 index_bam:
   stdout: "-o IMP3.{rule}.stdout"
@@ -27,9 +28,6 @@ trimming:
   nodes: "-N 1"
 
 mapping_on_assembly:
-  nodes: "-N 1"
-
-index_bam:
   nodes: "-N 1"
 
 extract_unmapped_from_megahit:
