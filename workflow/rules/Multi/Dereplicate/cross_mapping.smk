@@ -6,7 +6,7 @@ rule cross_mapping:
         lambda wildcards: ancient(expand("{raw_directory}/Assembly/{ass}.assembly.merged.{ext}",
                 raw_directory=samples.path[wildcards.sample],
                 ass=samples.assembly_type[wildcards.sample],
-                ext=["fa.bwt.2bit.64","fa"]))
+                ext=["fa.amb","fa.bwt","fa.pac","fa.sa","fa.ann","fa"]))
     output:
         "Dereplication/cross_mapping/{cross_sample}.on.{sample}.sorted.bam"
     resources:

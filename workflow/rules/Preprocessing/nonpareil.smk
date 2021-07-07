@@ -11,7 +11,7 @@ else:
 
 rule nonpareil:
     input:
-        'Preprocessing/mg.{read}.fq'
+        'Preprocessing/mg.{read}.preprocessed.fq'
     output:
         expand('Stats/mg/mg.{{read}}_nonpareil.{suffix}',suffix=["npa","npc","npl","npo"])
     resources:

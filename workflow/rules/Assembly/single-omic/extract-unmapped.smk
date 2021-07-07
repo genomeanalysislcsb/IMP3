@@ -2,7 +2,7 @@ SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
 
 EXTRACT_UNMAPPED_SHELL = """
  TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
- bwa-mem2 mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} 2>> {log} | \
+ bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} 2>> {log} | \
   samtools view --threads {threads} -bS - > $TMP_FILE 2> {log}
  samtools merge --threads {threads} -u - \
   <(samtools view --threads {threads} -u  -f 4 -F 264 $TMP_FILE 2>> {log}) \
@@ -14,7 +14,7 @@ EXTRACT_UNMAPPED_SHELL = """
 
  if [[ -s {input[2]} ]]
  then
-    bwa-mem2 mem -v 1 -t {threads} {input[3]} {input[2]} 2>> {log}| \
+    bwa mem -v 1 -t {threads} {input[3]} {input[2]} 2>> {log}| \
      samtools view --threads {threads} -bS - 2>> {log}| \
      samtools view --threads {threads} -uf 4 - 2>> {log}| \
      bamToFastq -i stdin -fq {output[2]} >> {log} 2>&1
@@ -32,7 +32,11 @@ rule extract_unmapped:
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
         'Assembly/intermediary/{type}.%s_preprocessed.1.fa' % IMP_ASSEMBLER,
-        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.bwt.2bit.64' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.amb' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.bwt' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.pac' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.sa' % IMP_ASSEMBLER,
+        'Assembly/intermediary/{type}.%s_preprocessed.1.fa.ann' % IMP_ASSEMBLER
     output:
         'Assembly/intermediary/{type}.r1.unmapped.fq',
         'Assembly/intermediary/{type}.r2.unmapped.fq',
@@ -40,7 +44,7 @@ rule extract_unmapped:
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_extract_unmapped.{type}.log"
     message: "extract_unmapped: Extracting unmapped {wildcards.type} reads from megahit assembly."

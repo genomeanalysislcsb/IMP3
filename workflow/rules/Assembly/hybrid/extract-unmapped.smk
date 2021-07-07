@@ -2,7 +2,7 @@ SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
 
 EXTRACT_UNMAPPED_SHELL = """
  TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
- bwa-mem2 mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} 2>> {log} | \
+ bwa mem -v 1 -t {threads} {input[3]} {input[0]} {input[1]} 2>> {log} | \
   samtools view --threads {threads} -bS - > $TMP_FILE 2>> {log}
  samtools merge --threads {threads} -u - \
   <(samtools view --threads {threads} -u  -f 4 -F 264 $TMP_FILE 2>> {log}) \
@@ -13,7 +13,7 @@ EXTRACT_UNMAPPED_SHELL = """
 
  if [[ -s {input[2]} ]]
  then
-    bwa-mem2 mem -v 1 -t {threads} {input[3]} {input[2]} 2>> {log} | \
+    bwa mem -v 1 -t {threads} {input[3]} {input[2]} 2>> {log} | \
      samtools view --threads {threads} -bS - 2>> {log} | samtools view --threads {threads} -uf 4 - 2>> {log} | \
      bamToFastq -i stdin -fq {output[2]} >> {log} 2>&1
  else
@@ -29,7 +29,11 @@ rule extract_unmapped_from_megahit:
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
         'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
-        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.bwt.2bit.64',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.amb',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.bwt',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.pac',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.sa',
+        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa.ann',
     output:
         'Assembly/intermediary/{type}.r1.unmapped.fq',
         'Assembly/intermediary/{type}.r2.unmapped.fq',
@@ -50,7 +54,11 @@ rule extract_unmapped_from_hybrid_assembly:
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
         'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa',
-        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.bwt.2bit.64',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.amb',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.bwt',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.pac',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.sa',
+        'Assembly/intermediary/mgmt.{assembler}_hybrid.1.fa.ann',
     output:
         'Assembly/intermediary/mgmt.r1.{assembler}_hybrid.{type}.unmapped.fq',
         'Assembly/intermediary/mgmt.r2.{assembler}_hybrid.{type}.unmapped.fq',
