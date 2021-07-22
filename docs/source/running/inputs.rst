@@ -40,7 +40,7 @@ For processing the original raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_form
     Alignment_metatranscriptomics: ""
 
 If the user has **already pre-processed** reads, either for the :ref:`Assembly <step_assembly>` step or for further analysis,
-the user can pass one additional single ends file. The singleton read file is given last.
+the user is required to pass THREE files, two paired read files and one additional single ends file. The singleton read file is given last.
 
 **Note**: *In this case, the user should NOT include* ``preprocessing`` *in the IMP* :ref:`steps <steps_overview>`.
 
