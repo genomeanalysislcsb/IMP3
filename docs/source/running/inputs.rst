@@ -81,7 +81,7 @@ If the user has already an assembly and would like to use IMP3 to annotate genes
 taxonomy, the contigs can be used as input in FASTA format (NOTE: the FASTA header should only contain the contig name, NO other information and NO spaces: >CONTIGNAME1). 
 In addition, the user can give reads either in `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ files or already aligned
 as `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files. For `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ files, the same limitations apply as discussed above. 
-The `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files should be sorted by contig name and coordinate.
+The `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files should be sorted by contig name and coordinate, and again, the contig names are NOT allowed to contain spaces !!!).
 
 .. code-block:: yaml
 
