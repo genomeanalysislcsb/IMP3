@@ -14,6 +14,10 @@ if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in I
         if not MTaln:
             include:
                 'Assembly/common/bwa.index.smk'
+    elif 'preprocessing' in IMP_STEPS:
+        # issue #28: required for new FASTAs to be used for filtering
+        include:
+            'Assembly/common/bwa.index.smk'
 
 if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
     if ANN:
