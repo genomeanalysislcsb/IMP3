@@ -9,9 +9,10 @@ rule collate_featureCounts:
         "Collection/multi_{type}.{db}.tsv",
         "Collection/multi_{type}.{db}.RDS"
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         samples = lambda wildcards: samples.loc[[a and b for a,b in zip(samples[wildcards.db] == 1, samples[wildcards.type] == 1)],"sample"].tolist()
     log: "logs/collate_featureCounts_{type}.{db}.log"
     message: 'collate_featureCounts: collecting {wildcards.db} {wildcards.type} data.'

@@ -5,11 +5,12 @@ rule hmmer:
         "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan"
     params: 
         lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
-        dbs = DBPATH + "/hmm/{db}",
+        dbs = DBPATH + "/hmm/{db}"
+    resources:
         runtime = "48:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_annotation.yaml"
-    threads: 12
+    threads: getThreads(12)
     log: "logs/analysis_hmmer.{db}.log"
     message: "hmmer: Running HMMER for {wildcards.db}."
     shell:
@@ -27,7 +28,8 @@ rule makegff:
         "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     params:
         "{db}",
-        lambda wildcards: config["hmm_settings"][wildcards.db]["trim"],
+        lambda wildcards: config["hmm_settings"][wildcards.db]["trim"]
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1
@@ -47,7 +49,7 @@ rule mergegff:
         expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff",db=config["hmm_DBs"].split())
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
@@ -65,9 +67,10 @@ rule tar_annotation:
     output:
         "Analysis/annotation/intermediary.tar.gz"
     threads: 1
-    params:
+    resources:
         runtime = "8:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         intermediary = "Analysis/annotation/intermediary/"
     log: "logs/annotation_tar_annotation.log"
     message: "tar_annotation: Compressing intermediary steps of annotation."

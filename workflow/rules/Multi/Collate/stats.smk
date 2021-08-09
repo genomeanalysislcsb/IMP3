@@ -5,9 +5,10 @@ rule collate_stats:
         report("Collection/multi_stats.tsv",category="Collection"),
         "Collection/multi_stats.RDS"
     threads: 1
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         samples = samples.loc[samples.stats == 1,"sample"]
     log: "logs/collate_stats.log"
     message: 'collate_stats: stats from ' + " ".join(samples.loc[samples.stats == 1,"sample"])+ '.'

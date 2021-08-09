@@ -19,7 +19,7 @@ rule prep_dRep_single:
                 raw_directory=samples.path[wildcards.sample])
     output:
         "status/dereplication_{sample}.dRep_single.prepped"
-    params:
+    resources:
         runtime = "1:00:00",
         mem = MEMCORE
     threads: 1
@@ -39,10 +39,11 @@ rule dRep_simple:
         directory("Dereplication/dRep_single_out/dereplicated_genomes"),
         expand("Dereplication/dRep_single_out/data_tables/{file}.csv",
                 file=["Chdb","Cdb","Sdb","Wdb","Widb","Ndb"])
-    threads: BIGCORENO
-    params:
+    threads: getThreads(BIGCORENO)
+    resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE,
+        mem = BIGMEMCORE
+    params:
         out = "Dereplication/dRep_single_out",
         db = config['db_path'],
         length = config['dereplication']['dRep']['length'],

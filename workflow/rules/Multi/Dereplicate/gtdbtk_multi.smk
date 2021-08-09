@@ -3,14 +3,15 @@ rule GTDBtk_bins:
         "Dereplication/dRep_multi_out/dereplicated_genomes/{clusterID}.contigs.fa"
     output:
         directory("Dereplication/GTDB_multi/{clusterID}.GTDB_out")
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE,
+        mem = BIGMEMCORE
+    params:
         outdir = "Dereplication/GTDB_multi/{clusterID}"
     conda: ENVDIR + "/IMP_gtdbtk.yaml"
     log: "logs/dereplication_GTDBtk_bins.{clusterID}.log"
     message: "GTDBtk_bins: Classifiying {wildcards.clusterID} using GTDBtk."
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     shell:
         """
         mkdir -p {params.outdir} && cp {input} {params.outdir}
@@ -28,7 +29,7 @@ rule GTDBtk_summarize:
     output:
         "Dereplication/dRep_multi_out/dereplicated_rebin_stats.tsv",
         report("Dereplication/rebinned_bin_stats.tsv",category="Re-binning and dereplication")
-    params:
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     log: "logs/dereplication_GTDBtk_summarize.log"

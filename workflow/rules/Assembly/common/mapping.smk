@@ -13,10 +13,10 @@ rule mapping_on_assembly:
         'Assembly/%s.assembly.merged.fa' % ASS
     output:
         'Assembly/{type}.reads.sorted.bam'
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_mapping_on_assembly.{type}.log"
     message: "mapping_on_assembly: Mapping {wildcards.type} reads on merged assembly."
@@ -28,7 +28,7 @@ rule mapping_on_assembly:
         samtools merge --threads {threads} -f $PREFIX.merged.bam \
          <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[0]} {input[1]} 2>> {log}| \
          samtools view --threads {threads} -bS -) \
-         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[2]} 2> {log}| \
+         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[2]} 2>> {log}| \
          samtools view --threads {threads} -bS -) 2>> {log}
         # sort
         samtools sort --threads {threads} -m {SAMTOOLS_MEM} $PREFIX.merged.bam > $PREFIX.sorted.bam 2>> {log}
@@ -40,7 +40,7 @@ rule index_bam:
         '{sorted_bam}'
     output:
         '{sorted_bam}.bai'
-    params:
+    resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     threads: 1

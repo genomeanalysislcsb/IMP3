@@ -12,6 +12,9 @@ if "stats" in SUM_STEPS:
             '../../Summary/reads-count.smk'
         include:
             '../../Summary/stats_preprocessing.smk'
+        if MG:
+            include:
+                '../../Preprocessing/nonpareil.smk'
     if not "assembly" in IMP_STEPS and CONTIGS:
         include:
             '../../Assembly/common/mapping.smk'

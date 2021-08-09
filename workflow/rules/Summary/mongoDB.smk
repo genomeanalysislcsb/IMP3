@@ -11,7 +11,8 @@ rule mongo_server:
         touch("status/DB_filling.running")
     threads: 1
     params:
-        port = config["mongo_port"],
+        port = config["mongo_port"]
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     log: "logs/summary_mongo_server.log"
@@ -60,7 +61,8 @@ rule mongoDB_bins:
         dbs = config["hmm_DBs"],
         user = config["mongo_user"],
         password = config["mongo_password"],
-        port = config["mongo_port"],
+        port = config["mongo_port"]
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     log: "logs/summary_mongoDB_bins.log"
@@ -84,6 +86,7 @@ rule mongoDB_contigs:
         user = config["mongo_user"],
         password = config["mongo_password"],
         port = config["mongo_port"],
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     log: "logs/summary_mongoDB_contigs.log"

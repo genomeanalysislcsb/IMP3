@@ -7,8 +7,8 @@ rule metabat:
     output:
         "Dereplication/MetaBAT/{sample}/metabat_res",
         "Dereplication/MetaBAT/{sample}/scaffold2bin.tsv"
-    threads: 2
-    params:
+    threads: getThreads(2)
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"
@@ -35,7 +35,7 @@ rule metabat_prep:
     output:
         "Dereplication/cross_mapping/{sample}.contig_depth.txt"
     threads: 1
-    params:
+    resources:
         runtime = "24:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"

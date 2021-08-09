@@ -8,10 +8,10 @@ rule kraken_cat:
     output:
         "Catalogue/catalogue_kraken.output",
         "Catalogue/catalogue_kraken.report" 
-    params:
+    resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: KRAKTHREADS
+    threads: getThreads(KRAKTHREADS)
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_cat"
     message: "kraken_cat: Running kraken2 on genes from catalog against {config[catalogue][kraken][db]}."
@@ -28,7 +28,7 @@ rule kraken_parse_cat:
     output:
         "Catalogue/catalogue_kraken.parsed.tsv" 
     threads: 1
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_taxonomy.yaml"

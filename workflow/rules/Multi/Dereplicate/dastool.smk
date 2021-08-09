@@ -21,8 +21,8 @@ rule DAS_tool_multi:
         "Dereplication/{sample}/selected_DASTool_summary.txt",
         "Dereplication/{sample}/selected_DASTool_scaffolds2bin.txt",
         directory("Dereplication/{sample}/selected_DASTool_bins")
-    threads: 4
-    params:
+    threads: getThreads(4)
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"
@@ -70,7 +70,7 @@ rule get_protein_names:
         input_for_protein_names
     output:
         "Dereplication/{sample}/prokka.renamed.faa"
-    params:
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     threads: 1

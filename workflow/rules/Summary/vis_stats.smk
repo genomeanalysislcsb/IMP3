@@ -31,7 +31,7 @@ rule visualize_read_stats:
     output:
         report(expand("Visualization/{types}.reads.png",types=TYPES),
                caption="../../report/stats/Reads.rst",category="Preprocessing")
-    params:
+    resources:
         runtime = "1:00:00",
         mem = MEMCORE
     log: "logs/visualize_read_stats.log"
@@ -49,7 +49,7 @@ rule visualize_assembly_stats:
         report("Visualization/Assembly_cov_hist.png",caption="../../report/stats/Assembly_cov.rst",category="Assembly"),
         report("Visualization/Assembly_gc_hist.png",caption="../../report/stats/Assembly_gc.rst",category="Assembly"),
         report("Visualization/Assembly_cov_gc_scatter.png",caption="../../report/stats/Assembly_cov_gc.rst",category="Assembly")
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     log: "logs/visualize_assembly_stats.log"
@@ -67,7 +67,7 @@ rule visualize_analysis_stats:
         report("Visualization/Analysis_cov_hist.png",caption="../../report/stats/Analysis_cov.rst",category="Analysis"),
         report("Visualization/Analysis_cov_scatter.png",caption="../../report/stats/Analysis_cov_scat.rst",category="Analysis"),
         report("Visualization/Analysis_func_sets.png",caption="../../report/stats/Analysis_func.rst",category="Analysis")
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     log: "logs/visualize_analysis_stats.log"
@@ -85,7 +85,7 @@ if CONTIGS or "assembly" in IMP_STEPS:
         output:
             report(expand("Visualization/Taxonomy_{type}_kraken_tree.png",type=TYPES),caption="../../report/stats/Taxonomy_kraken_withAssembly.rst",category="Taxonomy"),
             report("Visualization/Taxonomy_kraken_plot.png",caption="../../report/stats/Taxonomy_kraken_scatter_withAssembly.rst",category="Taxonomy")
-        params:
+        resources:
             runtime = "2:00:00",
             mem = MEMCORE
         log: "logs/visualize_kraken_reads.log"
@@ -101,7 +101,7 @@ else:
         output:
             report(expand("Visualization/Taxonomy_{type}_kraken_tree.png",type=TYPES),caption="../../report/stats/Taxonomy_kraken.rst",category="Taxonomy"),
             report("Visualization/Taxonomy_kraken_plot.png",caption="../../report/stats/Taxonomy_kraken_scatter.rst",category="Taxonomy")
-        params:
+        resources:
             runtime = "2:00:00",
             mem = MEMCORE
         log: "logs/visualize_kraken_reads.log"
@@ -119,7 +119,7 @@ if "analysis" in IMP_STEPS:
         output:
             report(expand("Visualization/Taxonomy_{type}_mOTU_tree.png",type=TYPES),caption="../../report/stats/Taxonomy_mOTU_withAnalysis.rst",category="Taxonomy"),
             report("Visualization/Taxonomy_mOTU_plot.png",caption="../../report/stats/Taxonomy_mOTU_withAnalysis.rst",category="Taxonomy"),
-        params:
+        resources:
             runtime = "2:00:00",
             mem = MEMCORE
         log: "logs/visualize_mOTU_reads.log"
@@ -135,7 +135,7 @@ else:
         output:
             report(expand("Visualization/Taxonomy_{type}_mOTU_tree.png",type=TYPES),caption="../../report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
             report("Visualization/Taxonomy_mOTU_plot.png",caption="../../report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
-        params:
+        resources:
             runtime = "2:00:00",
             mem = MEMCORE
         log: "logs/visualize_mOTU_reads.log"
@@ -156,7 +156,7 @@ if "binny" in BIN_STEPS:
             report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
             report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning"),
             report("Visualization/Binning_vizbin.png",caption="../../report/stats/Binning_vizbin.rst",category="Binning")
-        params:
+        resources:
             runtime = "2:00:00",
             mem = MEMCORE
         log: "logs/visualize_bins.log"
@@ -174,7 +174,7 @@ else:
         output:
             report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
             report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning")
-        params:
+        resources:
             runtime = "2:00:00",
             mem = MEMCORE
         log: "logs/visualize_bins.log"

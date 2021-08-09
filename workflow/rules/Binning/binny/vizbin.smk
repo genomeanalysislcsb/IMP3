@@ -5,7 +5,7 @@ rule cut_rRNA:
     output:
         "Binning/binny/%s.assembly.merged.cut.fa" %ASS
     log: "logs/binning_cut_rRNA.log"
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     threads: 1
@@ -22,9 +22,10 @@ rule vizbin:
         "Binning/binny/%s.assembly.merged.cut.fa" %ASS
     output:
         "Binning/binny/%s.vizbin.with-contig-names.points" %ASS
-    params:
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
+    conda: ENVDIR + "/IMP_annotation.yaml" 
     threads: 1
     log: "logs/binning_vizbin.%s.log" %ASS
     message: "vizbin: Running VizBin."
@@ -54,7 +55,7 @@ rule vizbin_mt:
         "Assembly/mt.assembly.merged.fa"
     output:
         "Binning/binny/mt.vizbin.with-contig-names.points"
-    params:
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1

@@ -7,18 +7,21 @@ rule kraken_reads:
     input:
         "Preprocessing/{type}.se.preprocessed.fq"
     output:
-        "Analysis/taxonomy/kraken/{type}.kraken.output",
+        "Analysis/taxonomy/kraken/{type}.kraken.output.gz",
         report("Analysis/taxonomy/kraken/{type}.kraken.report",category="Taxonomy")
-    params:
+    resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: KRAKTHREADS 
+    params:
+        tmp_out= lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
+    threads: getThreads(KRAKTHREADS) 
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_kraken_reads.{type}.log"
     message: "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."
     shell:
 	    """
 	    mkdir -p Analysis/taxonomy/kraken
-	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names --output {output[0]} --report {output[1]} {input} > {log} 2>&1
-	    """
+	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --use-names --output {params.tmp_out} --report {output[1]} {input} > {log} 2>&1
+	    gzip {params.tmp_out}
+            """
 

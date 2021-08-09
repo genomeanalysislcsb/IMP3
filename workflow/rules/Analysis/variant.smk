@@ -4,7 +4,7 @@ rule variant_calling:
         "Assembly/{type}.reads.sorted.bam"
     output:
         "Analysis/snps/{type}.variants.samtools.vcf.gz",
-    params:
+    resources:
         runtime = "48:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_mapping.yaml"

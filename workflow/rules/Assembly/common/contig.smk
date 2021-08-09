@@ -4,9 +4,10 @@ rule tar_intermediary:
     output:
         "Assembly/intermediary.tar.gz"
     threads: 1
-    params:
+    resources:
         runtime = "8:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         intermediary = "Assembly/intermediary/"
     log: "logs/assembly_tar_intermediary.log"
     message: "tar_intermediary: Compressing intermediary steps of assembly."
@@ -20,7 +21,7 @@ rule contig_fasta_indexing:
         "Assembly/%s.assembly.merged.fa" % ASS
     output:
         "Assembly/%s.assembly.merged.fa.fai" % ASS
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
@@ -38,7 +39,7 @@ rule contig_fasta2bed_conversion:
         "Assembly/%s.assembly.merged.fa.fai" % ASS
     output:
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1

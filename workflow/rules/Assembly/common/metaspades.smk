@@ -30,10 +30,10 @@ if LONG:
             directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
-        params:
+        resources:
             runtime = "120:00:00",
             mem = BIGMEMCORE
-        threads: BIGCORENO
+        threads: getThreads(BIGCORENO)
         conda: ENVDIR + "/IMP_assembly.yaml"
         log: "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
         message: "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
@@ -49,10 +49,10 @@ else:
             directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
-        params:
+        resources:
             runtime = "120:00:00",
             mem = BIGMEMCORE
-        threads: BIGCORENO
+        threads: getThreads(BIGCORENO)
         conda: ENVDIR + "/IMP_assembly.yaml"
         log: "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
         message: "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
@@ -68,10 +68,10 @@ rule metaspades_assembly_from_unmapped:
         directory('Assembly/intermediary/{type}.metaspades_unmapped.2'),
         'Assembly/intermediary/{type}.metaspades_unmapped.2/contigs.fasta',
         'Assembly/intermediary/{type}.metaspades_unmapped.2.fa'
-    params:
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_metaspades_assembly_from_unmapped.{type}.log"
     message: "metaspades_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using METASPADES"

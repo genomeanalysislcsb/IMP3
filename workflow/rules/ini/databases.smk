@@ -78,11 +78,7 @@ rule filtrering_database_index:
     input:
         "{fasta}"
     output:
-        "{fasta}.amb",
-        "{fasta}.bwt",
-        "{fasta}.pac",
-        "{fasta}.sa",
-        "{fasta}.ann"
+        "{fasta}.bwt.2bit.64"
     shell:
         """
         bwa index {wildcards.fasta}

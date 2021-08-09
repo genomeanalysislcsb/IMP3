@@ -17,7 +17,7 @@ if not "taxonomy" in IMP_STEPS:
             gather_bins
         output:
             report("Stats/%s/%s.bins.tsv" %(ASS,ASS),"Binning")
-        params:
+        resources:
             runtime = "12:00:00",
             mem = MEMCORE
         log: "logs/binning_GRID_summarize.log"
@@ -35,7 +35,7 @@ if not "taxonomy" in IMP_STEPS:
         output:
             "Binning/per_bin_results.tar.gz"
         threads: 1
-        params:
+        resources:
             runtime = "8:00:00",
             mem = MEMCORE
         log: "logs/binning_bins_tar.log"
@@ -56,7 +56,7 @@ checkpoint getBins:
         "Binning/selected_DASTool_summary.txt"
     output:
         "status/binning_GRiD.prepped"
-    params:
+    resources:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
@@ -72,11 +72,12 @@ checkpoint getBins:
 rule grid:
     input:
        "Binning/selected_DASTool_bins/{clusterID}/contigs.fa",
-       "Binning/selected_DASTool_bins/{clusterID}/reads.fastq"
+       "Binning/selected_DASTool_bins/{clusterID}/reads.fastq.gz"
     output:
         directory("Binning/selected_DASTool_bins/{clusterID}/grid")
     params:
-        clusterInput="Binning/selected_DASTool_bins/",
+        clusterInput="Binning/selected_DASTool_bins/"
+    resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
     threads: 1
@@ -85,7 +86,7 @@ rule grid:
     message: "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput}{wildcards.clusterID} -o {output} -g {input[0]} > {log} 2>&1
+        grid single -r {params.clusterInput}{wildcards.clusterID} -e fastq.gz -o {output} -g {input[0]} > {log} 2>&1
         """
 
 rule prepare_gridBed:
@@ -93,7 +94,7 @@ rule prepare_gridBed:
         "Binning/selected_DASTool_bins/{clusterID}/contigs.fa"
     output:
         "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
-    params:
+    resources:
         runtime = "2:00:00",
         mem = MEMCORE
     threads: 1
@@ -109,8 +110,8 @@ rule prepare_gridReads:
         "Assembly/mg.reads.sorted.bam",
         "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
     output:
-        "Binning/selected_DASTool_bins/{clusterID}/reads.fastq"
-    params:
+        "Binning/selected_DASTool_bins/{clusterID}/reads.fastq.gz"
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     threads: 1
@@ -119,7 +120,7 @@ rule prepare_gridReads:
     conda: ENVDIR + "/IMP_mapping.yaml"
     shell:
         """
-        samtools view -b -F 5 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - > {output} 2>> {log} 
-        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - >> {output} 2>> {log}
-        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools bam2fq -n - >> {output} 2>> {log}
+        samtools view -b -F 5 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - > {output} 2>> {log} 
+        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - >> {output} 2>> {log}
+        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - >> {output} 2>> {log}
         """

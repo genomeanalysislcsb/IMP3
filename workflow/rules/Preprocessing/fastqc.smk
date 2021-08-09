@@ -7,10 +7,11 @@ rule fastqc_raw:
         'Stats/{type}/{type}.r2_fastqc.html',
         'Stats/{type}/{type}.r1_fastqc.zip',
         'Stats/{type}/{type}.r2_fastqc.zip',
-    threads: 2
-    params:
+    threads: getThreads(2)
+    resources:
         runtime = "1:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         outputdir = 'Stats/{type}'
     conda: ENVDIR + "/IMP_preprocessing.yaml"
     log: "logs/preprocessing_fastqc_raw.{type}.log"
@@ -34,10 +35,11 @@ rule fastqc_preprocessed:
         'Stats/{type}/{type}.r1.preprocessed_fastqc.zip',
         'Stats/{type}/{type}.r2.preprocessed_fastqc.zip',
         'Stats/{type}/{type}.se.preprocessed_fastqc.zip'
-    threads: 3
-    params:
+    threads: getThreads(3)
+    resources:
         runtime = "1:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         outputdir = 'Stats/{type}'
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
     message: "fastqc_preprocessed: Running fastqc on preprocessed {wildcards.type} reads."

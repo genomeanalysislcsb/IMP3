@@ -31,9 +31,10 @@ rule binny:
         "Binning/binny/binny_WS.Rdata"
     params:
         plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",
-        binnydir="Binning/binny",
+        binnydir="Binning/binny"
+    resources:
         runtime = "24:00:00",
-        mem = MEMCORE
+        mem = BIGMEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_binning.yaml" 
     log: "logs/binning_binny.log"
@@ -48,9 +49,10 @@ rule tar_binny_files:
     output:
         "Binning/binny/clusterFiles.tar.gz"
     threads: 1
-    params:
+    resources:
         runtime = "8:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         intermediary = "Binning/binny/clusterFiles/"
     log: "logs/binning_tar_binny_files.log"
     message: "tar_binny_files: Compressing intermediary files from binny."
