@@ -1,8 +1,7 @@
 if config['nextseq']:
     rule trimming:
         input:
-            'Preprocessing/{type}.se.fq',
-            DBPATH + "/adapters/adapters.done"
+            'Preprocessing/{type}.se.fq'
         output:
             'Preprocessing/{type}.se.trimmoed.fq'
         params:
@@ -47,8 +46,7 @@ if config['nextseq']:
 else:
     rule trimming:
         input:
-            'Preprocessing/{type}.se.fq',
-            DBPATH + "/adapters/adapters.done"
+            'Preprocessing/{type}.se.fq'
         output:
             'Preprocessing/{type}.se.trimmed.fq'
         params:

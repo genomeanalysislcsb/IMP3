@@ -2,8 +2,7 @@ if config['nextseq']:
     rule trimming:
         input:
             'Preprocessing/{type}.r1.fq',
-            'Preprocessing/{type}.r2.fq',
-            DBPATH + "/adapters/adapters.done"
+            'Preprocessing/{type}.r2.fq'
         output:
             'Preprocessing/{type}.r1.trimmoed.fq',
             'Preprocessing/{type}.se1.trimmoed.fq',
@@ -110,8 +109,7 @@ else:
     rule trimming:
         input:
             'Preprocessing/{type}.r1.fq',
-            'Preprocessing/{type}.r2.fq',
-            DBPATH + "/adapters/adapters.done"
+            'Preprocessing/{type}.r2.fq'
         output:
             'Preprocessing/{type}.r1.trimmed.fq',
             'Preprocessing/{type}.se1.trimmed.fq',
