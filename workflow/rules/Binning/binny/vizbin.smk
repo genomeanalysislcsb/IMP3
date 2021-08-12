@@ -34,7 +34,7 @@ rule vizbin:
     shell:
         """
         TMP_VIZBIN=$(mktemp --tmpdir=Analysis -dt "VIZBIN_XXXXXX")
-        java -Xmx {params.Xmx} -jar {BINDIR}/VizBin-dist.jar \
+        java -Xmx{params.Xmx} -jar {BINDIR}/VizBin-dist.jar \
          -a {config[binning][vizbin][dimension]} \
          -c {config[binning][vizbin][cutoff]} \
          -i {input} \
