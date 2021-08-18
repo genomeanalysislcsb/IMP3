@@ -1,53 +1,62 @@
-FASTAFILES = expand("{path}/{files}.fasta", files=config["sortmerna"]["files"], path=DBPATH + "/sortmerna")
-
-REF = ' '.join('--ref %s' % (a) for a in zip(FASTAFILES))
-
-SORTME_MEM = int(MEMCORE[:-1]) * 1000
-
-FILTER_RNA_SHELL = """
-  TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
-  if [ -d {TMPDIR}/kvdb ]; then rm -Rf {TMPDIR}/kvdb; fi 
-  sortmerna {params.ref} --reads {input[0]} --reads {input[1]} --workdir tmp --fastx --aligned {TMPDIR}/$TMP_R12.rrna \
-   --other {TMPDIR}/$TMP_R12.rrna_filt --threads {threads} --idx-dir {DBPATH}/sortmerna --otu_map --paired_in -m {params.sortmernamem} >> {log} 2>&1
-  otufile=`find . -name otu_map.txt`
-  touch Preprocessing/otu_map.txt
-  cp $otufile Preprocessing/
-  if [ -s $otufile ]; then echo "# WARNING: OTU from sortmerna file does not exists" >status/sortmerna.warning; fi
-  {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna.fq {output[3]} {output[4]} >> {log} 2>&1
-  {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna_filt.fq {output[0]} {output[1]} >> {log} 2>&1
-  rm -f {TMPDIR}/kvdb/*
-  sortmerna {params.ref} --reads {input[2]} --fastx --aligned Preprocessing/mt.se.trimmed.rna --idx-dir {DBPATH}/sortmerna --workdir {TMPDIR} \
-   --other Preprocessing/mt.se.trimmed.rna_filtered --threads {threads} -m {params.sortmernamem} >> {log} 2>&1
-  rm -Rf {TMPDIR}/$TMP_R12* 
-"""
-
 rule filter_rna:
     input:
-        'Preprocessing/mt.r1.trimmed.fq',
-        'Preprocessing/mt.r2.trimmed.fq',
-        'Preprocessing/mt.se.trimmed.fq',
-        expand(
+        r1='Preprocessing/mt.r1.trimmed.fq',
+        r2='Preprocessing/mt.r2.trimmed.fq',
+        se='Preprocessing/mt.se.trimmed.fq',
+        idx=expand(
             "{db}/sortmerna/idx/{files}.{ext}",
+            db=DBPATH,
             files=config["sortmerna"]["files"],
-            ext=['bursttrie_0.dat', 'kmer_0.dat', 'pos_0.dat', 'stats'],
-            db=DBPATH)
+            ext=['bursttrie_0.dat', 'kmer_0.dat', 'pos_0.dat', 'stats']
+        )
     output:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r1.trimmed.rna.fq',
-        'Preprocessing/mt.r2.trimmed.rna.fq',
-        'Preprocessing/mt.se.trimmed.rna.fq',
-	'Preprocessing/otu_map.txt'
+        filt_r1='Preprocessing/mt.r1.trimmed.rna_filtered.fq',
+        filt_r2='Preprocessing/mt.r2.trimmed.rna_filtered.fq',
+        filt_se='Preprocessing/mt.se.trimmed.rna_filtered.fq',
+        rrna_r1='Preprocessing/mt.r1.trimmed.rna.fq',
+        rrna_r2='Preprocessing/mt.r2.trimmed.rna.fq',
+        rrna_se='Preprocessing/mt.se.trimmed.rna.fq',
+	    otu='Preprocessing/otu_map.txt'
     threads: getThreads(8)
     resources:
         runtime = "48:00:00",
         mem = MEMCORE
     params:
-        ref = REF,
-        sortmernamem = str(SORTME_MEM)
+        ref = ' '.join([
+            '--ref %s' % (a) for a in expand(
+                "{path}/sortmerna/{files}.fasta",
+                files=config["sortmerna"]["files"],
+                path=DBPATH
+            )
+        ]),
+        sortmernamem = str(int(MEMCORE[:-1]) * 1000)
     conda: ENVDIR + "/IMP_preprocessing.yaml"
     log: "logs/preprocessing_filter_rna.log"
     message: "filter_rna: filtering rRNA from mt reads."
     shell:
-        FILTER_RNA_SHELL
+        """
+        IDX_DIR=$(dirname $(dirname {input.idx[0]}))
+        TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
+        if [ -d {TMPDIR}/kvdb ]; then
+            rm -Rf {TMPDIR}/kvdb
+        fi
+        
+        sortmerna {params.ref} --reads {input.r1} --reads {input.r2} --workdir {TMPDIR} --fastx --aligned {TMPDIR}/$TMP_R12.rrna \
+        --other {TMPDIR}/$TMP_R12.rrna_filt --threads {threads} --idx-dir ${{IDX_DIR}} --otu_map --paired_in -m {params.sortmernamem} &> {log}
+        otufile=`find . -name otu_map.txt`
+
+        if [ -s ${{otufile}} ]; then
+            cp ${{otufile}} {output.otu}
+        else
+            touch {output.otu}
+            echo "# WARNING: OTU from sortmerna file does not exists" > status/sortmerna.warning
+        fi
+
+        {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna.fq {output.rrna_r1} {output.rrna_r2} &>> {log}
+        {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna_filt.fq {output.filt_r1} {output.filt_r2} &>> {log}
+
+        rm -f {TMPDIR}/kvdb/*
+        sortmerna {params.ref} --reads {input.se} --fastx --aligned {output.rrna_se} --idx-dir ${{IDX_DIR}} --workdir {TMPDIR} \
+        --other {output.filt_se} --threads {threads} -m {params.sortmernamem} &>> {log}
+        rm -Rf {TMPDIR}/$TMP_R12* 
+        """
