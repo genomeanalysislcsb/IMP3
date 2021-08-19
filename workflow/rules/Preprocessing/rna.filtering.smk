@@ -37,6 +37,8 @@ rule filter_rna:
         """
         IDX_DIR=$(dirname $(dirname {input.idx[0]}))
         TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
+        FQ_SE_FILT={output.filt_se}
+        FQ_SE_RRNA={output.rrna_se}
         if [ -d {TMPDIR}/kvdb ]; then
             rm -Rf {TMPDIR}/kvdb
         fi
@@ -56,7 +58,7 @@ rule filter_rna:
         {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/${{TMP_R12}}.rrna_filt.fq {output.filt_r1} {output.filt_r2} &>> {log}
 
         rm -f {TMPDIR}/kvdb/*
-        sortmerna {params.ref} --reads {input.se} --fastx --aligned {output.rrna_se} --idx-dir ${{IDX_DIR}} --workdir {TMPDIR} \
-        --other {output.filt_se} --threads {threads} -m {params.sortmernamem} &>> {log}
+        sortmerna {params.ref} --reads {input.se} --fastx --aligned ${{FQ_SE_RRNA}} --idx-dir ${{IDX_DIR}} --workdir {TMPDIR} \
+        --other ${{FQ_SE_FILT}} --threads {threads} -m {params.sortmernamem} &>> {log}
         rm -Rf {TMPDIR}/${{TMP_R12}}* 
         """
