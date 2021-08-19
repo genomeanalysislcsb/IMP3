@@ -60,26 +60,24 @@ rule filter_rna:
     message:
         "filter_rna: filtering rRNA from mt reads."
     shell:
-        # NOTE: sub-folder kvdb/ in the work directory has to be cleaned before running sortmerna
         """
-        if [ -d {TMPDIR}/kvdb ]; then
-            rm -Rf {TMPDIR}/kvdb
-        fi
+        TMPDIR_PE=$(mktemp -d -p {TMPDIR})
+        TMPDIR_SE=$(mktemp -d -p {TMPDIR})
+
         sortmerna {params.ref} {params.params} {params.params_pe} --threads {threads} \
-        --reads {input.r1} --reads {input.r2} --workdir {TMPDIR} --aligned {params.bname_pe_rrna} --other {params.bname_pe_filt} &> {log}
+        --reads {input.r1} --reads {input.r2} --workdir ${{TMPDIR_PE}} --aligned {params.bname_pe_rrna} --other {params.bname_pe_filt} &> {log}
         rsync -tPv {output.tmp_filt_r1} {output.filt_r1} &>> {log}
         rsync -tPv {output.tmp_filt_r2} {output.filt_r2} &>> {log}
         rsync -tPv {output.tmp_rrna_r1} {output.rrna_r1} &>> {log}
         rsync -tPv {output.tmp_rrna_r2} {output.rrna_r2} &>> {log}
-
-        if [ ! -s {output.otu} ]; then
+        if [ ! -s {output.otu} ]; then # empty or does not exist
             touch {output.otu}
             echo "# WARNING: OTU from sortmerna file does not exists" > status/sortmerna.warning
         fi
 
-        rm -f {TMPDIR}/kvdb/*
         sortmerna {params.ref} {params.params} --threads {threads} \
-        --reads {input.se} --workdir {TMPDIR} --aligned {params.bname_se_rrna} --other {params.bname_se_filt} &>> {log}
+        --reads {input.se} --workdir ${{TMPDIR_SE}} --aligned {params.bname_se_rrna} --other {params.bname_se_filt} &>> {log}
 
         cat {params.bname_pe_rrna}.log {params.bname_se_rrna}.log >> {log} && rm {params.bname_pe_rrna}.log {params.bname_se_rrna}.log
+        rm -rf ${{TMPDIR_PE}} ${{TMPDIR_SE}}
         """
