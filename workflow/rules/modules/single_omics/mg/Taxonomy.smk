@@ -22,8 +22,8 @@ if config['eukdetect']['run_eukdetect']:
 # master command
 if MG or MT: # TODO: why not only MG as in ../mt/Taxonomy.smk?
     tax_ctrl = expand(
-        "Analysis/taxonomy/kraken/{type}.kraken.{outfile}",
-        type=TYPES, outfile=["output.gz", "report"]
+        "Analysis/taxonomy/kraken/{type}.{kname}.{outfile}",
+        type=TYPES, kname=['kraken', 'se.kraken'] if len(MG) > 1 else ['kraken'], outfile=["output.gz", "report"]
     )
     tax_ctrl.append(expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",type=TYPES))
     if config['eukdetect']['run_eukdetect']:
@@ -36,8 +36,8 @@ if CONTIGS:
     tax_ctrl = ["Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" % ASS]
     if MG or MT:
         tax_ctrl.append(expand(
-            "Analysis/taxonomy/kraken/{type}.kraken.{outfile}",
-            type=TYPES, outfile=["output.gz", "report"]
+            "Analysis/taxonomy/kraken/{type}.{kname}.{outfile}",
+            type=TYPES, kname=['kraken', 'se.kraken'] if len(MG) > 1 else ['kraken'], outfile=["output.gz", "report"]
         ))
         if "analysis" in IMP_STEPS:
             tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
