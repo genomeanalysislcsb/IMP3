@@ -1,3 +1,5 @@
+# https://github.com/biocore/sortmerna/
+# https://github.com/biocore/sortmerna/wiki/User-manual-v4.0
 rule filter_rna:
     input:
         r1='Preprocessing/mt.r1.trimmed.fq',
@@ -22,6 +24,7 @@ rule filter_rna:
         runtime = "48:00:00",
         mem = MEMCORE
     params:
+        # list of reference FASTA files
         ref = ' '.join([
             '--ref %s' % (a) for a in expand(
                 "{path}/sortmerna/{files}.fasta",
@@ -29,11 +32,22 @@ rule filter_rna:
                 path=DBPATH
             )
         ]),
-        sortmernamem = str(int(MEMCORE[:-1]) * 1000)
-    conda: ENVDIR + "/IMP_preprocessing.yaml"
-    log: "logs/preprocessing_filter_rna.log"
-    message: "filter_rna: filtering rRNA from mt reads."
+        # --fastx: output aligned reads
+        # -m: memory requirements for indexing
+        params = "--fastx -m {mem}".format(mem=int(MEMCORE[:-1]) * 1000),
+        # --otu-map: OTU map (input to QIIME's make_otu_table.py)
+        # --paired_in: flags the PE reads as "aligned", when either of them is aligned
+        params_pe = "--otu_map --paired_in",
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    log:
+        "logs/preprocessing_filter_rna.log"
+    message:
+        "filter_rna: filtering rRNA from mt reads."
     shell:
+        # NOTE:
+        # sortmerna adds an extension to output files automatically
+        # sub-folder kvdb/ in the work directory has to be cleaned before running sortmerna
         """
         IDX_DIR=$(dirname $(dirname {input.idx[0]}))
         TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
@@ -43,10 +57,11 @@ rule filter_rna:
             rm -Rf {TMPDIR}/kvdb
         fi
         
-        sortmerna {params.ref} --reads {input.r1} --reads {input.r2} --workdir {TMPDIR} --fastx --aligned {TMPDIR}/${{TMP_R12}}.rrna \
-        --other {TMPDIR}/${{TMP_R12}}.rrna_filt --threads {threads} --idx-dir ${{IDX_DIR}} --otu_map --paired_in -m {params.sortmernamem} &> {log}
+        sortmerna {params.ref} --idx-dir ${{IDX_DIR}} --reads {input.r1} --reads {input.r2} \
+        --workdir {TMPDIR} --aligned {TMPDIR}/${{TMP_R12}}.rrna --other {TMPDIR}/${{TMP_R12}}.rrna_filt \
+        --threads {threads} {params.params} {params.params_pe} &> {log}
+        
         otufile=`find . -name otu_map.txt`
-
         if [ -s ${{otufile}} ]; then
             cp ${{otufile}} {output.otu}
         else
@@ -58,7 +73,8 @@ rule filter_rna:
         {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/${{TMP_R12}}.rrna_filt.fq {output.filt_r1} {output.filt_r2} &>> {log}
 
         rm -f {TMPDIR}/kvdb/*
-        sortmerna {params.ref} --reads {input.se} --fastx --aligned ${{FQ_SE_RRNA%.*}} --idx-dir ${{IDX_DIR}} --workdir {TMPDIR} \
-        --other ${{FQ_SE_FILT%.*}} --threads {threads} -m {params.sortmernamem} &>> {log}
+        sortmerna {params.ref} --idx-dir ${{IDX_DIR}} --reads {input.se} \
+        --workdir {TMPDIR} --aligned ${{FQ_SE_RRNA%.*}} --other ${{FQ_SE_FILT%.*}} \
+        --threads {threads} {params.params} &>> {log}
         rm -Rf {TMPDIR}/${{TMP_R12}}* 
         """
