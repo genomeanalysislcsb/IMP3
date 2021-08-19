@@ -41,8 +41,8 @@ rule filter_rna:
             rm -Rf {TMPDIR}/kvdb
         fi
         
-        sortmerna {params.ref} --reads {input.r1} --reads {input.r2} --workdir {TMPDIR} --fastx --aligned {TMPDIR}/$TMP_R12.rrna \
-        --other {TMPDIR}/$TMP_R12.rrna_filt --threads {threads} --idx-dir ${{IDX_DIR}} --otu_map --paired_in -m {params.sortmernamem} &> {log}
+        sortmerna {params.ref} --reads {input.r1} --reads {input.r2} --workdir {TMPDIR} --fastx --aligned {TMPDIR}/${{TMP_R12}}.rrna \
+        --other {TMPDIR}/${{TMP_R12}}.rrna_filt --threads {threads} --idx-dir ${{IDX_DIR}} --otu_map --paired_in -m {params.sortmernamem} &> {log}
         otufile=`find . -name otu_map.txt`
 
         if [ -s ${{otufile}} ]; then
@@ -52,11 +52,11 @@ rule filter_rna:
             echo "# WARNING: OTU from sortmerna file does not exists" > status/sortmerna.warning
         fi
 
-        {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna.fq {output.rrna_r1} {output.rrna_r2} &>> {log}
-        {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna_filt.fq {output.filt_r1} {output.filt_r2} &>> {log}
+        {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/${{TMP_R12}}.rrna.fq {output.rrna_r1} {output.rrna_r2} &>> {log}
+        {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/${{TMP_R12}}.rrna_filt.fq {output.filt_r1} {output.filt_r2} &>> {log}
 
         rm -f {TMPDIR}/kvdb/*
         sortmerna {params.ref} --reads {input.se} --fastx --aligned {output.rrna_se} --idx-dir ${{IDX_DIR}} --workdir {TMPDIR} \
         --other {output.filt_se} --threads {threads} -m {params.sortmernamem} &>> {log}
-        rm -Rf {TMPDIR}/$TMP_R12* 
+        rm -Rf {TMPDIR}/${{TMP_R12}}* 
         """
