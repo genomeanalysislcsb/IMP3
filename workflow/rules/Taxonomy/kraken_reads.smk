@@ -2,6 +2,8 @@ from os.path import getsize
 KRAKSIZE = float(os.path.getsize( os.path.join(DBPATH, config['krakendb'], "hash.k2d") )) / 1000000000
 KRAKTHREADS = round((KRAKSIZE / float(BIGMEMCORE[:-1])) + 0.5)
 
+# https://ccb.jhu.edu/software/kraken2
+# https://github.com/DerrickWood/kraken2/wiki/Manual
 rule kraken_reads:
     input:
         r1="Preprocessing/{type}.r1.preprocessed.fq",
@@ -18,7 +20,6 @@ rule kraken_reads:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     params:
-        # read_merger=os.path.join(SRCDIR, "read_merger.pl")
         db = os.path.join(DBPATH, config['krakendb']),
     threads:
         getThreads(KRAKTHREADS) 
@@ -27,6 +28,8 @@ rule kraken_reads:
     message:
         "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."
     shell:
+        # --use-names: replace the tax. ID column with the scientific name and the tax. ID
+        # --paired: indicate that the input files provided are paired read data
         """
         labels_pe={output.labels_pe}
         labels_se={output.labels_se}
