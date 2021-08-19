@@ -18,7 +18,12 @@ rule filter_rna:
         rrna_r1='Preprocessing/mt.r1.trimmed.rna.fq',
         rrna_r2='Preprocessing/mt.r2.trimmed.rna.fq',
         rrna_se='Preprocessing/mt.se.trimmed.rna.fq',
-	    otu='Preprocessing/otu_map.txt'
+	    otu='Preprocessing/otu_map.txt',
+        # tmp files
+        tmp_filt_r1=temp('Preprocessing/mt.sortmerna.filt_fwd.fq'),
+        tmp_filt_r2=temp('Preprocessing/mt.sortmerna.filt_rev.fq'),
+        tmp_rrna_r1=temp('Preprocessing/mt.sortmerna.rrna_fwd.fq'),
+        tmp_rrna_r2=temp('Preprocessing/mt.sortmerna.rrna_rev.fq'),
     threads: getThreads(8)
     resources:
         runtime = "48:00:00",
@@ -26,18 +31,28 @@ rule filter_rna:
     params:
         # list of reference FASTA files
         ref = ' '.join([
-            '--ref %s' % (a) for a in expand(
+            '--ref %s' % ref for ref in expand(
                 "{path}/sortmerna/{files}.fasta",
                 files=config["sortmerna"]["files"],
                 path=DBPATH
             )
         ]),
+        # --idx-dir: reference index directory (w/o idx/ sub-folder)
         # --fastx: output aligned reads
         # -m: memory requirements for indexing
-        params = "--fastx -m {mem}".format(mem=int(MEMCORE[:-1]) * 1000),
+        params = lambda wildcards, input: "--idx-dir {idx} --fastx -m {mem}".format(
+            mem=int(MEMCORE[:-1]) * 1000,
+            idx=os.path.dirname(os.path.dirname(input.idx[0]))
+        ),
         # --otu-map: OTU map (input to QIIME's make_otu_table.py)
         # --paired_in: flags the PE reads as "aligned", when either of them is aligned
-        params_pe = "--otu_map --paired_in",
+        # --out2: output paired reads into separate files
+        params_pe = "--otu_map --paired_in --out2",
+        # basenames for the output files (sortmerna adds suffix/extensions automatically)
+        bname_pe_filt = lambda wildcards, output: output.tmp_filt_r1.replace('_fwd.fq', ''),
+        bname_pe_rrna = lambda wildcards, output: output.tmp_rrna_r1.replace('_fwd.fq', ''),
+        bname_se_filt = lambda wildcards, output: os.path.splitext(output.filt_se)[0],
+        bname_se_rrna = lambda wildcards, output: os.path.splitext(output.rrna_se)[0],
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     log:
@@ -45,36 +60,26 @@ rule filter_rna:
     message:
         "filter_rna: filtering rRNA from mt reads."
     shell:
-        # NOTE:
-        # sortmerna adds an extension to output files automatically
-        # sub-folder kvdb/ in the work directory has to be cleaned before running sortmerna
+        # NOTE: sub-folder kvdb/ in the work directory has to be cleaned before running sortmerna
         """
-        IDX_DIR=$(dirname $(dirname {input.idx[0]}))
-        TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
-        FQ_SE_FILT={output.filt_se}
-        FQ_SE_RRNA={output.rrna_se}
         if [ -d {TMPDIR}/kvdb ]; then
             rm -Rf {TMPDIR}/kvdb
         fi
-        
-        sortmerna {params.ref} --idx-dir ${{IDX_DIR}} --reads {input.r1} --reads {input.r2} \
-        --workdir {TMPDIR} --aligned {TMPDIR}/${{TMP_R12}}.rrna --other {TMPDIR}/${{TMP_R12}}.rrna_filt \
-        --threads {threads} {params.params} {params.params_pe} &> {log}
-        
-        otufile=`find . -name otu_map.txt`
-        if [ -s ${{otufile}} ]; then
-            cp ${{otufile}} {output.otu}
-        else
+        sortmerna {params.ref} {params.params} {params.params_pe} --threads {threads} \
+        --reads {input.r1} --reads {input.r2} --workdir {TMPDIR} --aligned {params.bname_pe_rrna} --other {params.bname_pe_filt} &> {log}
+        rsync -tPv {output.tmp_filt_r1} {output.filt_r1} &>> {log}
+        rsync -tPv {output.tmp_filt_r2} {output.filt_r2} &>> {log}
+        rsync -tPv {output.tmp_rrna_r1} {output.rrna_r1} &>> {log}
+        rsync -tPv {output.tmp_rrna_r2} {output.rrna_r2} &>> {log}
+
+        if [ ! -s {output.otu} ]; then
             touch {output.otu}
             echo "# WARNING: OTU from sortmerna file does not exists" > status/sortmerna.warning
         fi
 
-        {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/${{TMP_R12}}.rrna.fq {output.rrna_r1} {output.rrna_r2} &>> {log}
-        {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/${{TMP_R12}}.rrna_filt.fq {output.filt_r1} {output.filt_r2} &>> {log}
-
         rm -f {TMPDIR}/kvdb/*
-        sortmerna {params.ref} --idx-dir ${{IDX_DIR}} --reads {input.se} \
-        --workdir {TMPDIR} --aligned ${{FQ_SE_RRNA%.*}} --other ${{FQ_SE_FILT%.*}} \
-        --threads {threads} {params.params} &>> {log}
-        rm -Rf {TMPDIR}/${{TMP_R12}}* 
+        sortmerna {params.ref} {params.params} --threads {threads} \
+        --reads {input.se} --workdir {TMPDIR} --aligned {params.bname_se_rrna} --other {params.bname_se_filt} &>> {log}
+
+        cat {params.bname_pe_rrna}.log {params.bname_se_rrna}.log >> {log} && rm {params.bname_pe_rrna}.log {params.bname_se_rrna}.log
         """
