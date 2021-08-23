@@ -19,12 +19,10 @@ rule reads_filtering:
         "reads_filtering: Filtering {wildcards.type} reads to get {wildcards.filterstep}."
     shell:
         """
-        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
-        bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads} 2>> {log} | \
+        bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads} 2> {log} | \
           samtools view --threads {threads} -bS - 2>> {log} | \
           samtools view --threads {threads} -uf 4 - 2>> {log} | \
           bamToFastq -i stdin -fq {output} >> {log} 2>&1
-        rm -rf $TMP_FILE
         """
 
 localrules: symlink_preprocessed_reads_files
