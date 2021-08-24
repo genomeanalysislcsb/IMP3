@@ -1,6 +1,5 @@
-# NOTE: based on code from XXX
 # https://github.com/lmrodriguezr/nonpareil
-#   does not support gzipped FASTQ files: https://github.com/lmrodriguezr/nonpareil/issues/35
+# NOTE: the tool does not support gzipped FASTQ files: https://github.com/lmrodriguezr/nonpareil/issues/35
 rule nonpareil:
     input:
         'Preprocessing/mg.{read}.preprocessed.fq'
@@ -26,11 +25,11 @@ rule nonpareil:
         """
         bname={output.out[0]}
         if [ {params.minlen} -ge 24 ]; then
-            echo "reads >= 24"
+            >&2 echo "all reads >= 24 - linking to input file"
             ln -s $(realpath {input}) {output.fq}
         else
-            echo "rm reads < 24"
-            seqkit seq {input} -j {threads} -m 24 | zcat > {output.fq}
+            >&2 echo "remove reads < 24"
+            seqkit seq {input} -j {threads} -m 24 > {output.fq}
         fi 2> {log}
         nonpareil -s {output.fq} -T kmer -f fastq -b ${{bname%.*}} &>> {log}
         """ 
