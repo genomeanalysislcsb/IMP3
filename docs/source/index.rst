@@ -13,7 +13,7 @@ and can be easily configured to perform single-omic metagenomic or metatranscrip
 well as single modules, e.g. only assembly or only binning.
 
 IMP3 is being developed at the `Luxembourg Centre for Systems Biomedicine <https://wwwen.uni.lu/lcsb/research/eco_systems_biology>`_ and the
-`German Centre for Integrative Biodiversity Research (iDiv) Halle-Jena-Leipzig <https://www.idiv.de/en/groups_and_people/central_management/bioinformatics_unit_biu/research.html>`_.
+`Swammerdam Institute for Life Sciences at the University of Amsterdam <https://www.uva.nl/en/profile/h/e/a.u.s.heintzbuschart/a.u.s.heintz-buschart.html>`_.
 
 
 .. toctree::
