@@ -93,20 +93,16 @@ Only do one of the two:
   chmod 755 runIMP3
 
 
-5. **optional, but recommended**: Install snakemake via conda:
+5. **optional, but highly recommended**: Install snakemake (and other dependencies) via conda:
 If you want to use snakemake via conda (and you've set SNAKEMAKE_VIA_CONDA to true), install the environment, as `recommended by Snakemake <https://snakemake.readthedocs.io/en/stable/getting_started/installation.html>`_ :
+Please note that the IMP3 pipeline is tested only using package versions specified in `requirements.yaml`. Using different versions than the specified ones might cause issues.
 
 .. code-block:: console
 
-  conda install -c conda-forge mamba
-  mamba create --prefix $PWD/conda/snakemake_env
-  conda activate $PWD/conda/snakemake_env
-  mamba install -c conda-forge -c bioconda snakemake
-  mamba install -c conda-forge mamba
-  conda deactivate
+  conda env create -f requirements.yaml
 
 
-6. **optional, but highly recommended**: Set permissions / PATH:
+1. **optional, but highly recommended**: Set permissions / PATH:
 IMP3 is meant to be used by multiple users. Set the permissions accordingly. I'd suggest:
 
 - to have read access for all files for the users, **plus**:
