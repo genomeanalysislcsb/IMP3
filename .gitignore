@@ -1,4 +1,5 @@
 .*
+!.gitlab/
 !.gitignore
 !.gitlab-ci.yml
 *~
