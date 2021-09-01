@@ -13,8 +13,8 @@ FILTER_RNA_SHELL = """
   touch Preprocessing/otu_map.txt
   cp $otufile Preprocessing/
   if [ -s $otufile ]; then echo "# WARNING: OTU from sortmerna file does not exists" >status/sortmerna.warning; fi
-  {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna.fq {output[3]} {output[4]} >> {log} 2>&1
-  {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna_filt.fq {output[0]} {output[1]} >> {log} 2>&1
+  {SRCDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna.fq {output[3]} {output[4]} >> {log} 2>&1
+  {SRCDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna_filt.fq {output[0]} {output[1]} >> {log} 2>&1
   rm -f {TMPDIR}/kvdb/*
   sortmerna {params.ref} --reads {input[2]} --fastx --aligned Preprocessing/mt.se.trimmed.rna --idx-dir {DBPATH}/sortmerna --workdir {TMPDIR} \
    --other Preprocessing/mt.se.trimmed.rna_filtered --threads {threads} -m {params.sortmernamem} >> {log} 2>&1
