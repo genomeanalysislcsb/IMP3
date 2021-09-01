@@ -37,3 +37,4 @@ config/config.test.yaml
 testoutput/
 runIMP3_multi_tmux.sh
 IMP3.initialised/ 
+slurm-*.out
