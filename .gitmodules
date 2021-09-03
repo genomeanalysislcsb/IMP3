@@ -1,0 +1,3 @@
+[submodule "submodules/fetchMGs"]
+	path = submodules/fetchMGs
+	url = https://github.com/motu-tool/fetchMGs.git

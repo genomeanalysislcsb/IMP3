@@ -32,9 +32,12 @@ rule fetchmg:
     conda: ENVDIR + "/IMP_annotation.yaml"
     message: "fetchmg: Finding mOTU marker genes in open reading frames."
     shell:
+        # NOTE: fetchMGs expects that the output folder does not exist
         """
+        TMP=$(mktemp --directory --tmpdir={TMPDIR} -t "tmp_XXXXXX")
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        {BINDIR}/fetchMG/fetchMG.pl -o {params.outdir} -t {threads} -d {input[0]}  -m extraction {input[1]} >> {log} 2>&1
+        {MODDIR}/fetchMGs/fetchMGs.pl -o ${{TMP}}/output -t {threads} -d {input[0]}  -m extraction {input[1]} >> {log} 2>&1
+        rsync -rt ${{TMP}}/output/ {params.outdir}/ && rm -rf ${{TMP}}
         """
 	
 rule get_present_mOTUs:

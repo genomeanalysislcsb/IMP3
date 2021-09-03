@@ -85,6 +85,7 @@ else:
 SRCDIR = srcdir("../../scripts")
 BINDIR = srcdir("../../bin")
 ENVDIR = srcdir("../../envs")
+MODDIR = srcdir("../../../submodules")
 
 # get parameters from the command line
 # output
