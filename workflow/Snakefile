@@ -2,11 +2,11 @@
 ROOTDIR = srcdir(".")
 
 include:
-    "workflow/rules/function.definitions.smk"
+    "rules/function.definitions.smk"
 
 # include configuration file
 include:
-    "workflow/rules/ini/config.smk"
+    "rules/ini/config.smk"
 
 # set working directory and dump output
 workdir:
@@ -20,38 +20,38 @@ Path("status").mkdir(exist_ok=True)
 
 # include rules for the workflow based on the input parameters
 include:
-    "workflow/rules/data.input.smk"
+    "rules/data.input.smk"
 
 # include workflows for preprocessing, assembly, analysis, binning and taxonomy steps
 # INTEGRATIVE MG-MT workflow
 if MG and MT:
     if 'preprocessing' in IMP_STEPS:
         include:
-            "workflow/rules/modules/integrative/Preprocessing.smk"
+            "rules/modules/integrative/Preprocessing.smk"
 
     if 'assembly' in IMP_STEPS:
         if config['assembly']['hybrid']:
             include:
-                "workflow/rules/modules/integrative/Assembly.smk"
+                "rules/modules/integrative/Assembly.smk"
         else:
             include:
-                "workflow/rules/modules/single_omics/mg/Assembly.smk"
+                "rules/modules/single_omics/mg/Assembly.smk"
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflow/rules/modules/integrative/Analysis.smk"
+            "rules/modules/integrative/Analysis.smk"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflow/rules/modules/integrative/Taxonomy.smk"
+            "rules/modules/integrative/Taxonomy.smk"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflow/rules/modules/integrative/Binning.smk"
+            "rules/modules/integrative/Binning.smk"
 
     if 'summary' in IMP_STEPS:
         include:
-            "workflow/rules/modules/common/Summary.smk"
+            "rules/modules/common/Summary.smk"
 
 
 # Single omics MG workflow
@@ -59,86 +59,86 @@ elif MG:
     if 'preprocessing' in IMP_STEPS:
         if len(MG) == 2:
             include:
-                "workflow/rules/modules/single_omics/mg/Preprocessing.smk"
+                "rules/modules/single_omics/mg/Preprocessing.smk"
         if len(MG) == 1:
             include:
-                "workflow/rules/modules/single_omics/mg/PreprocessingSE.smk"
+                "rules/modules/single_omics/mg/PreprocessingSE.smk"
 
     if 'assembly' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mg/Assembly.smk"
+            "rules/modules/single_omics/mg/Assembly.smk"
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mg/Analysis.smk"
+            "rules/modules/single_omics/mg/Analysis.smk"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mg/Taxonomy.smk"
+            "rules/modules/single_omics/mg/Taxonomy.smk"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mg/Binning.smk"
+            "rules/modules/single_omics/mg/Binning.smk"
 # MT-only workflow
 elif MT:
     if 'preprocessing' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mt/Preprocessing.smk"
+            "rules/modules/single_omics/mt/Preprocessing.smk"
 
     if 'assembly' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mt/Assembly.smk"
+            "rules/modules/single_omics/mt/Assembly.smk"
 
     if 'analysis' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mt/Analysis.smk"
+            "rules/modules/single_omics/mt/Analysis.smk"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mt/Taxonomy.smk"
+            "rules/modules/single_omics/mt/Taxonomy.smk"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mt/Binning.smk"
+            "rules/modules/single_omics/mt/Binning.smk"
 #starting from aligned reads:
 elif MGaln and MTaln:
     if 'analysis' in IMP_STEPS:
         include:
-            "workflow/rules/modules/integrative/Analysis.smk"
+            "rules/modules/integrative/Analysis.smk"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflow/rules/modules/integrative/Taxonomy.smk"
+            "rules/modules/integrative/Taxonomy.smk"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflow/rules/modules/integrative/Binning.smk"
+            "rules/modules/integrative/Binning.smk"
 
 elif MGaln:
     if 'analysis' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mg/Analysis.smk"
+            "rules/modules/single_omics/mg/Analysis.smk"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mg/Taxonomy.smk"
+            "rules/modules/single_omics/mg/Taxonomy.smk"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mg/Binning.smk"
+            "rules/modules/single_omics/mg/Binning.smk"
 
 elif MTaln:
     if 'analysis' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mt/Analysis.smk"
+            "rules/modules/single_omics/mt/Analysis.smk"
 
     if 'taxonomy' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mt/Taxonomy.smk"
+            "rules/modules/single_omics/mt/Taxonomy.smk"
 
     if 'binning' in IMP_STEPS:
         include:
-            "workflow/rules/modules/single_omics/mt/Binning.smk"
+            "rules/modules/single_omics/mt/Binning.smk"
 else:
     raise Exception('No input data.')
 
@@ -161,7 +161,7 @@ inputs_all = ['status/inputs.done','status/workflow.done']
 if "summary" in IMP_STEPS:
     inputs_all.append('status/summary.done')
     include:
-        "workflow/rules/modules/common/Summary.smk"
+        "rules/modules/common/Summary.smk"
 
 localrules: workflow, ALL
 
