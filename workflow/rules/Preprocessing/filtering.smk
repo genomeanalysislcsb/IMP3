@@ -23,7 +23,7 @@ rule reads_filtering:
         """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
         
-        bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads[0]} {input.reads[1]} 2> {log} | \
+        bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads[0]} {input.reads[1]} 2>> {log} | \
          samtools view --threads {threads} -bS - > ${{TMP_FILE}} 2>> {log}
         
         samtools merge --threads {threads} -u - \
@@ -32,14 +32,14 @@ rule reads_filtering:
          <(samtools view --threads {threads} -u -f 12 -F 256 ${{TMP_FILE}} 2>> {log}) 2>> {log} | \
          samtools view --threads {threads} -bF 0x800 - 2>> {log} | \
          samtools sort --threads {threads} -m {params.mem} -n - 2>> {log} | \
-         bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]} &> {log}
+         bamToFastq -i stdin -fq {output[0]} -fq2 {output[1]} &>> {log}
         rm ${{TMP_FILE}}
         
         if [[ -s {input.reads[2]} ]]; then
             bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads[2]} 2>> {log} | \
              samtools view --threads {threads} -bS - 2>> {log} | \
              samtools view --threads {threads} -uf 4 - 2>> {log} | \
-             bamToFastq -i stdin -fq {output[2]} &> {log}
+             bamToFastq -i stdin -fq {output[2]} &>> {log}
         else
             echo "There are no singletons reads. {input.reads[2]} is empty. Generating empty {output[2]}" >> {log}
             touch {output[2]}
