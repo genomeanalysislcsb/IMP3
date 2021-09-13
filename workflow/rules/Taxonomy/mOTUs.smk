@@ -6,37 +6,39 @@ rule allmotu:
     output:
         touch("status/taxonomy_mOTUs.done")
     threads: 1
-    message: "allmotu: mOTUs done?"
+    message:
+        "allmotu: mOTUs done?"
 
+# https://github.com/motu-tool/mOTUs/wiki
 rule motus:
     input:
-        "Preprocessing/{type}.r1.preprocessed.fq",
-        "Preprocessing/{type}.r2.preprocessed.fq",
-        "Preprocessing/{type}.se.preprocessed.fq"
+        r1="Preprocessing/{type}.r1.preprocessed.fq",
+        r2="Preprocessing/{type}.r2.preprocessed.fq",
+        se="Preprocessing/{type}.se.preprocessed.fq"
     output:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
     threads: getThreads(6)
+    params:
+        # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
+        # -A: print all tax. levels together
+        # -c: return counts
+        params="-A -c"
     resources:
         runtime = "12:00:00",
         mem = MEMCORE
-    conda: ENVDIR + "/IMP_taxonomy.yaml"
-    log: "logs/analysis_motus.{type}.log"
-    message: "motus: Running mOTUs on {wildcards.type} reads."
+    conda:
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
+    log:
+        "logs/analysis_motus.{type}.log"
+    message:
+        "motus: Running mOTUs on {wildcards.type} reads."
     shell:
         """
-        a=`stat -c %A $CONDA_PREFIX/share/motus-*/db_mOTU/db_mOTU_versions`
-        if [ $a == "-rw-------" ]
-	then
-	    chmod 666 $CONDA_PREFIX/share/motus-*/db_mOTU/*
-	fi
-        if [ -s {input[2]} ] && [ -s {input[0]} ] && [ -s {input[1]} ]
-        then
-            motus profile -f {input[0]} -r {input[1]} -s {input[2]} -A -c -t {threads} -o {output} >& {log}
-        elif [ -s {input[2]} ]
-        then
-            motus profile -s {input[2]} -A -c -t {threads} -o {output} >& {log}
+        if [ -s {input.se} ] && [ -s {input.r1} ] && [ -s {input.r2} ]; then
+            motus profile -f {input.r1} -r {input.r2} -s {input.se} -o {output} {params.params} -t {threads} >& {log}
+        elif [ -s {input.se} ]; then
+            motus profile -s {input.se} -o {output} {params.params} -t {threads} >& {log}
         else
-            motus profile -f {input[0]} -r {input[1]} -A -c -t {threads} -o {output} >& {log}
+            motus profile -f {input.r1} -r {input.r2} -o {output} {params.params} -t {threads} >& {log}
         fi 
         """
-
