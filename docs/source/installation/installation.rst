@@ -109,14 +109,14 @@ IMP3 is meant to be used by multiple users. Set the permissions accordingly. I'd
 - execution rights for the runIMP3 file and the .sh scripts in the subfolder submit_scripts
 - read, write and execution rights for the conda subfolder
 - to add the IMP3 directory to your path.
-- It can also be useful to make the VARIABLE_CONFIG file not-writable, because you will always need it. The same goes for config.imp.yaml once you've set the paths to the databases you want to use (see below).
+- It can also be useful to make the VARIABLE_CONFIG file not-writable, because you will always need it. The same goes for config.yaml once you've set the paths to the databases you want to use (see below).
 
 7. Initialize conda environments:
 This run sets up the conda environments that will be usable by all users and will download a database:
 
 .. code-block:: console
 
-  ./runIMP3 -i config/config.imp_init.yaml
+  ./runIMP3 -i config/config.init.yaml
 
 
 This step will take several minutes to an hour. 
@@ -126,7 +126,7 @@ This sets up the conda environments that will be usable by all users and will do
 
 .. code-block:: console
 
-  snakemake --cores 1 -s Snakefile --conda-create-envs-only --use-conda --conda-prefix `pwd`/conda --configfile config/config.imp_init.yaml --local-cores 1
+  snakemake --cores 1 -s Snakefile --conda-create-envs-only --use-conda --conda-prefix `pwd`/conda --configfile config/config.init.yaml --local-cores 1
 
 This step will take several minutes to an hour.
 I strongly suggest to **remove one line from the activation script** after the installation, namely the one reading: `R CMD javareconf > /dev/null 2>&1 || true`, because you don't need this line later and if two users run this at the same time it can cause trouble. You can do this by running:
