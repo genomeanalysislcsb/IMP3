@@ -100,8 +100,8 @@ assembly:
 
 analysis:
   # HMMs (TODO: Mantis/binny update)
-  HMMs: ["KEGG", "essential", "Pfam_A", "Resfams", "Cas", "dbCAN", "metacyc", "SwissProt", "TIGRPFAM"] # former hmm_DBs
-  HMM_settings: # key == name in HMMs
+  hmm: ["KEGG", "essential", "Pfam_A", "Resfams", "Cas", "dbCAN", "metacyc", "SwissProt", "TIGRPFAM"] # former hmm_DBs
+  hmm_settings: # key == name in HMMs
     KEGG:
       cutoff: ""
       trim: "--trimall"
@@ -157,7 +157,8 @@ binning:
 
 taxonomy:
   # https://github.com/DerrickWood/kraken2
-  kraken2: minikraken2 # former krakendb
+  kraken2:
+    db: "minikraken2"
   # https://github.com/allind/EukDetect
   eukdetect:
     run: false # former run_eukdetect

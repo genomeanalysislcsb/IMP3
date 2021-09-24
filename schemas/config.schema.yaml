@@ -5,215 +5,204 @@ description: IMP3 Snakemake configuration file
 type: object
 
 properties:
-  steps:
-    type: string
-  email:
-    type: string
-  sessionName: 
-    type: string
-  sessionKind:
-    type: string
-  settingsLocked:
-    type: string
-  preprocessing_filtering:
-    type: boolean
-  locked_normalMem:
-    type: number
-  locked_bigMem:
-    type: number
-  locked_bigCores:
-    type: number
-  locked_bigTotal:
-    type: number
-  mem:
+  input:
     type: object
     properties:
-      normal_mem_per_core_gb:
-        type: number
-        minimum: 1
-      big_mem_total_gb:
-        type: number
-        minimum: 1
-      big_mem_cores:
-        type: number
-        minimum: 1
-      big_mem_per_core_gb:
-        type: number
-        minimum: 1
-  tmp_dir:
-    type: string
-  raws:
-    type: object
-    properties:
-      Metagenomics:
-        type: string
-      Metatranscriptomics:
-        type: string
-      LongReads:
-        type: string
-      LongReadTech:
-        type: string
-        enum:
-          - ""
-          - "nanopore"
-          - "pacbio"
-      Contigs:
-        type: string
-      Alignment_metagenomics:
-        type: string
-      Alignment_metatranscriptomics:
-        type: string
-      Gff:
-        type: string
-  sample:
-    type: string
-  outputdir:
-    type: string
-  summarydir:
-    type: string
-  summary_steps:
-    type: string
-  mongo_user:
-    type: string
-  mongo_port:
-    type:
-      - string
-      - number
-  mongo_password:
-    type: string
-  compress_level:
-    type: string
-  db_path:
-    type: string
-  trimmomatic:
-    type: object
-    properties:
-      adapter:
+      sr:
+        type: object
+        properties:
+          mg:
+            type: object
+            properties:
+              r1:
+                type: string
+              r2:
+                type: string
+              se:
+                type: string
+          mt:
+            type: object
+            properties:
+              r1:
+                type: string
+              r2:
+                type: string
+              se:
+                type: string
+      lr:
         type: object
         properties:
           mg:
             type: string
           mt:
             type: string
-      leading:
-        type: number
-        minimum: 0
-      minlen:
-        type: number
-        minimum: 0
-      palindrome_clip_threshold:
-        type: number
-        minimum: 0
-      simple_clip_threshold:
-        type: number
-        minimum: 0
-      trailing:
-        type: number
-        minimum: 0
-      seed_mismatch:
-        type: number
-        minimum: 0
-      window_size:
-        type: number
-        minimum: 1
-      window_quality:
-        type: number
-        minimum: 0
-      strictness:
-        type: number
-      target_length:
-        type: number
-        minimum: 0
-  nextseq:
-    type: boolean
-  filtering:
+      assembly:
+        type: object
+        properties:
+          contigs:
+            type: string
+          mapping:
+            type: object
+            properties:
+              mg:
+                type: string
+              mt:
+                type: string
+          gff:
+            type: string
+  lr_tech:
+    type: string
+    enum:
+      - none
+      - ""
+      - "nanopore"
+      - "pacbio"
+  sample:
+    type: string
+    # TODO: regular expression
+  out_path:
+    type: string
+  db_path:
+    type: string
+  steps:
+    type: array
+  preprocessing:
     type: object
     properties:
-      filter:
-        type: string
-        pattern: "^[^_.]+$" 
-  sortmerna:
-    type: object
-    properties:
-       files:
-        type: array
+      trimmomatic:
+        type: object
+        properties:
+          adapter:
+            type: object
+            properties:
+              mg:
+                type: string
+              mt:
+                type: string
+          seed_mismatch:
+            type: number
+            minimum: 0
+          palindrome_clip_threshold:
+            type: number
+            minimum: 0
+          simple_clip_threshold:
+            type: number
+            minimum: 0
+          leading:
+            type: number
+            minimum: 0
+          trailing:
+            type: number
+            minimum: 0
+          minlen:
+            type: number
+            minimum: 0
+          window_size:
+            type: number
+            minimum: 1
+          window_quality:
+            type: number
+            minimum: 0
+          strictness:
+            type: number
+          target_length:
+            type: number
+            minimum: 0
+      nextseq:
+        type: boolean
+      filtering:
+        type: object
+        properties:
+          genomes:
+            type: array
+          rrna:
+            type: array
   assembly:
     type: object
     properties:
       hybrid:
         type: boolean
-    assembler:
+      assembler:
+          type: string
+          enum:
+            - megahit
+            - metaspades
+      spades:
+        type: object
+        properties:
+          metaspades:
+            type: object
+            properties:
+              kmers:
+                type: array
+                # TODO: items
+      megahit:
+        type: object
+        properties:
+          mink:
+            type: number
+            minimum: 3
+          maxk:
+            type: number
+            minimum: 3
+          step:
+            type: number
+            minimum: 1
+      merge:
         type: string
         enum:
-          - megahit
-          - metaspades
-    merge:
-      type: string
-      enum:
-        - null
-        - ""
-        - "concat"
-        - "cap3"
-        - "flye"
-      default: "cap3"
-    mink:
-      type: number
-      minimum: 3
-    maxk:
-      type: number
-      minimum: 3
-    step:
-      type: number
-      minimum: 1
-    cap3:
-      type: object
-      properties:
-        identity:
-          type: number
-          minimum: 1
-          maximum: 100
-        overlap:
-          type: number
-          minimum: 1
-  hmm_DBs:
-    type: string
-  hmm_settings:
-    type: object
-  COGS:
-    type: string
-  featureCountsStranding:
+          - null
+          - ""
+          - "concat"
+          - "cap3"
+          - "flye"
+        default: "cap3"
+      cap3:
+        type: object
+        properties:
+          identity:
+            type: number
+            minimum: 1
+            maximum: 100
+          overlap:
+            type: number
+            minimum: 1
+  analysis:
     type: object
     properties:
-      mt:
-        type: number
-        minimum: 0
-        maximum: 2
-      mg:
-        type: number
-        minimum: 0
-        maximum: 2
-  proteomics:
-    type: object
-    properties:
-      filter_N_peptides:
-        type: number
-        minimum: 1
-      host_proteome:
-        type: string
-      insert_variants:
-        type: boolean
+      hmm:
+        type: array
+        # TODO: items
+      hmm_settings:
+        type: object
+      cogs:
+        type: array
+      featurecounts:
+        type: object
+        properties:
+          stranded:
+            type: object
+            properties:
+              mt:
+                type: number
+                minimum: 0
+                maximum: 2
+              mg:
+                type: number
+                minimum: 0
+                maximum: 2
   binning:
     type: object
     properties:
       binners:
-        type: string
-      MaxBin:
+        type: array
+      maxbin:
         type: object
         properties:
           cutoff:
             type: number
             minimum: 1
-      MetaBAT:
+      metabat:
         type: object
         properties:
           cutoff:
@@ -243,17 +232,46 @@ properties:
           cutoff:
             type: number
             minimum: 1
-  krakendb:
-    type: string
-  eukdetect:
+  taxonomy:
     type: object
     properties:
-      run_eukdetect:
-        type: boolean
-      eukdetect_dir:
+      kraken2:
+        type: object
+        properties:
+          db:
+            type: string
+      eukdetect:
+        type: object
+        properties:
+          run:
+            type: boolean
+          db:
+            type: string
+          min_readlen:
+            type: number
+            min: 60
+  summary:
+    type: object
+    properties:
+      steps:
+        type: array
+        # TODO: items
+      mongo_user:
         type: string
-      database_dir:
+      mongo_port:
+        type:
+          # TODO: why string ???
+          - string
+          - number
+      mongo_password:
         type: string
-      min_readlen:
+  proteomics:
+    type: object
+    properties:
+      filter_n_peptides:
         type: number
-        min: 60
+        minimum: 1
+      host_proteome:
+        type: string
+      insert_variants:
+        type: boolean
