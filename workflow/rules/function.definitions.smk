@@ -277,7 +277,7 @@ def get_read_types_proc_(omic):
     else:
         return ["r1", "r2", "se"]
 
-def get_read_types_proc(omic):
+def get_read_types_proc(omic=None):
     """TODO"""
     omic = get_omics() if omic is None else [omic]
     return flatten_list([get_read_types_proc_(omic) for omic in get_omics()])
@@ -289,7 +289,7 @@ def get_read_types_trimmoed_(omic):
     else: # PE + SE
         return ["r1", "r2", "se1", "se2"]
 
-def get_read_types_trimmoed(omic):
+def get_read_types_trimmoed(omic=None):
     """TODO"""
     omic = get_omics() if omic is None else [omic]
     return flatten_list([get_read_types_trimmoed_(omic) for omic in get_omics()])
@@ -303,7 +303,7 @@ def get_read_types_trimmed_(omic):
         reads += ["r1Cut", "r2Cut", "se1Cut", "se2Cut"]
     return reads
 
-def get_read_types_trimmed(omic):
+def get_read_types_trimmed(omic=None):
     """TODO"""
     omic = get_omics() if omic is None else [omic]
     return flatten_list([get_read_types_trimmed_(omic) for omic in get_omics()])
