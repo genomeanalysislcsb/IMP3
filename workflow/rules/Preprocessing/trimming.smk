@@ -1,75 +1,66 @@
-if config['nextseq']:
+if config["preprocessing"]["nextseq"]:
     rule trimming:
         input:
-            'Preprocessing/{type}.r1.fq',
-            'Preprocessing/{type}.r2.fq'
+            "Preprocessing/{omic}.r1.fq",
+            "Preprocessing/{omic}.r2.fq"
         output:
-            'Preprocessing/{type}.r1.trimmoed.fq',
-            'Preprocessing/{type}.se1.trimmoed.fq',
-            'Preprocessing/{type}.r2.trimmoed.fq',
-            'Preprocessing/{type}.se2.trimmoed.fq'
-        threads: getThreads(10)
+            "Preprocessing/{omic}.r1.trimmoed.fq",
+            "Preprocessing/{omic}.se1.trimmoed.fq",
+            "Preprocessing/{omic}.r2.trimmoed.fq",
+            "Preprocessing/{omic}.se2.trimmoed.fq"
+        threads: 10
         resources:
             runtime="12:00:00",
-            mem = MEMCORE,
+            mem = get_mem_norm() * 10,
         params:
-            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
-        conda: ENVDIR + "/IMP_preprocessing.yaml"
-        log: "logs/preprocessing_trimming.{type}.log"
-        message: "trimming: Trimmming {wildcards.type} reads."
+            params=get_trimmomatic_params
+        conda:
+            ENVDIR + "/IMP_preprocessing.yaml"
+        log:
+            "logs/preprocessing_trimming.{omic}.log"
+        message:
+            "trimming: Trimmming {wildcards.omic} reads."
         shell:
-            """
-            trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
-             ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
-             LEADING:{config[trimmomatic][leading]} \
-             TRAILING:{config[trimmomatic][trailing]} \
-             SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
-             MINLEN:{config[trimmomatic][minlen]} \
-             MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]} > {log} 2>&1
-            """
+            "trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} {params.params} &> {log}"
 
     rule nextseq_trimming_se:
         input:
-            'Preprocessing/{type}.{read}.trimmoed.fq'
+            "Preprocessing/{omic}.{read}.trimmoed.fq"
         output:
-            'Preprocessing/{type}.{read}.trimmed.fq',
-            'Preprocessing/{type}.{read}.trimmoed.fq.gz'
+            "Preprocessing/{omic}.{read}.trimmed.fq",
         wildcard_constraints:
             read="se[1|2]"
-        threads: getThreads(10)
+        threads: 10
         resources:
             runtime="12:00:00",
-            mem = MEMCORE
+            mem = get_mem_norm() * 10,
         conda: ENVDIR + "/IMP_preprocessing.yaml"
-        log: "logs/preprocessing_nextseq_trimming_se.{type}.{read}.log"
-        message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
+        log: "logs/preprocessing_nextseq_trimming_se.{omic}.{read}.log"
+        message: "trimming: Trimmming poly-Gs off {wildcards.omic} {wildcards.read} reads."
         shell:
             """
             cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \
              --minimum-length {config[trimmomatic][minlen]} {input} >> {log} 2>&1
-            pigz -p {threads} {input} >> {log} 2>&1
             """
 
     rule nextseq_trimming_pe:
         input:
-            'Preprocessing/{type}.r1.trimmoed.fq',
-            'Preprocessing/{type}.r2.trimmoed.fq'
+            "Preprocessing/{omic}.r1.trimmoed.fq",
+            "Preprocessing/{omic}.r2.trimmoed.fq"
         output:
-            'Preprocessing/{type}.r1.trimmed.fq',
-            'Preprocessing/{type}.r2.trimmed.fq',
-            'Preprocessing/{type}.r1Cut.trimmed.fq',
-            'Preprocessing/{type}.r2Cut.trimmed.fq',
-            'Preprocessing/{type}.se1Cut.trimmed.fq',
-            'Preprocessing/{type}.se2Cut.trimmed.fq',
-            'Preprocessing/{type}.r1.trimmoed.fq.gz',
-            'Preprocessing/{type}.r2.trimmoed.fq.gz'
-        threads: getThreads(10)
+            "Preprocessing/{omic}.r1.trimmed.fq",
+            "Preprocessing/{omic}.r2.trimmed.fq",
+            "Preprocessing/{omic}.r1Cut.trimmed.fq",
+            "Preprocessing/{omic}.r2Cut.trimmed.fq",
+            "Preprocessing/{omic}.se1Cut.trimmed.fq",
+            "Preprocessing/{omic}.se2Cut.trimmed.fq",
+        threads: 10
         resources:
             runtime="12:00:00",
-            mem = MEMCORE
+            mem = get_mem_norm() * 10,
         conda: ENVDIR + "/IMP_preprocessing.yaml"
-        log: "logs/preprocessing_nextseq_trimming_pe.{type}.pe.log"
-        message: "trimming: Trimmming poly-G's off {wildcards.type} pe reads."
+        log: "logs/preprocessing_nextseq_trimming_pe.{omic}.pe.log"
+        message: "trimming: Trimmming poly-Gs off {wildcards.omic} pe reads."
         shell:
             """
             cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} \
@@ -82,24 +73,23 @@ if config['nextseq']:
             cutadapt -j {threads} \
              --minimum-length {config[trimmomatic][minlen]} \
              -o {output[5]} {output[3]} >> {log} 2>&1
-            pigz -p {threads} {input} >> {log} 2>&1
             """
     rule cat_se_trimmed:
         input:
-            'Preprocessing/{type}.se1.trimmed.fq',
-            'Preprocessing/{type}.se2.trimmed.fq',
-            'Preprocessing/{type}.se1Cut.trimmed.fq',
-            'Preprocessing/{type}.se2Cut.trimmed.fq',
-            'Preprocessing/{type}.r1Cut.trimmed.fq',
-            'Preprocessing/{type}.r2Cut.trimmed.fq'
+            "Preprocessing/{omic}.se1.trimmed.fq",
+            "Preprocessing/{omic}.se2.trimmed.fq",
+            "Preprocessing/{omic}.se1Cut.trimmed.fq",
+            "Preprocessing/{omic}.se2Cut.trimmed.fq",
+            "Preprocessing/{omic}.r1Cut.trimmed.fq",
+            "Preprocessing/{omic}.r2Cut.trimmed.fq"
         output:
-            'Preprocessing/{type}.se.trimmed.fq',
-        threads: getThreads(2)
+            "Preprocessing/{omic}.se.trimmed.fq",
+        threads: 2
         resources:
             runtime="12:00:00",
-            mem = MEMCORE
+            mem = get_mem_norm() * 2
         conda: ENVDIR + "/IMP_preprocessing.yaml"
-        message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
+        message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.omic} reads"
         shell:
             """
             cat {input[0]} {input[1]} {input[2]} {input[3]} > {output}
@@ -108,44 +98,36 @@ if config['nextseq']:
 else:
     rule trimming:
         input:
-            'Preprocessing/{type}.r1.fq',
-            'Preprocessing/{type}.r2.fq'
+            "Preprocessing/{omic}.r1.fq",
+            "Preprocessing/{omic}.r2.fq"
         output:
-            'Preprocessing/{type}.r1.trimmed.fq',
-            'Preprocessing/{type}.se1.trimmed.fq',
-            'Preprocessing/{type}.r2.trimmed.fq',
-            'Preprocessing/{type}.se2.trimmed.fq'
-        threads: getThreads(10)
+            "Preprocessing/{omic}.r1.trimmed.fq",
+            "Preprocessing/{omic}.se1.trimmed.fq",
+            "Preprocessing/{omic}.r2.trimmed.fq",
+            "Preprocessing/{omic}.se2.trimmed.fq"
+        threads: 10
         resources:
             runtime="12:00:00",
-            mem = MEMCORE,
+            mem = get_mem_norm() * 10,
         params:
-            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
+            params=get_trimmomatic_params
         conda: ENVDIR + "/IMP_preprocessing.yaml"
-        log: "logs/preprocessing_trimming.{type}.log"
-        message: "trimming: Trimmming {wildcards.type} reads."
+        log: "logs/preprocessing_trimming.{omic}.log"
+        message: "trimming: Trimmming {wildcards.omic} reads."
         shell:
-            """
-            trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
-             ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
-             LEADING:{config[trimmomatic][leading]} \
-             TRAILING:{config[trimmomatic][trailing]} \
-             SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
-             MINLEN:{config[trimmomatic][minlen]} \
-             MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]} > {log} 2>&1
-            """
+            "trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} {params.params} &> {log}"
 
     rule cat_se_trimmed:
         input:
-            'Preprocessing/{type}.se1.trimmed.fq',
-            'Preprocessing/{type}.se2.trimmed.fq'
+            "Preprocessing/{omic}.se1.trimmed.fq",
+            "Preprocessing/{omic}.se2.trimmed.fq"
         output:
-            'Preprocessing/{type}.se.trimmed.fq'
+            "Preprocessing/{omic}.se.trimmed.fq"
         threads: 1
         resources:
             runtime="12:00:00",
-            mem = MEMCORE
-        message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
+            mem = get_mem_norm()
+        message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.omic} reads"
         shell:
             """
             cat {input[0]} {input[1]} > {output}

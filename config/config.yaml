@@ -1,128 +1,313 @@
-steps: "preprocessing assembly analysis binning taxonomy summary"
-email: ""
-sessionName: ""
-sessionKind: ""
-settingsLocked: "false"
-preprocessing_filtering: true
-mem:
-  normal_mem_per_core_gb: 8
-  big_mem_total_gb: 180
-  big_mem_cores: 5
-  big_mem_per_core_gb: 36
-tmp_dir: tmp
-raws: 
-  Metagenomics: ""
-  Metatranscriptomics: ""
-  LongReads: ""
-  LongReadTech: ""
-  Contigs: ""
-  Alignment_metagenomics: ""
-  Alignment_metatranscriptomics: ""
-  Gff: ""
+##################################################
+# INPUT
+
+# input data
+input:
+  sr: # short-read data
+    mg:
+      r1: ""
+      r2: ""
+      se: ""
+    mt:
+      r1: ""
+      r2: ""
+      se: ""
+  lr: # long-read data
+    mg: ""
+  assembly: # assembly data
+    contigs: "" # contigs FASTA
+    mapping: # sorted and indexed (???) BAM file
+      mg: "" # for (short-read) MG data (???)
+      mt: "" # for (short-read) MT data (???)
+    gff: "" # GFF file
+
+lr_tech: "" # empty or nanopore or pacbio; must be set if LR data is given
+
+# sample name/ID
 sample: test
-outputdir: ""
-summarydir: ""
-summary_steps: "stats vis"
-mongo_user: "myUserAdmin"
-mongo_port: 16626
-mongo_password: "testMongo"
-compress_level: "mid"
-db_path: "IMP_DBs"
-trimmomatic:
-  adapter: 
-    mg: "TruSeq3-PE"
-    mt: "TruSeq3-PE"
-  leading: 20
-  minlen: 40
-  palindrome_clip_threshold: 30
-  simple_clip_threshold: 10
-  trailing: 20
-  seed_mismatch: 2
-  window_size: 1
-  window_quality: 3
-  strictness: 0.5
-  target_length: 40
-nextseq: false
-filtering:
-  filter: "phiX174"
-sortmerna:
-  files:
-    - rfam-5.8s-database-id98
-    - silva-arc-16s-id95
-    - silva-bac-16s-id90
-    - silva-euk-18s-id95
-    - rfam-5s-database-id98
-    - silva-arc-23s-id98
-    - silva-bac-23s-id98
-    - silva-euk-28s-id98
-assembly: 
-  hybrid: true
-  assembler: megahit
-  merge: "cap3" # how to do merge(assembly A, assembly B from reads not mapping to A); none or "" = use only assembly A or "concat" or "flye"
-  mink: 25
-  maxk: 99
-  step: 4
+
+# output directory (to be used as snakemake's working directory)
+out_path: "path/to/output" # former outputdir
+
+# main directory containing all required databases
+db_path: "path/to/databases"
+
+# pipeline steps: preprocessing, assembly, analysis, binning, taxonomy, summary
+steps: ["preprocessing", "assembly", "analysis", "binning", "taxonomy", "summary"]
+
+##################################################
+# STEPS
+
+preprocessing:
+  # https://github.com/usadellab/Trimmomatic
+  trimmomatic:
+    # ILLUMINACLIP
+    adapter:
+      mg: TruSeq3-PE
+      mt: TruSeq3-PE
+    seed_mismatch: 2 # from Trimmomatic's example
+    palindrome_clip_threshold: 30 # from Trimmomatic's example
+    simple_clip_threshold: 10 # from Trimmomatic's example
+    # LEADING, TRAILING
+    leading: 20
+    trailing: 20
+    # MINLEN
+    minlen: 40 # IMP3 default
+    # SLIDINGWINDOW
+    window_size: 4 # from Trimmomatic's example
+    window_quality: 15 # from Trimmomatic's example
+    # MAXINFO
+    strictness: 0.5 # trade-off between read length and read correctness
+    target_length: 40 # IMP3 default
+  # XXX
+  nextseq: false
+  # reads filtering
+  filtering: # TODO: format
+    # references for MG/MT reads
+    genomes: ["PhiX"]
+    # references for rRNA filtering (for MT reads only)
+    rrna: # TODO: format
+      - rfam-5s-database-id98
+      - rfam-5.8s-database-id98
+      - silva-arc-16s-id95
+      - silva-bac-16s-id90
+      - silva-euk-18s-id95
+      - silva-arc-23s-id98
+      - silva-bac-23s-id98
+      - silva-euk-28s-id98
+
+assembly:
+  hybrid: true # MG/MT hybrid assembly
+  assembler: megahit # megahit or metaspades
+  # https://cab.spbu.ru/files/release3.13.0/manual.html
+  spades:
+    metaspades:
+      kmers: [21, 33, 55, 77]
+    # https://cab.spbu.ru/files/release3.13.0/rnaspades_manual.html
+    rnaspades:
+      strand: "--ss-fr" # --ss-fr or --ss-rf, or empty
+  # https://github.com/voutcn/megahit
+  megahit:
+    mink: 25
+    maxk: 99
+    step: 4
+  # how to do merge(assembly A, assembly B from reads not mapping to A)
+  merge: cap3 # none or "" = "use only assembly A", "concat", "flye"
+  # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC310812/
   cap3:
     identity: 98
     overlap: 100
-hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
-hmm_settings: 
-  KEGG:
-    cutoff: ""
-    trim: "--trimall"
-  essential:
-    cutoff: "--cut_tc"
-    trim: ""
-  metacyc:
-    cutoff: ""
-    trim: "--trimall"
-  Cas:
-    cutoff: ""
-    trim: ""
-  Pfam_A:
-    cutoff: "--cut_tc"
-    trim: ""
-  SwissProt:
-    cutoff: ""
-    trim: "--trimall"
-  TIGRPFAM:
-    cutoff: ""
-    trim: ""
-  dbCAN:
-    cutoff: ""
-    trim: ""
-  Resfams:
-    cutoff: ""
-    trim: ""
-COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
-featureCountsStranding:
-  mt: 2
-  mg: 0
-proteomics:
-  filter_N_peptides: 2
-  host_proteome: ""
-  insert_variants: false
+
+analysis:
+  # HMMs (TODO: Mantis/binny update)
+  HMMs: ["KEGG", "essential", "Pfam_A", "Resfams", "Cas", "dbCAN", "metacyc", "SwissProt", "TIGRPFAM"] # former hmm_DBs
+  HMM_settings: # key == name in HMMs
+    KEGG:
+      cutoff: ""
+      trim: "--trimall"
+    essential:
+      cutoff: "--cut_tc"
+      trim: ""
+    metacyc:
+      cutoff: ""
+      trim: "--trimall"
+    Cas:
+      cutoff: ""
+      trim: ""
+    Pfam_A:
+      cutoff: "--cut_tc"
+      trim: ""
+    SwissProt:
+      cutoff: ""
+      trim: "--trimall"
+    TIGRPFAM:
+      cutoff: ""
+      trim: ""
+    dbCAN:
+      cutoff: ""
+      trim: ""
+    Resfams:
+      cutoff: ""
+      trim: ""
+  # XXX (only used together with the taxonomy, i.e. mOTUs output)
+  # TODO: mOTUs - COGs as param?
+  cogs: ["COG0012", "COG0018", "COG0215", "COG0525", "COG0541", "COG0016", "COG0172", "COG0495", "COG0533", "COG0552"] # former COGS
+  # http://subread.sourceforge.net/
+  featurecounts:
+    stranded:
+      mt: 2
+      mg: 0
+
 binning:
-  binners: "MaxBin MetaBAT binny"
-  MaxBin:
+  # binners to use and their settings
+  binners: ["MaxBin", "MetaBAT", "binny"]
+  maxbin: # former MaxBin
     cutoff: 1000
-  MetaBAT:
+  metabat: # former MetaBAT
     cutoff: 1500
   binny:
     pk: 10
     nn: 4
+  # (TODO: Mantis/binny update)
   vizbin:
     dimension: 50
     kmer: 5
     perp: 30
     cutoff: 1000
-krakendb: minikraken2
-eukdetect:
-  run_eukdetect: false
-  eukdetect_dir: ../EukDetect
-  database_dir: eukdetect_database_v1
-  min_readlen: 60 #eukdetect does not recommend pre-trimming, but I don't see why we should keep stuff we don't want
-locked_normalMem: 0
-locked_bigMem: 0
-locked_bigCores: 0
-locked_bigTotal: 0 
+
+taxonomy:
+  # https://github.com/DerrickWood/kraken2
+  kraken2: minikraken2 # former krakendb
+  # https://github.com/allind/EukDetect
+  eukdetect:
+    run: false # former run_eukdetect
+    # eukdetect_dir: "../EukDetect" # TODO: incl. as git submodule
+    db: eukdetect_database_v1 # former database_dir
+    # pre-trimming is not recommended but there seems to be no reason not to do that
+    # (https://github.com/allind/EukDetect/blob/ad9edf11f5b458f11386b8a4b7f0e70f7bd69c30/default_configfile.yml)
+    min_readlen: 60
+
+summary:
+  steps: ["stats", "vis"] # former summary_steps
+  # summarydir: "" # Q: can we just create it in outputdir ???
+  # TODO: separate path (in the future)
+  mongo_user: "myUserAdmin"
+  mongo_port: 16626
+  mongo_password: "testMongo"
+  # compress_level: "mid" # not used anywhere
+
+proteomics:
+  filter_n_peptides: 2
+  host_proteome: ""
+  insert_variants: false
+
+################################################## OLD CONFIG ##################################################
+
+# steps: "preprocessing assembly analysis binning taxonomy summary"
+# email: ""
+# sessionName: ""
+# sessionKind: ""
+# settingsLocked: "false"
+# preprocessing_filtering: true
+# mem:
+#   normal_mem_per_core_gb: 8
+#   big_mem_total_gb: 180
+#   big_mem_cores: 5
+#   big_mem_per_core_gb: 36
+# tmp_dir: tmp
+# raws: 
+#   Metagenomics: ""
+#   Metatranscriptomics: ""
+#   LongReads: ""
+#   LongReadTech: ""
+#   Contigs: ""
+#   Alignment_metagenomics: ""
+#   Alignment_metatranscriptomics: ""
+#   Gff: ""
+# sample: test
+# outputdir: ""
+# summarydir: ""
+# summary_steps: "stats vis"
+# mongo_user: "myUserAdmin"
+# mongo_port: 16626
+# mongo_password: "testMongo"
+# compress_level: "mid"
+# db_path: "IMP_DBs"
+# trimmomatic:
+#   adapter: 
+#     mg: "TruSeq3-PE"
+#     mt: "TruSeq3-PE"
+#   leading: 20
+#   minlen: 40
+#   palindrome_clip_threshold: 30
+#   simple_clip_threshold: 10
+#   trailing: 20
+#   seed_mismatch: 2
+#   window_size: 1
+#   window_quality: 3
+#   strictness: 0.5
+#   target_length: 40
+# nextseq: false
+# filtering:
+#   filter: "phiX174"
+# sortmerna:
+#   files:
+#     - rfam-5.8s-database-id98
+#     - silva-arc-16s-id95
+#     - silva-bac-16s-id90
+#     - silva-euk-18s-id95
+#     - rfam-5s-database-id98
+#     - silva-arc-23s-id98
+#     - silva-bac-23s-id98
+#     - silva-euk-28s-id98
+# assembly: 
+#   hybrid: true
+#   assembler: megahit
+#   merge: "cap3" # how to do merge(assembly A, assembly B from reads not mapping to A); none or "" = use only assembly A or "concat" or "flye"
+#   mink: 25
+#   maxk: 99
+#   step: 4
+#   cap3:
+#     identity: 98
+#     overlap: 100
+# hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
+# hmm_settings: 
+#   KEGG:
+#     cutoff: ""
+#     trim: "--trimall"
+#   essential:
+#     cutoff: "--cut_tc"
+#     trim: ""
+#   metacyc:
+#     cutoff: ""
+#     trim: "--trimall"
+#   Cas:
+#     cutoff: ""
+#     trim: ""
+#   Pfam_A:
+#     cutoff: "--cut_tc"
+#     trim: ""
+#   SwissProt:
+#     cutoff: ""
+#     trim: "--trimall"
+#   TIGRPFAM:
+#     cutoff: ""
+#     trim: ""
+#   dbCAN:
+#     cutoff: ""
+#     trim: ""
+#   Resfams:
+#     cutoff: ""
+#     trim: ""
+# COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
+# featureCountsStranding:
+#   mt: 2
+#   mg: 0
+# proteomics:
+#   filter_N_peptides: 2
+#   host_proteome: ""
+#   insert_variants: false
+# binning:
+#   binners: "MaxBin MetaBAT binny"
+#   MaxBin:
+#     cutoff: 1000
+#   MetaBAT:
+#     cutoff: 1500
+#   binny:
+#     pk: 10
+#     nn: 4
+#   vizbin:
+#     dimension: 50
+#     kmer: 5
+#     perp: 30
+#     cutoff: 1000
+# krakendb: minikraken2
+# eukdetect:
+#   run_eukdetect: false
+#   eukdetect_dir: ../EukDetect
+#   database_dir: eukdetect_database_v1
+#   min_readlen: 60 #eukdetect does not recommend pre-trimming, but I don't see why we should keep stuff we don't want
+# locked_normalMem: 0
+# locked_bigMem: 0
+# locked_bigCores: 0
+# locked_bigTotal: 0 

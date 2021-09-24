@@ -1,9 +1,9 @@
-if config['nextseq']:
+if config["nextseq"]:
     rule trimming:
         input:
-            'Preprocessing/{type}.se.fq'
+            "Preprocessing/{type}.se.fq"
         output:
-            'Preprocessing/{type}.se.trimmoed.fq'
+            "Preprocessing/{type}.se.trimmoed.fq"
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: getThreads(10)
@@ -26,29 +26,27 @@ if config['nextseq']:
 
     rule nextseq_trimming:
         input:
-            'Preprocessing/{type}.{read}.trimmoed.fq'
+            "Preprocessing/{type}.{read}.trimmoed.fq"
         output:
-            'Preprocessing/{type}.{read}.trimmed.fq',
-            'Preprocessing/{type}.{read}.trimmoed.fq.gz'
+            "Preprocessing/{type}.{read}.trimmed.fq",
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
             mem = MEMCORE
         conda: ENVDIR + "/IMP_preprocessing.yaml"
         log: "logs/preprocessing_nextseq_trimming.{type}.{read}.log"
-        message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
+        message: "trimming: Trimmming poly-Gs off {wildcards.type} {wildcards.read} reads."
         shell:
             """
             cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \
              --minimum-length {config[trimmomatic][minlen]} {input} >> {log} 2>&1
-            pigz -p {threads} -q {input} >> {log} 2>&1
             """
 else:
     rule trimming:
         input:
-            'Preprocessing/{type}.se.fq'
+            "Preprocessing/{type}.se.fq"
         output:
-            'Preprocessing/{type}.se.trimmed.fq'
+            "Preprocessing/{type}.se.trimmed.fq"
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: getThreads(10)
