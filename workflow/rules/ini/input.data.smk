@@ -23,7 +23,7 @@ if has_sr("mg") or has_sr("mt"):
             "Preprocessing/{omic}.{reads}.fq"
         wildcard_constraints:
             omic="|".join(get_omics()),
-            reads="|".join(get_read_types_raw("mg"))
+            reads="|".join(get_read_types_raw())
 
 if "assembly" in config["steps"] and has_lr("mg"):
     use rule prepare_input_file as prepare_input_file_asm with:

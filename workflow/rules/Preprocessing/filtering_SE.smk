@@ -3,20 +3,20 @@ rule reads_filtering:
         reads=filtering_reads_se_input,
         ref=filtering_filter
     output:
-        'Preprocessing/{type}.se.{filterstep}.fq'
+        'Preprocessing/{omic}.se.{filterstep}.fq'
     log:
-        "logs/preprocessing_{type}_filtering.{filterstep}.log"
+        "logs/preprocessing_{omic}_filtering.{filterstep}.log"
     wildcard_constraints:
-        type = "|".join(TYPES),
-        filterstep = "|".join("trimmed(\.rna_filtered)?\." get_read_files_filtered_genomes_basenames(True)),
+        omic = "|".join(get_omics()),
+        filterstep = "|".join(["trimmed(\.rna_filtered)?\." + s for s in get_read_files_filtered_genomes_basenames(True)]),
+    threads: get_cores_big()
     resources:
-        runtime = "24:00:00",
-        mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
+        runtime = "8:00:00",
+        mem = get_mem_big(get_cores_big())
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "reads_filtering: Filtering {wildcards.type} reads to get {wildcards.filterstep}."
+        "reads_filtering: Filtering {wildcards.omic} reads to get {wildcards.filterstep}."
     shell:
         """
         bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads} 2> {log} | \
@@ -28,20 +28,19 @@ rule reads_filtering:
 localrules: symlink_preprocessed_reads_files
 rule symlink_preprocessed_reads_files:
     input:
-        expand("Preprocessing/mg.{read}.fq", read=['r1', 'r2']),
+        # expand("Preprocessing/mg.{read}.fq", read=['r1', 'r2']),
         lambda wildcards: expand(
-            "Preprocessing/{{type}}.{read}.{filtered}.fq",
-            filtered=('trimmed.' if wildcards.type == 'mg' else 'trimmed.rna_filtered.') + \
-                ".".join([s + "_filtered" for s in FILTER]),
+            "Preprocessing/{{omic}}.{read}.{filtered}.fq",
+            filtered=('trimmed.' if wildcards.omic == 'mg' else 'trimmed.rna_filtered.') + \
+                ".".join([s + "_filtered" for s in get_filtering_genomes()]),
             read=['se']
         )
     output:
-        expand('Preprocessing/{{type}}.{read}.preprocessed.fq', read=['r1', 'r2', 'se'])
+        expand('Preprocessing/{{omic}}.{read}.preprocessed.fq', read=['r1', 'r2', 'se'])
     wildcard_constraints:
-        type = "|".join(TYPES),
-    threads: 1
+        omic = "|".join(get_omics()),
     message:
-        "symlink_preprocessed_reads_files: link to preprocessed {wildcards.type} reads"
+        "symlink_preprocessed_reads_files: link to preprocessed {wildcards.omic} reads"
     run:
         for i,o in zip(input,output):
             shell("ln -fs $(echo {i} | cut -f 2 -d /) {o} && touch -h {o}")

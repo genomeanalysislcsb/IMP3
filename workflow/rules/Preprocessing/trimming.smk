@@ -30,18 +30,23 @@ if config["preprocessing"]["nextseq"]:
             "Preprocessing/{omic}.{read}.trimmed.fq",
         wildcard_constraints:
             read="se[1|2]"
+        params:
+            params="--nextseq-trim={} --minimum-length {}".format(
+                config["preprocessing"]["trimmomatic"]["trailing"],
+                config["preprocessing"]["trimmomatic"]["minlen"]
+            ),
         threads: 10
         resources:
             runtime="12:00:00",
             mem = get_mem_norm() * 10,
-        conda: ENVDIR + "/IMP_preprocessing.yaml"
-        log: "logs/preprocessing_nextseq_trimming_se.{omic}.{read}.log"
-        message: "trimming: Trimmming poly-Gs off {wildcards.omic} {wildcards.read} reads."
+        conda:
+            ENVDIR + "/IMP_preprocessing.yaml"
+        log:
+            "logs/preprocessing_nextseq_trimming_se.{omic}.{read}.log"
+        message:
+            "trimming: Trimmming poly-Gs off {wildcards.omic} {wildcards.read} reads."
         shell:
-            """
-            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \
-             --minimum-length {config[trimmomatic][minlen]} {input} >> {log} 2>&1
-            """
+            "cutadapt {params.params} -j {threads} -o {output} {input} &> {log}"
 
     rule nextseq_trimming_pe:
         input:

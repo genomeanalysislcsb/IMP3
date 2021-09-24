@@ -11,7 +11,7 @@ rule archive_reads_raw:
         "benchmark/preproc.archive_reads_raw.{omic}.{reads}.tsv"
     wildcard_constraints:
         omic = "|".join(get_omics()),
-        reads = "|".join(get_read_types_raw("mg")),
+        reads = "|".join(get_read_types_raw()),
     threads: 5
     resources:
         runtime = "00-04:00:00",
@@ -34,4 +34,4 @@ use rule archive_reads_raw as archive_reads_proc with:
         "benchmark/preproc.archive_reads_proc.{omic}.{reads}.{stage}.tsv"
     wildcard_constraints:
         omic = "|".join(get_omics()),
-        reads = "|".join(set(get_read_types_trimmed("mg") + get_read_types_trimmoed("mg") + get_read_types_proc("mg"))),
+        reads = "|".join(set(get_read_types_trimmed() + get_read_types_trimmoed() + get_read_types_proc())),
