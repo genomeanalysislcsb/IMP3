@@ -1,0 +1,60 @@
+# execution using slurm as the job scheduling manager
+# set ALL parameters tagged with "[USER_INPUT]"
+
+# total number of jobs
+jobs: 5
+cores: 5
+# max. number of cores to use
+max-threads: 5
+# for local rules: use at most N cores of the host machine in parallel
+local-cores: 1
+
+# config file(s) [USER_INPUT]
+configfile:
+  - "config/config.yaml"
+# additional configuration
+# config: TODO
+
+# envn. variables
+# envvars: TODO
+
+# resources
+default-resources:
+  # tmp folder [USER_INPUT]
+  - tmpdir="/tmp"
+  # mem in Gb (!!!) for "normal" and "big-memory" nodes
+  - membig=24
+  - memnorm=4
+  # number of "normal" and "big-memory" nodes to use
+  - coresbig=5
+  - coresnorm=5
+
+# go on with independent jobs if a job fails
+keep-going: true
+# re-run all jobs the output of which is recognized as incomplete
+rerun-incomplete: true
+# print the reason for each executed rule
+reason: true
+# print out the shell commands that will be executed
+printshellcmds: true
+# conda
+use-conda: true
+# conda prefix: where to install conda env. [USER_INPUT]
+conda-prefix: ""
+# wait given seconds if an output file of a job is not present after the job finished
+latency-wait: 60
+
+# number of times to restart failing jobs
+restart-times: 0
+# custom job script for submission to the cluster
+# jobscript: "slurm-jobscript.sh"
+# execute snakemake rules with the given submit command (ABSOLUTE PATH !!!) [USER_INPUT]
+cluster: "/path/to/this/folder/scheduler.py"
+# status command for cluster execution (ABSOLUTE PATH !!!) [USER_INPUT]
+cluster-status: "/path/to/this/folder/slurm_status.py"
+# cluster config (ABSOLUTE PATH !!!) [USER_INPUT]
+cluster-config: "/path/to/this/folder/cluster_config.yaml"
+# max. number of cluster/drmaa jobs per second
+max-jobs-per-second: 1
+# max. number of job status checks per second
+max-status-checks-per-second: 10

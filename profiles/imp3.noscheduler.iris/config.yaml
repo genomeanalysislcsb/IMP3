@@ -1,0 +1,34 @@
+# local execution without using any job scheduling managers
+# set ALL parameters tagged with "[USER_INPUT]"
+
+# total number of cores to use
+cores: 5
+
+# config file(s) [USER INPUT]
+configfile:
+  - "config/config.yaml"
+# additional configuration
+# config: TODO
+
+# envn. variables
+# envvars: TODO
+
+# resources
+default-resources:
+  # tmp directory [USER INPUT]
+  - tmpdir="/tmp"
+
+# go on with independent jobs if a job fails
+keep-going: True
+# re-run all jobs the output of which is recognized as incomplete
+rerun-incomplete: True
+# print the reason for each executed rule
+reason: True
+# print out the shell commands that will be executed
+printshellcmds: True
+# conda
+use-conda: True
+# conda prefix [USER INPUT]
+# conda-prefix: ""
+# wait given seconds if an output file of a job is not present after the job finished
+latency-wait: 60

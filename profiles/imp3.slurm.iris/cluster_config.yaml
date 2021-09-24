@@ -1,0 +1,101 @@
+__default__: 
+  # TODO: email etc.
+  nodes: 1
+  ntasks: 1
+  partition: batch
+  qos: normal
+  # mem_per_cpu: 4
+  runtime: 00-01:00:00
+  job-name: "IMP3.{rule}"
+
+mg_filtering:
+  partition: bigmem
+
+mt_filtering:
+  partition: bigmem
+
+bwa_index:
+  partition: bigmem
+
+mapping_on_assembly:
+  partition: bigmem
+
+index_bam:
+  partition: bigmem
+
+megahit_assembly_from_preprocessing:
+  partition: bigmem
+  qos: long
+
+megahit_assembly_from_unmapped:
+  partition: bigmem
+  qos: long
+
+metaspades_assembly_from_preprocessing:
+  partition: bigmem
+  qos: long
+
+metaspades_assembly_from_unmapped:
+  partition: bigmem
+  qos: long
+
+merge_assembly_cap3:
+  partition: bigmem
+  qos: long
+
+merge_hybrid_assembly_cap3:
+  partition: bigmem
+  qos: long
+
+extract_unmapped_from_megahit:
+  partition: bigmem
+
+extract_unmapped_from_hybrid_assembly:
+  partition: bigmem
+
+megahit_hybrid_assembly_1:
+  partition: bigmem
+  qos: long
+
+megahit_hybrid_assembly_2:
+  partition: bigmem
+  qos: long
+
+metaspades_hybrid_assembly_1:
+  partition: bigmem
+  qos: long
+
+metaspades_hybrid_assembly_2:
+  partition: bigmem
+  qos: long
+
+collapse_hybrid_assemblies:
+  partition: bigmem
+  qos: normal
+
+extract_unmapped:
+  partition: bigmem
+
+DAS_tool:
+  partition: bigmem
+
+prepare_gridReads:
+  partition: bigmem
+
+grid:
+  partition: bigmem
+
+vizbin:
+  partition: bigmem
+
+vizbin_mt:
+  partition: bigmem
+
+kraken_contigs:
+  partition: bigmem
+
+kraken_reads:
+  partition: bigmem
+
+GTDBtk_bins_single:
+  partition: bigmem
