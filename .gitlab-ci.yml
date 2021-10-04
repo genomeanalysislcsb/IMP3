@@ -1,3 +1,24 @@
+#################### DUMMY ####################
+
+image: continuumio/miniconda3:latest
+
+before_script:
+  - conda env create -f requirements.yaml
+  - source activate imp3_smk
+  - conda install -c conda-forge graphviz
+
+build:
+    script:
+      - snakemake -s workflow/Snakefile -n --profile profiles/imp3.ci --rulegraph | sed -n '/digraph snakemake_dag.*/,$p' | dot -Tpdf > rules.pdf
+      - snakemake -s workflow/Snakefile -n --profile profiles/imp3.ci --dag | sed -n '/digraph snakemake_dag.*/,$p' | dot -Tpdf > dag.pdf
+    artifacts:
+      paths:
+        - rules.pdf
+        - dag.pdf
+    expire_in: 1 day
+
+#################### DUMMY ####################
+
 # stages:
 #   - dag
 #   - init

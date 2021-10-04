@@ -1,0 +1,25 @@
+##################################################
+# INPUT
+
+# input data
+input:
+  sr: # short-read (SR) data
+    mg:
+      r1: "test/Reads/test.mg.1.fastq"
+      r2: "test/Reads/test.mg.2.fastq"
+    mt:
+      r1: "test/Reads/test.mg.1.fastq"
+      r2: "test/Reads/test.mg.2.fastq"
+
+# sample name/ID
+sample: "test"
+
+# output directory (to be used as snakemake's working directory)
+out_path: "test_run" # former outputdir
+
+# main directory containing all required databases
+db_path: "test_run/dbs"
+
+# pipeline steps: preprocessing, assembly, analysis, binning, taxonomy, summary
+# steps: ["preprocessing", "assembly", "analysis", "binning", "taxonomy", "summary"]
+steps: []
