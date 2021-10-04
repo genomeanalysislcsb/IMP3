@@ -17,6 +17,12 @@ configfile:
 default-resources:
   # tmp directory [USER INPUT]
   - tmpdir="/tmp"
+  # mem in Gb (!!!) for "normal" and "big-memory" nodes
+  - membig=4
+  - memnorm=4
+  # number of "normal" and "big-memory" nodes to use
+  - coresbig=5
+  - coresnorm=5
 
 # go on with independent jobs if a job fails
 keep-going: True
