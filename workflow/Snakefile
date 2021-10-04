@@ -1,46 +1,21 @@
 ##################################################
-# MODULES
-
-import os
-import sys
-import shutil
-import gzip
-#import json
-import yaml
-import bz2
-import re
-from copy import deepcopy
-import subprocess
-import pandas as pd
-from pathlib import Path
-from snakemake.utils import validate
-
-##################################################
 # CONFIG
 
 # utils
 include:
-    "rules/function.definitions.smk"
+    "rules/common.smk"
 
 # config
 include:
     "rules/ini/config.smk"
 
-# working/output directory
-workdir:
-    OUTPUTDIR
-
-# default executable for snakemake
-shell.executable("bash")
-
-# XXX
-yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
-yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
-# yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True,default_flow_style=False)
-with open(os.path.join(OUTPUTDIR, "sample.config.yaml"), 'w+') as ofile:
-    yaml.dump(config, ofile, allow_unicode=True, default_flow_style=False)
-
-# Path("status").mkdir(exist_ok=True) # TODO: ???
+# TEST
+print("Input files: {}".format(get_ori_files()))
+print("Omics: {}".format(get_omics()))
+print("Reads: {}".format(get_read_types_raw("mg")))
+print("Assembly omics: {}".format(get_omics_assembly()))
+print("Input file targets: {}".format(get_ori_files_targets()))
+# print_config()
 
 ##################################################
 # TARGETS
@@ -206,12 +181,12 @@ with open(os.path.join(OUTPUTDIR, "sample.config.yaml"), 'w+') as ofile:
 WORKFLOW_TARGETS = []
 
 # input files
-# include rules for the workflow based on the input parameters
 include:
     "rules/ini/input.data.smk"
 
 WORKFLOW_TARGETS += get_ori_files_targets()
 
+# include rules for the workflow based on the input parameters
 if "preprocessing" in config["steps"]:
     include:
         "rules/modules/Preprocessing.smk"

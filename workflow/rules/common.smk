@@ -11,9 +11,20 @@ from os import path, getcwd
 from os.path import isfile
 from itertools import chain
 
+import shutil
+import gzip
+#import json
+import bz2
+from copy import deepcopy
+import subprocess
+import pandas as pd
+from pathlib import Path
+from snakemake.utils import validate
+
 ##################################################
 # Variables
 ##################################################
+# TODO
 
 ##################################################
 # Misc
@@ -23,11 +34,23 @@ def flatten_list(l):
     """Flatten list (or another iterable) of iterables and return new list with sorted and unique elements"""
     return sorted(set(list(chain.from_iterable(l))))
 
+def add_config_representer():
+    """Add YAML representers for config"""
+    yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
+    yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
+
 def print_config(config_dict=None):
     """Print config in YAML format"""
     if config_dict is None:
         config_dict = config
     print(yaml.dump(config_dict, allow_unicode=True, default_flow_style=False))
+
+def save_config(fname, config_dict=None):
+    """Save config to given file"""
+    if config_dict is None:
+        config_dict = config
+    with open(fname, "w") as ofile:
+        yaml.dump(config_dict, ofile, allow_unicode=True, default_flow_style=False)
 
 ##################################################
 # Config
