@@ -15,7 +15,7 @@ build:
       paths:
         - rules.pdf
         - dag.pdf
-    expire_in: 1 day
+      expire_in: 1 day
 
 #################### DUMMY ####################
 
