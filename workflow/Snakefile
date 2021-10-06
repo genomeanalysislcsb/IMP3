@@ -191,6 +191,10 @@ if "preprocessing" in config["steps"]:
     include:
         "rules/modules/Preprocessing.smk"
     WORKFLOW_TARGETS.append('status/preprocessing.done')
+if "assembly" in config["steps"]:
+    include:
+        "rules/modules/Assembly.smk"
+    WORKFLOW_TARGETS.append('status/assembly.done')
 
 localrules: all
 

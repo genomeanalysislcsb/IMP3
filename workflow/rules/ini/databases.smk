@@ -1,3 +1,5 @@
+# NOT USED
+
 rule trimmomatic_adapters:
     output:
         touch("adapters/adapters.done")

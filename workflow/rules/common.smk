@@ -1,4 +1,5 @@
-# Python utils for the snakemake workflow and specific rules
+# Common utils
+# See common.rules.smk for common rules
 
 ##################################################
 # Modules
@@ -6,6 +7,7 @@
 import os
 import re
 import sys
+import math
 import yaml
 from os import path, getcwd
 from os.path import isfile
@@ -107,13 +109,20 @@ def get_workflow_default_resources(key):
     """
     return workflow.default_resources.parsed.get(key, None)
 
-def get_mem_big(threads=1):
-    """Get mem for big-mem cores"""
-    return int(get_workflow_default_resources("membig")) * threads
+def scale_mem(mem, unit="Gb"):
+    """Scale memory (in Gb) to Gb, Mb, Kb or B"""
+    units = ("Gb", "Mb", "Kb", "B")
+    scale = math.pow(1024, units.index(unit)) # will throw an exception if unit not in tuple
+    # print("scaling: mem={}, unit={}, scale={} ==> {}".format(mem, unit, scale, mem*scale))
+    return int(mem * scale)
 
-def get_mem_norm(threads=1):
+def get_mem_big(threads=1, unit="Gb"):
+    """Get mem for big-mem cores"""
+    return scale_mem(mem=int(get_workflow_default_resources("membig")) * threads, unit=unit)
+
+def get_mem_norm(threads=1, unit="Gb"):
     """Get mem for normal-mem cores"""
-    return int(get_workflow_default_resources("memnorm")) * threads
+    return scale_mem(mem=int(get_workflow_default_resources("memnorm")) * threads, unit=unit)
 
 def get_cores_big():
     """Get number of big-mem cores"""
@@ -210,7 +219,7 @@ def has_sr(omic, reads=None):
 
 def has_lr(omic):
     """XXX"""
-    return bool(config["input"]["lr"][omic].values())
+    return omic in config["input"]["lr"].keys() and bool(config["input"]["lr"][omic])
 
 def has_asm_map(omic):
     """XXX"""
@@ -339,6 +348,9 @@ def do_filtering_genomes():
     """Whether any genomes were given to filter reads"""
     return len(get_filtering_genomes()) > 0
 
+def get_assembler():
+    return config["assembly"]["assembler"]
+
 # TODO: Q: Why should this function be used? Snakemake is supposed to take care of the number of threads to be used.
 # def getThreads(max):
 #     if workflow.cores:
@@ -404,13 +416,14 @@ def get_ori_files_symlinks():
     return files
 
 def get_read_files_raw(omic):
-    """Raw read FASTQ files (MG or MT)"""
+    """Raw FASTQ files (MG or MT)"""
     return expand(
         "Preprocessing/{omic}.{reads}.fq",
         omic=omic, reads=get_read_types_raw(omic),
     )
 
 def get_read_files_trimmed(omic, only_final=False):
+    """Trimmed FASTQ files (MG or MT)"""
     if only_final:
         return expand(
             "Preprocessing/{omic}.{reads}.trimmed.fq",
@@ -436,7 +449,7 @@ def get_read_files_filtered_rrna():
     )
 
 def get_read_files_filtered_genomes_basename(i=None, use_re=False):
-    """Basename for a filtered reads FASTQ file"""
+    """Basename for a filtered FASTQ file"""
     genomes = get_filtering_genomes()
     if i is not None:
         genomes = genomes[:i]
@@ -446,11 +459,11 @@ def get_read_files_filtered_genomes_basename(i=None, use_re=False):
     return sep.join([g + "_filtered" for g in genomes])
 
 def get_read_files_filtered_genomes_basenames(use_re=False):
-    """Basenames for filtered reads FASTQ files"""
+    """Basenames for filtered FASTQ files"""
     return [get_read_files_filtered_genomes_basename(x, use_re) for x in range(1, len(get_filtering_genomes()) + 1)]
 
 def get_read_files_filtered_genomes(omic):
-    """Read FASTQ files (MG or MT) after genome-filtering"""
+    """FASTQ files (MG or MT) after genome-filtering"""
     return expand(
         "Preprocessing/{omic}.{reads}.{procstep}.{filtsteps}.fq",
         omic=omic, reads=get_read_types_proc(omic),
@@ -459,14 +472,14 @@ def get_read_files_filtered_genomes(omic):
     )
 
 def get_read_files_proc(omic):
-    """Final preprocessed read FASTQ files (MG or MT)"""
+    """Final preprocessed FASTQ files (MG or MT)"""
     return expand(
         "Preprocessing/{omic}.{reads}.preprocessed.fq",
         omic=omic, reads=get_read_types_proc(omic),
     )
 
 def get_read_files_all(exclude_proc=True):
-    """TODO"""
+    """Get all (to be) generated FASTQ files"""
     files = []
     for omic in get_omics():
         files += get_read_files_raw(omic)
@@ -680,3 +693,28 @@ def filtering_filter(wildcards):
 #     return expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
 #                 raw_directory=samples.path[ori_sample])
 
+def get_bwa_idx_ext():
+    """"""
+    return ["amb", "ann", "bwt", "pac", "sa"]
+
+def get_mem_samtools_sort(threads=1):
+    """Get mem for samtools sort"""
+    # mem * cores * 0.75 - 0.5
+    return get_mem_big(threads) * 0.75 - 0.5
+
+def get_mapping_header(wildcards):
+    return "@RG\\tID:{sample}\\tSM:{omic}".format(sample=config["sample"], omic=wildcards.omic)
+
+def metaspades_lr_input(wildcards):
+    """XXX"""
+    if not has_lr(wildcards.omic):
+        return []
+    else:
+        return ["Assembly/long_reads.fastq"]
+
+def metaspades_lr_input_params(wildcards):
+    """XXX"""
+    if not has_lr(wildcards.omic):
+        return ""
+    else:
+        return "--{lr_tech}".format(lr_tech=config["lr_tech"])

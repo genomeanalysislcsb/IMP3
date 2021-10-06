@@ -31,6 +31,8 @@ if not has_sr("mg") and not has_asm_map("mg") and "binning" in config["steps"]:
 if has_mgmt():
     assert has_sr("mg", "pe") == has_sr("mt", "pe"), "MG and MT reads must have the same read types: PE and/or SE"
     assert has_sr("mg", "se") == has_sr("mt", "se"), "MG and MT reads must have the same read types: PE and/or SE"
+    if "assembly" in config["steps"] and get_omics_assembly() == "mgmt":
+        assert get_assembler() == "megahit", "Only MEGAHIT can be used to create an MG/MT assembly"
 
 # TODO: expand
 
@@ -45,7 +47,7 @@ ENVDIR  = srcdir("../../envs")
 MODDIR  = srcdir("../../../submodules")
 
 # output
-OUTPUTDIR = get_abs_path(config['out_path'])
+OUTPUTDIR = get_abs_path(config['out_path']) 
 
 # summary
 SUMDIR = os.path.join(OUTPUTDIR, "summary")
@@ -75,4 +77,4 @@ workdir:
     OUTPUTDIR
 
 # save config
-save_config(os.path.join(OUTPUTDIR, "sample.config.yaml"))
+save_config("sample.config.yaml")

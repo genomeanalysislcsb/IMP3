@@ -77,7 +77,7 @@ preprocessing:
       - "silva-euk-28s-id98"
 
 assembly:
-  hybrid: true # MG/MT hybrid assembly
+  hybrid: true # MG/MT hybrid assembly # TODO different name?
   assembler: "megahit" # megahit or metaspades
   # https://cab.spbu.ru/files/release3.13.0/manual.html
   spades:
@@ -88,9 +88,9 @@ assembly:
       strand: "--ss-fr" # --ss-fr or --ss-rf, or empty
   # https://github.com/voutcn/megahit
   megahit:
-    mink: 25
-    maxk: 99
-    step: 4
+    kmin: 25
+    kmax: 99
+    kstep: 4
   # how to do merge(assembly A, assembly B from reads not mapping to A)
   merge: "cap3" # none or "" = "use only assembly A", "concat", "flye"
   # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC310812/

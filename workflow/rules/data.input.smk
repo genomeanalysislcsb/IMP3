@@ -1,3 +1,5 @@
+# NOT USED
+
 if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in IMP_STEPS or 'binning' in IMP_STEPS):
     if CONTIGS:
         include:
