@@ -18,21 +18,37 @@ configfile:
 # validate the config file
 validate(config, schema="../../../schemas/config.schema.yaml")
 
-if config["input"]["lr"]["mg"]:
-    assert lr_tech, "Long-read data given but sequencing technology (\"lr_tech\") is not set."
+##################################################
+# SET/CHANGE VALUES
 
 if not config["sample"]:
-    config["sample"] = get_sample_name(OUTPUTDIR)
+    config["sample"] = create_sample_name(OUTPUTDIR)
 
-if not has_sr("mg") and not has_asm_map("mg") and "binning" in config["steps"]:
-    assert "MaxBin" not in config["binning"]["binners"], "MaxBin should be used but no MG reads or BAM was given"
-    assert "binny" not in config["binning"]["binners"], "binniny should be used but no MG reads or BAM was given"
+##################################################
+# CHECKS
+
+# input data
+if has_lr("mg"):
+    assert lr_tech, "Long-read data given but sequencing technology (\"lr_tech\") is not set."
 
 if has_mgmt():
-    assert has_sr("mg", "pe") == has_sr("mt", "pe"), "MG and MT reads must have the same read types: PE and/or SE"
-    assert has_sr("mg", "se") == has_sr("mt", "se"), "MG and MT reads must have the same read types: PE and/or SE"
-    if "assembly" in config["steps"] and get_omics_assembly() == "mgmt":
+    assert has_sr("mg", "pe") == has_sr("mt", "pe"), "MG and MT reads must both (not) have paired-end short reads"
+    assert has_sr("mg", "se") == has_sr("mt", "se"), "MG and MT reads must both (not) have single-end short reads"
+
+if "preprocessing" not in get_steps():
+    assert not has_sr("mg") or (has_sr("mg", "pe") and has_sr("mg", "se")), "If skipping preprocessing, paired- and single-end short MG reads are required"
+    assert not has_sr("mt") or (has_sr("mt", "pe") and has_sr("mt", "se")), "If skipping preprocessing, paired- and single-end short MT reads are required"
+
+# assembly
+if "assembly" in get_steps():
+    if get_omics_assembly() == "mgmt":
         assert get_assembler() == "megahit", "Only MEGAHIT can be used to create an MG/MT assembly"
+    assert has_sr("mg", "pe") or has_sr("mt", "pe"), "Need paired-end SR reads for an assembly"
+
+# binning
+if not has_sr("mg") and not has_asm_map("mg") and "binning" in get_steps():
+    assert "MaxBin" not in config["binning"]["binners"], "MaxBin should be used but no MG reads or BAM was given"
+    assert "binny" not in config["binning"]["binners"], "binniny should be used but no MG reads or BAM was given"
 
 # TODO: expand
 

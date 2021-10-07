@@ -162,9 +162,9 @@ def get_abs_path(pathname):
         pathname = path.abspath(pathname)
     return pathname
 
-def get_sample_name(pathname):
+def create_sample_name(pathname):
     """
-    get_sample_name(pathname)
+    create_sample_name(pathname)
 
     Derive sample name from given path (supposed to be the output/working directory).
     The last two directories will be joined by an underscore.
@@ -184,6 +184,10 @@ def get_sample_name(pathname):
     # string cleaning
     sample = re.sub(r"\W", "", sample)
     return sample
+
+def get_steps():
+    """Get workflow steps"""
+    return config["steps"]
 
 def proc_input_file(fname):
     """
@@ -275,6 +279,7 @@ def get_omics_assembly():
     str
         Assembly type (possible values = {mgmt, mg, mt})
     """
+    # NOTE: not checking for PE/SE !!!
     if has_sr("mg") and has_sr("mt") and config["assembly"]["hybrid"]:
         return "mgmt"
     if has_sr("mg"): # even if MT is also given
@@ -366,7 +371,7 @@ def get_assembler():
 ##################################################
 
 # def workflow_ctrl(wildcards):
-#     return(["status/" + s + ".done" for s in config["steps"] if s != "summary"])
+#     return(["status/" + s + ".done" for s in get_steps() if s != "summary"])
 
 def get_ori_files(config_dict=None):
     """Get all input data files"""
@@ -392,15 +397,15 @@ def get_ori_files_targets():
                 if fname:
                     files.append("Preprocessing/{omic}.{reads}.fq".format(omic=omic, reads=reads))
     # long reads
-    if "assembly" in config["steps"] and has_lr("mg"):
+    if "assembly" in get_steps() and has_lr("mg"):
         files.append("Assembly/long_reads.fastq")
     # assembly + mapping
-    if "assembly" not in config["steps"] and has_asm():
+    if "assembly" not in get_steps() and has_asm():
         files.append("Assembly/%.assembly.merged.fa" % get_omics_assembly())
         for omic, fname in config["input"]["assembly"]["mapping"].items():
             if fname:
                 files.append("Assembly/{omic}.reads.sorted.bam".format(omic=omic))
-    if "analysis" not in config["steps"] and has_asm_gff():
+    if "analysis" not in get_steps() and has_asm_gff():
         files.append("Analysis/annotation/annotation_CDS_RNA_hmms.gff")
     return files
 
@@ -511,7 +516,7 @@ def get_read_files_all(exclude_proc=True):
 
 # #     # processed (trimmed, RNA-filtered)
 # #     rtypes = []
-# #     if "preprocessing" in config["steps"]:
+# #     if "preprocessing" in get_steps():
 # #         rtypes.append("preprocessed")
 # #         if "mt" in omic:
 # #             rtypes.append("trimmed.rna_filtered")

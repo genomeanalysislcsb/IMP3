@@ -25,7 +25,7 @@ if has_sr("mg") or has_sr("mt"):
             omic="|".join(get_omics()),
             reads="|".join(get_read_types_raw())
 
-if "assembly" in config["steps"] and has_lr("mg"):
+if "assembly" in get_steps() and has_lr("mg"):
     use rule prepare_input_file as prepare_input_file_asm with:
         input:
             config["input"]["assembly"]["contigs"]
@@ -38,14 +38,14 @@ if "assembly" in config["steps"] and has_lr("mg"):
         output:
             "Assembly/{omic}.reads.sorted.bam"
 
-if "assembly" not in config["steps"] and has_asm():
+if "assembly" not in get_steps() and has_asm():
     use rule prepare_input_file as prepare_input_file_lr_mg with:
         input:
             config["input"]["lr"]["mg"]
         output:
             "Assembly/long_reads.fastq"
 
-if "analysis" not in config["steps"] and has_asm_gff():
+if "analysis" not in get_steps() and has_asm_gff():
     use rule prepare_input_file as prepare_input_file_asm_gff with:
         input:
             config["input"]["assembly"]["gff"]

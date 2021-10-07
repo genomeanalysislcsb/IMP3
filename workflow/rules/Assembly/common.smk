@@ -186,7 +186,7 @@ rule assembly_gc:
     shell:
         "perl {params.script} {input} {output.tmp} &> {log} && cut -f1,2 {output.tmp} | sed -e 's/>//g' > {output.gc}"
 
-# TODO
+# archive intermedite assembly files
 rule archive_assembly:
     input:
         "status/assembly.ready" # see rule in modules/Assembly.smk
