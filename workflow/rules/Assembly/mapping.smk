@@ -3,8 +3,8 @@ rule assembly_map_reads:
         r1="Preprocessing/{omic}.r1.preprocessed.fq",
         r2="Preprocessing/{omic}.r2.preprocessed.fq",
         se="Preprocessing/{omic}.se.preprocessed.fq",
-        ref="Assembly/{asm}.assembly.merged.fa",
-        idx=expand("Assembly/{{asm}}.assembly.merged.fa.{ext}", ext=get_bwa_idx_ext())
+        ref="Assembly/%s.assembly.merged.fa" % get_omics_assembly(),
+        idx=expand("Assembly/{asm}.assembly.merged.fa.{ext}", asm=get_omics_assembly(), ext=get_bwa_idx_ext()),
     output:
         temp("Assembly/{omic}.reads.bam")
     log:

@@ -32,25 +32,6 @@ rule bam_idx:
     shell:
         "samtools index {input} &> {log}"
 
-# TODO
-# rule tar_intermediary:
-#     input:
-#         "Assembly/%s.assembly.merged.fa" % get_omics_assembly()
-#     output:
-#         "Assembly/intermediary.tar.gz"
-#     threads: 1
-#     resources:
-#         runtime="8:00:00",
-#         mem=get_mem_norm(1),
-#     params:
-#         intermediary="Assembly/intermediary/"
-#     log:
-#         "logs/assembly_tar_intermediary.log"
-#     message:
-#         "tar_intermediary: Compressing intermediary steps of assembly."
-#     shell:
-#        "tar czf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1"
-
 rule assembly_idx:
     input:
         "Assembly/{asm}.assembly.merged.fa"
@@ -204,3 +185,22 @@ rule assembly_gc:
         "Assembly: contig GC content: {input}"
     shell:
         "perl {params.script} {input} {output.tmp} &> {log} && cut -f1,2 {output.tmp} | sed -e 's/>//g' > {output.gc}"
+
+# TODO
+rule archive_assembly:
+    input:
+        "status/assembly.ready" # see rule in modules/Assembly.smk
+    output:
+        "Assembly/intermediary.tar.gz"
+    log:
+        "logs/assembly_archive.log"
+    threads: 1
+    resources:
+        runtime="8:00:00",
+        mem=get_mem_norm(1),
+    params:
+        folder="Assembly/intermediary/"
+    message:
+        "tar_intermediary: Compressing intermediary steps of assembly."
+    shell:
+       "tar czf {output} {params.folder} && rm -r {params.folder} &> {log}"
