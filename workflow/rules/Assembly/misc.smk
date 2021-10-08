@@ -1,4 +1,5 @@
-rule bwa_idx:
+# NOTE: not only for assemblies
+rule misc_bwa_idx:
     input:
         "{fasta}"
     output:
@@ -10,17 +11,16 @@ rule bwa_idx:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "bwa index: {input}"
+        "BWA index: {input}"
     shell:
         "bwa index {input}"
 
-rule bam_idx:
+# NOTE: not only for assemblies
+rule misc_bam_idx:
     input:
         "{sorted_bam}"
     output:
         "{sorted_bam}.bai"
-    log:
-        "logs/samtools.idx_bam.{sorted_bam}.log"
     threads: 1
     resources:
         runtime="8:00:00",
@@ -28,9 +28,9 @@ rule bam_idx:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "samtools: index BAM: {input}"
+        "Index BAM: {input}"
     shell:
-        "samtools index {input} &> {log}"
+        "samtools index {input}"
 
 rule assembly_idx:
     input:
@@ -38,7 +38,7 @@ rule assembly_idx:
     output:
         "Assembly/{asm}.assembly.merged.fa.fai"
     log:
-        "logs/assembly_idx_{asm}.log"
+        "logs/assembly_idx.{asm}.log"
     wildcard_constraints:
         asm=get_omics_assembly(),
     threads: 1
@@ -49,7 +49,7 @@ rule assembly_idx:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "Assembly index: {input}"
+        "Index assembly: {input}"
     shell:
         "samtools faidx {input} &> {log}"
 
@@ -65,7 +65,7 @@ rule assembly_fasta2bed:
         runtime="8:00:00",
         mem=get_mem_norm,
     message:
-        "Assembly: FASTA to BED: {input}"
+        "Assembly FASTA to BED: {input}"
     shell:
         "cat {input} | awk '{{print $1 \"\t0\t\" $2}}' > {output}"
 
@@ -77,6 +77,8 @@ rule assembly_cov:
         "Stats/{omic}/{asm}.assembly.contig_coverage.txt"
     log:
         "logs/assembly_cov.{asm}.{omic}.log"
+    benchmark:
+        "benchmark/assembly_cov.{asm}.{omic}.log"
     wildcard_constraints:
         omic="|".join(get_omics()),
         asm=get_omics_assembly(),
@@ -87,7 +89,7 @@ rule assembly_cov:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "Assembly: coverage: {input}"
+        "Assembly coverage: {input}"
     shell:
         "coverageBed -b {input.bam} -a {input.bed} -sorted > {output} 2> {log}"
 
@@ -99,7 +101,9 @@ rule assembly_depth:
         depth="Stats/{omic}/{asm}.assembly.contig_depth.txt",
         depth_tmp=temp("Stats/{omic}/{asm}.assembly.contig_depth.txt.tmp"),
     log:
-        "logs/assembly_mapping_stats.{asm}.{omic}.log"
+        "logs/assembly_depth.{asm}.{omic}.log"
+    benchmark:
+        "benchmark/assembly_depth.{asm}.{omic}.log"
     wildcard_constraints:
         omic="|".join(get_omics()),
         asm=get_omics_assembly(),
@@ -112,7 +116,7 @@ rule assembly_depth:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "Assembly: contig depth: {input}"
+        "Assembly contig depth: {input}"
     shell:
         "(genomeCoverageBed -ibam {input.bam} | grep -v \"genome\" > {output.depth_tmp} && "
         # method adapted and modified from CONCOCT
@@ -124,7 +128,9 @@ rule assembly_mapping_stats:
     output:
         report("Stats/{omic}/{asm}.assembly.contig_flagstat.txt", category="Assembly")
     log:
-        "logs/assembly_flagstat.{asm}.{omic}.log"
+        "logs/assembly_mapping_stats.{asm}.{omic}.log"
+    benchmark:
+        "benchmark/assembly_mapping_stats.{asm}.{omic}.log"
     wildcard_constraints:
         omic="|".join(get_omics()),
         asm=get_omics_assembly(),
@@ -135,7 +141,7 @@ rule assembly_mapping_stats:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "Assembly: flagstat: {input}"
+        "Assembly flag stats: {input}"
     shell:
         "(samtools flagstat {input} | cut -f1 -d ' ' > {output}) 2> {log}"
 
@@ -147,6 +153,8 @@ rule assembly_len:
         "Stats/{asm}/{asm}.assembly.length.txt"
     log:
         "logs/assembly_len.{asm}.log"
+    benchmark:
+        "benchmark/assembly_len.{asm}.log"
     wildcard_constraints:
         asm=get_omics_assembly(),
     params:
@@ -158,7 +166,7 @@ rule assembly_len:
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:
-        "Assembly: contig length: {input}"
+        "Assembly contig length: {input}"
     shell:
         "export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2 && perl {params.script} {input} > {output} 2> {log}"
 
@@ -170,7 +178,9 @@ rule assembly_gc:
         gc="Stats/{asm}/{asm}.assembly.gc_content.txt",
         tmp=temp("Stats/{asm}/{asm}.assembly.gc_content.txt.tmp"),
     log:
-        "logs/analysis_assembly_contig_length.{asm}.log"
+        "logs/assembly_gc.{asm}.log"
+    benchmark:
+        "benchmark/assembly_gc.{asm}.log"
     wildcard_constraints:
         asm=get_omics_assembly(),
     params:
@@ -182,18 +192,20 @@ rule assembly_gc:
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:
-        "Assembly: contig GC content: {input}"
+        "Assembly contig GC content: {input}"
     shell:
         "perl {params.script} {input} {output.tmp} &> {log} && cut -f1,2 {output.tmp} | sed -e 's/>//g' > {output.gc}"
 
 # archive intermedite assembly files
-rule archive_assembly:
+rule assembly_archive:
     input:
         "status/assembly.ready" # see rule in modules/Assembly.smk
     output:
         "Assembly/intermediary.tar.gz"
     log:
         "logs/assembly_archive.log"
+    benchmark:
+        "benchmark/assembly_archive.tsv"
     threads: 1
     resources:
         runtime="8:00:00",
@@ -201,6 +213,6 @@ rule archive_assembly:
     params:
         folder="Assembly/intermediary/"
     message:
-        "tar_intermediary: Compressing intermediary steps of assembly."
+        "Archive intermediate assembly output"
     shell:
        "tar czf {output} {params.folder} && rm -r {params.folder} &> {log}"

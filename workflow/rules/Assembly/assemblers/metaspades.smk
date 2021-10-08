@@ -1,19 +1,21 @@
 # metaSPAdes
 #   manual: https://cab.spbu.ru/files/release3.13.0/manual.html
 
-# TODO: LR indep. of the omic?
+# TODO: https://git-r3lab.uni.lu/IMP/imp3/-/issues/36
 
-rule metaspades:
+rule assembly_metaspades:
     input:
         r1="Preprocessing/{omic}.r1.preprocessed.fq",
         r2="Preprocessing/{omic}.r2.preprocessed.fq",
         se="Preprocessing/{omic}.se.preprocessed.fq",
-        lr=metaspades_lr_input # TODO: indep. of omic ???
+        lr=metaspades_lr_input, # TODO: LR indep. of the omic?
     output:
         fa="Assembly/intermediary/{omic}.metaspades_preprocessed.1/contigs.fasta",
         fa_link="Assembly/intermediary/{omic}.metaspades_preprocessed.1.fa"
     log:
-        "logs/assembly_metaspades_assembly_from_preprocessing.{omic}.log"
+        "logs/assembly_metaspades.{omic}.log"
+    benchmark:
+        "benchmark/assembly_metaspades.{omic}.tsv"
     wildcard_constraints:
         omic="|".join(get_omics()),
     params:
@@ -39,7 +41,7 @@ rule metaspades:
         "ln -fsv $(realpath --relative-to=\"$(dirname {output.fa_link})\" {output.fa}) {output.fa_link} && "
         "touch -h {output.fa_link}" # TODO: why ???
 
-use rule metaspades as metaspades_unmapped with:
+use rule assembly_metaspades as assembly_metaspades_unmapped with:
     input:
         r1="Assembly/intermediary/{omic}.r1.unmapped.fq",
         r2="Assembly/intermediary/{omic}.r2.unmapped.fq",
@@ -49,6 +51,6 @@ use rule metaspades as metaspades_unmapped with:
         fa="Assembly/intermediary/{omic}.metaspades_unmapped.2/contigs.fasta",
         fa_link="Assembly/intermediary/{omic}.metaspades_unmapped.2.fa",
     log:
-        "logs/assembly_metaspades_assembly_from_unmapped.{omic}.log"
-
-# TODO: https://git-r3lab.uni.lu/IMP/imp3/-/issues/36
+        "logs/assembly_metaspades_unmapped.{omic}.log"
+    benchmark:
+        "benchmark/assembly_metaspades_unmapped.{omic}.tsv"

@@ -1,4 +1,4 @@
-rule megahit:
+rule assembly_megahit:
     input:
         r1="Preprocessing/{omic}.r1.preprocessed.fq",
         r2="Preprocessing/{omic}.r2.preprocessed.fq",
@@ -7,7 +7,9 @@ rule megahit:
         fa="Assembly/intermediary/{omic}.megahit_preprocessed.1/final.contigs.fa",
         fa_link="Assembly/intermediary/{omic}.megahit_preprocessed.1.fa",
     log:
-        "logs/assembly_megahit_assembly_from_preprocessing.{omic}.log"
+        "logs/assembly_megahit.{omic}.log"
+    benchmark:
+        "benchmark/assembly_megahit.{omic}.tsv"
     wildcard_constraints:
         omic="|".join(get_omics()),
     params:
@@ -35,7 +37,7 @@ rule megahit:
         "ln -fsv $(realpath --relative-to=\"$(dirname {output.fa_link})\" {output.fa}) {output.fa_link} && "
         "touch -h {output.fa_link}" # TODO: why ???
 
-use rule megahit as megahit_unmapped with:
+use rule assembly_megahit as assembly_megahit_unmapped with:
     input:
         r1="Assembly/intermediary/{omic}.r1.unmapped.fq",
         r2="Assembly/intermediary/{omic}.r2.unmapped.fq",
@@ -44,11 +46,13 @@ use rule megahit as megahit_unmapped with:
         fa="Assembly/intermediary/{omic}.megahit_unmapped.2/final.contigs.fa",
         fa_link="Assembly/intermediary/{omic}.megahit_unmapped.2.fa"
     log:
-        "logs/assembly_megahit_assembly_from_unmapped.{omic}.log"
+        "logs/assembly_megahit_unmapped.{omic}.log"
+    benchmark:
+        "benchmark/assembly_megahit_unmapped.{omic}.tsv"
     wildcard_constraints:
         omic="|".join(get_omics())
 
-rule megahit_mgmt:
+rule assembly_megahit_mgmt:
     input:
         r1=expand("Preprocessing/{omic}.r1.preprocessed.fq", omic=["mg", "mt"]),
         r2=expand("Preprocessing/{omic}.r2.preprocessed.fq", omic=["mg", "mt"]),
@@ -61,7 +65,9 @@ rule megahit_mgmt:
         fa="Assembly/intermediary/mgmt.megahit_hybrid.1/final.contigs.fa",
         fa_link="Assembly/intermediary/mgmt.megahit_hybrid.1.fa",
     log:
-        "logs/assembly_megahit_hybrid_assembly_1.log"
+        "logs/assembly_megahit_mgmt.log"
+    benchmark:
+        "benchmark/assembly_megahit_mgmt.tsv"
     params:
         odir=lambda wildcards, output: os.path.dirname(output.fa),
         mem=lambda wildcards, threads: get_mem_big(wildcards, None, threads, None, "B"), # mem in bytes
@@ -89,7 +95,7 @@ rule megahit_mgmt:
         "ln -fsv $(realpath --relative-to=\"$(dirname {output.fa_link})\" {output.fa}) {output.fa_link} && "
         "touch -h {output.fa_link}" # TODO: why ???
 
-use rule megahit_mgmt as megahit_mgmt_unmapped with:
+use rule assembly_megahit_mgmt as assembly_megahit_mgmt_unmapped with:
     input:
         r1=expand("Assembly/intermediary/mgmt.r1.megahit_hybrid.{omic}.unmapped.fq", omic=["mg", "mt"]),
         r2=expand("Assembly/intermediary/mgmt.r2.megahit_hybrid.{omic}.unmapped.fq", omic=["mg", "mt"]),
@@ -98,4 +104,6 @@ use rule megahit_mgmt as megahit_mgmt_unmapped with:
         fa="Assembly/intermediary/mgmt.megahit_hybrid.2/final.contigs.fa",
         fa_link="Assembly/intermediary/mgmt.megahit_hybrid.2.fa",
     log:
-        "logs/assembly_megahit_hybrid_assembly_2.log"
+        "logs/assembly_megahit_mgmt_unmapped.log"
+    benchmark:
+        "benchmark/assembly_megahit_mgmt_unmapped.tsv"

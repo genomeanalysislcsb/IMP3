@@ -8,7 +8,9 @@ rule assembly_map_reads:
     output:
         temp("Assembly/{omic}.reads.bam")
     log:
-        "logs/assembly.mapping.{omic}.log"
+        "logs/assembly_map_reads.{omic}.log"
+    benchmark:
+        "benchmark/assembly_map_reads.{omic}.log"
     wildcard_constraints:
         omic="|".join(get_omics()),
         asm=get_omics_assembly(),
@@ -21,7 +23,7 @@ rule assembly_map_reads:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "Assembly: map reads on merged assembly: {input}"
+        "Map reads to merged assembly: {input.r1}, {input.r2}, {input.se}; {input.ref}"
     shell:
         """
         (samtools merge --threads {threads} -f {output} \
@@ -36,7 +38,9 @@ rule assembly_sort_bam:
     output:
         "Assembly/{omic}.reads.sorted.bam"
     log:
-        "logs/assembly.samtools.sort.{omic}.log"
+        "logs/assembly_sort_bam.{omic}.log"
+    benchmark:
+        "benchmark/assembly_sort_bam.{omic}.log"
     wildcard_constraints:
         omic="|".join(get_omics()),
     params:
@@ -48,11 +52,11 @@ rule assembly_sort_bam:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "Assembly: sort BAM: {input}"
+        "Sort assembly mapping BAM: {input}"
     shell:
         "samtools sort --threads {threads} -m {params.mem} {input} > {output} 2> {log}"
 
-rule get_unmapped_reads:
+rule assembly_get_unmapped_reads:
     input:
         r1="Preprocessing/{omic}.r1.preprocessed.fq",
         r2="Preprocessing/{omic}.r2.preprocessed.fq",
@@ -68,7 +72,9 @@ rule get_unmapped_reads:
         se="Assembly/intermediary/{omic}.se.unmapped.fq",
         bam_tmp=temp("Assembly/intermediary/{omic}.pe.bam")
     log:
-        "logs/assembly_extract_unmapped_from_%s.{omic}.log" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
+        "logs/assembly_get_unmapped_reads.{omic}.%s.log" % get_assembler() # TODO: rm assembler from the name or add as wildcard
+    benchmark:
+        "benchmark/assembly_get_unmapped_reads.{omic}.%s.log" % get_assembler() # TODO: rm assembler from the name or add as wildcard
     wildcard_constraints:
         omic="|".join(get_omics()),
         asm=get_omics_assembly(),
@@ -103,7 +109,7 @@ rule get_unmapped_reads:
         fi
         """
 
-use rule get_unmapped_reads as get_unmapped_reads_hybrid with:
+use rule assembly_get_unmapped_reads as assembly_get_unmapped_reads_hybrid with:
     input:
         r1="Preprocessing/{omic}.r1.preprocessed.fq",
         r2="Preprocessing/{omic}.r2.preprocessed.fq",
@@ -119,20 +125,6 @@ use rule get_unmapped_reads as get_unmapped_reads_hybrid with:
         se="Assembly/intermediary/mgmt.se.%s_hybrid.{omic}.unmapped.fq" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
         bam_tmp=temp("Assembly/intermediary/mgmt.pe.%s_hybrid.{omic}.bam" % get_assembler()), # TODO: rm assembler from the name or add as wildcard),
     log:
-        "logs/assembly_extract_unmapped_from_hybrid_assembly.%s.{omic}.log" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
-
-#     use rule get_unmapped_reads as get_unmapped_reads_single_omic with:
-#         input:
-#             r1="Preprocessing/{omic}.r1.preprocessed.fq",
-#             r2="Preprocessing/{omic}.r2.preprocessed.fq",
-#             se="Preprocessing/{omic}.se.preprocessed.fq",
-#             fa="Assembly/intermediary/{omic}.%s_preprocessed.1.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
-#             idx=expand(
-#                 "Assembly/intermediary/{{omic}}.%s_preprocessed.1.fa.{ext}" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
-#                 ext=get_bwa_idx_ext()
-#             ),
-#         output:
-#             r1="Assembly/intermediary/{omic}.r1.unmapped.fq",
-#             r2="Assembly/intermediary/{omic}.r2.unmapped.fq",
-#             se="Assembly/intermediary/{omic}.se.unmapped.fq"
-#         log: "logs/assembly_extract_unmapped.{omic}.log"
+        "logs/assembly_get_unmapped_reads_hybrid.{omic}.%s.log" % get_assembler() # TODO: rm assembler from the name or add as wildcard
+    benchmark:
+        "benchmark/assembly_get_unmapped_reads_hybrid.{omic}.%s.tsv" % get_assembler() # TODO: rm assembler from the name or add as wildcard

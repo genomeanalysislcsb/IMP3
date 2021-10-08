@@ -1,8 +1,8 @@
 # no merging
 if not config["assembly"]["merge"]:
-    localrules: merge_assembly_skip, merge_hybrid_assembly_skip
+    localrules: assembly_merge_skip, assembly_merge_hybrid_skip
     # normal
-    rule merge_assembly_skip:
+    rule assembly_merge_skip:
         input:
             "Assembly/intermediary/{asm}.%s_preprocessed.1.fa" % get_assembler() # TODO: rm assembler from the name or add as wildcard
         output:
@@ -17,7 +17,7 @@ if not config["assembly"]["merge"]:
         shell:
             "cp {input} {output}"
     # hybrid
-    use rule merge_assembly_skip as merge_hybrid_assembly_skip with:
+    use rule assembly_merge_skip as assembly_merge_hybrid_skip with:
         input:
             "Assembly/intermediary/mgmt.%s_hybrid.1.fa" % get_assembler() # TODO: rm assembler from the name or add as wildcard
         output:
@@ -27,9 +27,9 @@ if not config["assembly"]["merge"]:
 
 # concat FASTAs
 elif config["assembly"]["merge"] == "concat":
-    localrules: merge_assembly_concat, merge_hybrid_assembly_concat
+    localrules: assembly_merge_concat, assembly_merge_hybrid_concat
     # normal
-    rule merge_assembly_concat:
+    rule assembly_merge_concat:
         input:
             "Assembly/intermediary/{asm}.%s_preprocessed.1.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
             "Assembly/intermediary/{asm}.%s_unmapped.2.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
@@ -41,23 +41,23 @@ elif config["assembly"]["merge"] == "concat":
             sample=config["sample"],
         threads: 1
         message:
-            "Merge assemblies: concat: {input}"
+            "Merge assemblies w/ cat: {input}"
         shell:
             "cat {input} > {output}"
     # hybrid
-    use rule merge_assembly_concat as merge_hybrid_assembly_concat with:
+    use rule assembly_merge_concat as assembly_merge_hybrid_concat with:
         input:
             "Assembly/intermediary/mgmt.%s_hybrid.1.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
             "Assembly/intermediary/mgmt.%s_hybrid.2.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
         output:
             temp("Assembly/mgmt.assembly.merged.fa.tmp")
         message:
-            "Merge hybrid assemblies: concat: {input}"
+            "Merge hybrid assemblies w/ cat: {input}"
 
 # use CAP3 for merging
 elif config["assembly"]["merge"] == "cap3":
     # normal
-    rule merge_assembly_cap3:
+    rule assembly_merge_cap3:
         input:
             "Assembly/intermediary/{asm}.%s_preprocessed.1.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
             "Assembly/intermediary/{asm}.%s_unmapped.2.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
@@ -67,7 +67,9 @@ elif config["assembly"]["merge"] == "cap3":
             fa_contigs=temp("Assembly/intermediary/{asm}.assembly.cat.fa.cap.contigs"),
             fa_singlets=temp("Assembly/intermediary/{asm}.assembly.cat.facap.singlets"),
         log:
-            "logs/assembly_merging.cap3.{asm}.log"
+            "logs/assembly_merge_cap3.{asm}.log"
+        benchmark:
+            "benchmark/assembly_merge_cap3.{asm}.tsv"
         wildcard_constraints:
             asm=get_omics_assembly(),
         params:
@@ -81,7 +83,7 @@ elif config["assembly"]["merge"] == "cap3":
         conda:
             os.path.join(ENVDIR, "IMP_assembly.yaml")
         message:
-            "Merge assemblies: CAP3: {input}"
+            "Merge assemblies w/ CAP3: {input}"
         shell:
             # concat input
             "cat {input} > {output.fa_cat} && "
@@ -91,7 +93,7 @@ elif config["assembly"]["merge"] == "cap3":
             "cat {output.fa_contigs} {output.fa_singlets} | awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' > {output.fa}"
     
     # hybrid
-    use rule merge_assembly_cap3 as merge_hybrid_assembly_cap3 with:
+    use rule assembly_merge_cap3 as assembly_merge_hybrid_cap3 with:
         input:
             "Assembly/intermediary/mgmt.%s_hybrid.1.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
             "Assembly/intermediary/mgmt.%s_hybrid.2.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
@@ -101,13 +103,15 @@ elif config["assembly"]["merge"] == "cap3":
             fa_contigs=temp("Assembly/intermediary/mgmt.assembly.cat.fa.cap.contigs"),
             fa_singlets=temp("Assembly/intermediary/mgmt.assembly.cat.facap.singlets"),
         log:
-            "logs/assembly_merging.hybrid.cap3.log"
+            "logs/assembly_merge_hybrid_cap3.log"
+        benchmark:
+            "benchmark/assembly_merge_hybrid_cap3.tsv"
         message:
-            "Merge hybrid assemblies: CAP3: {input}"
+            "Merge hybrid assemblies w/ CAP3: {input}"
 
 elif config["assembly"]["merge"] == "flye":
     # normal
-    rule merge_assembly_flye:
+    rule assembly_merge_flye:
         input:
             i1="Assembly/intermediary/{asm}.%s_preprocessed.1.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
             i2="Assembly/intermediary/{asm}.%s_unmapped.2.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
@@ -123,7 +127,9 @@ elif config["assembly"]["merge"] == "flye":
             # final files
             final=temp("Assembly/{asm}.assembly.merged.fa.tmp"),
         log:
-            "logs/assembly_merge_assembly_flye.log"
+            "logs/assembly_merge_flye.{asm}.log"
+        benchmark:
+            "benchmark/assembly_merge_flye.{asm}.tsv"
         wildcard_constraints:
             asm=get_omics_assembly(),
         threads: get_cores_big()
@@ -136,7 +142,7 @@ elif config["assembly"]["merge"] == "flye":
         conda:
             os.path.join(ENVDIR, "IMP_assembly.yaml")
         message:
-            "Merge assemblies: Flye: {input}"
+            "Merge assemblies w/ Flye: {input}"
         shell:
             """
             (
@@ -155,7 +161,7 @@ elif config["assembly"]["merge"] == "flye":
             ) &> {log}
             """
     # hybrid
-    use rule merge_assembly_flye as merge_hybrid_assembly_flye with:
+    use rule assembly_merge_flye as assembly_merge_hybrid_flye with:
         input:
             i1="Assembly/intermediary/mgmt.%s_hybrid.1.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
             i2="Assembly/intermediary/mgmt.%s_hybrid.2.fa" % get_assembler(), # TODO: rm assembler from the name or add as wildcard
@@ -171,9 +177,11 @@ elif config["assembly"]["merge"] == "flye":
             # final files
             final=temp("Assembly/mgmt.assembly.merged.fa.tmp"),
         log:
-            "logs/assembly_merge_hybrid_assembly_flye.log"
+            "logs/assembly_merge_hybrid_flye.log"
+        benchmark:
+            "benchmark/assembly_merge_hybrid_flye.tsv"
         message:
-            "merge_hybrid_assembly_flye: Merging hybrid assemblies."
+            "Merge hybrid assemblies w/ Flye: {input}"
 
 localrules: rename_contigs
 rule rename_contigs:
@@ -185,5 +193,7 @@ rule rename_contigs:
         # TODO
     params:
         sample=config["sample"]
+    message:
+        "Rename contigs: {input}"
     shell:
         "awk '/^>/{{print \">{params.sample}_contig_\" ++i; next}}{{print}}' {input} > {output}"
