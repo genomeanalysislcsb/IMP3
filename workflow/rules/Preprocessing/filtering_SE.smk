@@ -3,16 +3,16 @@ rule reads_filtering:
         reads=filtering_reads_se_input,
         ref=filtering_filter
     output:
-        'Preprocessing/{omic}.se.{filterstep}.fq'
+        "Preprocessing/{omic}.se.{filterstep}.fq"
     log:
         "logs/preprocessing_{omic}_filtering.{filterstep}.log"
     wildcard_constraints:
-        omic = "|".join(get_omics()),
-        filterstep = "|".join(["trimmed(\.rna_filtered)?\." + s for s in get_read_files_filtered_genomes_basenames(True)]),
+        omic="|".join(get_omics()),
+        filterstep="|".join(["trimmed(\.rna_filtered)?\." + s for s in get_read_files_filtered_genomes_basenames(True)]),
     threads: get_cores_big()
     resources:
-        runtime = "8:00:00",
-        mem = get_mem_big(get_cores_big())
+        runtime="08:00:00",
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -28,17 +28,17 @@ rule reads_filtering:
 localrules: symlink_preprocessed_reads_files
 rule symlink_preprocessed_reads_files:
     input:
-        # expand("Preprocessing/mg.{read}.fq", read=['r1', 'r2']),
+        # expand("Preprocessing/mg.{read}.fq", read=["r1", "r2"]),
         lambda wildcards: expand(
             "Preprocessing/{{omic}}.{read}.{filtered}.fq",
-            filtered=('trimmed.' if wildcards.omic == 'mg' else 'trimmed.rna_filtered.') + \
+            filtered=("trimmed." if wildcards.omic == "mg" else "trimmed.rna_filtered.") + \
                 ".".join([s + "_filtered" for s in get_filtering_genomes()]),
-            read=['se']
+            read=["se"]
         )
     output:
-        expand('Preprocessing/{{omic}}.{read}.preprocessed.fq', read=['r1', 'r2', 'se'])
+        expand("Preprocessing/{{omic}}.{read}.preprocessed.fq", read=["r1", "r2", "se"])
     wildcard_constraints:
-        omic = "|".join(get_omics()),
+        omic="|".join(get_omics()),
     message:
         "symlink_preprocessed_reads_files: link to preprocessed {wildcards.omic} reads"
     run:

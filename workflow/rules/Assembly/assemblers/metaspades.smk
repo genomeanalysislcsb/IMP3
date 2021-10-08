@@ -18,13 +18,13 @@ rule metaspades:
         omic="|".join(get_omics()),
     params:
         odir=lambda wildcards, output: os.path.dirname(output.fa),
-        mem=get_mem_big(get_cores_big(), "Gb"), # mem in Gb
+        mem=lambda wildcards, threads: get_mem_big(wilcards, None, threads, None, "Gb"), # mem in Gb
         kmers=",".join(config["assembly"]["spades"]["metaspades"]["kmers"]),
         lr=metaspades_lr_input_params
     threads: get_cores_big()
     resources:
         runtime="120:00:00",
-        mem=get_mem_big(get_cores_big()),
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_assembly.yaml")
     message:

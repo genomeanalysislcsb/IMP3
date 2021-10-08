@@ -17,7 +17,7 @@ rule assembly_map_reads:
     threads: get_cores_big()
     resources:
         runtime="12:00:00",
-        mem=get_mem_big(get_cores_big()),
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -40,11 +40,11 @@ rule assembly_sort_bam:
     wildcard_constraints:
         omic="|".join(get_omics()),
     params:
-        mem=get_mem_samtools_sort(),
+        mem=lambda wildcards, threads: get_mem_samtools_sort(threads),
     threads: get_cores_big()
     resources:
         runtime="12:00:00",
-        mem=get_mem_big(get_cores_big()),
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -73,11 +73,11 @@ rule get_unmapped_reads:
         omic="|".join(get_omics()),
         asm=get_omics_assembly(),
     params:
-        mem=get_mem_samtools_sort(),
+        mem=lambda wildcards, threads: get_mem_samtools_sort(threads),
     threads: get_cores_big()
     resources:
         runtime="12:00:00",
-        mem=get_mem_big(get_cores_big()),
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:

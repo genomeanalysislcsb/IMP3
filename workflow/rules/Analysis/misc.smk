@@ -9,7 +9,7 @@ rule archive_annotation:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(1),
+        mem=get_mem_norm,
     params:
         folder="Analysis/annotation/intermediary/"
     message:

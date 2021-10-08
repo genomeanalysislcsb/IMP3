@@ -3,18 +3,18 @@ rule reads_filtering:
         reads=filtering_reads_pe_input,
         ref=filtering_filter
     output:
-        expand('Preprocessing/{{omic}}.{read}.{{filterstep}}.fq', read=['r1', 'r2', 'se'])
+        expand("Preprocessing/{{omic}}.{read}.{{filterstep}}.fq", read=["r1", "r2", "se"])
     log:
         "logs/preprocessing_{omic}_filtering.{filterstep}.log"
     wildcard_constraints:
-        omic = "|".join(get_omics()),
-        filterstep = "|".join(["trimmed(\.rna_filtered)?\." + s for s in get_read_files_filtered_genomes_basenames(True)]),
+        omic="|".join(get_omics()),
+        filterstep="|".join(["trimmed(\.rna_filtered)?\." + s for s in get_read_files_filtered_genomes_basenames(True)]),
     threads: get_cores_big()
     resources:
-        runtime = "8:00:00",
-        mem = get_mem_big(get_cores_big())
+        runtime="08:00:00",
+        mem=get_mem_big,
     params:
-        mem = str(round(get_mem_big(get_cores_big()) * 0.75 - 0.5)) + "G"
+        mem=lambda wildcards, threads: str(round(get_mem_big(wildcards, None, threads, None, "Gb") * 0.75 - 0.5)) + "G" # TODO
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -51,14 +51,14 @@ rule symlink_preprocessed_reads_files:
     input:
         lambda wildcards: expand(
             "Preprocessing/{{omic}}.{read}.{filtered}.fq",
-            filtered=('trimmed.' if wildcards.omic == 'mg' else 'trimmed.rna_filtered.') + \
+            filtered=("trimmed." if wildcards.omic == "mg" else "trimmed.rna_filtered.") + \
                 ".".join([s + "_filtered" for s in get_filtering_genomes()]),
-            read=['r1', 'r2', 'se']
+            read=["r1", "r2", "se"]
         )
     output:
-        expand('Preprocessing/{{omic}}.{read}.preprocessed.fq', read=['r1', 'r2', 'se'])
+        expand("Preprocessing/{{omic}}.{read}.preprocessed.fq", read=["r1", "r2", "se"])
     wildcard_constraints:
-        omic = "|".join(get_omics()),
+        omic="|".join(get_omics()),
     message:
         "symlink_preprocessed_reads_files: link to preprocessed {wildcards.omic} reads"
     run:

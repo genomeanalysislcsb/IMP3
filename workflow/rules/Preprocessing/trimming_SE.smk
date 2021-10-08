@@ -8,8 +8,8 @@ if config["preprocessing"]["nextseq"]:
             params=get_trimmomatic_params
         threads: 10
         resources:
-            runtime = "12:00:00",
-            mem = get_mem_norm() * 10,
+            runtime="12:00:00",
+            mem=get_mem_norm,
         conda:
             ENVDIR + "/IMP_preprocessing.yaml"
         log:
@@ -31,8 +31,8 @@ if config["preprocessing"]["nextseq"]:
             ),
         threads: 10
         resources:
-            runtime = "12:00:00",
-            mem = get_mem_norm() * 10,
+            runtime="12:00:00",
+            mem=get_mem_norm,
         conda:
             ENVDIR + "/IMP_preprocessing.yaml"
         log:
@@ -51,8 +51,8 @@ else:
             params=get_trimmomatic_params
         threads: 10
         resources:
-            runtime = "12:00:00",
-            mem = get_mem_norm() * 10,
+            runtime="12:00:00",
+            mem=get_mem_norm,
         conda:
             ENVDIR + "/IMP_preprocessing.yaml"
         log:

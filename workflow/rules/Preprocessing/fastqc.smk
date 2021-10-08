@@ -2,21 +2,18 @@ rule fastqc_raw:
     input:
         "Preprocessing/{omic}.{reads}.fq"
     output:
-        expand(
-            "Stats/{{omic}}/{{omic}}.{{reads}}_fastqc.{ext}",
-            ext=["zip", "html"]
-        )
+        expand("Stats/{{omic}}/{{omic}}.{{reads}}_fastqc.{ext}", ext=["zip", "html"])
     log:
         "logs/preproc.fastqc_raw.{omic}.{reads}.log"
     benchmark:
         "benchmark/preproc.fastqc_raw.{omic}.{reads}.tsv"
     wildcard_constraints:
-        omic = "|".join(get_omics()),
-        reads = "|".join(["r1", "r2", "se"]),
+        omic="|".join(get_omics()),
+        reads="|".join(["r1", "r2", "se"]),
     threads: 5
     resources:
-        runtime = "00-01:00:00",
-        mem = get_mem_norm(5),
+        runtime="01:00:00",
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
@@ -28,10 +25,7 @@ use rule fastqc_raw as fastqc_proc with:
     input:
         "Preprocessing/{omic}.{reads}.preprocessed.fq"
     output:
-        expand(
-            "Stats/{{omic}}/{{omic}}.{{reads}}.preprocessed_fastqc.{ext}",
-            ext=["zip", "html"]
-        )
+        expand("Stats/{{omic}}/{{omic}}.{{reads}}.preprocessed_fastqc.{ext}", ext=["zip", "html"])
     log:
         "logs/preproc.fastqc_proc.{omic}.{reads}.log"
     benchmark:

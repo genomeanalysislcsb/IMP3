@@ -1,8 +1,8 @@
 FASTAFILES = expand("{path}/{files}.fasta", files=config["preprocessing"]["filtering"]["rrna"], path=DBPATH + "/sortmerna")
 
-REF = ' '.join('--ref %s' % (a) for a in zip(FASTAFILES))
+REF = " ".join("--ref %s" % (a) for a in zip(FASTAFILES))
 
-SORTME_MEM = get_mem_norm() * 1000
+SORTME_MEM = get_mem_norm(None, None, 1, None, "Mb") # TODO
 
 FILTER_RNA_SHELL = """
   TMP_R12=$(mktemp --tmpdir=${{TMPDIR}} -t "tmp_XXXXXX.R12")
@@ -23,29 +23,29 @@ FILTER_RNA_SHELL = """
 
 rule filter_rna:
     input:
-        'Preprocessing/mt.r1.trimmed.fq',
-        'Preprocessing/mt.r2.trimmed.fq',
-        'Preprocessing/mt.se.trimmed.fq',
+        "Preprocessing/mt.r1.trimmed.fq",
+        "Preprocessing/mt.r2.trimmed.fq",
+        "Preprocessing/mt.se.trimmed.fq",
         expand(
             "{db}/sortmerna/idx/{files}.{ext}",
             files=config["preprocessing"]["filtering"]["rrna"],
-            ext=['bursttrie_0.dat', 'kmer_0.dat', 'pos_0.dat', 'stats'],
+            ext=["bursttrie_0.dat", "kmer_0.dat", "pos_0.dat", "stats"],
             db=DBPATH)
     output:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r1.trimmed.rna.fq',
-        'Preprocessing/mt.r2.trimmed.rna.fq',
-        'Preprocessing/mt.se.trimmed.rna.fq',
-	'Preprocessing/otu_map.txt'
+        "Preprocessing/mt.r1.trimmed.rna_filtered.fq",
+        "Preprocessing/mt.r2.trimmed.rna_filtered.fq",
+        "Preprocessing/mt.se.trimmed.rna_filtered.fq",
+        "Preprocessing/mt.r1.trimmed.rna.fq",
+        "Preprocessing/mt.r2.trimmed.rna.fq",
+        "Preprocessing/mt.se.trimmed.rna.fq",
+	    "Preprocessing/otu_map.txt",
     threads: 8
     resources:
-        runtime = "48:00:00",
-        mem = get_mem_norm() * 8
+        runtime="48:00:00",
+        mem=get_mem_norm
     params:
-        ref = REF,
-        sortmernamem = str(SORTME_MEM)
+        ref=REF,
+        sortmernamem=str(SORTME_MEM)
     conda: ENVDIR + "/IMP_preprocessing.yaml"
     log: "logs/preprocessing_filter_rna.log"
     message: "filter_rna: filtering rRNA from mt reads."

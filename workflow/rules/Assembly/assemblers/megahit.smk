@@ -12,14 +12,14 @@ rule megahit:
         omic="|".join(get_omics()),
     params:
         odir=lambda wildcards, output: os.path.dirname(output.fa),
-        mem=get_mem_big(get_cores_big(), "B"), # mem in bytes
+        mem=lambda wildcards, threads: get_mem_big(wildcards, None, threads, None, "B"), # mem in bytes
         kmin=config["assembly"]["megahit"]["kmin"],
         kmax=config["assembly"]["megahit"]["kmax"],
         kstep=config["assembly"]["megahit"]["kstep"],
     threads: get_cores_big()
     resources:
         runtime="120:00:00",
-        mem=get_mem_big(get_cores_big()),
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_assembly.yaml")
     message:
@@ -64,14 +64,14 @@ rule megahit_mgmt:
         "logs/assembly_megahit_hybrid_assembly_1.log"
     params:
         odir=lambda wildcards, output: os.path.dirname(output.fa),
-        mem=get_mem_big(get_cores_big(), "B"), # mem in bytes
+        mem=lambda wildcards, threads: get_mem_big(wildcards, None, threads, None, "B"), # mem in bytes
         kmin=config["assembly"]["megahit"]["kmin"],
         kmax=config["assembly"]["megahit"]["kmax"],
         kstep=config["assembly"]["megahit"]["kstep"],
     threads: get_cores_big()
     resources:
         runtime="120:00:00",
-        mem=get_mem_big(get_cores_big()),
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_assembly.yaml")
     message:

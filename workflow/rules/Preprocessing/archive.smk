@@ -10,12 +10,12 @@ rule archive_reads_raw:
     benchmark:
         "benchmark/preproc.archive_reads_raw.{omic}.{reads}.tsv"
     wildcard_constraints:
-        omic = "|".join(get_omics()),
-        reads = "|".join(get_read_types_raw()),
+        omic="|".join(get_omics()),
+        reads="|".join(get_read_types_raw()),
     threads: 5
     resources:
-        runtime = "00-04:00:00",
-        mem = get_mem_norm(5),
+        runtime="04:00:00",
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
@@ -33,5 +33,5 @@ use rule archive_reads_raw as archive_reads_proc with:
     benchmark:
         "benchmark/preproc.archive_reads_proc.{omic}.{reads}.{stage}.tsv"
     wildcard_constraints:
-        omic = "|".join(get_omics()),
-        reads = "|".join(set(get_read_types_trimmed() + get_read_types_trimmoed() + get_read_types_proc())),
+        omic="|".join(get_omics()),
+        reads="|".join(set(get_read_types_trimmed() + get_read_types_trimmoed() + get_read_types_proc())),

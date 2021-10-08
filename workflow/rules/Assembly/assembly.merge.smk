@@ -77,7 +77,7 @@ elif config["assembly"]["merge"] == "cap3":
         threads: 1
         resources:
             runtime="72:00:00",
-            mem=get_mem_big(1),
+            mem=get_mem_big,
         conda:
             os.path.join(ENVDIR, "IMP_assembly.yaml")
         message:
@@ -129,7 +129,7 @@ elif config["assembly"]["merge"] == "flye":
         threads: get_cores_big()
         resources:
             runtime="24:00:00",
-            mem=get_mem_big(get_cores_big()),
+            mem=get_mem_big,
         params:
             iters=0,
             minoverlap=1000

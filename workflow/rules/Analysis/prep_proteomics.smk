@@ -16,7 +16,7 @@ if config["proteomics"]["insert_variants"]:
         threads: 1
         resources: 
             runtime="48:00:00",
-            mem=get_mem_norm(1),
+            mem=get_mem_norm,
         conda:
             os.path.join(ENVDIR, "IMP_bioperl.yaml")
         message:
@@ -39,7 +39,7 @@ elif config["proteomics"]["filter_n_peptides"]:
         threads: 1
         resources: 
             runtime="04:00:00",
-            mem=get_mem_norm(1),
+            mem=get_mem_norm,
         conda:
             os.path.join(ENVDIR, "IMP_bioperl.yaml")
         message:
@@ -60,7 +60,7 @@ else:
         threads: 1
         resources: 
             runtime="04:00:00",
-            mem=get_mem_norm(1),
+            mem=get_mem_norm,
         conda:
             os.path.join(ENVDIR, "IMP_bioperl.yaml")
         message:
@@ -81,7 +81,7 @@ if config["proteomics"]["host_proteome"]:
         threads: 1
         resources: 
             runtime="04:00:00",
-            mem=get_mem_norm(1),
+            mem=get_mem_norm,
         conda:
             os.path.join(ENVDIR, "IMP_fasta.yaml")
         message:
@@ -99,7 +99,7 @@ else:
         threads: 1
         resources: 
             runtime="04:00:00",
-            mem=get_mem_norm(1),
+            mem=get_mem_norm,
         conda:
             os.path.join(ENVDIR, "IMP_fasta.yaml")
         message:

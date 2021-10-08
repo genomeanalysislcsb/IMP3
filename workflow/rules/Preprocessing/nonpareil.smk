@@ -11,10 +11,10 @@ rule nonpareil:
             suffix=["npa", "npc", "npl", "npo"]
         )
     resources:
-        mem = get_mem_norm(),
-        runtime = "8:00:00",
+        runtime="08:00:00",
+        mem=get_mem_norm,
     params:
-        minlen = config["preprocessing"]["trimmomatic"]["minlen"]
+        minlen=config["preprocessing"]["trimmomatic"]["minlen"]
     log:
         "logs/preprocessing_nonpareil.{reads}.log"
     message:
@@ -41,8 +41,8 @@ rule nonpareil_curve:
         report("Visualization/mg.{reads}_nonpareil.curve.png", category="Preprocessing"),
         report("Stats/mg/mg.{reads}_nonpareil.diversity.txt", category="Preprocessing")
     resources:
-        mem = get_mem_norm(),
-        runtime = "8:00:00",
+        runtime="08:00:00",
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_nonpareil.yaml")
     log:

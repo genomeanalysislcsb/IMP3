@@ -8,8 +8,8 @@ rule reads_count:
     benchmark:
         "benchmark/preproc.reads_count.{omic}.tsv"
     resources:
-        runtime = "00-02:00:00",
-        mem = get_mem_norm(),
+        runtime="00-02:00:00",
+        mem=get_mem_norm
     message:
         "Count reads in {input}"
     shell:

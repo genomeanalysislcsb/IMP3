@@ -11,7 +11,7 @@ rule analysis_feature_counts:
     threads: 8
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(8)
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:
@@ -35,7 +35,7 @@ rule analysis_feature_counts_gene:
     threads: 8
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(8)
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:

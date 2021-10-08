@@ -116,12 +116,46 @@ def scale_mem(mem, unit="Gb"):
     # print("scaling: mem={}, unit={}, scale={} ==> {}".format(mem, unit, scale, mem*scale))
     return int(mem * scale)
 
-def get_mem_big(threads=1, unit="Gb"):
-    """Get mem for big-mem cores"""
+def get_mem_big(wildcards, input=None, threads=1, attempt=None, unit="Gb"):
+    """
+    get_mem_big(wildcards, input=None, threads=1, attempt=None, unit="Gb")
+
+    Callable for snakemake's memory resources for "big memory" nodes
+    See: https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#snakefiles-resources
+
+    Parameters
+    ----------
+    wildcards, input, threads, attempt: parameters from snakemake
+
+    unit : str
+        Memory unit (Gb, Mg, Kb or B)
+
+    Returns
+    -------
+    int
+        Memory in given units
+    """
     return scale_mem(mem=int(get_workflow_default_resources("membig")) * threads, unit=unit)
 
-def get_mem_norm(threads=1, unit="Gb"):
-    """Get mem for normal-mem cores"""
+def get_mem_norm(wildcards, input=None, threads=1, attempt=None, unit="Gb"):
+    """
+    get_mem_norm(wildcards, input=None, threads=1, attempt=None, unit="Gb")
+
+    Callable for snakemake's memory resources for "normal memory" nodes
+    See: https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#snakefiles-resources
+
+    Parameters
+    ----------
+    wildcards, input, threads, attempt: parameters from snakemake
+
+    unit : str
+        Memory unit (Gb, Mg, Kb or B)
+
+    Returns
+    -------
+    int
+        Memory in given units
+    """
     return scale_mem(mem=int(get_workflow_default_resources("memnorm")) * threads, unit=unit)
 
 def get_cores_big():

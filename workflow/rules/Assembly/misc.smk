@@ -6,7 +6,7 @@ rule bwa_idx:
     threads: 1
     resources:
         runtime="24:00:00",
-        mem=get_mem_norm(1),
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -24,7 +24,7 @@ rule bam_idx:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_big(1),
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -44,7 +44,7 @@ rule assembly_idx:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(1),
+        mem=get_mem_norm,
     threads: 1
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
@@ -63,7 +63,7 @@ rule assembly_fasta2bed:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(1),
+        mem=get_mem_norm,
     message:
         "Assembly: FASTA to BED: {input}"
     shell:
@@ -83,7 +83,7 @@ rule assembly_cov:
     threads: 1
     resources:
         runtime="12:00:00",
-        mem=get_mem_big(1)
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -108,7 +108,7 @@ rule assembly_depth:
     threads: 1
     resources:
         runtime="12:00:00",
-        mem=get_mem_big(1)
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -131,7 +131,7 @@ rule assembly_mapping_stats:
     threads: 1
     resources:
         runtime="12:00:00",
-        mem=get_mem_big(1)
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -154,7 +154,7 @@ rule assembly_len:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(1)
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:
@@ -178,7 +178,7 @@ rule assembly_gc:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(1)
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:
@@ -197,7 +197,7 @@ rule archive_assembly:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(1),
+        mem=get_mem_norm,
     params:
         folder="Assembly/intermediary/"
     message:

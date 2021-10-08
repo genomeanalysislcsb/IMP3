@@ -13,7 +13,7 @@ rule analysis_gene_depth_hist:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_big(1)
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -36,7 +36,7 @@ rule analysis_gene_depth_avg:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_big(1)
+        mem=get_mem_big,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -56,7 +56,7 @@ rule analysis_gene_depth_len:
     threads: 1
     resources:
         runtime="02:00:00",
-        mem=get_mem_norm(1)
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:

@@ -11,7 +11,7 @@ rule analysis_annotate:
     threads: 12
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(12),
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR + "/IMP_annotation.yaml")
     message:
@@ -31,7 +31,7 @@ rule analysis_filt_gff:
     threads: 1
     resources:
         runtime="01:00:00",
-        mem=get_mem_norm(1),
+        mem=get_mem_norm,
     message:
         "Annotation: reformat GFF: {input}"
     shell:
@@ -60,7 +60,7 @@ rule analysis_hmmsearch:
     threads: 12
     resources:
         runtime="01:00:00",
-        mem=get_mem_norm(12),
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:
@@ -86,7 +86,7 @@ rule analysis_hmmsearch_gff:
     threads: 1
     resources:
         runtime="4:00:00",
-        mem=get_mem_norm(1),
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:
@@ -108,7 +108,7 @@ rule analysis_merge_gffs:
     threads: 1
     resources:
         runtime="8:00:00",
-        mem=get_mem_norm(1),
+        mem=get_mem_norm,
     message:
         "Merge GFFs: {input}"
     shell:
@@ -127,7 +127,7 @@ rule analysis_call_variants:
     threads: 1
     resources:
         runtime="48:00:00",
-        mem=get_mem_norm(1)
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:

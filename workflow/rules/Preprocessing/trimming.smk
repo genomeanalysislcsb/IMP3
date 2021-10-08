@@ -11,7 +11,7 @@ if config["preprocessing"]["nextseq"]:
         threads: 10
         resources:
             runtime="12:00:00",
-            mem = get_mem_norm() * 10,
+            mem=get_mem_norm,
         params:
             params=get_trimmomatic_params
         conda:
@@ -38,7 +38,7 @@ if config["preprocessing"]["nextseq"]:
         threads: 10
         resources:
             runtime="12:00:00",
-            mem = get_mem_norm() * 10,
+            mem=get_mem_norm,
         conda:
             ENVDIR + "/IMP_preprocessing.yaml"
         log:
@@ -62,7 +62,7 @@ if config["preprocessing"]["nextseq"]:
         threads: 10
         resources:
             runtime="12:00:00",
-            mem = get_mem_norm() * 10,
+            mem=get_mem_norm,
         conda: ENVDIR + "/IMP_preprocessing.yaml"
         log: "logs/preprocessing_nextseq_trimming_pe.{omic}.pe.log"
         message: "trimming: Trimmming poly-Gs off {wildcards.omic} pe reads."
@@ -92,7 +92,7 @@ if config["preprocessing"]["nextseq"]:
         threads: 2
         resources:
             runtime="12:00:00",
-            mem = get_mem_norm() * 2
+            mem=get_mem_norm,
         conda: ENVDIR + "/IMP_preprocessing.yaml"
         message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.omic} reads"
         shell:
@@ -113,7 +113,7 @@ else:
         threads: 10
         resources:
             runtime="12:00:00",
-            mem = get_mem_norm() * 10,
+            mem=get_mem_norm,
         params:
             params=get_trimmomatic_params
         conda: ENVDIR + "/IMP_preprocessing.yaml"
@@ -131,7 +131,7 @@ else:
         threads: 1
         resources:
             runtime="12:00:00",
-            mem = get_mem_norm()
+            mem=get_mem_norm,
         message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.omic} reads"
         shell:
             """
