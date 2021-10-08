@@ -807,3 +807,11 @@ def metaspades_lr_input_params(wildcards):
         return ""
     else:
         return "--{lr_tech}".format(lr_tech=config["lr_tech"])
+
+def get_host_proteome():
+    """XXX"""
+    return config["proteomics"]["host_proteome"]
+
+def has_host_proteome():
+    """XXX"""
+    return bool(get_host_proteome())

@@ -1,11 +1,12 @@
-rule archive_annotation:
-    input: # TODO change input
-        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-        expand("Analysis/annotation/{omic}.{db}.counts.tsv", omic=get_omics(), db=get_hmms())
+rule analysis_archive:
+    input:
+        "status/analysis.ready"
     output:
         "Analysis/annotation/intermediary.tar.gz"
     log:
-        "logs/annotation_tar_annotation.log"
+        "logs/analysis_archive.log"
+    benchmark:
+        "benchmark/analysis_archive.tsv"
     threads: 1
     resources:
         runtime="8:00:00",
@@ -13,6 +14,6 @@ rule archive_annotation:
     params:
         folder="Analysis/annotation/intermediary/"
     message:
-        "tar_annotation: Compressing intermediary steps of annotation."
+        "Archive intermediate analysis output files"
     shell:
        "(tar cvzf {output} {params.folder} && rm -r {params.folder}) &> {log}"

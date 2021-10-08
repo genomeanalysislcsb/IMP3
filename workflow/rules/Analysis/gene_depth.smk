@@ -7,7 +7,9 @@ rule analysis_gene_depth_hist:
         hist="Stats/{omic}/annotation/{omic}.gene_depth.hist",
         bed=temp("Stats/{omic}/annotation/{omic}.gene_depth.bed")
     log:
-        "logs/analysis.gene_depth_hist.{omic}.log"
+        "logs/analysis_gene_depth_hist.{omic}.log"
+    benchmark:
+        " benchmark/analysis_gene_depth_hist.{omic}.tsv"
     wildcard_constraints:
         omic="|".join(get_omics())
     threads: 1
@@ -28,7 +30,9 @@ rule analysis_gene_depth_avg:
     output:
         "Stats/{omic}/annotation/{omic}.gene_depth.avg",
     log:
-        "logs/analysis.gene_depth_avg.{omic}.log"
+        "logs/analysis_gene_depth_avg.{omic}.log"
+    benchmark:
+        " benchmark/analysis_gene_depth_avg.{omic}.tsv"
     wildcard_constraints:
         omic="|".join(get_omics())
     params:
@@ -50,7 +54,9 @@ rule analysis_gene_depth_len:
     output:
         "Stats/{omic}/annotation/{omic}.gene.len"
     log:
-        "logs/analysis.gene_depth_len.{omic}.log"
+        "logs/analysis_gene_depth_len.{omic}.log"
+    benchmark:
+        " benchmark/analysis_gene_depth_len.{omic}.tsv"
     wildcard_constraints:
         omic="|".join(get_omics())
     threads: 1

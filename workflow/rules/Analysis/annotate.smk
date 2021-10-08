@@ -6,6 +6,8 @@ rule analysis_annotate:
         gff=temp("Analysis/annotation/prokka.gff"),
     log:
         "logs/analysis_annotate.log"
+    benchmark:
+        "benchmark/analysis_annotate.tsv"
     params:
         script=os.path.join(SRCDIR, "prokkaC")
     threads: 12
@@ -51,7 +53,9 @@ rule analysis_hmmsearch:
     output:
         "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan"
     log:
-        "logs/analysis_hmmer.{db}.log"
+        "logs/analysis_hmmsearch.{db}.log"
+    benchmark:
+        "benchmark/analysis_hmmsearch.{db}.tsv"
     wildcard_constraints:
         db="|".join(get_hmms())
     params: 
@@ -76,7 +80,9 @@ rule analysis_hmmsearch_gff:
     output:
         "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     log:
-        "logs/analysis_makegff.{db}.log"
+        "logs/analysis_hmmsearch_gff.{db}.log"
+    benchmark:
+        "benchmark/analysis_hmmsearch_gff.{db}.tsv"
     wildcard_constraints:
         db="|".join(get_hmms())
     params:
@@ -102,7 +108,7 @@ rule analysis_merge_gffs:
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     log:
-        "logs/analysis_mergegff.log"
+        "logs/analysis_merge_gffs.log"
     params:
         script=os.path.join(SRCDIR, "mergegffs.pl")
     threads: 1
@@ -123,7 +129,9 @@ rule analysis_call_variants:
         vcf_mpu=temp("Analysis/snps/{omic}.variants.samtools.mpu.vcf"),
         # vcf_plt=temp("Analysis/snps/{omic}.variants.samtools.plt.vcf"), # TODO: purpose of this tmp file (apparently it is not used) ???
     log:
-        "logs/analysis_variant_calling.{omic}.log"
+        "logs/analysis_call_variants.{omic}.log"
+    benchmark:
+        "benchmark/analysis_call_variants.{omic}.tsv"
     threads: 1
     resources:
         runtime="48:00:00",

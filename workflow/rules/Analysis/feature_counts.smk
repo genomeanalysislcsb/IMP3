@@ -6,6 +6,8 @@ rule analysis_feature_counts:
         "Analysis/annotation/{omic}.{db}.counts.tsv"
     log:
         "logs/analysis_feature_counts.{omic}.{db}.log"
+    benchmark:
+        "benchmark/analysis_feature_counts.{omic}.{db}.tsv"
     params:
         params=lambda wildcards: "-p -O -t CDS -g {} -s {}".format(wildcards.db, get_feature_counts_stranded(wildcards.omic))
     threads: 8
@@ -26,7 +28,9 @@ rule analysis_feature_counts_gene:
     output:
         "Analysis/annotation/{omic}.{feature}_counts.tsv"
     log:
-        "logs/analysis_feature_counts_gene.{omic}.{feature}.genes.log"
+        "logs/analysis_feature_counts_gene.{omic}.{feature}.log"
+    benchmark:
+        "benchmark/analysis_feature_counts_gene.{omic}.{feature}.tsv"
     wildcard_constraints:
         omic="|".join(get_omics()),
         # TODO: feature

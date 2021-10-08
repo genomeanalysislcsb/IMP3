@@ -184,7 +184,7 @@ elif config["assembly"]["merge"] == "flye":
             "Merge hybrid assemblies w/ Flye: {input}"
 
 localrules: rename_contigs
-rule rename_contigs:
+rule assembly_rename_contigs:
     input:
         "Assembly/{asm}.assembly.merged.fa.tmp"
     output:

@@ -42,7 +42,7 @@ rule ANALYSIS_READY:
 
 rule ANALYSIS:
     input:
-        "status/analysis.ready",
+        "status/analysis.ready", # not needed (required for the archive anyway) but listed for readability
         "Analysis/annotation/intermediary.tar.gz",
     output:
         touch("status/analysis.done")
