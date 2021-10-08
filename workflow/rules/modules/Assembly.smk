@@ -1,5 +1,5 @@
 include:
-    "../Assembly/common.smk"
+    "../Assembly/misc.smk"
 
 include:
     "../Assembly/mapping.smk"
