@@ -1,53 +1,76 @@
-FASTAFILES = expand("{path}/{files}.fasta", files=config["preprocessing"]["filtering"]["rrna"], path=DBPATH + "/sortmerna")
+# based on code from https://git-r3lab.uni.lu/IMP/imp3/-/tree/issue33
+# see https://git-r3lab.uni.lu/IMP/imp3/-/issues/33
 
-REF = " ".join("--ref %s" % (a) for a in zip(FASTAFILES))
-
-SORTME_MEM = get_mem_norm(None, None, 1, None, "Mb") # TODO
-
-FILTER_RNA_SHELL = """
-  TMP_R12=$(mktemp --tmpdir=${{TMPDIR}} -t "tmp_XXXXXX.R12")
-  if [ -d ${{TMPDIR}}/kvdb ]; then rm -Rf ${{TMPDIR}}/kvdb; fi 
-  sortmerna {params.ref} --reads {input[0]} --reads {input[1]} --workdir tmp --fastx --aligned ${{TMPDIR}}/$TMP_R12.rrna \
-   --other ${{TMPDIR}}/$TMP_R12.rrna_filt --threads {threads} --idx-dir {DBPATH}/sortmerna --otu_map --paired_in -m {params.sortmernamem} >> {log} 2>&1
-  otufile=`find . -name otu_map.txt`
-  touch Preprocessing/otu_map.txt
-  cp $otufile Preprocessing/
-  if [ -s $otufile ]; then echo "# WARNING: OTU from sortmerna file does not exists" >status/sortmerna.warning; fi
-  {SRCDIR}/unmerge-paired-reads.sh ${{TMPDIR}}/$TMP_R12.rrna.fq {output[3]} {output[4]} >> {log} 2>&1
-  {SRCDIR}/unmerge-paired-reads.sh ${{TMPDIR}}/$TMP_R12.rrna_filt.fq {output[0]} {output[1]} >> {log} 2>&1
-  rm -f ${{TMPDIR}}/kvdb/*
-  sortmerna {params.ref} --reads {input[2]} --fastx --aligned Preprocessing/mt.se.trimmed.rna --idx-dir {DBPATH}/sortmerna --workdir ${{TMPDIR}} \
-   --other Preprocessing/mt.se.trimmed.rna_filtered --threads {threads} -m {params.sortmernamem} >> {log} 2>&1
-  rm -Rf ${{TMPDIR}}/$TMP_R12* 
-"""
-
-rule filter_rna:
+# https://github.com/biocore/sortmerna/
+# https://github.com/biocore/sortmerna/wiki/User-manual-v4.0
+rule preproc_filter_rrna:
     input:
-        "Preprocessing/mt.r1.trimmed.fq",
-        "Preprocessing/mt.r2.trimmed.fq",
-        "Preprocessing/mt.se.trimmed.fq",
-        expand(
-            "{db}/sortmerna/idx/{files}.{ext}",
-            files=config["preprocessing"]["filtering"]["rrna"],
-            ext=["bursttrie_0.dat", "kmer_0.dat", "pos_0.dat", "stats"],
-            db=DBPATH)
+        r1="Preprocessing/mt.r1.trimmed.fq",
+        r2="Preprocessing/mt.r2.trimmed.fq",
+        se="Preprocessing/mt.se.trimmed.fq",
+        ref=get_rrna_refs(),
+        idx=get_rrna_refs_idx(),
     output:
-        "Preprocessing/mt.r1.trimmed.rna_filtered.fq",
-        "Preprocessing/mt.r2.trimmed.rna_filtered.fq",
-        "Preprocessing/mt.se.trimmed.rna_filtered.fq",
-        "Preprocessing/mt.r1.trimmed.rna.fq",
-        "Preprocessing/mt.r2.trimmed.rna.fq",
-        "Preprocessing/mt.se.trimmed.rna.fq",
-	    "Preprocessing/otu_map.txt",
+        filt_r1="Preprocessing/mt.r1.trimmed.rna_filtered.fq",
+        filt_r2="Preprocessing/mt.r2.trimmed.rna_filtered.fq",
+        filt_se="Preprocessing/mt.se.trimmed.rna_filtered.fq",
+        rrna_r1="Preprocessing/mt.r1.trimmed.rna.fq",
+        rrna_r2="Preprocessing/mt.r2.trimmed.rna.fq",
+        rrna_se="Preprocessing/mt.se.trimmed.rna.fq",
+	    otu="Preprocessing/otu_map.txt",
+        # tmp files
+        tmp_filt_r1=temp("Preprocessing/mt.sortmerna.filt_fwd.fq"),
+        tmp_filt_r2=temp("Preprocessing/mt.sortmerna.filt_rev.fq"),
+        tmp_rrna_r1=temp("Preprocessing/mt.sortmerna.rrna_fwd.fq"),
+        tmp_rrna_r2=temp("Preprocessing/mt.sortmerna.rrna_rev.fq"),
     threads: 8
     resources:
         runtime="48:00:00",
-        mem=get_mem_norm
+        mem=get_mem_norm,
     params:
-        ref=REF,
-        sortmernamem=str(SORTME_MEM)
-    conda: ENVDIR + "/IMP_preprocessing.yaml"
-    log: "logs/preprocessing_filter_rna.log"
-    message: "filter_rna: filtering rRNA from mt reads."
+        # list of reference FASTA files
+        ref=lambda wildcards, input: " ".join(["--ref %s" % ref for ref in input.ref]),
+        # --idx-dir: reference index directory (w/o idx/ sub-folder)
+        # --fastx: output aligned reads
+        # -m: memory requirements for indexing
+        params=lambda wildcards, input, threads: "--idx-dir {idx} --fastx -m {mem}".format(
+            mem=get_mem_norm(wildcards, input, threads, None, "Mb"), # mem in Mb
+            idx=os.path.dirname(os.path.dirname(input.idx[0]))
+        ),
+        # --otu-map: OTU map (input to QIIME's make_otu_table.py)
+        # --paired_in: flags the PE reads as "aligned", when either of them is aligned
+        # --out2: output paired reads into separate files
+        params_pe="--otu_map --paired_in --out2",
+        # basenames for the output files (sortmerna adds suffix/extensions automatically)
+        bname_pe_filt=lambda wildcards, output: output.tmp_filt_r1.replace("_fwd.fq", ""),
+        bname_pe_rrna=lambda wildcards, output: output.tmp_rrna_r1.replace("_fwd.fq", ""),
+        bname_se_filt=lambda wildcards, output: os.path.splitext(output.filt_se)[0],
+        bname_se_rrna=lambda wildcards, output: os.path.splitext(output.rrna_se)[0],
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    log:
+        "logs/preprocessing_filter_rna.log"
+    message:
+        "rRNA filtering: {input.r1}, {input.r2}, {input.se}"
     shell:
-        FILTER_RNA_SHELL
+        """
+        TMPDIR_PE=$(mktemp -d -p ${{TMPDIR}})
+        TMPDIR_SE=$(mktemp -d -p ${{TMPDIR}})
+
+        sortmerna {params.ref} {params.params} {params.params_pe} --threads {threads} \
+        --reads {input.r1} --reads {input.r2} --workdir ${{TMPDIR_PE}} --aligned {params.bname_pe_rrna} --other {params.bname_pe_filt} &> {log}
+        rsync -tPv {output.tmp_filt_r1} {output.filt_r1} &>> {log}
+        rsync -tPv {output.tmp_filt_r2} {output.filt_r2} &>> {log}
+        rsync -tPv {output.tmp_rrna_r1} {output.rrna_r1} &>> {log}
+        rsync -tPv {output.tmp_rrna_r2} {output.rrna_r2} &>> {log}
+        if [ ! -s {output.otu} ]; then # empty or does not exist
+            touch {output.otu}
+            echo "# WARNING: OTU from sortmerna file does not exists" > status/sortmerna.warning
+        fi
+
+        sortmerna {params.ref} {params.params} --threads {threads} \
+        --reads {input.se} --workdir ${{TMPDIR_SE}} --aligned {params.bname_se_rrna} --other {params.bname_se_filt} &>> {log}
+
+        cat {params.bname_pe_rrna}.log {params.bname_se_rrna}.log >> {log} && rm {params.bname_pe_rrna}.log {params.bname_se_rrna}.log
+        rm -rf ${{TMPDIR_PE}} ${{TMPDIR_SE}}
+        """

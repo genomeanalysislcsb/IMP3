@@ -766,19 +766,18 @@ def get_feature_counts_stranded(omic):
     """Get the 'stranded' parameter for featureCounts"""
     return config["analysis"]["feature_counts"]["stranded"][omic]
 
-# def get_feature_counts_params_cds(wildcards):
-#     """Get featureCounts parameters for CDS"""
-#     return "-p -O -t CDS -g {geneid} -s {stranded}".format(
-#         geneid=wildcards.db,
-#         stranded=get_feature_counts_stranded(wildcards.omic)
-#     )
+def get_rrna_refs():
+    """Get rRNA reference files"""
+    return expand("{dbpath}/sortmerna/{files}.fasta", dbpath=DBPATH, files=config["preprocessing"]["filtering"]["rrna"])
 
-# def get_feature_counts_params_cds(wildcards):
-#     """Get featureCounts parameters for CDS"""
-#     return "-p -O -t {} -g ID -s {}".format(
-#         wildcards.feature,
-#         get_feature_counts_stranded(wildcards.omic)
-#     )
+def get_rrna_refs_idx():
+    """Get rRNA reference files sortmerna index files"""
+    return expand(
+        "{dbpath}/sortmerna/idx/{files}.{ext}",
+        dbpath=DBPATH,
+        files=config["preprocessing"]["filtering"]["rrna"],
+        ext=["bursttrie_0.dat", "kmer_0.dat", "pos_0.dat", "stats"]
+    )
 
 def get_mem_samtools_sort(threads=1):
     """Get mem for samtools sort"""
