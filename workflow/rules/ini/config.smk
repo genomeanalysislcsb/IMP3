@@ -35,7 +35,7 @@ if has_mgmt():
     assert has_sr("mg", "pe") == has_sr("mt", "pe"), "MG and MT reads must both (not) have paired-end short reads"
     assert has_sr("mg", "se") == has_sr("mt", "se"), "MG and MT reads must both (not) have single-end short reads"
 
-if "preprocessing" not in get_steps():
+if "preprocessing" not in get_steps() and len(get_steps()) > 0:
     assert not has_sr("mg") or (has_sr("mg", "pe") and has_sr("mg", "se")), "If skipping preprocessing, paired- and single-end short MG reads are required"
     assert not has_sr("mt") or (has_sr("mt", "pe") and has_sr("mt", "se")), "If skipping preprocessing, paired- and single-end short MT reads are required"
 
