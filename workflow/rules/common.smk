@@ -699,8 +699,52 @@ def filtering_filter(wildcards):
 #                 raw_directory=samples.path[ori_sample])
 
 def get_bwa_idx_ext():
-    """"""
+    """BWA index file extensions"""
     return ["amb", "ann", "bwt", "pac", "sa"]
+
+def get_prokka_ext(which="all"):
+    """Prokka output file extensions (all, FASTA, ...)"""
+    # https://github.com/tseemann/prokka#output-files
+    if which == "fasta":
+        return ["faa", "fna", "ffn", "fsa"]
+    return ["gff", "gbk", "fna", "faa", "ffn", "sqn", "fsa", "tbl", "err", "log", "txt", "tsv"]
+
+def get_hmms(get_path=False):
+    """Get HMM names or paths"""
+    hmms = config["analysis"]["hmm"]
+    if get_path:
+        hmms = [get_hmm_path(hmm) for hmm in hmms]
+    return hmms
+
+def get_hmm_path(wildcards):
+    """Get path to HMM database file"""
+    return os.path.join(DBPATH, "hmm", wildcards.db)
+
+def get_hmm_cutoff(wildcards):
+    """Get hmm cutoff parameters"""
+    return config["analysis"]["hmm_settings"][wildcards.db]["cutoff"]
+
+def get_hmm_trim(wildcards):
+    """Get hmm trimming parameters"""
+    return config["analysis"]["hmm_settings"][wildcards.db]["trim"]
+
+def get_feature_counts_stranded(omic):
+    """Get the 'stranded' parameter for featureCounts"""
+    return config["analysis"]["feature_counts"]["stranded"][omic]
+
+# def get_feature_counts_params_cds(wildcards):
+#     """Get featureCounts parameters for CDS"""
+#     return "-p -O -t CDS -g {geneid} -s {stranded}".format(
+#         geneid=wildcards.db,
+#         stranded=get_feature_counts_stranded(wildcards.omic)
+#     )
+
+# def get_feature_counts_params_cds(wildcards):
+#     """Get featureCounts parameters for CDS"""
+#     return "-p -O -t {} -g ID -s {}".format(
+#         wildcards.feature,
+#         get_feature_counts_stranded(wildcards.omic)
+#     )
 
 def get_mem_samtools_sort(threads=1):
     """Get mem for samtools sort"""

@@ -1,83 +1,138 @@
-rule hmmer:
+rule analysis_annotate:
+    input:
+        "Assembly/%s.assembly.merged.fa" % get_omics_assembly()
+    output:
+        fasta=expand("Analysis/annotation/prokka.{ext}", ext=get_prokka_ext("fasta")),
+        gff=temp("Analysis/annotation/prokka.gff"),
+    log:
+        "logs/analysis_annotate.log"
+    params:
+        script=os.path.join(SRCDIR, "prokkaC")
+    threads: 12
+    resources:
+        runtime="8:00:00",
+        mem=get_mem_norm(12),
+    conda:
+        os.path.join(ENVDIR + "/IMP_annotation.yaml")
+    message:
+        "Annotation: {input}"
+    shell:
+        "export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2 && " # TODO: hardcoded paths should be avoided
+        "export LC_ALL=en_US.utf-8 && "
+        "if [ ! -f $CONDA_PREFIX/db/hmm/HAMAP.hmm.h3m ]; then {params.script} --dbdir $CONDA_PREFIX/db --setupdb; fi && " 
+        "{params.script} --dbdir $CONDA_PREFIX/db --force --outdir $(dirname {output.gff}) --prefix prokka --noanno --cpus {threads} --metagenome {input} &> {log}"
+
+rule analysis_filt_gff:
+    input:
+        "Analysis/annotation/prokka.gff"
+    output:
+        gff_gz="Analysis/annotation/prokka.gff.gz",
+        gff="Analysis/annotation/annotation.filt.gff",
+    threads: 1
+    resources:
+        runtime="01:00:00",
+        mem=get_mem_norm(1),
+    message:
+        "Annotation: reformat GFF: {input}"
+    shell:
+        # remove prokka's header and FASTA part at the end of the file
+        # TODO: simplify ???
+        """
+        LN=`grep -Hn "^>" {input} | head -n1 | cut -f2 -d ":" || if [[ $? -eq 141 ]]; then true; else exit $?; fi`
+        LN1=1
+        LN=$(($LN-$LN1))
+        head -n $LN {input} | grep -v "^#" | sort | uniq | grep -v "^==" > {output.gff}
+        gzip -c {input} > {output.gff_gz}
+        """
+
+rule analysis_hmmsearch:
     input:
         "Analysis/annotation/prokka.faa"
     output:
         "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan"
+    log:
+        "logs/analysis_hmmer.{db}.log"
+    wildcard_constraints:
+        db="|".join(get_hmms())
     params: 
-        lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
-        dbs = DBPATH + "/hmm/{db}"
+        params=get_hmm_cutoff,
+        db_path=get_hmm_path,
+    threads: 12
     resources:
-        runtime = "48:00:00",
-        mem = MEMCORE
-    conda: ENVDIR + "/IMP_annotation.yaml"
-    threads: getThreads(12)
-    log: "logs/analysis_hmmer.{db}.log"
-    message: "hmmer: Running HMMER for {wildcards.db}."
+        runtime="01:00:00",
+        mem=get_mem_norm(12),
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
+    message:
+        "HMM search: {input}, DB={wildcards.db}"
     shell:
-        """
-         hmmsearch --cpu {threads} {params[0]} --noali --notextw \
-          --tblout {output} {params.dbs}/*.hmm {input} >/dev/null 2> {log}
-        """
+        "hmmsearch --cpu {threads} --noali --notextw {params.params} --tblout {output} {params.db_path}/*.hmm {input} > /dev/null 2> {log}"
 
-rule makegff:
+rule analysis_hmmsearch_gff:
     input:
-        "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan",
-        "Analysis/annotation/annotation.filt.gff",
-        "Analysis/annotation/prokka.faa"
+        hits="Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan",
+        gff="Analysis/annotation/annotation.filt.gff",
+        faa="Analysis/annotation/prokka.faa"
     output:
         "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
+    log:
+        "logs/analysis_makegff.{db}.log"
+    wildcard_constraints:
+        db="|".join(get_hmms())
     params:
-        "{db}",
-        lambda wildcards: config["hmm_settings"][wildcards.db]["trim"]
-    resources:
-        runtime = "4:00:00",
-        mem = MEMCORE
+        script=os.path.join(SRCDIR, "hmmscan_addBest2gff.pl"),
+        # "{db}", # TODO: wildcards.db ???
+        params=get_hmm_trim,
     threads: 1
-    conda: ENVDIR + "/IMP_annotation.yaml"
-    log: "logs/analysis_makegff.{db}.log"
-    message: "makegff: Adding hmmer results of {wildcards.db} to gff."
+    resources:
+        runtime="4:00:00",
+        mem=get_mem_norm(1),
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
+    message:
+        "HMM search GFF: {input}"
     shell:
-        """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        {SRCDIR}/hmmscan_addBest2gff.pl -i {input[0]} -a {input[1]} \
-         -n {params[0]} {params[1]} -o {output} -g $(grep ">" {input[2]} | wc -l) > {log} 2>&1
-        """
+        "export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2 && " # TODO: hardcoded paths should be avoided
+        "{params.script} -i {input.hits} -a {input.gff} -n {wildcards.db} {params.params} -o {output} -g $(grep \">\" {input.faa} | wc -l) &> {log}"
 
-rule mergegff:
+rule analysis_merge_gffs:
     input:
-        "Analysis/annotation/annotation.filt.gff",
-        expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff",db=config["hmm_DBs"].split())
+        gff="Analysis/annotation/annotation.filt.gff",
+        hits=expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff", db=get_hmms())
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
-    resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: 1
-    log: "logs/analysis_mergegff.log"
-    message: "mergegff: Merging gffs with hmmer results."
-    shell:
-        """
-        {SRCDIR}/mergegffs.pl {output} {input} > {log} 2>&1
-        """
-
-rule tar_annotation:
-    input:
-        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split())
-    output:
-        "Analysis/annotation/intermediary.tar.gz"
-    threads: 1
-    resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
+    log:
+        "logs/analysis_mergegff.log"
     params:
-        intermediary = "Analysis/annotation/intermediary/"
-    log: "logs/annotation_tar_annotation.log"
-    message: "tar_annotation: Compressing intermediary steps of annotation."
+        script=os.path.join(SRCDIR, "mergegffs.pl")
+    threads: 1
+    resources:
+        runtime="8:00:00",
+        mem=get_mem_norm(1),
+    message:
+        "Merge GFFs: {input}"
     shell:
-       """
-       tar cvzf {output} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1
-       """
+        "{params.script} {output} {input} &> {log}"
 
-        
-        
+rule analysis_call_variants:
+    input:
+        fa="Assembly/%s.assembly.merged.fa" % get_omics_assembly(),
+        bam="Assembly/{omic}.reads.sorted.bam"
+    output:
+        vcf="Analysis/snps/{omic}.variants.samtools.vcf.gz",
+        vcf_mpu=temp("Analysis/snps/{omic}.variants.samtools.mpu.vcf"),
+        # vcf_plt=temp("Analysis/snps/{omic}.variants.samtools.plt.vcf"), # TODO: purpose of this tmp file (apparently it is not used) ???
+    log:
+        "logs/analysis_variant_calling.{omic}.log"
+    threads: 1
+    resources:
+        runtime="48:00:00",
+        mem=get_mem_norm(1)
+    conda:
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
+    message:
+        "Call variants: Calling variants using bcftools for {wildcards.omic} reads."
+    shell:
+        "bcftools mpileup -A -Ou -f {input.fa} {input.bam} 2>> {log} | bcftools call -vm -Ov > {output.vcf_mpu} 2> {log} && "
+        "bgzip -c {output.vcf_mpu} > {output.vcf} 2>> {log} && "
+        "tabix -f -p vcf {output.vcf} &>> {log}"

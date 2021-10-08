@@ -272,6 +272,6 @@ properties:
         type: number
         minimum: 1
       host_proteome:
-        type: string
+        type: array
       insert_variants:
         type: boolean

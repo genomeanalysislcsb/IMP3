@@ -187,14 +187,21 @@ include:
 WORKFLOW_TARGETS += get_ori_files_targets()
 
 # include rules for the workflow based on the input parameters
-if "preprocessing" in config["steps"]:
+
+if "preprocessing" in get_steps():
     include:
         "rules/modules/Preprocessing.smk"
-    WORKFLOW_TARGETS.append('status/preprocessing.done')
-if "assembly" in config["steps"]:
+    WORKFLOW_TARGETS.append("status/preprocessing.done")
+
+if "assembly" in get_steps():
     include:
         "rules/modules/Assembly.smk"
-    WORKFLOW_TARGETS.append('status/assembly.done')
+    WORKFLOW_TARGETS.append("status/assembly.done")
+
+if "analysis" in get_steps():
+    include:
+        "rules/modules/Analysis.smk"
+    WORKFLOW_TARGETS.append("status/analysis.done")
 
 localrules: all
 

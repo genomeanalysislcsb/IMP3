@@ -1,3 +1,6 @@
+# TODO: is that not part of preprocessing ???
+# NOT USED
+
 raw_fq_files = [
     'Preprocessing/{type}.r1.fq',
     'Preprocessing/{type}.r2.fq'

@@ -134,7 +134,7 @@ analysis:
   # TODO: mOTUs - COGs as param?
   cogs: ["COG0012", "COG0018", "COG0215", "COG0525", "COG0541", "COG0016", "COG0172", "COG0495", "COG0533", "COG0552"] # former COGS
   # http://subread.sourceforge.net/
-  featurecounts:
+  feature_counts:
     stranded:
       mt: 2
       mg: 0
@@ -180,5 +180,5 @@ summary:
 
 proteomics:
   filter_n_peptides: 2
-  host_proteome: ""
+  host_proteome: [] # TODO: list ???
   insert_variants: false
