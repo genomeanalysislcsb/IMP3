@@ -587,6 +587,13 @@ def get_trimmomatic_params(wildcards):
         tl=config["preprocessing"]["trimmomatic"]["target_length"],
     )
 
+def get_cutadapt_nextset_params(wildcards):
+    """Get parameters for NextSeq trimming w/ Cutadapt"""
+    return "--nextseq-trim={} --minimum-length {}".format(
+        config["preprocessing"]["trimmomatic"]["trailing"],
+        config["preprocessing"]["trimmomatic"]["minlen"]
+    )
+
 # PREPROCESSING:
 def no_filtering_input(wildcards):
     input_no_filtering = {

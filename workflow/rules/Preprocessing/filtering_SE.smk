@@ -1,11 +1,13 @@
-rule reads_filtering:
+rule preproc_filter_genomes:
     input:
         reads=filtering_reads_se_input,
         ref=filtering_filter
     output:
         "Preprocessing/{omic}.se.{filterstep}.fq"
     log:
-        "logs/preprocessing_{omic}_filtering.{filterstep}.log"
+        "logs/preproc_filter_genomes.{omic}.{filterstep}.log"
+    benchmark:
+        "benchmark/preproc_filter_genomes.{omic}.{filterstep}.tsv"
     wildcard_constraints:
         omic="|".join(get_omics()),
         filterstep="|".join(["trimmed(\.rna_filtered)?\." + s for s in get_read_files_filtered_genomes_basenames(True)]),
@@ -16,7 +18,7 @@ rule reads_filtering:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
-        "reads_filtering: Filtering {wildcards.omic} reads to get {wildcards.filterstep}."
+        "Filter reads: {input.reads} against {input.ref}"
     shell:
         """
         bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads} 2> {log} | \
@@ -25,14 +27,12 @@ rule reads_filtering:
           bamToFastq -i stdin -fq {output} >> {log} 2>&1
         """
 
-localrules: symlink_preprocessed_reads_files
-rule symlink_preprocessed_reads_files:
+localrules: preproc_link_filtered_reads
+rule preproc_link_filtered_reads:
     input:
-        # expand("Preprocessing/mg.{read}.fq", read=["r1", "r2"]),
         lambda wildcards: expand(
             "Preprocessing/{{omic}}.{read}.{filtered}.fq",
-            filtered=("trimmed." if wildcards.omic == "mg" else "trimmed.rna_filtered.") + \
-                ".".join([s + "_filtered" for s in get_filtering_genomes()]),
+            filtered=("trimmed." if wildcards.omic == "mg" else "trimmed.rna_filtered.") + ".".join([s + "_filtered" for s in get_filtering_genomes()]),
             read=["se"]
         )
     output:
@@ -40,7 +40,7 @@ rule symlink_preprocessed_reads_files:
     wildcard_constraints:
         omic="|".join(get_omics()),
     message:
-        "symlink_preprocessed_reads_files: link to preprocessed {wildcards.omic} reads"
+        "Link filtered reads: {input}"
     run:
         for i,o in zip(input,output):
             shell("ln -fs $(echo {i} | cut -f 2 -d /) {o} && touch -h {o}")

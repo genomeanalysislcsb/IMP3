@@ -23,10 +23,10 @@ rule preproc_filter_rrna:
         tmp_filt_r2=temp("Preprocessing/mt.sortmerna.filt_rev.fq"),
         tmp_rrna_r1=temp("Preprocessing/mt.sortmerna.rrna_fwd.fq"),
         tmp_rrna_r2=temp("Preprocessing/mt.sortmerna.rrna_rev.fq"),
-    threads: 8
-    resources:
-        runtime="48:00:00",
-        mem=get_mem_norm,
+    log:
+        "logs/preproc_filter_rrna.log"
+    benchmark:
+        "benchmark/preproc_filter_rrna.tsv"
     params:
         # list of reference FASTA files
         ref=lambda wildcards, input: " ".join(["--ref %s" % ref for ref in input.ref]),
@@ -46,10 +46,12 @@ rule preproc_filter_rrna:
         bname_pe_rrna=lambda wildcards, output: output.tmp_rrna_r1.replace("_fwd.fq", ""),
         bname_se_filt=lambda wildcards, output: os.path.splitext(output.filt_se)[0],
         bname_se_rrna=lambda wildcards, output: os.path.splitext(output.rrna_se)[0],
+    threads: 8
+    resources:
+        runtime="48:00:00",
+        mem=get_mem_norm,
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-    log:
-        "logs/preprocessing_filter_rna.log"
     message:
         "rRNA filtering: {input.r1}, {input.r2}, {input.se}"
     shell:

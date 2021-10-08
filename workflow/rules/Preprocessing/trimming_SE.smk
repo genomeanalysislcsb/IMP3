@@ -1,9 +1,13 @@
 if config["preprocessing"]["nextseq"]:
-    rule trimming:
+    rule preproc_trim:
         input:
             "Preprocessing/{omic}.se.fq"
         output:
             "Preprocessing/{omic}.se.trimmoed.fq"
+        log:
+            "logs/preproc_trim.{omic}.log"
+        benchmark:
+            "benchmark/preproc_trim.{omic}.tsv"
         params:
             params=get_trimmomatic_params
         threads: 10
@@ -11,42 +15,43 @@ if config["preprocessing"]["nextseq"]:
             runtime="12:00:00",
             mem=get_mem_norm,
         conda:
-            ENVDIR + "/IMP_preprocessing.yaml"
-        log:
-            "logs/preprocessing_trimming.{omic}.log"
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         message:
-            "trimming: Trimmming {wildcards.omic} reads."
+            "Trimming: {input}"
         shell:
             "trimmomatic SE -threads {threads} {input} {output} {params.params} &> {log}"
 
-    rule nextseq_trimming:
+    rule preproc_trim_nextseq:
         input:
             "Preprocessing/{omic}.{read}.trimmoed.fq"
         output:
-            "Preprocessing/{omic}.{read}.trimmed.fq",
+            "Preprocessing/{omic}.{read}.trimmed.fq"
+        log:
+            "logs/preproc_trim_nextseq.{omic}.{read}.log"
+        benchmark:
+            "benchmark/preproc_trim_nextseq.{omic}.{read}.tsv"
         params:
-            params="--nextseq-trim={} --minimum-length {}".format(
-                config["preprocessing"]["trimmomatic"]["trailing"],
-                config["preprocessing"]["trimmomatic"]["minlen"]
-            ),
+            params=get_cutadapt_nextset_params,
         threads: 10
         resources:
             runtime="12:00:00",
             mem=get_mem_norm,
         conda:
-            ENVDIR + "/IMP_preprocessing.yaml"
-        log:
-            "logs/preprocessing_nextseq_trimming.{omic}.{read}.log"
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         message:
-            "trimming: Trimmming poly-Gs off {wildcards.omic} {wildcards.read} reads."
+            "Nextseq trimming: {input}"
         shell:
             "cutadapt {params.params} -j {threads} -o {output} {input} &> {log}"
 else:
-    rule trimming:
+    rule preproc_trim:
         input:
             "Preprocessing/{omic}.se.fq"
         output:
             "Preprocessing/{omic}.se.trimmed.fq"
+        log:
+            "logs/preproc_trim.{omic}.log"
+        benchmark:
+            "benchmark/preproc_trim.{omic}.tsv"
         params:
             params=get_trimmomatic_params
         threads: 10
@@ -54,10 +59,8 @@ else:
             runtime="12:00:00",
             mem=get_mem_norm,
         conda:
-            ENVDIR + "/IMP_preprocessing.yaml"
-        log:
-            "logs/preprocessing_trimming.{omic}.log"
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         message:
-            "trimming: Trimmming {wildcards.omic} reads."
+            "Trimming: {input}"
         shell:
             "trimmomatic SE -threads {threads} {input} {output} {params.params} &> {log}"
