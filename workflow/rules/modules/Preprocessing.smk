@@ -1,29 +1,27 @@
-include:
-    '../Preprocessing/fastqc.smk'
+if has_sr("mg", "pe") or has_sr("mt", "pe"):
+    include:
+        "../Preprocessing/trim.smk"
+    include:
+        "../Preprocessing/filter.smk"
+else:
+    include:
+        "../Preprocessing/trim_se.smk"
+    include:
+        "../Preprocessing/filter_se.smk"
+
+if has_mt():
+    include:
+        "../Preprocessing/filter_rrna.smk"
 
 include:
-    '../Preprocessing/reads-count.smk'
+    '../Preprocessing/fastqc.smk'
 
 if has_mg() and has_sr("mg", "pe"):
     include:
         '../Preprocessing/nonpareil.smk'
 
 include:
-    '../Preprocessing/archive.smk'
-
-if has_mt():
-    include:
-        "../Preprocessing/rna.filtering.smk"
-if has_sr("mg", "pe") or has_sr("mt", "pe"):
-    include:
-        "../Preprocessing/trimming.smk"
-    include:
-        "../Preprocessing/filtering.smk"
-else:
-    include:
-        "../Preprocessing/trimming_SE.smk"
-    include:
-        "../Preprocessing/filtering_SE.smk"
+    '../Preprocessing/misc.smk'
 
 rule PREPROCESSING_READY:
     input:
