@@ -1,0 +1,73 @@
+# Config file for IMP3 installation
+
+# path where to download/copy the data(bases)
+# db_path: "path/to/databases"
+db_path: "/mnt/irisgpfs/users/vgalata/tmp/imp3_dbs"
+
+##################################################
+# Adapters for reads trimming
+##################################################
+
+# adapters from Trimmomatic
+trimmomatic:
+  url: "https://github.com/usadellab/Trimmomatic.git"
+  commit: "e77bb89c70f60cb139393a22e89af47c5c1c69e8" # tag v0.39 (2021.11.15)
+
+##################################################
+# References for rRNA filtering
+##################################################
+
+# rRNA genes from SortMeRNA
+sortmerna:
+  url: "https://github.com/biocore/sortmerna.git"
+  commit: "90cdf6ce459e9477c5d0de9a5daab025f49f3cc6" # tag v4.3.4 (2021.11.15)
+
+##################################################
+# References for reads filtering
+##################################################
+# NOTE: set "ext" always to "fa" (expected extension in IMP3)
+
+genomes:
+  PhiX:
+    url: "ftp://ftp.ncbi.nlm.nih.gov/genomes/Viruses/enterobacteria_phage_phix174_sensu_lato_uid14015/NC_001422.fna"
+    compression: null
+    ext: "fa"
+  GCF_000001405.38_GRCh38.p12: # human
+    url: "ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.38_GRCh38.p12/GCF_000001405.38_GRCh38.p12_genomic.fna.gz"
+    compression: "gz"
+    ext: "fa"
+  # add others if needed, e.g. host genome
+
+##################################################
+# Kraken2 databases for tax. analysis
+##################################################
+# NOTE: make sure "kraken" is part of the parent attribute name
+# NOTE: expecting files taxo.k2d, opts.k2d, hash.k2d
+# NOTE: assuming *.tar.gz in given URLs
+
+kraken2:
+  # https://ccb.jhu.edu/software/kraken2/index.shtml?t=downloads
+  minikraken2:
+    url: "ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz"
+    compression: "tgz"
+  # ???
+  kraken_pfp8:
+    url: "https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_8gb_20210517.tar.gz"
+    compression: "tgz"
+  # add others if needed
+
+# GTDB-tk
+gtdbtk:
+  url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/auxillary_files/gtdbtk_data.tar.gz"
+  compression: "tgz"
+
+##################################################
+# HMMs
+##################################################
+# TODO
+
+##################################################
+# Mantis
+##################################################
+mantis:
+  
