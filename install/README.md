@@ -9,7 +9,7 @@ Config file: `config/config.install.yaml`
 # activate the main conda environment
 conda activate <your_imp3_conda_env>
 # dry-run
-snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 1 -rpn
+snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 1 --use-conda -rpn
 # execute (change the number of cores as needed)
-snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 1 -rp
+snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 1 --use-conda -rp
 ```

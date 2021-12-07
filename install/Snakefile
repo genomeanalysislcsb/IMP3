@@ -14,6 +14,7 @@ include:
 
 # paths
 ENV_DIR = srcdir("envs")
+SRC_DIR = srcdir("scripts")
 MOD_DIR = srcdir("../submodules")
 
 # default executable for snakemake
@@ -29,9 +30,9 @@ workdir:
 TARGETS = [
     os.path.join("adapters", "trimmomatic.done"),
     os.path.join("sortmerna", "sortmerna.done"),
-    "gtdbtk/download.done" # NOTE: comment out for quick tests (big archive, many files)
+    "gtdbtk" # NOTE: comment out for quick tests (big archive, many files)
 ] + [ # genomes
-    "filtering/{}.{}".format(genome, genome_config["ext"]) for genome, genome_config in config["genomes"].items()
+    "filtering/{}.fa".format(genome) for genome in config["genomes"].keys()
 ] + flatten_list([ # Kraken2 databases
     expand("{kdb}/{fname}", kdb=kdb, fname=get_kraken2db_file_names()) for kdb in config["kraken2"].keys()
 ])
@@ -53,5 +54,5 @@ include:
 include:
     "rules/taxonomy.smk"
 
-include:
-    "rules/analysis.smk"
+# include:
+#     "rules/analysis.smk"
