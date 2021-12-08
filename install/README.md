@@ -7,7 +7,8 @@ The requirements are defined in the config file: `config/config.install.yaml`.
 Please note that the cores, memory and runtime requirements depend on the used config file.
 
 ```bash
-# from parent directory:
+# manual execution
+# from parent directory
 
 # activate the main conda environment
 conda activate <your_imp3_conda_env>
@@ -16,5 +17,5 @@ conda activate <your_imp3_conda_env>
 snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 1 -rpn
 
 # execute (use conda, more cores)
-snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 12 --use-conda -rp
+snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 8 --use-conda -rp
 ```
