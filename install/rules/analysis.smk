@@ -41,4 +41,4 @@ rule mantis_setup:
     message:
         "Mantis: Setting up databases and other resources"
     shell:
-        "python {params.mod_path}/ setup_databases --mantis_config {input} &> {log} && touch {output}"
+        "python {params.mod_path}/ setup_databases --mantis_config {input} --cores {threads} &> {log} && touch {output}"
