@@ -14,6 +14,7 @@ rule kraken2db_download:
         kdb="|".join(config["kraken2"].keys())
     params:
         url=smk_get_kraken2db_url
+    threads: 4
     conda:
         os.path.join(ENV_DIR, "utils.yaml")
     message:
@@ -49,6 +50,7 @@ rule gtdbtk_download:
         "gtdbtk/download.log"
     params:
         url=config["gtdbtk"]["url"]
+    threads: 4
     conda:
         os.path.join(ENV_DIR, "utils.yaml")
     message:

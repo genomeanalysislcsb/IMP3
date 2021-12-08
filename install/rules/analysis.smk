@@ -35,7 +35,7 @@ rule mantis_setup:
         "mantis/setup.log"
     params:
         mod_path=os.path.join(MOD_DIR, "mantis")
-    threads: 12
+    threads: 8
     conda:
         os.path.join(ENV_DIR, "mantis.yaml")
     message:
