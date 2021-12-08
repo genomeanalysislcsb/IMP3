@@ -40,7 +40,7 @@ For processing the original raw `Fastq <https://en.wikipedia.org/wiki/FASTQ_form
     Alignment_metatranscriptomics: ""
 
 If the user has **already pre-processed** reads, either for the :ref:`Assembly <step_assembly>` step or for further analysis,
-the user can pass one additional single ends file. The singleton read file is given last.
+the user is required to pass THREE files, two paired read files and one additional single ends file. The singleton read file is given last.
 
 **Note**: *In this case, the user should NOT include* ``preprocessing`` *in the IMP* :ref:`steps <steps_overview>`.
 
@@ -78,9 +78,10 @@ Contigs and alignments
 ----------------------
 
 If the user has already an assembly and would like to use IMP3 to annotate genes, perform binning and/or determine contig-level
-taxonomy, the contigs can be used as input in FASTA format. In addition, the user can give reads either in `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ files or already aligned
+taxonomy, the contigs can be used as input in FASTA format (NOTE: the FASTA header should only contain the contig name, NO other information and NO spaces: >CONTIGNAME1). 
+In addition, the user can give reads either in `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ files or already aligned
 as `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files. For `FASTQ <https://en.wikipedia.org/wiki/FASTQ_format>`_ files, the same limitations apply as discussed above. 
-The `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files should be sorted by contig name and coordinate.
+The `BAM <https://genome.sph.umich.edu/wiki/BAM>`_ files should be sorted by contig name and coordinate, and again, the contig names are NOT allowed to contain spaces !!!).
 
 .. code-block:: yaml
 

@@ -14,6 +14,10 @@ if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in I
         if not MTaln:
             include:
                 'Assembly/common/bwa.index.smk'
+    elif 'preprocessing' in IMP_STEPS:
+        # issue #28: required for new FASTAs to be used for filtering
+        include:
+            'Assembly/common/bwa.index.smk'
 
 if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
     if ANN:
@@ -101,7 +105,10 @@ localrules: prepare_input_data_symlink
 
 rule prepare_input_data_symlink:
     input:
-        get_ori_files
+       expand([
+        'Preprocessing/{type}.r1.fq',
+        'Preprocessing/{type}.r2.fq',
+        'Preprocessing/{type}.se.fq'], type=TYPES) 
     output:
         symlinked_output_list
     message:
@@ -115,8 +122,8 @@ rule prepare_input_data_copy:
         get_ori_files
     output:
         input_files_list
-    threads: 5
-    params:
+    threads: getThreads(5)
+    resources:
         runtime = "1:00:00",
         mem = MEMCORE
     conda:
@@ -207,7 +214,7 @@ rule check_bam_input:
         "status/{type}.reads.sorted.bam.checked"
     priority: 10
     threads: 1
-    params:
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     message: "Checking {wildcards.type} alignment."
@@ -227,7 +234,7 @@ rule check_ann_input:
         "status/annotation_CDS_RNA_hmms.gff.checked"
     priority: 10
     threads: 1
-    params:
+    resources:
         runtime = "4:00:00",
         mem = MEMCORE
     message: "Checking annotation."

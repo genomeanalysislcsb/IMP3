@@ -16,9 +16,10 @@ rule gather_stats:
         sum_stats_input
     output:
         gathered
-    params:
+    resources:
         runtime = "12:00:00",
-        mem = MEMCORE,
+        mem = MEMCORE
+    params:
         steps = IMP_STEPS,
         ass = ASS,
         types = TYPES,

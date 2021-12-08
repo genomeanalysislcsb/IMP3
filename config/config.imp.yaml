@@ -1,10 +1,14 @@
 steps: "preprocessing assembly analysis binning taxonomy summary"
+email: ""
+sessionName: ""
+sessionKind: ""
+settingsLocked: "false"
 preprocessing_filtering: true
 mem:
-  normal_mem_per_core_gb: 4
-  big_mem_total_gb: 1600
-  big_mem_cores: 8
-  big_mem_per_core_gb: 200
+  normal_mem_per_core_gb: 8
+  big_mem_total_gb: 180
+  big_mem_cores: 5
+  big_mem_per_core_gb: 36
 tmp_dir: tmp
 raws: 
   Metagenomics: ""
@@ -18,14 +22,16 @@ raws:
 sample: test
 outputdir: ""
 summarydir: ""
-summary_steps: "stats DB vis"
+summary_steps: "stats vis"
 mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/data/idiv_biu/heintzbu/EXTDB/IMP_DBs"
+db_path: "IMP_DBs"
 trimmomatic:
-  adapter: "TruSeq3-PE"
+  adapter: 
+    mg: "TruSeq3-PE"
+    mt: "TruSeq3-PE"
   leading: 20
   minlen: 40
   palindrome_clip_threshold: 30
@@ -38,7 +44,7 @@ trimmomatic:
   target_length: 40
 nextseq: false
 filtering:
-  filter: hg38
+  filter: "phiX174"
 sortmerna:
   files:
     - rfam-5.8s-database-id98
@@ -135,3 +141,12 @@ binning:
     perp: 30
     cutoff: 1000
 krakendb: minikraken2
+eukdetect:
+  run_eukdetect: false
+  eukdetect_dir: ../EukDetect
+  database_dir: eukdetect_database_v1
+  min_readlen: 60 #eukdetect does not recommend pre-trimming, but I don't see why we should keep stuff we don't want
+locked_normalMem: 0
+locked_bigMem: 0
+locked_bigCores: 0
+locked_bigTotal: 0 

@@ -5,8 +5,8 @@ rule maxbin:
     output:
        "Binning/MaxBin/maxbin_res.log",
        "Binning/MaxBin/maxbin_res.summary"
-    threads: 8
-    params:
+    threads: getThreads(8)
+    resources:
         runtime = "24:00:00",
         mem = MEMCORE
     conda: ENVDIR + "/IMP_binning.yaml"

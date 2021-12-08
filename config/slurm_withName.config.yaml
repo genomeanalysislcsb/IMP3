@@ -1,0 +1,131 @@
+__default__: 
+  nodes: ""
+  partition: "batch"
+  qos: "normal"
+  job-name: "IMP3.{rule}"
+
+prepare_input_data_copy:
+  nodes: "-N 1"
+  partition: "batch"
+  qos: "normal"
+
+mg_filtering:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+mt_filtering:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+trimming:
+  nodes: "-N 1"
+
+bwa_index:
+  partition: "bigmem"
+  qos: "normal"
+
+mapping_on_assembly:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+index_bam:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+megahit_assembly_from_preprocessing:
+  partition: "bigmem"
+  qos: "long"
+
+megahit_assembly_from_unmapped:
+  partition: "bigmem"
+  qos: "long"
+
+metaspades_assembly_from_preprocessing:
+  partition: "bigmem"
+  qos: "long"
+
+metaspades_assembly_from_unmapped:
+  partition: "bigmem"
+  qos: "long"
+
+merge_assembly_cap3:
+  partition: "bigmem"
+  qos: "long"
+
+merge_hybrid_assembly_cap3:
+  partition: "bigmem"
+  qos: "long"
+
+extract_unmapped_from_megahit:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+extract_unmapped_from_hybrid_assembly:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+megahit_hybrid_assembly_1:
+  partition: "bigmem"
+  qos: "long"
+
+megahit_hybrid_assembly_2:
+  partition: "bigmem"
+  qos: "long"
+
+metaspades_hybrid_assembly_1:
+  partition: "bigmem"
+  qos: "long"
+
+metaspades_hybrid_assembly_2:
+  partition: "bigmem"
+  qos: "long"
+
+collapse_hybrid_assemblies:
+  partition: "bigmem"
+  qos: "normal"
+
+extract_unmapped:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+DAS_tool:
+  partition: "bigmem"
+  qos: "normal"
+
+prepare_gridReads:
+  partition: "bigmem"
+  qos: "normal"
+
+grid:
+  partition: "bigmem"
+  qos: "normal"
+
+vizbin:
+  partition: "bigmem"
+  qos: "normal"
+
+vizbin_mt:
+  partition: "bigmem"
+  qos: "normal"
+
+kraken_contigs:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+kraken_reads:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"
+
+GTDBtk_bins_single:
+  nodes: "-N 1"
+  partition: "bigmem"
+  qos: "normal"

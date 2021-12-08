@@ -1,0 +1,9 @@
+__default__: 
+  call: "qsub"
+  nodes: ""
+  mem_per_cpu: "l mem="
+  partition: ""
+  runtime: "-l walltime="
+  threads: "-l mem="
+  stdout: "-o IMP3.{rule}.{wildcards}.stdout"
+

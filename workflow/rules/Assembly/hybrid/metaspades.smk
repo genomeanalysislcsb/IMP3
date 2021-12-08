@@ -39,10 +39,11 @@ else:
             'Assembly/intermediary/mgmt.metaspades_hybrid.1.fa',
             directory('Assembly/intermediary/mgmt.metaspades_hybrid.1')
         params:
-            contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa",
+            contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa"
+        resources:
             runtime = "120:00:00",
             mem = BIGMEMCORE
-        threads: BIGCORENO
+        threads: getThreads(BIGCORENO)
         conda: ENVDIR + "/IMP_assembly.yaml"
         log: "logs/assembly_metaspades_hybrid_assembly_1.log"
         message: "metaspades_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using METASPADES"
@@ -67,10 +68,11 @@ rule metaspades_hybrid_assembly_2:
         'Assembly/intermediary/mgmt.metaspades_hybrid.2.fa',
         directory('Assembly/intermediary/mgmt.metaspades_hybrid.2')
     params:
-        contigs = "",
+        contigs = ""
+    resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_metaspades_hybrid_assembly_2.log"
     message: "metaspades_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using metaspades"
@@ -89,7 +91,7 @@ rule concatenate_mapped_unmapped:
         'Assembly/intermediary/mt.metaspades_unmapped.2.fa',
     output:
         'Assembly/intermediary/mt.metaspades_preprocessed.1.final.contig.fa'
-    params:
+    resources:
         runtime = "02:00:00",
         mem = MEMCORE
     threads: 1

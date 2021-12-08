@@ -1,29 +1,45 @@
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: "http://json-schema.org/draft-07/schema#"
 
-description: IMP Snakemake configuration file
+description: IMP3 Snakemake configuration file
 
 type: object
 
 properties:
   steps:
     type: string
+  email:
+    type: string
+  sessionName: 
+    type: string
+  sessionKind:
+    type: string
+  settingsLocked:
+    type: string
   preprocessing_filtering:
     type: boolean
+  locked_normalMem:
+    type: number
+  locked_bigMem:
+    type: number
+  locked_bigCores:
+    type: number
+  locked_bigTotal:
+    type: number
   mem:
     type: object
     properties:
       normal_mem_per_core_gb:
         type: number
-        minimum: 0
+        minimum: 1
       big_mem_total_gb:
         type: number
-        minimum: 0
+        minimum: 1
       big_mem_cores:
         type: number
         minimum: 1
       big_mem_per_core_gb:
         type: number
-        minimum: 0
+        minimum: 1
   tmp_dir:
     type: string
   raws:
@@ -69,12 +85,16 @@ properties:
     type: string
   db_path:
     type: string
-    pattern: "^/.+$"
   trimmomatic:
     type: object
     properties:
       adapter:
-        type: string
+        type: object
+        properties:
+          mg:
+            type: string
+          mt:
+            type: string
       leading:
         type: number
         minimum: 0
@@ -212,10 +232,10 @@ properties:
         properties:
           pk:
             type: number
-            minimum: 1
+            minimum: 4
           nn:
             type: number
-            minimum: 2
+            minimum: 4
       vizbin:
         type: object
         properties:
@@ -233,3 +253,15 @@ properties:
             minimum: 1
   krakendb:
     type: string
+  eukdetect:
+    type: object
+    properties:
+      run_eukdetect:
+        type: boolean
+      eukdetect_dir:
+        type: string
+      database_dir:
+        type: string
+      min_readlen:
+        type: number
+        min: 60

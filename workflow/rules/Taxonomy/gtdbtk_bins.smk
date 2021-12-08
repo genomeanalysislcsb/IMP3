@@ -3,17 +3,17 @@ rule GTDBtk_bins_single:
         "Binning/selected_DASTool_bins/{clusterID}"
     output:
         directory("Binning/selected_DASTool_bins/{clusterID}/GTDB"),
-    params:
+    resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
     conda: ENVDIR + "/IMP_gtdbtk.yaml"
     log: "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
     message: "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
-    threads: BIGCORENO
+    threads: getThreads(BIGCORENO)
     shell:
         """
         export GTDBTK_DATA_PATH="{DBPATH}/GTDB_tk"
-        export PYTHONPATH=$CONDA_PREFIX/lib/python3.8/site-packages
+        export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
         gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
         """
 
@@ -34,7 +34,7 @@ rule GTDBtk_summarize:
         gather_GTDB_bins
     output:
         report("Stats/%s/%s.bins.tsv" % (ASS,ASS),category="Taxonomy")
-    params:
+    resources:
         runtime = "12:00:00",
         mem = MEMCORE
     log: "logs/taxonomy_GTDBtk_summarize.log"
@@ -54,7 +54,7 @@ if MG:
         output:
             "Binning/per_bin_results.tar.gz"
         threads: 1
-        params:
+        resources:
             runtime = "8:00:00",
             mem = MEMCORE
         log: "logs/taxonomy_bins_tar.log"
@@ -76,7 +76,7 @@ else:
         output:
             "Binning/per_bin_results.tar.gz"
         threads: 1
-        params:
+        resources:
             runtime = "8:00:00",
             mem = MEMCORE
         log: "logs/taxonomy_bins_tar.log"

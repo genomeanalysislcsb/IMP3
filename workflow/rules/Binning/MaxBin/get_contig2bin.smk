@@ -5,7 +5,7 @@ rule maxbin_contig2bin:
         "Binning/MaxBin/maxbin_contig2bin.txt",
         "Binning/MaxBin/scaffold2bin.tsv"
     threads: 1
-    params:
+    resources:
         runtime = "3:00:00",
         mem = MEMCORE
     log: "logs/binning_maxbin_contig2bin.log"

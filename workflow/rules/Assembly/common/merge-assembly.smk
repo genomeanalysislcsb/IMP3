@@ -34,9 +34,10 @@ elif config["assembly"]["merge"] == "cap3":
             'Assembly/intermediary/%s.%s_unmapped.2.fa' % (ASS, IMP_ASSEMBLER),
         output:
             'Assembly/%s.assembly.merged.fa' % ASS,
-        params:
+        resources:
             runtime = "72:00:00",
-            mem = BIGMEMCORE,
+            mem = BIGMEMCORE
+        params:
             sample = SAMPLE
         threads: 1
         conda: ENVDIR + "/IMP_assembly.yaml"
@@ -71,13 +72,14 @@ elif config["assembly"]["merge"] == "flye":
             flye="Assembly/intermediary/common_merge_flye/assembly.fasta",
             # final files
             final='Assembly/%s.assembly.merged.fa' % ASS,
-        params:
+        resources:
             runtime = "24:00:00",
-            mem = BIGMEMCORE,
+            mem = BIGMEMCORE
+        params:
             sample = SAMPLE,
             iters = 0,
-            minoverlap = 1000,
-        threads: BIGCORENO
+            minoverlap = 1000
+        threads: getThreads(BIGCORENO)
         conda:
             os.path.join(ENVDIR, "IMP_assembly.yaml")
         log:
