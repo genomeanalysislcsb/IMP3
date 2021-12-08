@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+# NOTE: This script uses some snakemake keywords and expects certain names arguments:
+#       snakemake.output.download: directory, required: will be used to save dowloaded files
+#       snakemake.output.result: file/directory, optional: will be used copy downloaded and decompressed file(s)
+#       snakemake.params.url: URL (str), required: URL to be used to dowload data
+#       snakemake.log: file(s), optional; the first specified file will be used for logging
+#       snakemake.threads: optional (snakemake's default: 1)
+
 ##################################################
 # MODULES
 ##################################################
@@ -105,7 +112,7 @@ def get_file_ext(fname):
         return None
     return fname_ext
 
-def decompress(fname):
+def decompress(fname, threads=snakemake.threads):
     """
     For given path, guess the file type and perform decompression if necessary and implemented.
     If the path is a directory then nothing will be done.
@@ -136,7 +143,7 @@ def decompress(fname):
     # decompress depending on extension
     if fname_ext.extension == "gz":
         fname_new_handle, fname_new = create_temp(temp_type="file")
-        run_cmd(cmd="pigz -p {p} -d -c {i}".format(i=fname, p=snakemake.threads), stdout=fname_new_handle)
+        run_cmd(cmd="pigz -p {p} -d -c {i}".format(i=fname, p=threads), stdout=fname_new_handle)
     elif fname_ext.extension == "zip":
         fname_new = create_temp(temp_type="directory")
         run_cmd(cmd="unzip {i} -d {d}".format(i=fname, d=fname_new))
@@ -145,7 +152,7 @@ def decompress(fname):
         run_cmd(cmd="tar -xf {i} -C {d}".format(i=fname, d=fname_new))
     elif fname_ext.extension == "bz2": # NOTE: not tested yet
         fname_new_handle, fname_new = create_temp(temp_type="file")
-        run_cmd(cmd="pbzip2 -p {p} -d -c {i}".format(i=fname, p=snakemake.threads), stdout=fname_new_handle)
+        run_cmd(cmd="pbzip2 -p {p} -d -c {i}".format(i=fname, p=threads), stdout=fname_new_handle)
     # TODO: other extensions
     else:
         raise Exception("Unknown file extension: {}".format(fname_ext.extension))
@@ -154,7 +161,7 @@ def decompress(fname):
     assert fname_new_ext is None or fname_ext.extension != fname_new_ext.extension, "Extension has not changed after decompression: {}".format(fname_new_ext.extension)
     return fname_new
 
-def decompress_recursively(fname):
+def decompress_recursively(fname, iters_max=4):
     """
     For given path, decompression if necessary as long as decompressin can be applied.
     
@@ -162,6 +169,8 @@ def decompress_recursively(fname):
     ----------
     fname : str
         File path which should be decompressed
+    iters_max : int
+        Maximal number of decompression iterations to perform (to avoid an infinte loop if something goes wrong)
     
     Returns
     -------
@@ -172,7 +181,13 @@ def decompress_recursively(fname):
     ------
     Exception
         If there is no implemented case for the guessed file type extension.
+    Assertion error
+        If decompression has been performed more than N times
     """
+    # to avoid an infinite loop, decompression will be only performed that many times
+    # if the number is exceeded, an assertion error will be thrown.
+    fname_orig = fname
+    iters = 0
     # file name after decompression (same as input path if no decompression is required)
     fname_new = None
     # decompress as long as returned file name is not the same as given file name
@@ -180,6 +195,8 @@ def decompress_recursively(fname):
         if fname_new:
             fname = fname_new
         fname_new = decompress(fname)
+        iters += 1
+        assert iters < iters_max, "Decompression has been already beformed {} times on the same input file {}. Something is wrong!".format(iters, fname_orig)
     return fname_new
 
 def download(url, target):
@@ -189,14 +206,25 @@ def download(url, target):
 
 def copy_data(source, target):
     """Copy data from source (path) to target (path) using rsync"""
-    logging.info("Copy data: {} -> {}".format(tmp_download, snakemake.output.result))
+    import os
+    # add trailing slash so only the content is copied but the parent folder itself
+    if os.path.isdir(source):
+        source = os.path.join(source, "")
+    logging.info("Copy data: {} -> {}".format(tmp_download, target))
     run_cmd("rsync -rtP {} {}".format(source, target))
 
 ##################################################
 # MAIN
 ##################################################
+# required snakemake attributes
+assert hasattr(snakemake.output, "download"), "There is no \"download\" keyword in output of the snakemake"
+assert hasattr(snakemake.params, "url"), "There is no \"url\" keword in params of the snakemake rule"
+
 # logger
-setup_logger(logfile=snakemake.log[0])
+if hasattr(snakemake, "log") and len(snakemake.log) > 0:
+    setup_logger(logfile=snakemake.log[0])
+else:
+    setup_logger(logfile=None)
 
 # create folder for downloads
 if not os.path.exists(snakemake.output.download):
@@ -210,10 +238,6 @@ download(snakemake.params.url, tmp_download)
 
 # decompress in tmp dir.
 tmp_decompressed = decompress_recursively(tmp_download)
-
-# checks
-# TODO: output is folder, final tmp file is a folder too
-# TODO: output is file, final tmp file is a file too
 
 # create output
 if hasattr(snakemake.output, "result"):
