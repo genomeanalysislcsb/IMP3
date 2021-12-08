@@ -55,12 +55,24 @@ gtdbtk:
   url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/auxillary_files/gtdbtk_data.tar.gz"
 
 ##################################################
-# HMMs
-##################################################
-# TODO
-
-##################################################
 # Mantis
 ##################################################
+# https://github.com/PedroMTQ/mantis
+
 mantis:
-  
+  # default HMMs
+  default:
+    nog_dmnd_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NOG/"
+    pfam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/pfam/"
+    kofam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/kofam/"
+    ncbi_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NCBI/"
+    tcdb_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/tcdb/"
+  # custom HMMs (list)
+  custom:
+    # - "/work/projects/ecosystem_biology/data/mantis_references/Custom_references/XXX"
+  # weights: <name>_hmm_folder --> <name>_weight
+  weights:
+    ncbi_weight: 0.9
+    nog_weight: 0.8
+    pfam_weight: 0.9
+    uniprot_ec_weight: 0.9

@@ -1,6 +1,10 @@
 ##################################################
 # Kraken2 databases
 ##################################################
+# NOTE: Expected dtabase files: hash.k2d, opts.k2d, taxo.k2d
+#       https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#kraken-2-databases
+# NOTE: The folder structure of the downloaded and decompressed archive will NOT be preserved
+
 rule kraken2db_download:
     output:
         download=temp(directory("downloads/files/{kdb}")),
@@ -17,7 +21,6 @@ rule kraken2db_download:
     script:
         os.path.join(SRC_DIR, "download_and_decompress.py")
 
-# NOTE: folder structure of the downloaded and decompressed archive is NOT preserved
 rule kraken2db_files:
     input:
         "downloads/files/{kdb}" # folder (downloaded and decompressed archive)

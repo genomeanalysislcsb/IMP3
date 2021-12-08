@@ -30,7 +30,8 @@ workdir:
 TARGETS = [
     os.path.join("adapters", "trimmomatic.done"),
     os.path.join("sortmerna", "sortmerna.done"),
-    "gtdbtk" # NOTE: comment out for quick tests (big archive, many files)
+    "gtdbtk", # NOTE: comment out for quick tests (big archive, many files),
+    "mantis/setup.done",
 ] + [ # genomes
     "filtering/{}.fa".format(genome) for genome in config["genomes"].keys()
 ] + flatten_list([ # Kraken2 databases
@@ -54,5 +55,5 @@ include:
 include:
     "rules/taxonomy.smk"
 
-# include:
-#     "rules/analysis.smk"
+include:
+    "rules/analysis.smk"
