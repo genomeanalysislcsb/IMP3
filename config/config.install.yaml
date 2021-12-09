@@ -58,18 +58,19 @@ gtdbtk:
 # Mantis
 ##################################################
 # https://github.com/PedroMTQ/mantis
+# Set paths to null to use only some of the default databases
 
 mantis:
   # default HMMs
-  default:
-    nog_dmnd_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NOG/"
+  default: # set to null if no database, otherwise provide a path
+    nog_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NOG/"
     pfam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/pfam/"
     kofam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/kofam/"
     ncbi_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NCBI/"
     tcdb_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/tcdb/"
   # custom HMMs (list)
   custom:
-    # - "/work/projects/ecosystem_biology/data/mantis_references/Custom_references/XXX"
+    # - "/path/to/custom/references/"
   # weights: <name>_hmm_folder --> <name>_weight
   weights:
     ncbi_weight: 0.9
