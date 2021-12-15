@@ -69,7 +69,7 @@ annotation: "hmmer" # hmmer (default) / mantis
 mantis:
   # default HMMs
   default:
-    nog_dmnd_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NOG/"
+    nog_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NOG/"
     pfam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/pfam/"
     kofam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/kofam/"
     ncbi_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NCBI/"
