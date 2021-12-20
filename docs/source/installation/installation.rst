@@ -99,9 +99,10 @@ If you want to use snakemake via conda (and you've set SNAKEMAKE_VIA_CONDA to tr
 .. code-block:: console
 
   conda install -c conda-forge mamba
+  mkdir -p conda
   mamba create --prefix $PWD/conda/snakemake_env
   conda activate $PWD/conda/snakemake_env
-  mamba install -c conda-forge -c bioconda snakemake
+  mamba install -c conda-forge -c bioconda snakemake=6.9.1
   mamba install -c conda-forge mamba
   conda deactivate
 
