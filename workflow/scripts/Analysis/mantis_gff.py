@@ -60,7 +60,7 @@ if __name__ == '__main__':
     # check attribute keys appearing in given input files: there should be no overlap
     gff_keys = gff.attr.apply(lambda x: set([y.split("=")[0] for y in x.split(";")])).values
     gff_keys = set.union(*gff_keys)
-    mantis_keys = mantis.Links.apply(lambda x: set([y.split(":")[0] for y in x.split("|")])).values
+    mantis_keys = mantis.Links.apply(lambda x: set([y.split(":")[0] for y in x.split(snakemake.params.sep)])).values
     mantis_keys = set.union(*mantis_keys)
     assert len(gff_keys.intersection(mantis_keys)) == 0, "There are common attribute keys in {}: {}".format(input, gff_keys.intersection(mantis_keys))
 

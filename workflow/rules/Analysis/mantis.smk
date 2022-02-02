@@ -32,7 +32,7 @@ rule mantis_annot:
         "python {MODDIR}/mantis/ run_mantis -i {input.faa} -o {params.odir} -mc {input.config} {params.params} -c {threads} &> {log}"
 
 # Mantis: reformat consensus output for easier downstream processing
-# NOTE: Cannot use Mantis' GFF file as it does not contain the contigs are the sequnece-records.
+# NOTE: Cannot use Mantis' GFF file as it does not contain contigs as sequence-records.
 #       The GFF file is created from the tabular output.
 rule mantis_reformat_consensus:
     input:
