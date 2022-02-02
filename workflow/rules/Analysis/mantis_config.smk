@@ -1,7 +1,6 @@
 # NOTE: This file is also included in the installation workflow.
 #       Do not add any other code here if this code is not supposed to be used during the installation as well.
 
-=======
 # Mantis: create config file from snakemake config
 localrules: mantis_config
 rule mantis_config:
