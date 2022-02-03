@@ -46,82 +46,83 @@ if(file.info("Binning/selected_DASTool_summary.txt")$size==0){
   print("No Output from DAStool!")
   system(paste0("touch ",out_file))
 }else{
-selTab <- read.delim("Binning/selected_DASTool_summary.txt",stringsAsFactors=F)
-binTab$selected_by_DASTool <- sapply(binTab$bin, function(x){
-  if(x %in% selTab$bin){
-    y <- x
-  }else if(paste0(x,"_sub") %in% selTab$bin){
-      y <- paste0(x,"_sub")
-  }else{
-      y <- ""
+  selTab <- read.delim("Binning/selected_DASTool_summary.txt",stringsAsFactors=F)
+  binTab$selected_by_DASTool <- sapply(binTab$bin, function(x){
+    if(x %in% selTab$bin){
+       y <- x
+    }else if(paste0(x,"_sub") %in% selTab$bin){
+       y <- paste0(x,"_sub")
+    }else{
+       y <- ""
     }
   })
 
-binTab <- merge(binTab,selTab,by.x="selected_by_DASTool",by.y="bin",all=T,suffix=c(".binner",".DASTool"))
+  binTab <- merge(binTab,selTab,by.x="selected_by_DASTool",by.y="bin",all=T,suffix=c(".binner",".DASTool"))
 
 ###################################################################################################
 ## Read GRiD output for selected bins
 ###################################################################################################
-if(file.exists(paste0("Binning/selected_DASTool_bins/",
+  if(file.exists(paste0("Binning/selected_DASTool_bins/",
                       setdiff(binTab$selected_by_DASTool[!is.na(binTab$selected_by_DASTool)],"")[1]))){
-print("Reading GRiD results.")
-  for(bin in setdiff(binTab$selected_by_DASTool[!is.na(binTab$selected_by_DASTool)],"")){
-    if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"))){
-      if(!"gridTab" %in% ls()){
-        gridTab <- data.frame("bin"=bin,
+     print("Reading GRiD results.")
+     for(bin in setdiff(binTab$selected_by_DASTool[!is.na(binTab$selected_by_DASTool)],"")){
+        if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"))){
+          if(!"gridTab" %in% ls()){
+            gridTab <- data.frame("bin"=bin,
                               read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
                                          stringsAsFactors=F)[,-1],
                               stringsAsFactors = F)
-      }else{
-        gridTab <- rbind(gridTab,
+          }else{
+             gridTab <- rbind(gridTab,
                          data.frame("bin"=bin,
                                     read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
                                                stringsAsFactors=F)[,-1],
                                     stringsAsFactors = F))
-      }
-    }
+          }
+        }
+     }
+    if("gridTab" %in% ls()) binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool",by.y="bin",all=T)
   }
-if("gridTab" %in% ls()) binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool",by.y="bin",all=T)
-}
 ###################################################################################################
 ## Read GTDBtk output for selected bins
 ###################################################################################################
-print("Reading GTDBtk results.")
-for(bin in setdiff(binTab$selected_by_DASTool,"")){
-  gtdb_dir <- paste0("Binning/selected_DASTool_bins/",bin,"/GTDB/classify/")
-  if(file.exists(gtdb_dir)){
-    tfile <- paste0(gtdb_dir,
+  print("Reading GTDBtk results.")
+  for(bin in setdiff(binTab$selected_by_DASTool,"")){
+    gtdb_dir <- paste0("Binning/selected_DASTool_bins/",bin,"/GTDB/classify/")
+      if(file.exists(gtdb_dir)){
+        tfile <- paste0(gtdb_dir,
                     list.files(path=gtdb_dir,
                                pattern=".*summary.tsv"))
-    if(tfile == gtdb_dir){
-      stop(paste0("missing GTDBtk output for bin ",bin," - expecting summary.tsv file in ", tfile, "."))
-    }else{
-      if(!"gtdbTab" %in% ls()){
-        gtdbTab <- data.frame("bin"=bin,
+        if(tfile == gtdb_dir){
+           print(paste0("missing GTDBtk output for bin ",bin," - expecting summary.tsv file in ", tfile, "."))
+        }else{
+           if(!"gtdbTab" %in% ls()){
+             gtdbTab <- data.frame("bin"=bin,
                             read.delim(tfile,
                                        stringsAsFactors=F)[,-1],
                             stringsAsFactors = F)
-      }else{
-        gtdbTab <- rbind(gtdbTab,
+           }else{
+             gtdbTab <- rbind(gtdbTab,
                        data.frame("bin"=bin,
                                   read.delim(tfile,
                                              stringsAsFactors=F)[,-1],
                                   stringsAsFactors = F))
-      }
-    }
+           }
+        }
+     }
+  }  
+  if("gtdbTab" %in% ls()){
+     binTab <- merge(binTab,gtdbTab,by.x="selected_by_DASTool",by.y="bin",all=T)
   }
-}
-
-binTab <- merge(binTab,gtdbTab,by.x="selected_by_DASTool",by.y="bin",all=T)
 
 ###################################################################################################
 ## Save concatenated output
 ###################################################################################################
 
-print(paste("Writing concatenated bin table with",nrow(binTab),"x",ncol(binTab),"to",dirname(out_file),"."))
+  print(paste("Writing concatenated bin table with",nrow(binTab),"x",ncol(binTab),"to",dirname(out_file),"."))
 
 
-write.table(binTab,file=out_file,sep="\t",quote=F,row.names=F)
+  write.table(binTab,file=out_file,sep="\t",quote=F,row.names=F)
 }
 
 
