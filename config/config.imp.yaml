@@ -69,11 +69,11 @@ annotation: "hmmer" # hmmer (default) / mantis
 mantis:
   # default HMMs
   default:
-    nog_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NOG/"
-    pfam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/pfam/"
-    kofam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/kofam/"
-    ncbi_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NCBI/"
-    tcdb_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/tcdb/"
+    nog_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/NOG/"
+    pfam_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/pfam/"
+    kofam_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/kofam/"
+    ncbi_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/NCBI/"
+    tcdb_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/tcdb/"
   # custom HMMs (list)
   custom:
     # - "/work/projects/ecosystem_biology/data/mantis_references/Custom_references/XXX"
