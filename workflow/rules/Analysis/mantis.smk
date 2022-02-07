@@ -29,7 +29,7 @@ rule mantis_annot:
     conda:
         os.path.join(ENVDIR, "IMP_mantis.yaml")
     shell:
-        "python {MODDIR}/mantis/ run_mantis -i {input.faa} -o {params.odir} -mc {input.config} {params.params} -c {threads} &> {log}"
+        "mantis -i {input.faa} -o {params.odir} -mc {input.config} {params.params} -c {threads} &> {log}"
 
 # Mantis: reformat consensus output for easier downstream processing
 # NOTE: Cannot use Mantis' GFF file as it does not contain contigs as sequence-records.

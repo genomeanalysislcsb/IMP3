@@ -50,7 +50,7 @@ You may also not need all of these databases, if you don't run the steps that us
 There is an installation workflow (see directory ``install/``) which will setup the requirements defined in a config file.
 A default configuration is provided in the file `config/config.install.yaml`.
 
-Here is an example how to execute the setup manually:
+Here is an example how to execute the setup:
 
 .. code-block:: console
 

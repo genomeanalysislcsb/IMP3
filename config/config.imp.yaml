@@ -44,7 +44,7 @@ trimmomatic:
   target_length: 40
 nextseq: false
 filtering:
-  filter: "phiX174"
+  filter: "PhiX"
 sortmerna:
   files:
     - rfam-5.8s-database-id98

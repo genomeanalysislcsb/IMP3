@@ -2,8 +2,9 @@
 # Mantis
 ##################################################
 # https://github.com/PedroMTQ/mantis
-# NOTE: Expecting Mantis to be included as a git submodule
-#       Tested with version 14f75ac.
+# now uses mantis conda install
+# tested with mantis version 1.4.5 
+#
 
 include:
     "../../workflow/rules/Analysis/mantis_config.smk"
@@ -20,14 +21,12 @@ rule mantis_setup:
         "mantis/setup.done"
     log:
         "mantis/setup.log"
-    params:
-        mod_path=os.path.join(MOD_DIR, "mantis")
     threads: 8
     conda:
-        os.path.join(ENV_DIR, "mantis.yaml")
+        os.path.join(ENV_DIR, "IMP_mantis.yaml")
     message:
         "Mantis: Setting up databases and other resources"
     shell:
-        "python {params.mod_path}/ setup_databases --mantis_config {input} --cores {threads} &> {log} && "
-        "python {params.mod_path}/ check_sql --mantis_config {input} --cores {threads} &>> {log} && "
+        "mantis setup --mantis_config {input} --cores {threads} &> {log} && "
+        "mantis check_sql --mantis_config {input} --cores {threads} &>> {log} && "
         "touch {output}"

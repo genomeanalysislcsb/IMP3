@@ -15,7 +15,6 @@ include:
 # paths
 ENV_DIR = srcdir("envs")
 SRC_DIR = srcdir("scripts")
-MOD_DIR = srcdir("../submodules")
 
 # default executable for snakemake
 shell.executable("bash")
@@ -30,7 +29,7 @@ workdir:
 TARGETS = [
     os.path.join("adapters", "trimmomatic.done"),
     os.path.join("sortmerna", "sortmerna.done"),
-    "gtdbtk", # NOTE: comment out for quick tests (big archive, many files),
+#    "gtdbtk", # NOTE: comment out for quick tests (big archive, many files),
     "mantis/setup.done",
 ] + [ # genomes
     "filtering/{}.fa".format(genome) for genome in config["genomes"].keys()
