@@ -10,24 +10,27 @@ if [ -z "$MAX_THREADS" ]; then
 fi
 
 usage() {
-    echo "Usage: $0 [-u|d|c|l|i] [-b node] [-t number] [-r] [-n name] /absolute_path/to/config_file " 1>&2
+    echo "Usage: $0 [-u|d|c|l|i|s] [-b node] [-t number] [-r] [-n name] /absolute_path/to/config_file " 1>&2
     echo "       -n <name for main job>, only works with -c and -f" 1>&2
     echo "       -r if set, a report is generated (it's recommended to run -c, and -l with -r)" 1>&2
     echo "       -d if set, a dryrun is performed" 1>&2
     echo "       -c if set, the whole thing is submitted to the cluster" 1>&2
-    echo "       -c if set -b gives the node name to submit the main instance to" 1>&2
+    echo "       -b if -c set, -b gives the node name to submit the main instance to" 1>&2
     echo "       -i if set, only the conda environments will be installed, if they don't exist" 1>&2
+    echo "       -s if set, the installation script will be run" 1>&2
     echo "       -u if set, the working directory will be unlocked (only necessary for crash/kill recovery)" 1>&2
     echo "       -l if set, the main snakemake thread and indivdual rules are run in the current terminal session" 1>&2
     echo "       -t <max_threads> maximum number of cpus to use for all rules at a time. Defaults to $MAX_THREADS for -c, and to 1 for -l and -f. No effect on -r, -d or -u only." 1>&2
 
 }
 
-while getopts n:t:udb:lcrhi flag
+while getopts n:t:udb:lcrhis flag
 do
     case $flag in
         i)
             INITIAL=true;;
+        s)
+            INSTALLATION=true;;
         u)
             UNLOCK=true;;
         d)
@@ -128,6 +131,23 @@ elif [ "$INITIAL" = true ]; then
         cp $i $i.org
         sed 's/^R CMD javareconf/#R CMD javareconf/' $i.org >$i
     done
+elif [ "$INSTALLATION" = true ]; then
+    echo "Installing databases and modules. It's recommended to use 8 cores for a full installation."
+    if [ "$CLUSTER" = true ]; then
+      if [ -z "$THREADS" ]; then
+        THREADS=$MAX_THREADS
+      fi
+      if [ -z "$NNAME" ]; then
+         NNAME=""
+      fi
+      echo "Submitting installation workflow to cluster."
+      eval "${SUBMIT_COMMAND}$NNAME $DIR/runscripts/IMP3_installation.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
+    else
+      if [ -z "$THREADS" ]; then
+        THREADS=1
+      fi
+      snakemake -s $DIR/install/Snakefile --configfile $CONFIGFILE --cores $THREADS -rp --use-conda --conda-prefix $DIR/conda
+    fi
 elif [ "$CLUSTER" = true ]; then
     if [ -z "$THREADS" ]; then
         THREADS=$MAX_THREADS
