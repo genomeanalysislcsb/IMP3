@@ -10,11 +10,12 @@ if [ -z "$MAX_THREADS" ]; then
 fi
 
 usage() {
-    echo "Usage: $0 [-u|d|c|l|i] [-t number] [-r] [-n name] /absolute_path/to/config_file " 1>&2
+    echo "Usage: $0 [-u|d|c|l|i] [-b node] [-t number] [-r] [-n name] /absolute_path/to/config_file " 1>&2
     echo "       -n <name for main job>, only works with -c and -f" 1>&2
-    echo "       -r if set, a report is generated (it's recommended to run -c, -f and -l with -r)" 1>&2
+    echo "       -r if set, a report is generated (it's recommended to run -c, and -l with -r)" 1>&2
     echo "       -d if set, a dryrun is performed" 1>&2
     echo "       -c if set, the whole thing is submitted to the cluster" 1>&2
+    echo "       -c if set -b gives the node name to submit the main instance to" 1>&2
     echo "       -i if set, only the conda environments will be installed, if they don't exist" 1>&2
     echo "       -u if set, the working directory will be unlocked (only necessary for crash/kill recovery)" 1>&2
     echo "       -l if set, the main snakemake thread and indivdual rules are run in the current terminal session" 1>&2
@@ -22,7 +23,7 @@ usage() {
 
 }
 
-while getopts n:t:udflcrhi flag
+while getopts n:t:udb:lcrhi flag
 do
     case $flag in
         i)
@@ -37,8 +38,8 @@ do
             JNAME=$OPTARG;;
         r)
             REPORT=true;;
-        f)
-            FRONTEND=true;;
+        b)
+            NNAME=$OPTARG;;
         l)
             LAPTOP=true;;
         t)
@@ -131,11 +132,14 @@ elif [ "$CLUSTER" = true ]; then
     if [ -z "$THREADS" ]; then
         THREADS=$MAX_THREADS
     fi
+    if [ -z "$NNAME" ]; then
+        NNAME=""
+    fi
     echo "Submitting workflow to cluster."
     if [ "$REPORT" = true ]; then
-        eval "${SUBMIT_COMMAND} $DIR/runscripts/IMP3_withReport.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
+        eval "${SUBMIT_COMMAND}$NNAME $DIR/runscripts/IMP3_withReport.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
     else
-        eval "${SUBMIT_COMMAND} $DIR/runscripts/IMP3_withoutReport.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
+        eval "${SUBMIT_COMMAND}$NNAME $DIR/runscripts/IMP3_withoutReport.sh $CONFIGFILE $VARCONFIG $JNAME $THREADS"
     fi
 elif [ "$LAPTOP" = true ]; then
     echo "Running workflow in current session - don't use this setting except with small datasets and databases."
@@ -160,7 +164,7 @@ elif [ "$REPORT" = true ]; then
     snakemake --cores 1 -s $DIR/Snakefile --report report.html --configfile $CONFIGFILE --use-conda --conda-prefix $DIR/conda
     eval $CONDA_END
 else
-    echo "Nothing was done, please give -u, -d, -r, -c, -f, -i, or -l to start anything."
+    echo "Nothing was done, please give -u, -d, -r, -c, -i, or -l to start anything."
 fi
 
 

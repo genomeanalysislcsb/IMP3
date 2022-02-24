@@ -1,1 +1,1 @@
-Histogram of gene lengths; full line: complete genes, doted line: incomplete genes.
+Histogram of gene lengths; full line: complete genes, dotted line: incomplete genes.

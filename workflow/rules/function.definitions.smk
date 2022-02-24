@@ -299,3 +299,15 @@ def getBam(wildcards):
     return expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
                 raw_directory=samples.path[ori_sample])
 
+
+def aggregate_mantis_fc(wildcards):
+    checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
+    return expand("Analysis/annotation/{type}.mantis.{i}.counts.tsv",
+           i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
+
+
+
+
+
+
+
