@@ -44,7 +44,7 @@ trimmomatic:
   target_length: 40
 nextseq: false
 filtering:
-  filter: "phiX174"
+  filter: "PhiX"
 sortmerna:
   files:
     - rfam-5.8s-database-id98
@@ -65,6 +65,24 @@ assembly:
   cap3:
     identity: 98
     overlap: 100
+annotation: "hmmer" # hmmer (default) / mantis
+mantis:
+  # default HMMs
+  default:
+    nog_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/NOG/"
+    pfam_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/pfam/"
+    kofam_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/kofam/"
+    ncbi_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/NCBI/"
+    tcdb_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/tcdb/"
+  # custom HMMs (list)
+  custom:
+    # - "/work/projects/ecosystem_biology/data/mantis_references/Custom_references/XXX"
+  # weights: <name>_hmm_folder --> <name>_weight
+  weights:
+    ncbi_weight: 0.9
+    nog_weight: 0.8
+    pfam_weight: 0.9
+    uniprot_ec_weight: 0.9
 hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
 hmm_settings: 
   KEGG:

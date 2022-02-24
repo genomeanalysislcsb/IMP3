@@ -10,7 +10,7 @@ To install IMP3, you need `conda <https://www.anaconda.com/>`_.
 
 .. code-block:: console
 
-  git clone --single-branch --branch master https://git-r3lab.uni.lu/IMP/imp3.git ./IMP3
+  git clone --recurse-submodules --single-branch --branch master https://git-r3lab.uni.lu/IMP/imp3.git ./IMP3
 
 Change into the IMP3 directory:
 
@@ -19,63 +19,116 @@ Change into the IMP3 directory:
   cd IMP3
 
 
-At this point, you have all the scripts you need to run the workflow using snakemake. You still need to download a number of databases, though (see point 2). If you want to use the **comfortable IMP3 wrapper**, follow the points 3-7. If you don't want to use the wrapper, point 8 has a hint on the initialization of the conda environments. 
+At this point, you have all the scripts you need to run the workflow.
+You still need to download a number of databases, though (see point 3).
 
-2. Download databases:
-*note*: if you already have some of these databases, you don't need to download them again. You need to link them into the directory that keeps all of the databases, though. You may also not need all of these databases, if you don't run the steps that use them. Here, we list recommended databases for every step:
+If you want to use the **comfortable IMP3 wrapper**, follow the points 4-8.
+If you don't want to use the wrapper, point 9 has a hint on the initialization of the conda environments. 
 
-**preprocessing**:
+2. Create the main ``conda`` environment:
 
-- Trimmomatic adapters: You need a subdirectory in your database directory called ``adapters`` that hold the adapters you'd like to trim. You can find the latest versions `here <https://github.com/usadellab/Trimmomatic/tree/main/adapters/>`_ . We also `supply <https://webdav-r3lab.uni.lu/public/R3lab/IMP/Trimmomatic-Src-0.32.zip>`_ such a directory (from Trimmomatic v.0.32) that you'd just need to unzip. You may also want to use different adapters, which you can just supply in fasta format. You specify the adapter set in the config file.
-- genomes to filter your reads against: You should remove phiX174 sequences, as they are more than likely to come from the sequencing. You need to download this file and place it in a subdirectory ``filtering`` of your database directory. In the config file, you specify the filtering file like so:
+If you don't have ``conda``, follow `these instructions first <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`_.
 
-.. code-block:: yaml
+Create the main environment to be able to execute ``snakemake`` workflows.
 
-  filtering:
-    filter: "phiX174"
+.. code-block:: console
 
-You may in addition want to remove reads mapping to a host genome. Just like the phiX174 genome, you add the genome file in fasta format (with file ending .fa) in the ``filtering`` directory. You can specify multiple filtering files like so:
+  conda env create -f requirements.yaml --prefix ./conda/snakemake_env
 
-.. code-block:: yaml
+To run any ``snakemake`` workflow, you have to activate the created environment:
 
-  filtering:
-    filter: "phiX174 hg38"
+.. code-block:: console
 
-- sortmeRNA databases: If you run IMP3 on metatranscriptomic reads, the rRNA reads are filtered by sortmeRNA. We supply these `here <https://webdav-r3lab.uni.lu/public/R3lab/IMP/sortmerna.2.0.tgz>`_ . You need to unzip this into your database directory, or manually download the sequences from https://github.com/biocore/sortmerna/tree/master/data/rRNA_databases and put them into a subdirectory in your database directory called ``sortmerna``.
+  conda activate ./conda/snakemake_env
 
-**analysis**:
+3. Download databases:
 
-- hmms: IMP3 assigns gene functions using HMMer3. For this, you need a subdirectory called ``hmm`` in your database directory. Each collection of HMMs you want to include must sit in its own subdirectory of hmm, which you specify in the config file, e.g. hmm_DBs: "Resfams essential". You can use multiple collections of HMMs, of course. Here are some suggestions:
+*Note*: if you already have some of these databases, you don't need to download them again.
+You need to link them into the directory that keeps all of the databases, though.
+You may also not need all of these databases, if you don't run the steps that use them.
 
-- `Resfams <http://www.dantaslab.org/resfams/>`_
-- `essential genes <https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm>`_
-- `Pfam-A <ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hmm.gz>`_ *note*: please name the folder holding these ``Pfam`` or ``Pfam_A`` (avoid minus in the filename)
-- `KEGG <ftp://ftp.genome.jp/pub/db/kofam/>`_
-Contact us, if you're interested in more in-house databases.
+There is an installation workflow (see directory ``install/``) which will setup the requirements defined in a config file.
+A default configuration is provided in the file `config/config.install.yaml`.
 
-**taxonomy**:
+Here is an example how to execute the setup:
 
-- kraken: You will need a kraken2 database in your database directory (or a link to one). You can get many of those `here <https://benlangmead.github.io/aws-indexes/k2>`_ . You may also want to build your own. You just supply the name of the k2 database in the config file later, e.g.
+.. code-block:: console
 
-.. code-block:: yaml
+  # activate the snakemake environment
+  conda activate ./conda/snakemake_env
+  # dry-run
+  snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 1 -rpn
+  # execute (use conda, more cores)
+  snakemake -s install/Snakefile --configfile config/config.install.yaml --cores 8 --use-conda --conda-prefix ./conda -rp
+  conda deactivate
 
-  krakendb: "minikraken2"
+Please note that the cores, memory and runtime requirements depend on the used config file.
 
-- GTDB_tk: If you have performed **binning**, you need the `GTDB database <https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/auxillary_files/>`_ (gtdbtk_data.tar.gz). Untar it it to a subdirectory called ``GTDB_tk`` within your database directory.
+For reference, see below for more information on how the requirements have to be set up for the different workflow steps.
 
+**Step preprocessing**:
 
-3. Adjust the file VARIABLE_CONFIG to your requirements (have a tab between the variable name and your setting):
+- Trimmomatic adapters: adapters should saved in a subdirectory in your database directory called ``adapters/``.
+  You can find the latest version of Trimmomatic adapters `here <https://github.com/usadellab/Trimmomatic/tree/main/adapters/>`_ .
+  .. We also `supply <https://webdav-r3lab.uni.lu/public/R3lab/IMP/Trimmomatic-Src-0.32.zip>`_ such a directory (from Trimmomatic v.0.32) that you'd just need to unzip.
+  You may also want to use different adapters, which you can just supply in FASTA format but make sure to use the format expected by Trimmomatic.
+  .. You specify the adapter set in the config file.
+- Genomes to filter your reads against: reference FASTA files (with extention ``*.fa``) should be saved in a subdirectory in your database directory called ``filtering/``.
+  Usually, you want to remove phiX174 and host genome sequences.
+- SortMeRNA databases: when processing metatranscriptomic reads, the rRNA reads have to be removed.
+  These are filtered by SortMeRNA against the provided reference FASTA files.
+  .. We supply these `here <https://webdav-r3lab.uni.lu/public/R3lab/IMP/sortmerna.2.0.tgz>`_ .
+  .. You need to unzip this into your database directory, or manually download the sequences from https://github.com/biocore/sortmerna/tree/master/data/rRNA_databases and put them into a subdirectory in your database directory called ``sortmerna``.
+
+.. In the config file, you can specify multiple filtering files like so:
+
+.. .. code-block:: yaml
+
+..   filtering:
+..     filter: "phiX174 hg38"
+
+**Step analysis**:
+
+*TODO: Mantis*
+
+.. - hmms: IMP3 assigns gene functions using HMMer3. For this, you need a subdirectory called ``hmm`` in your database directory. Each collection of HMMs you want to include must sit in its own subdirectory of hmm, which you specify in the config file, e.g. hmm_DBs: "Resfams essential". You can use multiple collections of HMMs, of course. Here are some suggestions:
+
+.. - `Resfams <http://www.dantaslab.org/resfams/>`_
+.. - `essential genes <https://webdav-r3lab.uni.lu/public/R3lab/IMP/essential.hmm>`_
+.. - `Pfam-A <ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hmm.gz>`_ *note*: please name the folder holding these ``Pfam`` or ``Pfam_A`` (avoid minus in the filename)
+.. - `KEGG <ftp://ftp.genome.jp/pub/db/kofam/>`_
+.. Contact us, if you're interested in more in-house databases.
+
+**Step taxonomy**:
+
+- Kraken2: to run taxonomic classification with Kraken2, a directory containing the required databases files has to be put (or linked) in your database directory.
+  .. You will need a kraken2 database in your database directory (or a link to one).
+  See `here <https://benlangmead.github.io/aws-indexes/k2>`_ for a collection of Kraken2 databases.
+  You can of course also use a custom database.
+  .. You may also want to build your own. You just supply the name of the k2 database in the config file later, e.g.
+
+.. .. code-block:: yaml
+
+..   krakendb: "minikraken2"
+
+- GTDB-tk: if you have performed **binning**, you need the `GTDB database <https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/auxillary_files/>`_ (file ``gtdbtk_data.tar.gz``).
+  .. Untar it it to a subdirectory called ``GTDB_tk`` within your database directory.
+
+4. Adjust the file VARIABLE_CONFIG to your requirements (have a tab between the variable name and your setting):
 
 - SNAKEMAKE_VIA_CONDA - set this to true, if you don't have snakemake in your path and want to install it via conda (recommended, because that way you have a current version). Leave empty, if you don't need an additional snakemake.
 - LOADING_MODULES - insert a bash command to load modules, if you need them to run conda. Leave empty, if you don't need to load a module.
-- SUBMIT_COMMAND - insert the bash command you'll usually use to submit a job to your cluster to run on a single cpu for a few days. You only need this, if you want to have the snakemake top instance running in a submitted job. You alternatively have the option to run it on the frontend via tmux. Leave empty, if you want to use this version and have `tmux <https://github.com/tmux/tmux/wiki/>`_ installed.
+- SUBMIT_COMMAND - insert the bash command you'll usually use to submit a job to your cluster to run on a single cpu for the entirety of the run (a few hours to days). You can also include extra arguments, in particularly, if you need to bind jobs to one node (e.g. sbatch --nodelist=). You only need this whole setting, if you want to have the snakemake top instance running in a submitted job. You alternatively have the option to run it on the frontend via tmux. Leave empty, if you want to use this version and have `tmux <https://github.com/tmux/tmux/wiki/>`_ installed.
 - SCHEDULER - insert the name of the scheduler you want to use (currently `slurm` or `sge`). This determines the cluster config given to snakemake, e.g. the cluster config file for slurm is config/slurm.config.yaml or config/slurm_simple.config.yaml. Also check that the settings in this file is correct. If you have a different system, `contact us <https://git-r3lab.uni.lu/IMP/imp3/-/issues/>`_ and feel free to submit new scheduler files.
 - MAX_THREADS - set this to the maximum number of cores you want to be using in a run. If you don't set this, the default will be 50. Users can override this setting at runtime.
 - BIGMEM_CORES - set this to the maximum number of bigmem cores you want to be using in a run. If you don't set this, the default will be 5.
 - NORMAL_MEM_EACH - set the size of the RAM of one core of your normal copute nodes (e.g. 8G). If you're not planning to use binny to submit to a cluster, you don't need to set this.
 - BIGMEM_MEM_EACH - set the size of the RAM of one core of your bigmem (or highmem) compute nodes. If you're not planning to use binny to submit to a cluster or don't have separate bigmem nodes, you don't need to set this.
+- NODENAME_VAR - if you submit your workflow to a cluster that requires binding to a fixed node, set this variable according to the environmental storing the nodename (e.g. SLURMD_NODENAME for most slurm systems)
+- BIND_JOBS_TO_MAIN - if you submit your workflow to a cluster that requires binding to a fixed node, set this variable to true
 
-4. Decide how you want to run IMP3, if you let it submit jobs to the cluster:
+5. Decide how you want to run IMP3, if you let it submit jobs to the cluster:
+
 Only do one of the two:
 
 - if you want to submit the process running snakemake to the cluster:
@@ -92,22 +145,18 @@ Only do one of the two:
   cp runscripts/runIMP3_tmux.sh runIMP3
   chmod 755 runIMP3
 
+6. **optional, but highly recommended**: Install snakemake (and other dependencies) via conda:
 
-5. **optional, but recommended**: Install snakemake via conda:
 If you want to use snakemake via conda (and you've set SNAKEMAKE_VIA_CONDA to true), install the environment, as `recommended by Snakemake <https://snakemake.readthedocs.io/en/stable/getting_started/installation.html>`_ :
+Please note that the IMP3 pipeline is tested only using package versions specified in `requirements.yaml`. Using different versions than the specified ones might cause issues.
 
 .. code-block:: console
 
-  conda install -c conda-forge mamba
-  mkdir -p conda
-  mamba create --prefix $PWD/conda/snakemake_env
-  conda activate $PWD/conda/snakemake_env
-  mamba install -c conda-forge -c bioconda snakemake=6.9.1
-  mamba install -c conda-forge mamba
-  conda deactivate
+  conda env create -f requirements.yaml --prefix $PWD/conda/snakemake_env
 
 
-6. **optional, but highly recommended**: Set permissions / PATH:
+7. **optional, but highly recommended**: Set permissions / PATH:
+
 IMP3 is meant to be used by multiple users. Set the permissions accordingly. I'd suggest:
 
 - to have read access for all files for the users, **plus**:
@@ -116,7 +165,8 @@ IMP3 is meant to be used by multiple users. Set the permissions accordingly. I'd
 - to add the IMP3 directory to your path.
 - It can also be useful to make the VARIABLE_CONFIG file not-writable, because you will always need it. The same goes for config.imp.yaml once you've set the paths to the databases you want to use (see below).
 
-7. Initialize conda environments:
+8. Initialize conda environments:
+
 This run sets up the conda environments that will be usable by all users and will download a database:
 
 .. code-block:: console
@@ -126,7 +176,8 @@ This run sets up the conda environments that will be usable by all users and wil
 
 This step will take several minutes to an hour. 
 
-8. Initialize the conda environments without wrapper:
+9. Initialize the conda environments without wrapper:
+
 This sets up the conda environments that will be usable by all users and will download more databases:
 
 .. code-block:: console
@@ -139,6 +190,3 @@ I strongly suggest to **remove one line from the activation script** after the i
 .. code-block:: console
 
   sed -i "s/R CMD javareconf/#R CMD javareconf/" conda/*/etc/conda/activate.d/activate-r-base.sh
- 
-
-
