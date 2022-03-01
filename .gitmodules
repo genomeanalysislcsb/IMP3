@@ -1,3 +1,0 @@
-[submodule "submodules/mantis"]
-	path = submodules/mantis
-	url = git@github.com:PedroMTQ/mantis.git
