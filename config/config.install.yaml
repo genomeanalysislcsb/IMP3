@@ -4,7 +4,7 @@
 #   For more information on git commit hashes, see here: https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection.
 
 # path where to download/copy the data(bases)
-db_path: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs"
+db_path: "/path/to/databases"
 
 ##################################################
 # Adapters for reads trimming
@@ -48,7 +48,6 @@ kraken2:
   # ???
   kraken_pfp8:
     url: "https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_8gb_20210517.tar.gz"
-    compression: "tgz"
 
 # GTDB-tk
 gtdbtk:
@@ -63,11 +62,11 @@ gtdbtk:
 mantis:
   # default HMMs
   default: # set to null if no database, otherwise provide a path
-    nog_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/NOG/"
-    pfam_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/pfam/"
-    kofam_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/kofam/"
-    ncbi_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/NCBI/"
-    tcdb_ref_folder: "/zfs/omics/projects/metatools/DEVEL/IMP3_versions/test_DBs/mantis_references/tcdb/"
+    nog_ref_folder: null
+    pfam_ref_folder: null
+    kofam_ref_folder: null
+    ncbi_ref_folder: null
+    tcdb_ref_folder: null
   # custom HMMs (list)
   custom:
     # - "/path/to/custom/references/"
