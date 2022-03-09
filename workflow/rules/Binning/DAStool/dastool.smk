@@ -14,9 +14,10 @@ rule DAS_tool:
         proteins="Binning/prokka.renamed.faa", 
         tabs=check_bintabs
     output:
-        "Binning/selected_DASTool_summary.txt",
-        "Binning/selected_DASTool_scaffolds2bin.txt",
-        directory("Binning/selected_DASTool_bins")
+        "Binning/DASTool/selected_DASTool_summary.txt",
+        "Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
+        directory("Binning/DASTool/selected_DASTool_bins"),
+        directory("Binning/DASTool")
     threads: getThreads(4)
     resources:
         runtime = "24:00:00",
@@ -30,13 +31,25 @@ rule DAS_tool:
         TAB_tmp=${{TABS//Binning\//}}
         TAB_tmp2=${{TAB_tmp//\/scaffold2bin.tsv/}}
         TABSl=${{TAB_tmp2// /,}}
+        
+        if [[ ! -d "Binning/DASTool" ]]; then
+          echo "Creating DASTool out dir."
+          mkdir -p "Binning/DASTool"
+        fi
+        
         DAS_Tool -i ${{TABS// /,}} \
          -l $TABSl \
          -c {input.contigs} \
          --search_engine diamond \
          --proteins {input.proteins} --score_threshold 0.3 \
          --threads {threads} --write_bins 1 \
-         -o Binning/selected > {log} 2>&1 || touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir -p  {output[2]}
+         -o Binning/DASTool/selected > {log} 2>&1 || touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir -p  {output[2]}
+        
+        # Rename bin fastas
+        for bin in Binning/DASTool/selected_DASTool_bin/*.fa; do
+          mv ${bin} ${bin%%.contig*}.fasta
+        done
+        
         if [ ! -f {output[0]} ]; then
           touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir -p  {output[2]}
         fi

@@ -12,9 +12,9 @@ def workflow_ctrl(wildcards):
 
 def getThreads(max):
     if workflow.cores:
-        realThreads = max if max <= workflow.cores else workflow.cores
+        realThreads = min(max, workflow.cores)
     elif workflow.nodes:
-        realThreads = max if max <= workflow.nodes else workflow.nodes
+        realThreads = min(max, workflow.nodes)
     else:
         realThreads = max
     return realThreads
@@ -246,25 +246,34 @@ def gather_reads(wildcards):
 def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
     if MG or MGaln:
-        return expand("Binning/selected_DASTool_bins/{i}/grid",
-           i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
+        return expand("Binning/MetaWrap/bins/{i}/grid",
+           i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fa").i)
     else:
         return ""
 
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    return expand("Binning/selected_DASTool_bins/{i}/GTDB",
-           i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
+    return expand("Binning/MetaWrap/bins/{i}/GTDB",
+           i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fa").i)
 
 def check_bintabs(wildcards):
-    checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
+    checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]  # ???
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
         if os.stat(OUTPUTDIR + "/Binning/" + binner + "/scaffold2bin.tsv").st_size > 0:
             valid_binners.append(binner)
     return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
-		
+
+def check_binner_bin_fastas(wildcards):
+    checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]  # ???
+    binners = BIN_STEPS
+    valid_binners = []
+    for binner in binners:
+        if os.stat(OUTPUTDIR + "/Binning/" + binner + "/bins").st_size > 0:
+            valid_binners.append(binner)
+    return expand("Binning/{binner}/bins",binner=valid_binners)
+
 def check_bintabs_multi(wildcards):
     checkpoint_output = checkpoints.DASTool_check.get(**wildcards).output[0]
     binners = config['dereplication']['cross_mapping_rebinning']['binners'].split()

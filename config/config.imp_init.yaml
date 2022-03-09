@@ -108,6 +108,9 @@ binning:
     cutoff: 1000
   MetaBAT:
     cutoff: 1500
+  MetaWrap:
+    min_completeness: 70
+    max_contamination: 10
   binny:
     pk: 10
     nn: 4

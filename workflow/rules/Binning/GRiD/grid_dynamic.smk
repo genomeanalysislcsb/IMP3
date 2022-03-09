@@ -29,7 +29,7 @@ if not "taxonomy" in IMP_STEPS:
     
     rule bins_tar:
         input:
-            dir="Binning/selected_DASTool_bins",
+            dir="Binning/MetaWrap/bins",
             ctrl="Stats/%s/%s.bins.tsv" %(ASS,ASS),
             bins=gather_bins
         output:
@@ -61,22 +61,23 @@ checkpoint getBins:
         mem = MEMCORE
     threads: 1
 #    log: "logs/binning_prepareGRiD.log"
-    message: "getBins: Copying DAStool bins to single directories."
+    message: "getBins: Copying MetaWrap bins to single directories."
     run:
-        if os.stat("Binning/selected_DASTool_summary.txt").st_size > 0:
-            selected_bins=pd.read_table("Binning/selected_DASTool_summary.txt")['bin']
+        if os.stat("Binning/MetaWrap/metawrap_bins.stats").st_size > 0:
+            selected_bins=pd.read_table("Binning/MetaWrap/metawrap_bins.stats")['bin']
             for BIN in selected_bins:
-                shell("mkdir -p Binning/selected_DASTool_bins/{BIN} && cp Binning/selected_DASTool_bins/{BIN}.contigs.fa Binning/selected_DASTool_bins/{BIN}/contigs.fa")
+
+                shell("mkdir -p Binning/MetaWrap/bins/{BIN} && cp Binning/MetaWrap/bins/{BIN}.fasta Binning/MetaWrap/bins/{BIN}/contigs.fasta")
         shell("touch {output}")
-    
+
 rule grid:
     input:
-       "Binning/selected_DASTool_bins/{clusterID}/contigs.fa",
-       "Binning/selected_DASTool_bins/{clusterID}/reads.fastq.gz"
+       "Binning/MetaWrap/bins/{clusterID}/contigs.fasta",
+       "Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
     output:
-        directory("Binning/selected_DASTool_bins/{clusterID}/grid")
+        directory("Binning/MetaWrap/bins/{clusterID}/grid")
     params:
-        clusterInput="Binning/selected_DASTool_bins/"
+        clusterInput="Binning/MetaWrap/bins/"
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
@@ -91,9 +92,9 @@ rule grid:
 
 rule prepare_gridBed:
     input:
-        "Binning/selected_DASTool_bins/{clusterID}/contigs.fa"
+        "Binning/MetaWrap/bins/{clusterID}/contigs.fasta"
     output:
-        "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
+        "Binning/MetaWrap/bins/{clusterID}/contigs.bed"
     resources:
         runtime = "2:00:00",
         mem = MEMCORE
@@ -108,9 +109,9 @@ rule prepare_gridBed:
 rule prepare_gridReads:
     input:
         "Assembly/mg.reads.sorted.bam",
-        "Binning/selected_DASTool_bins/{clusterID}/contigs.bed"
+        "Binning/MetaWrap/bins/{clusterID}/contigs.bed"
     output:
-        "Binning/selected_DASTool_bins/{clusterID}/reads.fastq.gz"
+        "Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE

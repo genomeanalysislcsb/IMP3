@@ -2,15 +2,15 @@ SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
 
 rule mapping_on_assembly:
     input:
-        'Preprocessing/{type}.r1.preprocessed.fq',
-        'Preprocessing/{type}.r2.preprocessed.fq',
-        'Preprocessing/{type}.se.preprocessed.fq',
-        "Assembly/%s.assembly.merged.fa.amb" % ASS,
-        "Assembly/%s.assembly.merged.fa.bwt" % ASS,
-        "Assembly/%s.assembly.merged.fa.pac" % ASS,
-        "Assembly/%s.assembly.merged.fa.sa" % ASS,
-        "Assembly/%s.assembly.merged.fa.ann" % ASS,
-        'Assembly/%s.assembly.merged.fa' % ASS
+        r_1='Preprocessing/{type}.r1.preprocessed.fq',
+        r_2='Preprocessing/{type}.r2.preprocessed.fq',
+        r_se='Preprocessing/{type}.se.preprocessed.fq',
+        assembly_amb="Assembly/%s.assembly.merged.fa.amb" % ASS,
+        assembly_bwt="Assembly/%s.assembly.merged.fa.bwt" % ASS,
+        assembly_pac="Assembly/%s.assembly.merged.fa.pac" % ASS,
+        assembly_sa="Assembly/%s.assembly.merged.fa.sa" % ASS,
+        assembly_ann="Assembly/%s.assembly.merged.fa.ann" % ASS,
+        assembly='Assembly/%s.assembly.merged.fa' % ASS
     output:
         'Assembly/{type}.reads.sorted.bam'
     resources:
@@ -26,12 +26,13 @@ rule mapping_on_assembly:
         PREFIX=Assembly/{wildcards.type}.reads
         # merge paired and se
         samtools merge --threads {threads} -f $PREFIX.merged.bam \
-         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[0]} {input[1]} 2>> {log}| \
-         samtools view --threads {threads} -bS -) \
-         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input[8]} {input[2]} 2>> {log}| \
-         samtools view --threads {threads} -bS -) 2>> {log}
+         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {assembly} {r_1} {r_2} 2>> {log} | \
+         samtools view --threads {threads} -q 10 -m 50 -F 4 -b -) \
+         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {assembly} {r_se} 2>> {log} | \
+         samtools view --threads {threads} -q 10 -m 50 -F 4 -b -) 2>> {log}
         # sort
-        samtools sort --threads {threads} -m {SAMTOOLS_MEM} $PREFIX.merged.bam > $PREFIX.sorted.bam 2>> {log}
+        samtools sort --threads {threads} -m {SAMTOOLS_MEM} $PREFIX.merged.bam | \
+         samtools view --threads {threads} -f 256 -b - > $PREFIX.sorted.bam 2>> {log}
         rm $PREFIX.merged.bam
         """
 
