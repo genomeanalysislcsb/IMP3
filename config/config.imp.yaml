@@ -44,7 +44,7 @@ trimmomatic:
   target_length: 40
 nextseq: false
 filtering:
-  filter: "phiX174"
+  filter: "PhiX"
 sortmerna:
   files:
     - rfam-5.8s-database-id98
@@ -68,15 +68,15 @@ assembly:
 annotation: "hmmer" # hmmer (default) / mantis
 mantis:
   # default HMMs
-  default:
-    nog_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NOG/"
-    pfam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/pfam/"
-    kofam_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/kofam/"
-    ncbi_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/NCBI/"
-    tcdb_ref_folder: "/work/projects/ecosystem_biology/data/mantis_references/tcdb/"
+  default: # set to null if no database, otherwise provide a path
+    nog_ref_folder: null
+    pfam_ref_folder: null
+    kofam_ref_folder: null
+    ncbi_ref_folder: null
+    tcdb_ref_folder: null
   # custom HMMs (list)
   custom:
-    # - "/work/projects/ecosystem_biology/data/mantis_references/Custom_references/XXX"
+    # - "/path/to/custom/references/"
   # weights: <name>_hmm_folder --> <name>_weight
   weights:
     ncbi_weight: 0.9

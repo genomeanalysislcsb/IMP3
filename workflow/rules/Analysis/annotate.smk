@@ -53,7 +53,8 @@ rule makegff:
 rule mergegff:
     input:
         "Analysis/annotation/annotation.filt.gff", # from prokkaC.smk
-        expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff", db=config["hmm_DBs"].split()),
+        expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff", db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],
+        ["Analysis/annotation/intermediary/annotation.CDS.RNA.essential.gff"] if (config["annotation"] != "hmmer" and "binny" in BIN_STEPS) else [],
         [rules.makegff_mantis.output] if config["annotation"] == "mantis" else []
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
@@ -73,7 +74,9 @@ rule tar_annotation:
     input:
         gff="Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         # from featureCount.smk
-        counts=expand("Analysis/annotation/{type}.{db}.counts.tsv", type=TYPES, db=config["hmm_DBs"].split())
+        counts_hmmer=expand("Analysis/annotation/{type}.{db}.counts.tsv", type=TYPES, db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],
+        counts_ess=["Analysis/annotation/intermediary/annotation.CDS.RNA.essential.gff"] if (config["annotation"] != "hmmer" and "binny" in BIN_STEPS) else [],
+        counts_mantis=aggregate_mantis_fc if config["annotation"] == "mantis" else []
     output:
         "Analysis/annotation/intermediary.tar.gz"
     threads: 1

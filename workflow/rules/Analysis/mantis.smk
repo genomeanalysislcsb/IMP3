@@ -29,7 +29,7 @@ rule mantis_annot:
     conda:
         os.path.join(ENVDIR, "IMP_mantis.yaml")
     shell:
-        "python {MODDIR}/mantis/ run_mantis -i {input.faa} -o {params.odir} -mc {input.config} {params.params} -c {threads} &> {log}"
+        "mantis run -i {input.faa} -o {params.odir} -mc {input.config} {params.params} -c {threads} &> {log}"
 
 # Mantis: reformat consensus output for easier downstream processing
 # NOTE: Cannot use Mantis' GFF file as it does not contain contigs as sequence-records.
@@ -49,7 +49,7 @@ rule mantis_reformat_consensus:
         # NOTE: using "|" as it should be very unlikely to have it in the annotation text
         "paste <(cut -d '|' -f1 {input.contab} | sed 's/\\t$//') <(cut -d '|' -f2- {input.contab} | sed 's/^\\t//;s/\\t/|/g') > {output.contab}"
 
-rule makegff_mantis:
+checkpoint makegff_mantis:
     input:
         gff="Analysis/annotation/annotation.filt.gff", # TODO: use rules.annotate.output.XXX when the outputs are named in that rule
         mantis=rules.mantis_reformat_consensus.output.contab,
@@ -57,6 +57,7 @@ rule makegff_mantis:
         gff=temp("Analysis/annotation/intermediary/mantis/consensus_annotation.reformatted.gff")
     params:
         sep="|", # separator used in mantis_reformat_consensus
+        prefix="Analysis/annotation/intermediary/mantis/consensus_annotation.mantis"
     resources:
         runtime="1:00:00",
         mem=MEMCORE,

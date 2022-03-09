@@ -1,0 +1,14 @@
+channels:
+  - conda-forge
+  # - bioconda
+  - defaults
+dependencies:
+  - python=3.10.0
+  - filetype=1.0.7
+  - rsync=3.2.3
+  # - gzip=1.11
+  - pigz=2.6
+  - tar=1.34
+  # - bzip2=1.0.8
+  - pbzip2=1.1.13
+  - zip=3.0
