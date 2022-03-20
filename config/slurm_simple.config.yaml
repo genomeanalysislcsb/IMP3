@@ -2,7 +2,7 @@ __default__:
   nodes: ""
   partition: ""
   call: "sbatch"
-  mem_per_cpu: "--mem-per-cpu "  
+  mem_per_cpu: "--mem-per-cpu "
   runtime: "-t "
   threads: "-c "
   stdout: "-o IMP3.{rule}.{wildcards}.stdout"

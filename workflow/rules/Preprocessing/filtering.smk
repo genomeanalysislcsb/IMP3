@@ -65,3 +65,4 @@ rule symlink_preprocessed_reads_files:
     run:
         for i,o in zip(input,output):
             shell("ln -fs $(echo {i} | cut -f 2 -d /) {o} && touch -h {o}")
+

@@ -66,8 +66,8 @@ rule extract_mOTU_db_genes:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary",
         outname = "present.DBgenes",
         coglist = ",".join(map(str, COGS_LIST)),
-        fasta = "share/motus-2.5.1/db_mOTU/db_mOTU_DB_CEN.fasta",
-        coordinates = "share/motus-2.5.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
+        fasta = "share/motus-3.0.1/db_mOTU/db_mOTU_DB_CEN.fasta",
+        coordinates = "share/motus-3.0.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_extract_mOTU_db_genes.log"
     message: "extract_mOTU_db_genes: Extracting genes for present mOTUs."
@@ -112,8 +112,8 @@ rule parse_blast_mOTU:
         runtime = "12:00:00",
         mem = MEMCORE
     params:
-        metaphy = "/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
-        refphy = "/share/motus-2.5.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
+        metaphy = "/share/motus-3.0.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
+        refphy = "/share/motus-3.0.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
     conda: ENVDIR + "/IMP_taxonomy.yaml"
     log: "logs/analysis_parse_blast_mOTU.{COG}.log"
     message: "parse_blast_mOTU: Parsing blast results of {wildcards.COG} genes."

@@ -15,6 +15,12 @@ include:
 # paths
 ENV_DIR = srcdir("envs")
 SRC_DIR = srcdir("scripts")
+CONDA_DIR = srcdir("../conda")
+SUBMOD_DIR = srcdir("../submodules")
+INSTALL_DIR = srcdir("")
+MAIN_ENV_DIR = srcdir("../workflow/envs")
+
+# print(ENV_DIR, SRC_DIR, CONDA_DIR, SUBMOD_DIR, INSTALL_DIR, MAIN_ENV_DIR)
 
 # default executable for snakemake
 shell.executable("bash")
@@ -26,16 +32,15 @@ workdir:
 ##################################################
 # TARGETS
 
-TARGETS = [
-    os.path.join("adapters", "trimmomatic.done"),
-    os.path.join("sortmerna", "sortmerna.done"),
-#    "gtdbtk", # NOTE: comment out for quick tests (big archive, many files),
-    "mantis/setup.done",
-] + [ # genomes
-    "filtering/{}.fa".format(genome) for genome in config["genomes"].keys()
-] + flatten_list([ # Kraken2 databases
-    expand("{kdb}/{fname}", kdb=kdb, fname=get_kraken2db_file_names()) for kdb in config["kraken2"].keys()
-])
+# NOTE: comment out "gtdbtk", for quick tests (big archive, many files),
+TARGETS = [os.path.join("adapters", "trimmomatic.done"), os.path.join("sortmerna", "sortmerna.done"),
+           "gtdbtk", "mantis/setup.done", os.path.join(SUBMOD_DIR, "binny/setup.done"), "checkm/checkm_db.ready",
+           "SemiBin_setup.done", os.path.join(SUBMOD_DIR, "ESOM/setup.done")]\
+          + ["filtering/{}.fa".format(genome) for genome in config["genomes"].keys()]\
+          + flatten_list([expand("{kdb}/{fname}", kdb=kdb, fname=get_kraken2db_file_names())
+                        for kdb in config["kraken2"].keys()])
+
+# print(TARGETS)
 
 # TODO: other targets?
 
@@ -56,3 +61,6 @@ include:
 
 include:
     "rules/analysis.smk"
+
+include:
+    "rules/binning.smk"

@@ -1,0 +1,5 @@
+name: IMP_metawrap
+channels:
+  - ursky
+dependencies:
+  - metawrap-mg=1.3.2

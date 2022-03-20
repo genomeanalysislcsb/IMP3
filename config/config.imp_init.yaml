@@ -10,7 +10,7 @@ mem:
   big_mem_cores: 5
   big_mem_per_core_gb: 36
 tmp_dir: tmp
-raws: 
+raws:
   Metagenomics: "test/Reads/test.mg.1.fastq test/Reads/test.mg.2.fastq"
   Metatranscriptomics: ""
   LongReads: ""
@@ -22,14 +22,15 @@ raws:
 sample: test
 outputdir: "IMP3.initialised"
 summarydir: ""
-summary_steps: "stats vis"
+# Options stats, vis
+summary_steps: "stats"
 mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "../DBs"
+db_path: "databases"
 trimmomatic:
-  adapter: 
+  adapter:
     mg: "TruSeq3-PE"
     mt: "TruSeq3-PE"
   leading: 20
@@ -44,7 +45,7 @@ trimmomatic:
   target_length: 40
 nextseq: false
 filtering:
-  filter: phiX174
+  filter: PhiX # phiX174  Not downloaded?
 sortmerna:
   files:
     - rfam-5.8s-database-id98
@@ -55,18 +56,40 @@ sortmerna:
     - silva-arc-23s-id98
     - silva-bac-23s-id98
     - silva-euk-28s-id98
-assembly: 
+assembly:
   hybrid: true
   assembler: megahit
-  merge: "cap3" # how to do merge(assembly A, assembly B from reads not mapping to A); none or "" = use only assembly A
+  # how to do merge(assembly A, assembly B from reads not mapping to A);
+  # none or "" = use only assembly A or "concat" or "flye"
+  merge: "cap3"
   mink: 25
   maxk: 99
   step: 4
   cap3:
     identity: 98
     overlap: 100
+# hmmer (default) / mantis
+annotation: "hmmer"
+mantis:
+  # default HMMs
+  # set to null if no database, otherwise provide a path
+  default:
+    nog_ref_folder: null
+    pfam_ref_folder: null
+    kofam_ref_folder: null
+    ncbi_ref_folder: null
+    tcdb_ref_folder: null
+  # custom HMMs (list)
+  custom:
+    # - "/path/to/custom/references/"
+  # weights: <name>_hmm_folder --> <name>_weight
+  weights:
+    ncbi_weight: 0.9
+    nog_weight: 0.8
+    pfam_weight: 0.9
+    uniprot_ec_weight: 0.9
 hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
-hmm_settings: 
+hmm_settings:
   KEGG:
     cutoff: ""
     trim: "--trimall"
@@ -103,23 +126,47 @@ proteomics:
   host_proteome: ""
   insert_variants: false
 binning:
-  binners: "MaxBin MetaBAT binny"
+  # Options: abawaca CONCOCT binny MaxBin MetaBAT SemiBin
+  binners: "abawaca CONCOCT binny MaxBin MetaBAT SemiBin"
+  abawaca:
+    esom_min: 3000
+    esom_max: 5000
+  binny:
+    kmers: '2,3,4'
+    NX_value: 95
+    min_cont_length_cutoff: 500
+    max_cont_length_cutoff: 1000
+    min_cont_length_cutoff_marker: 100
+    max_cont_length_cutoff_marker: 300
+    max_n_contigs: 3.5e5
+    distance_metric: 'manhattan'
+    embedding:
+      max_iterations: 50
+    clustering:
+      hdbscan_epsilon_range: '0.500,0.000'
+      hdbscan_min_samples_range: '1,2,4,6,8'
+      include_depth_initial: 'False'
+      include_depth_main: 'True'
+    bin_quality:
+      min_completeness: 62.5
+      start_completeness: 92.5
+      purity: 92.5
+  CONCOCT:
+    cutoff: 1000
   MaxBin:
     cutoff: 1000
   MetaBAT:
     cutoff: 1500
-  MetaWrap:
-    min_completeness: 70
-    max_contamination: 10
-  binny:
-    pk: 10
-    nn: 4
-  vizbin:
-    dimension: 50
-    kmer: 5
-    perp: 30
+  SemiBin:
+    # Choose between: global human_gut human_oral mouse_gut pig_gut dog_gut cat_gut wastewater ocean soil
+    # leave empty to create my_built_environment and after use that as param
+    model: 'global'
     cutoff: 1000
-annotation: "mantis" # hmmer (default) / mantis
+  DAS_Tool:
+    score_threshhold: 0.6
+  MetaWrap:
+    min_completeness: 60
+    max_contamination: 10
 krakendb: minikraken2
 eukdetect:
   run_eukdetect: false
@@ -129,4 +176,4 @@ eukdetect:
 locked_normalMem: 0
 locked_bigMem: 0
 locked_bigCores: 0
-locked_bigTotal: 0 
+locked_bigTotal: 0

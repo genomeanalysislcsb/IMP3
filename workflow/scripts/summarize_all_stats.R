@@ -377,15 +377,15 @@ if(file.exists(bin_in_file)){
                          dimnames=list(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""],
                                        c("complete_16S","partial_16S","complete_23S","partial_23S",
                                          "any_5S","tRNAs","mean_coverage_depth","genes",
-                                         "expressed_genes","essential_genes","unique_essential_genes",
+                                         "expressed_genes","essential_genes","unique_essential_genes",  # remove ?
                                          "mOTU_phyla","mOTU_genera","mOTUs"))),
                           stringsAsFactors=F)
   for(bin in binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""&!is.na(binTab$selected_by_DASTool)]){
-    if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"))){
-      contigs_temp <- read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/contigs.bed"),
+    if(file.exists(paste0("Binning/DASTool/selected_DASTool_bins/",bin,"/contigs.bed"))){
+      contigs_temp <- read.delim(paste0("Binning/DASTool/selected_DASTool_bins/",bin,"/contigs.bed"),
                                stringsAsFactors=F,header = F)[,1]
     }else{
-     contigs_temp <- read.delim("Binning/selected_DASTool_scaffolds2bin.txt", header=F, stringsAsFactors=F)
+     contigs_temp <- read.delim("Binning/DASTool/selected_DASTool_scaffolds2bin.txt", header=F, stringsAsFactors=F)
      contigs_temp <- contigs_temp[contigs_temp$V2 == bin,1]
    }
     products_bin <- gsub(".+;product=","",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature != "CDS",9])

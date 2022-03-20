@@ -9,7 +9,7 @@ rule trimmomatic_adapters:
     output:
         os.path.join("adapters", "trimmomatic.done")
     log:
-        os.path.join("adapters", "trimmomatic.log")
+        os.path.join(INSTALL_DIR, "logs/trimmomatic_setup.log")
     message:
         "Adapters: Trimmomatic adapters"
     shell:
@@ -26,7 +26,7 @@ rule sortmerna_rrna:
     output:
         os.path.join("sortmerna", "sortmerna.done")
     log:
-        os.path.join("sortmerna", "sortmerna.log")
+        os.path.join(INSTALL_DIR, "logs/sortmerna_setup.log")
     message:
         "Filtering: SortMeRNA files"
     shell:
@@ -40,7 +40,7 @@ rule genome_download:
         result="filtering/{genome}.fa",
         download=temp(directory("downloads/filtering/{genome}")),
     log:
-        "filtering/{genome}.log"
+        os.path.join(INSTALL_DIR, "logs/{genome}_download.log")
     wildcard_constraints:
         genome="|".join(config["genomes"].keys())
     params:

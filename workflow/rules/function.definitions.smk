@@ -1,6 +1,7 @@
 import os
 import shutil
 from pathlib import Path
+import glob
 
 
 # Snakefile
@@ -266,13 +267,44 @@ def check_bintabs(wildcards):
     return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
 
 def check_binner_bin_fastas(wildcards):
-    checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]  # ???
+    checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]  # ???
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
-        if os.stat(OUTPUTDIR + "/Binning/" + binner + "/bins").st_size > 0:
-            valid_binners.append(binner)
-    return expand("Binning/{binner}/bins",binner=valid_binners)
+        bin_list = glob.glob(OUTPUTDIR + "/Binning/" + binner + "/bins/*.fasta")
+        if bin_list:
+            if any(os.stat(bin).st_size > 0 for bin in bin_list):
+                valid_binners.append(binner)
+    if glob.glob(OUTPUTDIR + "/Binning/DASTool/bins/*.fasta"):
+        valid_binners.append("DASTool")
+
+    binner_out_paths = expand("Binning/{binner}/bins", binner=valid_binners)
+    print('check_binner_bin_fastas out', binner_out_paths)
+
+    return binner_out_paths
+
+def get_mw_binner_inputs(binner_fasta_dirs, min_comp, max_cont):
+    out_list = []
+    prefixes = ['-A ', '-B ', '-C ']
+    round_1_length = min(len(binner_fasta_dirs), 3)
+    input_round_1 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
+                              zip(prefixes, binner_fasta_dirs[:round_1_length])])
+    out_list.append([input_round_1])
+    if len(binner_fasta_dirs) > 3:
+        input_round_2 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
+                                  zip(prefixes, [OUTPUTDIR + f'/Binning/MetaWrap/metawrap_round_01/metawrap_{min_comp}_{max_cont}_bins']
+                                                + binner_fasta_dirs[3:5])])
+        out_list.append([input_round_2])
+    else:
+        out_list.append([])
+    if len(binner_fasta_dirs) > 5:
+        input_round_3 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
+                                  zip(prefixes, [OUTPUTDIR + f'/Binning/MetaWrap/metawrap_round_02/metawrap_{min_comp}_{max_cont}_bins']
+                                                + binner_fasta_dirs[5:])])
+        out_list.append([input_round_3])
+    else:
+        out_list.append([])
+    return out_list
 
 def check_bintabs_multi(wildcards):
     checkpoint_output = checkpoints.DASTool_check.get(**wildcards).output[0]

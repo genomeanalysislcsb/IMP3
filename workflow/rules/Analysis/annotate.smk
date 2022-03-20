@@ -12,7 +12,7 @@ rule hmmer:
         lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
         dbs = DBPATH + "/hmm/{db}"
     resources:
-        runtime = "48:00:00",
+        runtime = "12:00:00", ## 48
         mem = MEMCORE
     conda: ENVDIR + "/IMP_annotation.yaml"
     threads: getThreads(12)

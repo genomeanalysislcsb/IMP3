@@ -1,10 +1,35 @@
 # include rules for the Binning part of the workflow
 
-## DAStool
+## DAStoolBinning/DASTool/selected_DASTool
 include:
     '../../Binning/DAStool/dastool.smk'
 
-inputs_binning = ["Binning/selected_DASTool_summary.txt","status/binning_GRiD.done"]
+# MetaWrap
+include:
+    '../../Binning/MetaWrap/metawrap.smk'
+
+mw_min_comp = config['binning']['MetaWrap']['min_completeness']
+mw_max_cont = config['binning']['MetaWrap']['max_contamination']
+inputs_binning = ["Binning/DASTool/selected_DASTool_summary.txt", "status/binning_GRiD.done",
+                  f"Binning/MetaWrap/bins.stats"]
+
+## abawaca
+if "abawaca" in BIN_STEPS:
+    inputs_binning.append("Binning/abawaca/scaffold2bin.tsv")
+    include:
+        '../../Binning/abawaca/abawaca.smk'
+
+## CONCOCT
+if "CONCOCT" in BIN_STEPS:
+    inputs_binning.append("Binning/CONCOCT/scaffold2bin.tsv")
+    include:
+        '../../Binning/CONCOCT/concoct.smk'
+
+## binny
+if "binny" in BIN_STEPS:
+    inputs_binning.append("Binning/binny/scaffold2bin.tsv")
+    include:
+        '../../Binning/binny/binny_subworkflow.smk'
 
 ## MaxBin
 if "MaxBin" in BIN_STEPS:
@@ -13,20 +38,19 @@ if "MaxBin" in BIN_STEPS:
         '../../Binning/MaxBin/maxbin.smk'
     include:
         '../../Binning/MaxBin/get_contig2bin.smk'
+
 ## MetaBAT
 if "MetaBAT" in BIN_STEPS:
-    inputs_binning.append("Binning/MetaBAT/metabat_res")
+    inputs_binning.append("Binning/MetaBAT/scaffold2bin.tsv")
     include:
         '../../Binning/MetaBAT/metabat.smk'
-## binny
-if "binny" in BIN_STEPS:
-    inputs_binning.append("Binning/binny/scaffold2bin.tsv")
+
+## SemiBin
+if "SemiBin" in BIN_STEPS:
+    inputs_binning.append("Binning/SemiBin/scaffold2bin.tsv")
     include:
-        '../../Binning/binny/vizbin.smk'
-    include:
-        '../../Binning/binny/binny.smk'
-    include:
-        '../../Binning/binny/binny2dastool.smk'
+        '../../Binning/SemiBin/semibin.smk'
+
 ## GRiD
 include:
     '../../Binning/GRiD/grid_dynamic.smk'

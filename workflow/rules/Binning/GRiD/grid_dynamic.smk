@@ -1,3 +1,4 @@
+import glob
 
 localrules: grid_all
 
@@ -11,21 +12,59 @@ rule grid_all:
         touch {output}
         """
 
-if not "taxonomy" in IMP_STEPS:
+if "taxonomy" not in IMP_STEPS:
     rule GRID_summarize:
         input:
-            gather_bins
+            gather_bins,
+            mw_stats="Binning/MetaWrap/bins.stats"
         output:
-            report("Stats/%s/%s.bins.tsv" %(ASS,ASS),"Binning")
+            out_file=report("Stats/%s/%s.bins.tsv" %(ASS,ASS), "Binning")
         resources:
             runtime = "12:00:00",
             mem = MEMCORE
-        log: "logs/binning_GRID_summarize.log"
-        message: "GRID_summarize: Summarizing binning results."
-        threads: 1
-        conda: ENVDIR + "/IMP_binning.yaml"
-        script:
-            SRCDIR + "/summarize_GRID.R"
+        log:
+            "logs/binning_GRID_summarize.log"
+        message:
+            "GRID_summarize: Summarizing binning results."
+        threads:
+            1
+        run:
+            # Check if MetaWrap output is empty
+            if os.stat(input.mw_stats).st_size > 0:
+                mw_stats_data = {}
+                got_grid_header = False
+                # Get stats
+                print('Getting MetaWrap bin stats.')
+                with open(input.mw_stats, 'r') as mws:
+                    # Get mw stats header
+                    header = next(mws).strip('\n \t')
+                    for line in mws:
+                        line = line.strip('\n \t').split('\t')
+                        bin = line[0]
+                        mw_stats_data[bin] = line
+                print("Reading GRiD results.")
+                with open(output.out_file, 'w') as of:
+                    # Get all GRiD stat files
+                    grid_out = glob.glob("Binning/MetaWrap/bins/*/grid/reads.GRiD.txt")
+                    if grid_out:
+                        for bin_grid_data in grid_out:
+                            bin = bin_grid_data.split('/')[-3]
+                            with open(bin_grid_data, 'r') as f:
+                                if not got_grid_header:
+                                    header = header + '\t' + '\t'.join(next(f).strip(' \t').split('\t')[1:])
+                                    of.write(header)
+                                    got_grid_header = True
+                                else:
+                                    next(f)
+                                of.write('\t'.join(mw_stats_data[bin] + next(f).split('\t')[1:]))
+                    else:
+                        of.write(header)
+                        for bin in mw_stats_data.keys():
+                            of.write('\t'.join(mw_stats_data[bin] + ['\n']))
+            else:
+                print("No output from MetaWrap!")
+                os.mknod(output)
+
     
     rule bins_tar:
         input:
@@ -34,12 +73,15 @@ if not "taxonomy" in IMP_STEPS:
             bins=gather_bins
         output:
             "Binning/per_bin_results.tar.gz"
-        threads: 1
+        threads:
+            1
         resources:
             runtime = "8:00:00",
             mem = MEMCORE
-        log: "logs/binning_bins_tar.log"
-        message: "bins_tar: Compressing per-bin results of GRiD."
+        log:
+            "logs/binning_bins_tar.log"
+        message:
+            "bins_tar: Compressing per-bin results of GRiD."
         shell:
             """
             if [ -z "$(ls -A {input.dir})" ]; then
@@ -49,45 +91,53 @@ if not "taxonomy" in IMP_STEPS:
             fi
             """
 
-
-
 checkpoint getBins:
     input: 
-        "Binning/selected_DASTool_summary.txt"
+        f"Binning/MetaWrap/bins.stats"
     output:
         "status/binning_GRiD.prepped"
     resources:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 1
-#    log: "logs/binning_prepareGRiD.log"
-    message: "getBins: Copying MetaWrap bins to single directories."
+    threads:
+        1
+    # log:
+    #     "logs/binning_prepareGRiD.log"
+    message:
+        "getBins: Copying MetaWrap bins to single directories."
     run:
-        if os.stat("Binning/MetaWrap/metawrap_bins.stats").st_size > 0:
-            selected_bins=pd.read_table("Binning/MetaWrap/metawrap_bins.stats")['bin']
+        if os.stat("Binning/MetaWrap/bins.stats").st_size > 0:
+            selected_bins=pd.read_table("Binning/MetaWrap/bins.stats")['bin']
             for BIN in selected_bins:
-
-                shell("mkdir -p Binning/MetaWrap/bins/{BIN} && cp Binning/MetaWrap/bins/{BIN}.fasta Binning/MetaWrap/bins/{BIN}/contigs.fasta")
+                shell("mkdir -p Binning/MetaWrap/bins/{BIN} && cp Binning/MetaWrap/bins/{BIN}.fasta"
+                      " Binning/MetaWrap/bins/{BIN}/contigs.fasta")
         shell("touch {output}")
 
 rule grid:
     input:
-       "Binning/MetaWrap/bins/{clusterID}/contigs.fasta",
-       "Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
+       contigs="Binning/MetaWrap/bins/{clusterID}/contigs.fasta",
+       reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
     output:
         directory("Binning/MetaWrap/bins/{clusterID}/grid")
     params:
-        clusterInput="Binning/MetaWrap/bins/"
+        clusterInput="Binning/MetaWrap/bins"
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_grid.yaml"
-    log: "logs/binning_grid.{clusterID}.log"
-    message: "grid: Running GRiD on {wildcards.clusterID}."
+    threads:
+        1
+    conda:
+        ENVDIR + "/IMP_annotation.yaml"
+    log:
+        "logs/binning_grid.{clusterID}.log"
+    message:
+        "grid: Running GRiD on {wildcards.clusterID}."
     shell:
         """
-        grid single -r {params.clusterInput}{wildcards.clusterID} -e fastq.gz -o {output} -g {input[0]} > {log} 2>&1
+        grid single -r {params.clusterInput}/{wildcards.clusterID} \
+                    -e fastq.gz \
+                    -o {output} \
+                    -g {input.contigs} > {log} 2>&1
         """
 
 rule prepare_gridBed:
@@ -98,9 +148,12 @@ rule prepare_gridBed:
     resources:
         runtime = "2:00:00",
         mem = MEMCORE
-    threads: 1
-    log: "logs/binning_prepare_gridBed.{clusterID}.log"
-    message: "prepare_gridBed: Preparing .bed file for GRiD - {wildcards.clusterID}."
+    threads:
+        1
+    log:
+        "logs/binning_prepare_gridBed.{clusterID}.log"
+    message:
+        "prepare_gridBed: Preparing .bed file for GRiD - {wildcards.clusterID}."
     shell:
         """
         {SRCDIR}/fastaBed.pl {input} >> {output} 2> {log}
@@ -108,20 +161,27 @@ rule prepare_gridBed:
 
 rule prepare_gridReads:
     input:
-        "Assembly/mg.reads.sorted.bam",
-        "Binning/MetaWrap/bins/{clusterID}/contigs.bed"
+        assembly="Assembly/mg.reads.sorted.bam",
+        cont_cov="Binning/MetaWrap/bins/{clusterID}/contigs.bed"
     output:
-        "Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
+        reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: 1
-    log: "logs/binning_prepare_gridReads.{clusterID}.log"
-    message: "prepare_gridReads: Preparing fastq file for GRiD - {wildcards.clusterID}."
-    conda: ENVDIR + "/IMP_mapping.yaml"
+    threads:
+        1
+    log:
+        "logs/binning_prepare_gridReads.{clusterID}.log"
+    message:
+        "prepare_gridReads: Preparing fastq file for GRiD - {wildcards.clusterID}."
+    conda:
+        ENVDIR + "/IMP_mapping.yaml"
     shell:
         """
-        samtools view -b -F 5 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - > {output} 2>> {log} 
-        samtools view -b -f 65 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - >> {output} 2>> {log}
-        samtools view -b -f 129 -F 4 -L {input[1]} {input[0]} 2>> {log} | samtools fastq -n - >> {output} 2>> {log}
+        samtools view -b -F 5 -L {input.cont_cov} {input.assembly} 2>> {log} | \
+          samtools fastq -n - > {output} 2>> {log} 
+        samtools view -b -f 65 -F 4 -L {input.cont_cov} {input.assembly} 2>> {log} | \
+          samtools fastq -n - >> {output} 2>> {log}
+        samtools view -b -f 129 -F 4 -L {input.cont_cov} {input.assembly} 2>> {log} | \
+          samtools fastq -n - >> {output} 2>> {log}
         """

@@ -26,7 +26,7 @@ rule gather_stats:
     log: "logs/stats_gather_stats.log"
     message: "gather_stats: Summarizing stats."
     threads: 1
-    conda: ENVDIR + "/IMP_binning.yaml"
+    conda: ENVDIR + "/IMP_annotation.yaml"
     script:
         SRCDIR + "/summarize_all_stats.R"
          

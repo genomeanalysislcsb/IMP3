@@ -7,10 +7,14 @@ rule get_proteins_DAStool:
     resources:
         runtime = "4:00:00",
         mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_bioperl.yaml"
-    log: "logs/binning_translateProteins.log"
-    message: "get_proteins_DAStool: Translating sequences based on GFF - code 11."
+    threads:
+        1
+    conda:
+        ENVDIR + "/IMP_bioperl.yaml"
+    log:
+        "logs/binning_translateProteins.log"
+    message:
+        "get_proteins_DAStool: Translating sequences based on GFF - code 11."
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2

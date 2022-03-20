@@ -4,19 +4,21 @@
 include:
     '../../../Binning/DAStool/dastool.smk'
 
-inputs_binning = ["Binning/selected_DASTool_summary.txt"]
+# MetaWrap
+include:
+    '../../../Binning/MetaWrap/metawrap.smk'
+
+mw_min_comp = config['binning']['MetaWrap']['min_completeness']
+mw_max_cont = config['binning']['MetaWrap']['max_contamination']
+inputs_binning = ["Binning/DASTool/selected_DASTool_summary.txt",
+                  f"Binning/MetaWrap/bins.stats"]
 
 ## MaxBin doesn't work without mg coverage
 ## MetaBAT
 if "MetaBAT" in BIN_STEPS:
-    inputs_binning.append("Binning/MetaBAT/metabat_res")
+    inputs_binning.append("Binning/MetaBAT/scaffold2bin.tsv")
     include:
         '../../../Binning/MetaBAT/metabat.mt.smk'
-## binny doesn't work without mg coverage
-if "binny" in BIN_STEPS:
-    inputs_binning.append("Binning/binny/mt.vizbin.with-contig-names.points")
-    include:
-        '../../../Binning/binny/vizbin.smk'
 
 
 ## GRiD isn't run, but it contains a rule used by GTDBtk

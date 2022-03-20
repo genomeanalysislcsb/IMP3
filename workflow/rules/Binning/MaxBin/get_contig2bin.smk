@@ -2,8 +2,9 @@ rule maxbin_contig2bin:
     input:
         "Binning/MaxBin/maxbin_res.log"
     output:
-        "Binning/MaxBin/maxbin_contig2bin.txt",
-        "Binning/MaxBin/scaffold2bin.tsv"
+        c2b="Binning/MaxBin/maxbin_contig2bin.txt",
+        s2b="Binning/MaxBin/scaffold2bin.tsv",
+        out_dir=directory('Binning/MaxBin/bins')
     threads: 1
     resources:
         runtime = "3:00:00",
@@ -15,13 +16,14 @@ rule maxbin_contig2bin:
         for f in Binning/MaxBin/*.fasta; do
           if [ -s "$f" ]; then
             f2=`echo $f | cut -f3 -d "/"`
-            sed -e "s/$/\t$f2/g" <(grep "^>" Binning/MaxBin/$f2 | sed -e 's/>//g') >> {output[0]}
+            sed -e "s/$/\t$f2/g" <(grep "^>" Binning/MaxBin/$f2 | sed -e 's/>//g') >> {output.c2b}
           fi
         done
         if [ -e {output[0]} ]; then
-            ln -s ../../{output[0]} {output[1]}
+            ln -s ../../{output.c2b} {output.s2b}
         else
-            touch {output[0]} {output[1]}
+            touch {output.c2b} {output.s2b}
         fi
         echo "Contig to bin mapping done" > {log}
+        mkdir -p {output.out_dir} && mv Binning/MaxBin/*.fasta {output.out_dir}
         """

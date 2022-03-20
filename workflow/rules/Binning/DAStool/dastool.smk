@@ -14,17 +14,24 @@ rule DAS_tool:
         proteins="Binning/prokka.renamed.faa", 
         tabs=check_bintabs
     output:
-        "Binning/DASTool/selected_DASTool_summary.txt",
-        "Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
-        directory("Binning/DASTool/selected_DASTool_bins"),
-        directory("Binning/DASTool")
-    threads: getThreads(4)
+        dt_summary="Binning/DASTool/selected_DASTool_summary.txt",
+        s2b="Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
+        bin_dir=directory("Binning/DASTool/bins"),
+        out_dir=directory("Binning/DASTool")
+    threads:
+        getThreads(4)
+    params:
+        score_thresh=config["binning"]["DAS_Tool"]["score_threshhold"],
+        out_name="Binning/DASTool/dastool"
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
-    conda: ENVDIR + "/IMP_binning.yaml"
-    log: "logs/binning_DAS_tool.log"
-    message: "DAS_tool: Running DAS_Tool."
+    conda:
+        ENVDIR + "/IMP_annotation.yaml"
+    log:
+        "logs/binning_DAS_tool.log"
+    message:
+        "DAS_tool: Running DAS_Tool."
     shell:
         """
         TABS="{input.tabs}"
@@ -37,21 +44,29 @@ rule DAS_tool:
           mkdir -p "Binning/DASTool"
         fi
         
-        DAS_Tool -i ${{TABS// /,}} \
-         -l $TABSl \
-         -c {input.contigs} \
-         --search_engine diamond \
-         --proteins {input.proteins} --score_threshold 0.3 \
-         --threads {threads} --write_bins 1 \
-         -o Binning/DASTool/selected > {log} 2>&1 || touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir -p  {output[2]}
-        
+        DAS_Tool --bins=${{TABS// /,}} \
+                 --labels=${{TABSl}} \
+                 --contigs={input.contigs} \
+                 --search_engine=diamond \
+                 --proteins={input.proteins} \
+                 --write_bins \
+                 --threads={threads} \
+                 --score_threshold={params.score_thresh} \
+                 --outputbasename={params.out_name} > {log} 2>&1 ||\
+                  touch {output.dt_summary} {output.s2b} status/binning_DAStool.impossible
+    
+        mv Binning/DASTool/dastool_DASTool_bins {output.bin_dir}
+
         # Rename bin fastas
-        for bin in Binning/DASTool/selected_DASTool_bin/*.fa; do
-          mv ${bin} ${bin%%.contig*}.fasta
+        shopt -s nullglob
+        for bin in {output.bin_dir}/*.fa; do
+          bin_name=$(sed -r -e 's/.fasta|.fa//g' <(echo ${{bin}}))
+          mv ${{bin}} ${{bin_name}}.fasta
         done
+        shopt -u nullglob
         
-        if [ ! -f {output[0]} ]; then
-          touch {output[0]}  {output[1]} status/binning_DAStool.impossible && mkdir -p  {output[2]}
+        if [ ! -f {output.dt_summary} ]; then
+          touch {output.dt_summary}  {output.s2b} status/binning_DAStool.impossible && mkdir -p  {output.bin_dir}
         fi
         """
 

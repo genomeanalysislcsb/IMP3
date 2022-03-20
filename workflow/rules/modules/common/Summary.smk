@@ -1,5 +1,5 @@
 # summary takes care of collecting rules and archiving data
-localrules: SUMMARY, VIS
+localrules: SUMMARY  # , VIS
 
 # include rules for the Report part of the workflow
 sum_target = []
@@ -35,18 +35,18 @@ if "DB" in SUM_STEPS:
     sum_target.append("status/DB_filling.done")
 
 
-if "vis" in SUM_STEPS:
-    sum_target.append("status/visualization.done")
-    vis_targets = []
-    if "stats" in SUM_STEPS:
-        include:
-            '../../Summary/vis_stats.smk'
-        vis_targets.append("status/stats.visualized")
-    rule VIS:
-        input:
-            vis_targets
-        output:
-            touch('status/visualization.done')
+# if "vis" in SUM_STEPS:
+#     sum_target.append("status/visualization.done")
+#     vis_targets = []
+#     if "stats" in SUM_STEPS:
+#         include:
+#             '../../Summary/vis_stats.smk'
+#         vis_targets.append("status/stats.visualized")
+#     rule VIS:
+#         input:
+#             vis_targets
+#         output:
+#             touch('status/visualization.done')
 
 
 # master command

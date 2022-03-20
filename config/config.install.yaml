@@ -4,7 +4,7 @@
 #   For more information on git commit hashes, see here: https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection.
 
 # path where to download/copy the data(bases)
-db_path: "/path/to/databases"
+db_path: "databases"
 
 ##################################################
 # Adapters for reads trimming

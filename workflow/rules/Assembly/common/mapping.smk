@@ -26,15 +26,28 @@ rule mapping_on_assembly:
         PREFIX=Assembly/{wildcards.type}.reads
         # merge paired and se
         samtools merge --threads {threads} -f $PREFIX.merged.bam \
-         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {assembly} {r_1} {r_2} 2>> {log} | \
-         samtools view --threads {threads} -q 10 -m 50 -F 4 -b -) \
-         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {assembly} {r_se} 2>> {log} | \
-         samtools view --threads {threads} -q 10 -m 50 -F 4 -b -) 2>> {log}
+         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input.assembly} {input.r_1} {input.r_2} 2>> {log}| \
+         samtools view --threads {threads} -bS -) \
+         <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input.assembly} {input.r_se} 2>> {log}| \
+         samtools view --threads {threads} -bS -) 2>> {log}
         # sort
-        samtools sort --threads {threads} -m {SAMTOOLS_MEM} $PREFIX.merged.bam | \
-         samtools view --threads {threads} -f 256 -b - > $PREFIX.sorted.bam 2>> {log}
+        samtools sort --threads {threads} -m {SAMTOOLS_MEM} $PREFIX.merged.bam > $PREFIX.sorted.bam 2>> {log}
         rm $PREFIX.merged.bam
         """
+    # """
+    # SAMHEADER="@RG\\tID:{SAMPLE}\\tSM:{wildcards.type}"
+    # PREFIX=Assembly/{wildcards.type}.reads
+    # # merge paired and se
+    # samtools merge --threads {threads} -f $PREFIX.merged.bam \
+    #  <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input.assembly} {input.r_1} {input.r_2} 2>> {log} | \
+    #  samtools view --threads {threads} -q 10 -m 50 -F 4 -b -) \
+    #  <(bwa mem -v 1 -t {threads} -M -R \"$SAMHEADER\" {input.assembly} {input.r_se} 2>> {log} | \
+    #  samtools view --threads {threads} -q 10 -m 50 -F 4 -b -) 2>> {log}
+    # # sort
+    # samtools sort --threads {threads} -m {resources.mem} $PREFIX.merged.bam | \
+    #  samtools view --threads {threads} -f 256 -b - > $PREFIX.sorted.bam 2>> {log}
+    # rm $PREFIX.merged.bam
+    # """
 
 rule index_bam:
     input:

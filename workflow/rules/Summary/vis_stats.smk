@@ -150,7 +150,7 @@ if "binny" in BIN_STEPS:
         input:
             stats="Stats/all_stats.Rdata",
             bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
-            dastool="Binning/selected_DASTool_scaffolds2bin.txt",
+            dastool="Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
             vizbin="Binning/binny/%s.vizbin.with-contig-names.points" %ASS
         output:
             report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
@@ -170,7 +170,7 @@ else:
         input:
             stats="Stats/all_stats.Rdata",
             bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
-            dastool="Binning/selected_DASTool_scaffolds2bin.txt"
+            dastool="Binning/DASTool/selected_DASTool_scaffolds2bin.txt"
         output:
             report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
             report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning")

@@ -9,7 +9,7 @@ rule kraken2db_download:
     output:
         download=temp(directory("downloads/files/{kdb}")),
     log:
-        "{kdb}/download.log"
+        os.path.join(INSTALL_DIR, "logs/{kdb}_download.log")
     wildcard_constraints:
         kdb="|".join(config["kraken2"].keys())
     params:
@@ -29,7 +29,7 @@ rule kraken2db_files:
         files=expand("{{kdb}}/{fname}", fname=get_kraken2db_file_names()),
         flist=temp("{kdb}/files.txt"),
     log:
-        "{kdb}/{kdb}.log"
+        os.path.join(INSTALL_DIR, "logs/{kdb}_setup.log")
     wildcard_constraints:
         kdb="|".join(config["kraken2"].keys())
     message:
@@ -45,12 +45,13 @@ rule kraken2db_files:
 rule gtdbtk_download:
     output:
         result=directory("gtdbtk"),
-        download=temp(directory("downloads/files/gtdbtk")),
+        download=temp(directory("downloads/files/gtdbtk"))
     log:
-        "gtdbtk/download.log"
+        os.path.join(INSTALL_DIR, "logs/gtdbtk_download.log")
     params:
         url=config["gtdbtk"]["url"]
-    threads: 4
+    threads:
+        4
     conda:
         os.path.join(ENV_DIR, "utils.yaml")
     message:

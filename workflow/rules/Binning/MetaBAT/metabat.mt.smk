@@ -1,26 +1,39 @@
 rule metabat:
     input:
-        "Assembly/%s.assembly.merged.fa" % ASS
+        assembly="Assembly/%s.assembly.merged.fa" % ASS
     output:
-        "Binning/MetaBAT/metabat_res",
-	"Binning/MetaBAT/scaffold2bin.tsv"
-    threads: getThreads(8)
+        s2b="Binning/MetaBAT/scaffold2bin.tsv",
+        out_dir=directory("Binning/MetaBAT/bins")
+    params:
+        res="Binning/MetaBAT/metabat_res"
+    threads:
+        getThreads(8)
     resources:
         runtime = "24:00:00",
         mem = MEMCORE
-    conda: ENVDIR + "/IMP_binning.yaml"
-    log: "logs/binning_metabat.log"
-    message: "metabat: Running MetaBAT."
+    conda:
+        ENVDIR + "/IMP_metawrap.yaml"
+    log:
+        "logs/binning_metabat.log"
+    message:
+        "metabat: Running MetaBAT."
     shell:
         """
         ## Create MetaBat dir
-	TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "metabat_depth_XXXXXX.tsv")       
+        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "metabat_depth_XXXXXX.tsv")       
         ## Run MetaBat
-        metabat2 -i {input} \
-	 --saveCls \
-         -o {output[0]} \
-         -t {threads} \
-         -m {config[binning][MetaBAT][cutoff]} > {log} 2>&1 
-	ln -s ../../{output[0]} {output[1]}
-	rm $TMP_FILE
+        metabat2 -i {input.assembly} \
+                 --saveCls \
+                 -o {output.res} \
+                 -t {threads} \
+                 -m {config[binning][MetaBAT][cutoff]} > {log} 2>&1 
+        mv {params.res} {output.s2b}
+        rm $TMP_FILE
+	    # Move bin fastas and rename.
+	    shopt -s nullglob
+        for i in {output.out_dir}/*.fa; do
+          bin_name=$(basename -s .fa ${{i}})
+          mv ${{i}} {output.out_bin_dir}/${{bin_name}}.fasta
+        done
+        shopt -u nullglob
         """

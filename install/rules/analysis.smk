@@ -20,13 +20,15 @@ rule mantis_setup:
     output:
         "mantis/setup.done"
     log:
-        "mantis/setup.log"
+        os.path.join(INSTALL_DIR, "logs/mantis_setup.log")
     threads: 8
     conda:
-        os.path.join(ENV_DIR, "IMP_mantis.yaml")
+        os.path.join(MAIN_ENV_DIR, "IMP_mantis.yaml")
     message:
         "Mantis: Setting up databases and other resources"
     shell:
-        "mantis setup --mantis_config {input} --cores {threads} &> {log} && "
-        "mantis check_sql --mantis_config {input} --cores {threads} &>> {log} && "
-        "touch {output}"
+        """
+        mantis setup --mantis_config {input} --cores {threads} &> {log} && \
+        mantis check_sql --mantis_config {input} --cores {threads} &>> {log} && \
+        touch {output}
+        """
