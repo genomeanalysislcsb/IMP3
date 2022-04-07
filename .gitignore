@@ -36,5 +36,7 @@ runIMP3_tmux.sh
 config/config.test.yaml
 testoutput/
 runIMP3_multi_tmux.sh
-submodules/binny/
+submodules/binny/*
+submodules/binny
+submodules/ESOM
 IMP3.initialised/ 

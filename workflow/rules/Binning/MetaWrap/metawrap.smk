@@ -40,10 +40,9 @@ rule MetaWrap_refine:
         prefix_1="metawrap_round_01",
         prefix_2="metawrap_round_02",
         prefix_3="metawrap_round_03",
-        total_mem=int(BIGMEMCORE.strip('G')) * getThreads(32),
-        test=getThreads(32)
+        total_mem=int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]) * getThreads(BIGCORENO)
     threads:
-        getThreads(32)
+        getThreads(BIGCORENO)
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
@@ -59,7 +58,7 @@ rule MetaWrap_refine:
         final_out={params.prefix_1}
         bin_folder="metawrap_{params.mw_min_comp}_{params.mw_max_cont}_bins"
         binner_input_array=({input.binner_fasta_dirs})
-        echo {threads} {resources.mem} {params.test} {params.total_mem} >> {log} 2>&1
+        echo {threads} {resources.mem} {params.total_mem} >> {log} 2>&1
         echo ${{final_out}} ${{bin_folder}} ${{binner_input_array[*]}} >> {log} 2>&1
         
         # Round 1

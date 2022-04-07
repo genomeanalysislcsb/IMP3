@@ -1,6 +1,8 @@
 # include global functions
 ROOTDIR = srcdir(".")
 
+print('workflow.cores:{}, {}'.format(workflow.cores, workflow.nodes))
+
 include:
     "workflow/rules/function.definitions.smk"
 

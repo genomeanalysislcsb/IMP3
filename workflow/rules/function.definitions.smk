@@ -13,8 +13,10 @@ def workflow_ctrl(wildcards):
 
 def getThreads(max):
     if workflow.cores:
+        print('workflow.cores:', workflow.cores, 'max:', max, min(max, workflow.cores))
         realThreads = min(max, workflow.cores)
     elif workflow.nodes:
+        print('workflow.nodes:', workflow.nodes, 'max:', max, min(max, workflow.cores))
         realThreads = min(max, workflow.nodes)
     else:
         realThreads = max
@@ -241,24 +243,29 @@ def gather_reads(wildcards):
                                                    type=type,read=["r1","r2","se"])]
     valid_reads = [f for f in list(set(pot_reads).difference(["Preprocessing/" + s for s in last_reads])) if not os.path.islink(f)]
     return([s + ".gz" for s in valid_reads])
-	
+
+
 # BINNING:		
 # for checkpoints:
 def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
+    print('gather_bins checkpoint_output:', checkpoint_output)
     if MG or MGaln:
-        return expand("Binning/MetaWrap/bins/{i}/grid",
-           i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fa").i)
+        print('gather_bins out:', expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i))
+        return expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i)  # +\
+               # expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/reads.fastq.gz").i)
     else:
         return ""
 
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    return expand("Binning/MetaWrap/bins/{i}/GTDB",
-           i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fa").i)
+    print('gather_GTDB_bins checkpoint_output:',checkpoint_output)
+    return expand("Binning/MetaWrap/bins/{i}/GTDB", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i)  # +\
+           # expand("Binning/MetaWrap/bins/{i}/GTDB", i=glob_wildcards("Binning/MetaWrap/bins/{i}/reads.fastq.gz").i)
 
 def check_bintabs(wildcards):
-    checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]  # ???
+    checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
+    print('check_bintabs checkpoint_output:',checkpoint_output)
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
@@ -267,7 +274,8 @@ def check_bintabs(wildcards):
     return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
 
 def check_binner_bin_fastas(wildcards):
-    checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]  # ???
+    checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
+    print('check_binner_bin_fastas checkpoint_output:',checkpoint_output)
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
@@ -328,12 +336,12 @@ def getCatIn(wildcards):
 def gather_multi_bins(wildcards):
     checkpoint_output = checkpoints.pre_grid.get(**wildcards).output[0]
     return expand("Dereplication/GRiD_multi/{i}/grid/reads.GRiD.txt",
-           i=glob_wildcards("Dereplication/GRiD_multi/{i}/contigs.fa").i)
+           i=glob_wildcards("Dereplication/GRiD_multi/{i}/contigs.fasta").i)
     
 def gather_multi_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.dRep_multi.get(**wildcards).output[0]
     return expand("Dereplication/GTDB_multi/{i}.GTDB_out",
-           i=glob_wildcards("Dereplication/dRep_multi_out/dereplicated_genomes/{i}.contigs.fa").i)
+           i=glob_wildcards("Dereplication/dRep_multi_out/dereplicated_genomes/{i}.contigs.fasta").i)
            
 def getBam(wildcards):
     ori_sample = wildcards.clusterID.split(".")[0]

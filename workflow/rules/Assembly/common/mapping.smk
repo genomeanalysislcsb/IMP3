@@ -1,4 +1,4 @@
-SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
+SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + config['mem']['mem_unit']
 
 rule mapping_on_assembly:
     input:

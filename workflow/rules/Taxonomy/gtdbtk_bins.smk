@@ -2,19 +2,37 @@ rule GTDBtk_bins_single:
     input:
         "Binning/MetaWrap/bins/{clusterID}"
     output:
-        directory("Binning/MetaWrap/bins/{clusterID}/GTDB"),
+        gtdbtk_out=directory("Binning/MetaWrap/bins/{clusterID}/GTDB")
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    conda: ENVDIR + "/IMP_gtdbtk.yaml"
-    log: "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
-    message: "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
-    threads: getThreads(BIGCORENO)
+    params:
+        pplacer_cpus=getThreads(min(BIGCORENO, max(1, int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45)))),
+        t1 = int(BIGMEMCORE[:-1]),
+        t2 = to_gb_dict[config["mem"]["mem_unit"]],
+        t3 = BIGCORENO,
+        t4 = int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45),
+    conda:
+        ENVDIR + "/IMP_gtdbtk.yaml"
+    log:
+        "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
+    message:
+        "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
+    threads:
+        getThreads(BIGCORENO)
     shell:
         """
-        export GTDBTK_DATA_PATH="{DBPATH}/GTDB_tk"
+        echo "int(BIGMEMCORE[:-1])": {params.t1} >> {log} 2>&1
+        echo "to_gb_dict[config["mem"]["mem_unit"]]": {params.t2} >> {log} 2>&1
+        echo "BIGCORENO": {params.t3} >> {log} 2>&1
+        echo "int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45)": {params.t4} >> {log} 2>&1
+        export GTDBTK_DATA_PATH="{DBPATH}/gtdbtk/release202"
         export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
-        gtdbtk classify_wf --genome_dir {input}/ -x fa --out_dir {output[0]} --cpus {threads} > {log} 2>&1
+        gtdbtk classify_wf --genome_dir {input}/ \
+                           --extension fasta \
+                           --out_dir {output.gtdbtk_out} \
+                           --cpus {threads} \
+                           --pplacer_cpus {params.pplacer_cpus} >> {log} 2>&1
         """
 
 localrules: GTDB_all
@@ -31,9 +49,10 @@ rule GTDB_all:
 
 rule GTDBtk_summarize:
     input:
-        gather_GTDB_bins
+        gather_GTDB_bins,
+        mw_stats="Binning/MetaWrap/bins.stats"
     output:
-        report("Stats/%s/%s.bins.tsv" % (ASS,ASS),category="Taxonomy")
+        out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy")
     resources:
         runtime = "12:00:00",
         mem = MEMCORE
@@ -70,7 +89,7 @@ rule GTDBtk_summarize:
                             got_grid_header = True
                         else:
                             next(f)
-                        stats_data[bin].add(next(f).strip(' \t\n').split('\t')[1:])
+                        stats_data[bin].extend(next(f).strip(' \t\n').split('\t')[1:])
 
             print("Reading GTDBtk results.")
             with open(output.out_file,'w') as of:
@@ -99,17 +118,20 @@ if MG:
     rule bins_tar:
         input:
             dir="Binning/MetaWrap/bins",
-            ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS),
+            ctrl="Stats/%s/%s.bins.tsv" % (ASS, ASS),
             gridbins=gather_bins,
             gtdbbins=gather_GTDB_bins
         output:
             "Binning/per_bin_results.tar.gz"
-        threads: 1
+        threads:
+            1
         resources:
             runtime = "8:00:00",
             mem = MEMCORE
-        log: "logs/taxonomy_bins_tar.log"
-        message: "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
+        log:
+            "logs/taxonomy_bins_tar.log"
+        message:
+            "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
         shell:
             """
             if [ -z "$(ls -A {input.dir})" ]; then
@@ -126,12 +148,15 @@ else:
             gtdbbins=gather_GTDB_bins
         output:
             "Binning/per_bin_results.tar.gz"
-        threads: 1
+        threads:
+            1
         resources:
             runtime = "8:00:00",
             mem = MEMCORE
-        log: "logs/taxonomy_bins_tar.log"
-        message: "bins_tar: Compressing per-bin results of GTDBtk."
+        log:
+            "logs/taxonomy_bins_tar.log"
+        message:
+            "bins_tar: Compressing per-bin results of GTDBtk."
         shell:
             """
             if [ -z "$(ls -A {input.dir})" ]; then

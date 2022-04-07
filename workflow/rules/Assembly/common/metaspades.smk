@@ -7,7 +7,7 @@ spades.py --meta \
  --pe1-2 {input[1]} \
  --pe1-s {input[2]} \
   -t {threads} \
-  -m {BIGMEMTOTAL} \
+  -m {params.gb_mem_total} \
   -k {KMER_STEPS} \
   {LONG_READ_ARG} \
   -o {output[0]} > {log} 2>&1
@@ -33,10 +33,16 @@ if LONG:
         resources:
             runtime = "120:00:00",
             mem = BIGMEMCORE
-        threads: getThreads(BIGCORENO)
-        conda: ENVDIR + "/IMP_assembly.yaml"
-        log: "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
-        message: "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
+        threads:
+            getThreads(BIGCORENO)
+        params:
+            gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
+        conda:
+            ENVDIR + "/IMP_assembly.yaml"
+        log:
+            "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
+        message:
+            "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
         shell:
             METASPADES_ASSEMBLY_SHELL
 else:
@@ -52,10 +58,16 @@ else:
         resources:
             runtime = "120:00:00",
             mem = BIGMEMCORE
-        threads: getThreads(BIGCORENO)
-        conda: ENVDIR + "/IMP_assembly.yaml"
-        log: "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
-        message: "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
+        threads:
+            getThreads(BIGCORENO)
+        params:
+            gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
+        conda:
+            ENVDIR + "/IMP_assembly.yaml"
+        log:
+            "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
+        message:
+            "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
         shell:
             METASPADES_ASSEMBLY_SHELL
 
@@ -71,9 +83,15 @@ rule metaspades_assembly_from_unmapped:
     resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_metaspades_assembly_from_unmapped.{type}.log"
-    message: "metaspades_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using METASPADES"
+    threads:
+        getThreads(BIGCORENO)
+    params:
+        gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    log:
+        "logs/assembly_metaspades_assembly_from_unmapped.{type}.log"
+    message:
+        "metaspades_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using METASPADES"
     shell:
         METASPADES_ASSEMBLY_SHELL

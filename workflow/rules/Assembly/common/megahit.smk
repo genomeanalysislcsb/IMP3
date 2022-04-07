@@ -2,7 +2,7 @@ MEGAHIT_ASSEMBLY_SHELL = """
 if [ -d "{output[0]}" ]; then
     rm -rf {output[0]}
 fi
-MAX_MEM="$(({BIGMEMTOTAL} * 1000000000))"
+
 megahit -1 {input[0]} \
  -2 {input[1]} \
  -r {input[2]} \
@@ -12,7 +12,7 @@ megahit -1 {input[0]} \
  --k-step {config[assembly][step]} \
  --bubble-level 0 \
  -t {threads} --cpu-only \
- -m "${{MAX_MEM}}" \
+ -m {params.max_mem} \
  --mem-flag 1 > {log} 2>&1
 ln -fs $(echo {output[1]} | cut -f 3,4 -d /) {output[2]} && touch -h {output[2]}
 """
@@ -29,10 +29,16 @@ rule megahit_assembly_from_preprocessing:
     resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_megahit_assembly_from_preprocessing.{type}.log"
-    message: "megahit_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MEGAHIT"
+    threads:
+        getThreads(BIGCORENO)
+    params:
+        max_mem = int(BIGMEMTOTAL * byte_dict[config["mem"]["mem_unit"]])
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    log:
+        "logs/assembly_megahit_assembly_from_preprocessing.{type}.log"
+    message:
+        "megahit_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MEGAHIT"
     shell:
         MEGAHIT_ASSEMBLY_SHELL
 
@@ -48,9 +54,15 @@ rule megahit_assembly_from_unmapped:
     resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_megahit_assembly_from_unmapped.{type}.log"
-    message: "megahit_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using MEGAHIT"
+    threads:
+        getThreads(BIGCORENO)
+    params:
+        max_mem = int(BIGMEMTOTAL * byte_dict[config["mem"]["mem_unit"]])
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    log:
+        "logs/assembly_megahit_assembly_from_unmapped.{type}.log"
+    message:
+        "megahit_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using MEGAHIT"
     shell:
         MEGAHIT_ASSEMBLY_SHELL

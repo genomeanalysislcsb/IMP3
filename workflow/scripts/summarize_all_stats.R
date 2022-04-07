@@ -55,7 +55,7 @@ if(ann == "hmmer"){
       fc_sum_files[[type]][[db]] <- paste0("Analysis/annotation/",type,".",db,".counts.tsv.summary")
     }
   }
-  fc_files          <- lapply(types, function(x) gsub(".summary$","",fc_sum_files[[x]]))  
+  fc_files          <- lapply(types, function(x) gsub(".summary$","",fc_sum_files[[x]]))
 }
 out_file_tsv        <- snakemake@output[[1]] #"Stats/all_stats.tsv"
 out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
@@ -315,7 +315,17 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
   for(type in types){
     depthGeneStats_files[[type]] <- paste0("Stats/",type,"/annotation/",type,".gene_depth.avg")
   }
-  
+  print("Test 1")
+  print(dbs)
+  print("Test 2")
+  print(fc_files)
+  print("Test 3")
+  print(fc_files[[1]])
+  print("Test 4")
+  sapply(dbs, function(x){print(x)})
+  print("Test 5")
+  sapply(list(1:length(dbs)), function(x){print(fc_files[[1]][x])})
+  print("Test 6")
   annTemp <- data.frame("type"=ass,
                         "step"=c("genes","mean gene length",
                                  "CDSs","rRNAs","tmRNAs","tRNAs",
@@ -329,21 +339,21 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
                                      patt=paste0(";",x,"=")
                                      length(grep(patt,gene_gff$attribute))
                                    }),
-                                   sapply(dbs,function(x){
-                                     fileoi <- fc_files[[1]][[x]]
+                                   sapply(list(1:length(dbs)),function(x){
+                                     fileoi <- fc_files[[1]][x]
                                      as.numeric(unlist(strsplit(system2("wc",
                                                                         args=c("-l",fileoi),
                                                                         stdout=T),split=" "))[1])-2
                                    })),
                         stringsAsFactors=F)
-  
+
   if(!"statsTab" %in% ls()){
     statsTab <- annTemp
   }else{
     statsTab <- rbind(statsTab,
                       annTemp)
   }
-  
+
   depthGeneStat <- list()
   for(type in types){
     depthGeneStat[[type]] <- read.delim(depthGeneStats_files[[type]],stringsAsFactors=F,header = F)
@@ -360,6 +370,7 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
     }
   }
 }
+
 ###################################################################################################
 ## Binning stats
 ###################################################################################################
@@ -372,20 +383,20 @@ if(file.exists(bin_in_file)){
   binTab <- read.delim(bin_in_file,
                        stringsAsFactors=F,header = T)
   
-  rnas_bin_tab <- as.data.frame(matrix(0,nrow=length(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""]),
+  rnas_bin_tab <- as.data.frame(matrix(0,nrow=length(binTab$bin[binTab$bin!=""]),
                          ncol=14,
-                         dimnames=list(binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""],
+                         dimnames=list(binTab$bin[binTab$bin!=""],
                                        c("complete_16S","partial_16S","complete_23S","partial_23S",
                                          "any_5S","tRNAs","mean_coverage_depth","genes",
                                          "expressed_genes","essential_genes","unique_essential_genes",  # remove ?
                                          "mOTU_phyla","mOTU_genera","mOTUs"))),
                           stringsAsFactors=F)
-  for(bin in binTab$selected_by_DASTool[binTab$selected_by_DASTool!=""&!is.na(binTab$selected_by_DASTool)]){
-    if(file.exists(paste0("Binning/DASTool/selected_DASTool_bins/",bin,"/contigs.bed"))){
-      contigs_temp <- read.delim(paste0("Binning/DASTool/selected_DASTool_bins/",bin,"/contigs.bed"),
+  for(bin in binTab$bin[binTab$bin!=""&!is.na(binTab$bin)]){
+    if(file.exists(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"))){
+      contigs_temp <- read.delim(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"),
                                stringsAsFactors=F,header = F)[,1]
     }else{
-     contigs_temp <- read.delim("Binning/DASTool/selected_DASTool_scaffolds2bin.txt", header=F, stringsAsFactors=F)
+     contigs_temp <- read.delim("Binning/MetaWrap/bins.contigs", header=F, stringsAsFactors=F)
      contigs_temp <- contigs_temp[contigs_temp$V2 == bin,1]
    }
     products_bin <- gsub(".+;product=","",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature != "CDS",9])
@@ -428,7 +439,7 @@ if(file.exists(bin_in_file)){
        mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F,comment.char="=",header=F)
        colnames(mgenes) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
       }else{
-      mgenes <- read.table(text="",col.names=c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU"),stringsAsFactors=F) 
+      mgenes <- read.table(text="",col.names=c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU"),stringsAsFactors=F)
       }
       mgenes <- mgenes[mgenes$queryID %in% cds_bin,]
       if(nrow(mgenes)>0){
@@ -449,47 +460,45 @@ if(file.exists(bin_in_file)){
     }
     rm(contigs_temp)
   }
-  
-  binTab <- merge(binTab,rnas_bin_tab,by.x="selected_by_DASTool",by.y=0,all.x=T)
-  
+
+  binTab <- merge(binTab,rnas_bin_tab,by.x="bin",by.y=0,all.x=T)
+
   binTemp <- data.frame("type"=ass,
-                        "step"=c("total_bins","DASTool_selected_bins",
+                        "step"=c("total_bins",
                                  "HQ_drafts",
                                  "HQ_drafts_partial_RNAs",
                                  "HQ_drafts_minus_RNAs",
                                  "MQ_drafts",
                                  "LQ_drafts",
-                                 "binned_length_DASTool",
-                                 "binned_contigs_DASTool"),
-                        "number"=c(nrow(binTab),length(which(binTab$selected_by_DASTool!="")),
-                                   length(which(binTab$SCG_completeness.DASTool>90 &
-                                                  binTab$SCG_redundancy.DASTool<5 &
+                                 "bin_size"),
+                        "number"=c(nrow(binTab),
+                                   length(which(binTab$completeness>90 &
+                                                  binTab$contamination<5 &
                                                   binTab$complete_16S>0 &
                                                   binTab$complete_23S>0 &
                                                   binTab$any_5S>0 &
                                                   binTab$tRNAs >= 18)),
-                                   length(which(binTab$SCG_completeness.DASTool>90 &
-                                                  binTab$SCG_redundancy.DASTool<5 &
+                                   length(which(binTab$completeness>90 &
+                                                  binTab$contamination<5 &
                                                   (binTab$complete_16S+binTab$partial_16S)>0 &
                                                   (binTab$complete_23S+binTab$partial_23S)>0 &
                                                   !(binTab$complete_16S>0 &
                                                       binTab$complete_23S>0) &
                                                   binTab$any_5S>0 &
                                                   binTab$tRNAs >= 18)),
-                                   length(which(binTab$SCG_completeness.DASTool>90 &
-                                                  binTab$SCG_redundancy.DASTool<5 & 
+                                   length(which(binTab$completeness>90 &
+                                                  binTab$contamination<5 &
                                                   !((binTab$complete_16S+binTab$partial_16S)>0 &
                                                       (binTab$complete_23S+binTab$partial_23S)>0 &
                                                       binTab$any_5S>0 &
                                                       binTab$tRNAs >= 18))),
-                                   length(which(binTab$SCG_completeness.DASTool>=50 &
-                                                  binTab$SCG_redundancy.DASTool<10 & 
-                                                  !(binTab$SCG_completeness.DASTool>90 &
-                                                      binTab$SCG_redundancy.DASTool<5))),
-                                   length(which(binTab$SCG_completeness.DASTool<50 &
-                                                  binTab$SCG_redundancy.DASTool<10 )),
-                                   sum(binTab$size.DASTool[binTab$selected_by_DASTool!=""]),
-                                   sum(binTab$contigs.DASTool[binTab$selected_by_DASTool!=""])),
+                                   length(which(binTab$completeness>=50 &
+                                                  binTab$contamination<10 &
+                                                  !(binTab$completeness>90 &
+                                                      binTab$contamination<5))),
+                                   length(which(binTab$completeness<50 &
+                                                  binTab$contamination<10 )),
+                                   sum(binTab$size[binTab$bin!=""]),
                         stringsAsFactors=F)
   
   if(!"statsTab" %in% ls()){

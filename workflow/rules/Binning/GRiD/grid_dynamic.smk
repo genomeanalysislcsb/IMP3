@@ -4,7 +4,8 @@ localrules: grid_all
 
 rule grid_all:
     input: 
-        gather_bins
+        gather_bins,
+        # directory("Binning/MetaWrap/bins/{clusterID}/grid")
     output:
         "status/binning_GRiD.done"
     shell:
@@ -93,7 +94,7 @@ if "taxonomy" not in IMP_STEPS:
 
 checkpoint getBins:
     input: 
-        f"Binning/MetaWrap/bins.stats"
+        "Binning/MetaWrap/bins.stats"
     output:
         "status/binning_GRiD.prepped"
     resources:
@@ -109,8 +110,8 @@ checkpoint getBins:
         if os.stat("Binning/MetaWrap/bins.stats").st_size > 0:
             selected_bins=pd.read_table("Binning/MetaWrap/bins.stats")['bin']
             for BIN in selected_bins:
-                shell("mkdir -p Binning/MetaWrap/bins/{BIN} && cp Binning/MetaWrap/bins/{BIN}.fasta"
-                      " Binning/MetaWrap/bins/{BIN}/contigs.fasta")
+                shell("mkdir -p Binning/MetaWrap/bins/{BIN} && cp Binning/MetaWrap/bins/{BIN}.fasta "
+                      "Binning/MetaWrap/bins/{BIN}/contigs.fasta")
         shell("touch {output}")
 
 rule grid:

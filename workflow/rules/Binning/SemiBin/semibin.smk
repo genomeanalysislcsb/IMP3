@@ -9,7 +9,7 @@ rule semibin:
     params:
         model=config["binning"]["SemiBin"]["model"],
         cutoff=config["binning"]["SemiBin"]["cutoff"],
-        db_dir=os.path.join(config["db_path"], "gtdbtk"),
+        db_dir=os.path.join(config["db_path"], "gtdb_semibin"),
         tmp_dir=os.path.join(config["tmp_dir"])
     threads:
         getThreads(32)

@@ -28,16 +28,16 @@ properties:
   mem:
     type: object
     properties:
-      normal_mem_per_core_gb:
+      normal_mem_per_core:
         type: number
         minimum: 1
-      big_mem_total_gb:
+      big_mem_total:
         type: number
         minimum: 1
       big_mem_cores:
         type: number
         minimum: 1
-      big_mem_per_core_gb:
+      big_mem_per_core:
         type: number
         minimum: 1
   tmp_dir:

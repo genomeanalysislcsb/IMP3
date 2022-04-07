@@ -14,7 +14,7 @@ rule reads_filtering:
         mem = BIGMEMCORE
     threads: getThreads(BIGCORENO)
     params:
-        mem = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + "G"
+        mem = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + config['mem']['mem_unit']
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:

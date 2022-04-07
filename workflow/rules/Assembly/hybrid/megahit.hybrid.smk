@@ -15,16 +15,21 @@ rule megahit_hybrid_assembly_1:
     resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_megahit_hybrid_assembly_1.log"
-    message: "megahit_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using MEGAHIT"
+    threads:
+        getThreads(BIGCORENO)
+    params:
+        max_mem = int(BIGMEMTOTAL * byte_dict[config["mem"]["mem_unit"]])
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    log:
+        "logs/assembly_megahit_hybrid_assembly_1.log"
+    message:
+        "megahit_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using MEGAHIT"
     shell:
         """
         if [ -d "{output[2]}" ]; then
             rm -rf {output[2]}
         fi
-        MAX_MEM="$(({BIGMEMTOTAL} * 1000000000))"
         megahit -1 {input[0]},{input[3]} \
          -2 {input[1]},{input[4]} \
          -r {input[2]},{input[5]},{input[6]},{input[7]} \
@@ -33,7 +38,7 @@ rule megahit_hybrid_assembly_1:
          --k-max {config[assembly][maxk]} \
          --k-step {config[assembly][step]} \
          -t {threads} --cpu-only \
-         -m "${{MAX_MEM}}" \
+         -m {params.max_mem} \
          --mem-flag 1 > {log} 2>&1
         ln -fs $(echo {output[0]} | cut -f 3,4 -d /) {output[1]} && touch -h {output[1]}
         """
@@ -53,17 +58,21 @@ rule megahit_hybrid_assembly_2:
     resources:
         runtime = "120:00:00",
         mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_megahit_hybrid_assembly_2.log"
-    message: "megahit_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using MEGAHIT"
+    threads:
+        getThreads(BIGCORENO)
+    params:
+        max_mem = int(BIGMEMTOTAL * byte_dict[config["mem"]["mem_unit"]])
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    log:
+        "logs/assembly_megahit_hybrid_assembly_2.log"
+    message:
+        "megahit_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using MEGAHIT"
     shell:
         """
         if [ -d "{output[2]}" ]; then
             rm -rf {output[2]}
         fi
-
-        MAX_MEM="$(({BIGMEMTOTAL} * 1000000000))"
 
         echo "Performing second hyrbid assembly step using MEGAHIT"
         megahit -1 {input[0]},{input[3]} \
@@ -74,7 +83,7 @@ rule megahit_hybrid_assembly_2:
          --k-max {config[assembly][maxk]} \
          --k-step {config[assembly][step]} \
          -t {threads} --cpu-only \
-         -m ${{MAX_MEM}} \
+         -m {params.max_mem} \
          --mem-flag 1 > {log} 2>&1
         ln -fs $(echo {output[0]} | cut -f 3,4 -d /) {output[1]} && touch -h {output[1]}
         """

@@ -67,10 +67,9 @@ rule binny_setup:
 ##################################################
 
 rule semibin_setup:
-    input:
-        "gtdbtk"
     output:
-        "SemiBin_setup.done"
+        gtdb_dir=directory("gtdb_semibin"),
+        semibin_install_done="SemiBin_setup.done"
     log:
         os.path.join(INSTALL_DIR, "logs/SemiBin_setup.log")
     threads:
@@ -81,14 +80,13 @@ rule semibin_setup:
         "SemiBin: Setting up SemiBin"
     shell:
         """
-        echo TEST
+        mkdir -p {output.gtdb_dir}
         SemiBin \
             download_GTDB \
-                --reference-db-data-dir {input} >> {log} 2>&1 && \
+                --reference-db-data-dir {output.gtdb_dir} >> {log} 2>&1 && \
         SemiBin \
             check_install >> {log} 2>&1 && \
-        touch {output}
-        echo TEST2
+        touch {output.semibin_install_done}
         """
 
 ##################################################

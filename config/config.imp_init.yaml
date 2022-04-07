@@ -5,10 +5,12 @@ sessionKind: ""
 settingsLocked: "false"
 preprocessing_filtering: true
 mem:
-  normal_mem_per_core_gb: 8
-  big_mem_total_gb: 180
+  # Choose between: K, M, G, T
+  mem_unit: "G"
+  normal_mem_per_core: 8
+  big_mem_total: 180
   big_mem_cores: 5
-  big_mem_per_core_gb: 36
+  big_mem_per_core: 36
 tmp_dir: tmp
 raws:
   Metagenomics: "test/Reads/test.mg.1.fastq test/Reads/test.mg.2.fastq"
