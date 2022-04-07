@@ -55,7 +55,9 @@ if(ann == "hmmer"){
       fc_sum_files[[type]][[db]] <- paste0("Analysis/annotation/",type,".",db,".counts.tsv.summary")
     }
   }
-  fc_files          <- lapply(types, function(x) gsub(".summary$","",fc_sum_files[[x]]))  
+  fc_files          <- lapply(types, function(x) setNames(gsub(".summary$","",fc_sum_files[[x]]),
+                                                          dbs)) 
+  #fc_files          <- lapply(types, function(x) gsub(".summary$","",fc_sum_files[[x]]))  
 }
 out_file_tsv        <- snakemake@output[[1]] #"Stats/all_stats.tsv"
 out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
