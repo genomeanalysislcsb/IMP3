@@ -6,6 +6,13 @@ rule setup_checkm:
     output:
         checkm_db=directory("checkm"),
         setup_check="checkm/checkm_db.ready"
+    params:
+        str1_to_fix = 'best_bin_set=binsA',
+        str1_replacement = 'mv binsA binsO; mv binsA.stats binsO.stats; best_bin_set=binsO; rm -rf tmp.fa',
+        str2_to_fix= '; then',
+        str2_replacement=' && [[ ! $n_binnings -eq 1 ]]; then',
+        str3_to_fix= 'if \[\[ \$n_binnings \-ne 1 \]\]\; then',
+        str3_replacement='if [[ $n_binnings -ge 1 ]]; then'
     conda:
         os.path.join(MAIN_ENV_DIR, "IMP_metawrap.yaml")
     log:
@@ -22,6 +29,15 @@ rule setup_checkm:
         echo "Setting up CheckM" >> {log} 2>&1 &&\
         printf "%s\n" {output.checkm_db} | checkm >> {log} 2>&1 && touch {output.setup_check} && \
         echo "Setup done." >> {log} 2>&1
+        
+        # Fix lines that lead to crash with MW, if theres only one binner output
+        sed -i -e "331s/${params.str1_to_fix}/${params.str1_replacement}/g" \
+               -e "397s/${params.str2_to_fix}/${params.str2_replacement}/g" \
+               -e "451s/${params.str3_to_fix}/${params.str3_replacement}/g" \
+               ${CONDA_PREFIX}/bin/metawrap-modules/bin_refinement.sh
+        
+        # Adjust score formula from 'completeness - (contamination * 5)' to 'completeness - (contamination * 2.5)'
+        sed -i -e "s/\*5/*2.5/g" ${CONDA_PREFIX}/bin/metawrap-scripts/consolidate_two_sets_of_bins.py
         """
 
 ##################################################

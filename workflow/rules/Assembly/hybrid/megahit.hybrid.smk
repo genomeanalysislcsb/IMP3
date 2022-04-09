@@ -13,7 +13,7 @@ rule megahit_hybrid_assembly_1:
         'Assembly/intermediary/mgmt.megahit_hybrid.1.fa',
         directory('Assembly/intermediary/mgmt.megahit_hybrid.1')
     resources:
-        runtime = "120:00:00",
+        runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
         getThreads(BIGCORENO)
@@ -56,7 +56,7 @@ rule megahit_hybrid_assembly_2:
         'Assembly/intermediary/mgmt.megahit_hybrid.2.fa',
         directory('Assembly/intermediary/mgmt.megahit_hybrid.2')
     resources:
-        runtime = "120:00:00",
+        runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
         getThreads(BIGCORENO)

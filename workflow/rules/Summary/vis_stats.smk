@@ -145,43 +145,43 @@ else:
         script:
             SRCDIR + "/visualize_mOTU.R"
 
-if "binny" in BIN_STEPS:
-    rule visualize_bins:
-        input:
-            stats="Stats/all_stats.Rdata",
-            bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
-            dastool="Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
-            vizbin="Binning/binny/%s.vizbin.with-contig-names.points" %ASS
-        output:
-            report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
-            report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning"),
-            report("Visualization/Binning_vizbin.png",caption="../../report/stats/Binning_vizbin.rst",category="Binning")
-        resources:
-            runtime = "2:00:00",
-            mem = MEMCORE
-        log: "logs/visualize_bins.log"
-        message: "visualize_bins: Plotting binning results."
-        threads: 1
-        conda: ENVDIR + "/IMP_visualize.yaml"
-        script:
-            SRCDIR + "/visualize_binning.R"
-else:
-    rule visualize_bins:
-        input:
-            stats="Stats/all_stats.Rdata",
-            bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
-            dastool="Binning/DASTool/selected_DASTool_scaffolds2bin.txt"
-        output:
-            report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
-            report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning")
-        resources:
-            runtime = "2:00:00",
-            mem = MEMCORE
-        log: "logs/visualize_bins.log"
-        message: "visualize_bins: Plotting binning results."
-        threads: 1
-        conda: ENVDIR + "/IMP_visualize.yaml"
-        script:
-            SRCDIR + "/visualize_binning.R"
+# if "binny" in BIN_STEPS:
+#     rule visualize_bins:
+#         input:
+#             stats="Stats/all_stats.Rdata",
+#             bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
+#             dastool="Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
+#             vizbin="Binning/binny/%s.vizbin.with-contig-names.points" %ASS
+#         output:
+#             report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
+#             report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning"),
+#             report("Visualization/Binning_vizbin.png",caption="../../report/stats/Binning_vizbin.rst",category="Binning")
+#         resources:
+#             runtime = "2:00:00",
+#             mem = MEMCORE
+#         log: "logs/visualize_bins.log"
+#         message: "visualize_bins: Plotting binning results."
+#         threads: 1
+#         conda: ENVDIR + "/IMP_visualize.yaml"
+#         script:
+#             SRCDIR + "/visualize_binning.R"
+# else:
+rule visualize_bins:
+    input:
+        stats="Stats/all_stats.Rdata",
+        bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
+        metawrap="Binning/MetaWrap/bins.contigs"
+    output:
+        report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
+        report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning")
+    resources:
+        runtime = "2:00:00",
+        mem = MEMCORE
+    log: "logs/visualize_bins.log"
+    message: "visualize_bins: Plotting binning results."
+    threads: 1
+    conda: ENVDIR + "/IMP_visualize.yaml"
+    script:
+        SRCDIR + "/visualize_binning.R"
 
 

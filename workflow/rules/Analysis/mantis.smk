@@ -20,7 +20,8 @@ rule mantis_annot:
     params:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
         params="-gff -km -da heuristic",
-    threads: 5 # TODO
+    threads:
+        getThreads(64)
     resources:
         runtime="24:00:00", # TODO: need runtime estimate for large samples
         mem=MEMCORE,
@@ -29,7 +30,10 @@ rule mantis_annot:
     conda:
         os.path.join(ENVDIR, "IMP_mantis.yaml")
     shell:
-        "mantis run -i {input.faa} -o {params.odir} -mc {input.config} {params.params} -c {threads} &> {log}"
+        """
+        rm -rf Analysis/annotation/intermediary/mantis*
+        mantis run -i {input.faa} -o {params.odir} -mc {input.config} {params.params} -c {threads} &> {log}
+        """
 
 # Mantis: reformat consensus output for easier downstream processing
 # NOTE: Cannot use Mantis' GFF file as it does not contain contigs as sequence-records.

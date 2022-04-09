@@ -24,7 +24,7 @@ rule abawaca:
     shell:
         """
         # Create out dir
-        mkdir -p {output.out_dir}
+        mkdir -p {output.out_bin_dir}
         cp {input.assembly} {output.out_dir}/assembly.fasta
         
         # Run ESOM
@@ -42,7 +42,13 @@ rule abawaca:
                 {output.out_dir}/ESOM/Tetra_esom_{params.esom_min}_{params.esom_max}_split.fasta\
                 {output.out_dir}/out >> {log} 2>&1 && \
         mv {output.out_dir}/out/* {output.out_dir} && rm -rf {output.out_dir}/out &&\
-        mv {output.out_dir}/final-clusters {output.out_bin_dir} &&\
-        tail -n +2 {output.out_dir}/scaf2cluster.txt > {output.s2b}
-        rm -rf {output.out_dir}/assembly.fasta
+        tail -n +2 {output.out_dir}/scaf2cluster.txt > {output.s2b} &&\
+        {SRCDIR}/write_fastas_from_c2b_table.py {output.out_dir}/assembly.fasta \
+                                                {output.s2b} \
+                                                {output.out_bin_dir} \
+                                                ',' \
+                                                False \
+                                                abawaca &&\
+        rm -rf {output.out_dir}/assembly.fasta {output.out_dir}/final-clusters {output.out_dir}/clusters \
+               {output.out_dir}/dp2cluster.txt {output.out_dir}/scaf2cluster.txt
         """

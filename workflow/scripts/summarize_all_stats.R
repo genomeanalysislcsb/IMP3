@@ -55,7 +55,8 @@ if(ann == "hmmer"){
       fc_sum_files[[type]][[db]] <- paste0("Analysis/annotation/",type,".",db,".counts.tsv.summary")
     }
   }
-  fc_files          <- lapply(types, function(x) gsub(".summary$","",fc_sum_files[[x]]))
+    fc_files          <- lapply(types, function(x) setNames(gsub(".summary$","",fc_sum_files[[x]]),
+                                                          dbs))
 }
 out_file_tsv        <- snakemake@output[[1]] #"Stats/all_stats.tsv"
 out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
@@ -315,17 +316,7 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
   for(type in types){
     depthGeneStats_files[[type]] <- paste0("Stats/",type,"/annotation/",type,".gene_depth.avg")
   }
-  print("Test 1")
-  print(dbs)
-  print("Test 2")
-  print(fc_files)
-  print("Test 3")
-  print(fc_files[[1]])
-  print("Test 4")
-  sapply(dbs, function(x){print(x)})
-  print("Test 5")
-  sapply(list(1:length(dbs)), function(x){print(fc_files[[1]][x])})
-  print("Test 6")
+
   annTemp <- data.frame("type"=ass,
                         "step"=c("genes","mean gene length",
                                  "CDSs","rRNAs","tmRNAs","tRNAs",
@@ -339,8 +330,8 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
                                      patt=paste0(";",x,"=")
                                      length(grep(patt,gene_gff$attribute))
                                    }),
-                                   sapply(list(1:length(dbs)),function(x){
-                                     fileoi <- fc_files[[1]][x]
+                                   sapply(dbs,function(x){
+                                     fileoi <- fc_files[[1]][[x]]
                                      as.numeric(unlist(strsplit(system2("wc",
                                                                         args=c("-l",fileoi),
                                                                         stdout=T),split=" "))[1])-2
@@ -370,7 +361,6 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
     }
   }
 }
-
 ###################################################################################################
 ## Binning stats
 ###################################################################################################
@@ -382,13 +372,13 @@ if(file.exists(bin_in_file)){
   print("Reading binning stats.")
   binTab <- read.delim(bin_in_file,
                        stringsAsFactors=F,header = T)
-  
+
   rnas_bin_tab <- as.data.frame(matrix(0,nrow=length(binTab$bin[binTab$bin!=""]),
                          ncol=14,
                          dimnames=list(binTab$bin[binTab$bin!=""],
                                        c("complete_16S","partial_16S","complete_23S","partial_23S",
                                          "any_5S","tRNAs","mean_coverage_depth","genes",
-                                         "expressed_genes","essential_genes","unique_essential_genes",  # remove ?
+                                         "expressed_genes","essential_genes","unique_essential_genes",
                                          "mOTU_phyla","mOTU_genera","mOTUs"))),
                           stringsAsFactors=F)
   for(bin in binTab$bin[binTab$bin!=""&!is.na(binTab$bin)]){
@@ -470,7 +460,7 @@ if(file.exists(bin_in_file)){
                                  "HQ_drafts_minus_RNAs",
                                  "MQ_drafts",
                                  "LQ_drafts",
-                                 "bin_size"),
+                                 "binned_length"),
                         "number"=c(nrow(binTab),
                                    length(which(binTab$completeness>90 &
                                                   binTab$contamination<5 &
@@ -498,9 +488,9 @@ if(file.exists(bin_in_file)){
                                                       binTab$contamination<5))),
                                    length(which(binTab$completeness<50 &
                                                   binTab$contamination<10 )),
-                                   sum(binTab$size[binTab$bin!=""]),
+                                   sum(binTab$size[binTab$bin!=""])),
                         stringsAsFactors=F)
-  
+
   if(!"statsTab" %in% ls()){
     statsTab <- binTemp
   }else{

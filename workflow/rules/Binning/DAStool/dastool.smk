@@ -35,13 +35,20 @@ rule DAS_tool:
     shell:
         """
         TABS="{input.tabs}"
+        TABS_ARR=(${{TABS}})
         TAB_tmp=${{TABS//Binning\//}}
         TAB_tmp2=${{TAB_tmp//\/scaffold2bin.tsv/}}
         TABSl=${{TAB_tmp2// /,}}
         
-        if [[ ! -d "Binning/DASTool" ]]; then
-          echo "Creating DASTool out dir."
-          mkdir -p "Binning/DASTool"
+        if [[ ! -d {output.out_dir} ]]; then
+          echo "Creating DASTool out dir." >> {log} 2>&1
+          mkdir -p {output.out_dir}
+        fi
+        
+        if [ ${{#TABS_ARR[@]}} == 0 ]; then
+          touch {output.dt_summary} {output.s2b} status/binning_DAStool.impossible
+          mkdir {output.bin_dir}
+          exit 0
         fi
         
         DAS_Tool --bins=${{TABS// /,}} \
@@ -52,7 +59,7 @@ rule DAS_tool:
                  --write_bins \
                  --threads={threads} \
                  --score_threshold={params.score_thresh} \
-                 --outputbasename={params.out_name} > {log} 2>&1 ||\
+                 --outputbasename={params.out_name} >> {log} 2>&1 ||\
                   touch {output.dt_summary} {output.s2b} status/binning_DAStool.impossible
     
         mv Binning/DASTool/dastool_DASTool_bins {output.bin_dir}

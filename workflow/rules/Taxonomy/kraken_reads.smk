@@ -1,7 +1,7 @@
 from os.path import getsize
 KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['krakendb'] + "/hash.k2d" )) / 1000000000
-KRAKTHREADS = round( (KRAKSIZE / float(BIGMEMCORE[:-1])) + 0.5)
-
+KRAKTHREADS = round((KRAKSIZE / (float(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]])) + 0.5)
+# print('KRAKTHREADS:', KRAKTHREADS, KRAKSIZE, float(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]])
 
 rule kraken_reads:
     input:
@@ -15,10 +15,14 @@ rule kraken_reads:
         mem = BIGMEMCORE
     params:
         tmp_out= lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
-    threads: getThreads(KRAKTHREADS) 
-    conda: ENVDIR + "/IMP_taxonomy.yaml"
-    log: "logs/analysis_kraken_reads.{type}.log"
-    message: "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."
+    threads:
+        getThreads(KRAKTHREADS)
+    conda:
+        ENVDIR + "/IMP_taxonomy.yaml"
+    log:
+        "logs/analysis_kraken_reads.{type}.log"
+    message:
+        "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."
     shell:
 	    """
 	    mkdir -p Analysis/taxonomy/kraken

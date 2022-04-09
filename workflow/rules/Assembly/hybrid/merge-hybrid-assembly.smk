@@ -35,7 +35,7 @@ elif config["assembly"]["merge"] == "cap3":
         output:
             'Assembly/mgmt.assembly.merged.fa'
         resources:
-            runtime = "72:00:00",
+            runtime = "48:00:00", ### 72
             mem = BIGMEMCORE
         params:
             sample = SAMPLE

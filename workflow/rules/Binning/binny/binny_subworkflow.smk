@@ -2,8 +2,8 @@ from snakemake.utils import min_version
 min_version("6.0")
 
 # Copy some params since Snakemake yaml doesn't allow param mapping
-config["binning"]["binny"]["mem"] = {"big_mem_per_core_gb": config["mem"]["big_mem_total_gb"],
-                                     "normal_mem_per_core_gb": config["mem"]["normal_mem_per_core_gb"],
+config["binning"]["binny"]["mem"] = {"big_mem_per_core_gb": int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]],
+                                     "normal_mem_per_core_gb": int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]],
                                      "big_mem_avail": True}
 config["binning"]["binny"]["tmp_dir"] = config["tmp_dir"]
 config["binning"]["binny"]["sample"] = config["sample"]
@@ -35,7 +35,7 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
     params:
         binny_cfg=os.path.join(ROOTDIR, "submodules/binny/config/binny_mantis.cfg")
     threads:
-        getThreads(16)
+        getThreads(32)
     resources:
         runtime="24:00:00",
         mem=MEMCORE
@@ -78,7 +78,7 @@ use rule binny from binny_workflow as binny_binny with:
         hdbscan_min_samples_range=config["binning"]["binny"]["clustering"]["hdbscan_min_samples_range"],
         hdbscan_epsilon_range=config["binning"]["binny"]["clustering"]["hdbscan_epsilon_range"]
     threads:
-        getThreads(16)
+        getThreads(32)
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE

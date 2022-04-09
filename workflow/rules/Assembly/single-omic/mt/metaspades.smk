@@ -32,7 +32,7 @@ rule metaspades_assembly_from_preprocessing:
         'Assembly/intermediary/mt.metaspades_preprocessed.1/transcripts.fasta',
         'Assembly/intermediary/mt.metaspades_preprocessed.1.fa'
     resources:
-        runtime = "120:00:00",
+        runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_assembly.yaml"
@@ -51,7 +51,7 @@ rule metaspades_assembly_from_unmapped:
         'Assembly/intermediary/mt.metaspades_unmapped.2/transcripts.fasta',
         'Assembly/intermediary/mt.metaspades_unmapped.2.fa'
     resources:
-        runtime = "120:00:00",
+        runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads: getThreads(BIGCORENO)
     conda: ENVDIR + "/IMP_assembly.yaml"

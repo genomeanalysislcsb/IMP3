@@ -13,10 +13,10 @@ def workflow_ctrl(wildcards):
 
 def getThreads(max):
     if workflow.cores:
-        print('workflow.cores:', workflow.cores, 'max:', max, min(max, workflow.cores))
+        # print('workflow.cores:', workflow.cores, 'max:', max, min(max, workflow.cores))
         realThreads = min(max, workflow.cores)
     elif workflow.nodes:
-        print('workflow.nodes:', workflow.nodes, 'max:', max, min(max, workflow.cores))
+        # print('workflow.nodes:', workflow.nodes, 'max:', max, min(max, workflow.cores))
         realThreads = min(max, workflow.nodes)
     else:
         realThreads = max

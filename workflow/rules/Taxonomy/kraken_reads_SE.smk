@@ -1,6 +1,6 @@
 from os.path import getsize
 KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['krakendb'] + "/hash.k2d" )) / 1000000000
-KRAKTHREADS = round( (KRAKSIZE / float(BIGMEMCORE[:-1])) + 0.5)
+KRAKTHREADS = round((KRAKSIZE / (float(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]])) + 0.5)
 
 
 rule kraken_reads:

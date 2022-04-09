@@ -51,7 +51,7 @@ kraken2:
 
 # GTDB-tk
 gtdbtk:
-  url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/auxillary_files/gtdbtk_data.tar.gz"
+  url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/release207/207.0/auxillary_files/gtdbtk_r207_data.tar.gz"
 
 ##################################################
 # Mantis

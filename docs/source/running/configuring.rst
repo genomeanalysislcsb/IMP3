@@ -98,10 +98,11 @@ type of nodes. High memory demanding jobs are automatically scheduled to ``big_m
 Depending on how much **RAM** on the local computer or compute cluster are available for the IMP3 run, the user can define the settings for  **normal** 
 and **bigmem** cpus:
 
-- ``normal_mem_per_core_gb`` max. available RAM (in Gb) per core of **normal** compute cores, default 4 Gb
-- ``big_mem_total_gb`` max. available total RAM (in Gb) of **bigmem** compute cores, default 1600 Gb
+- ``mem_unit`` unit for memory. Available are K, M, G, T for kilobyte, megabyte, gigabyte, and terabyte, respectively. Default is G
+- ``normal_mem_per_core`` max. available RAM per core of **normal** compute cores, default 4 Gb
+- ``big_mem_total`` max. available total RAM of **bigmem** compute cores, default 1600 Gb
 - ``big_mem_cores`` available number of **bigmem** compute cores, default 8
-- ``big_mem_per_core`` max. available RAM (in Gb) per core of **bigmem** compute cores, default 200 Gb
+- ``big_mem_per_core`` max. available RAM per core of **bigmem** compute cores, default 200 Gb
 
 The number of cores that are actually used at any point in time is determined by the ``--cores`` argument of the `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ :ref:`call <run_IMP>`, 
 rather than set here. 
@@ -114,10 +115,11 @@ Currently you need to have both kinds of cores, if you run IMP3 in :ref:`cluster
 .. code-block:: yaml
 
   mem:
-    normal_mem_per_core_gb: 4
-    big_mem_total_gb: 1600
+    mem_unit: 'G'
+    normal_mem_per_core: 4
+    big_mem_total: 1600
     big_mem_cores: 8
-    big_mem_per_core_gb: 200
+    big_mem_per_core: 200
 
 
 ------------------------

@@ -42,7 +42,7 @@ else:
             contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa",
             gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
         resources:
-            runtime = "120:00:00",
+            runtime = "48:00:00", ###120
             mem = BIGMEMCORE
         threads:
             getThreads(BIGCORENO)
@@ -76,7 +76,7 @@ rule metaspades_hybrid_assembly_2:
         contigs = "",
         gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
     resources:
-        runtime = "120:00:00",
+        runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
         getThreads(BIGCORENO)

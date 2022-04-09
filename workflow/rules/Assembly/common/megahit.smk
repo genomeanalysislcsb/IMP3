@@ -27,7 +27,7 @@ rule megahit_assembly_from_preprocessing:
         'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
         'Assembly/intermediary/{type}.megahit_preprocessed.1.fa'
     resources:
-        runtime = "120:00:00",
+        runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
         getThreads(BIGCORENO)
@@ -52,7 +52,7 @@ rule megahit_assembly_from_unmapped:
         'Assembly/intermediary/{type}.megahit_unmapped.2/final.contigs.fa',
         'Assembly/intermediary/{type}.megahit_unmapped.2.fa'
     resources:
-        runtime = "120:00:00",
+        runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
         getThreads(BIGCORENO)
