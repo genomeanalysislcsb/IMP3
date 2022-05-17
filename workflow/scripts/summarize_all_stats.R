@@ -1,5 +1,5 @@
-	#!/bin/R
-	log <- file(snakemake@log[[1]], open="wt")
+#!/bin/R
+log <- file(snakemake@log[[1]], open="wt")
 sink(log)
 sink(log, type="message")
 
@@ -28,7 +28,37 @@ N50 <- function(lengths){
 steps               <- snakemake@params[["steps"]] 
 ass                 <- snakemake@params[["ass"]] 
 types               <- snakemake@params[["types"]] 
-dbs                 <- unlist(strsplit(snakemake@params[["dbs"]],split=" "))
+ann                 <- snakemake@params[["ann"]][[1]]
+if(ann == "mantis"){
+  mantis_dir        <- snakemake@params[["mantis_dir"]][[1]]
+  mantis_pattern    <- snakemake@params[["mantis_pattern"]][[1]]
+  fc_sum_files      <- lapply(types, function(x){
+                          y <- paste0("Analysis/annotation/",list.files(path=mantis_dir,pattern=paste0(x,mantis_pattern)))
+                          names(y) <- gsub(".+mantis.","",gsub(".counts.tsv.summary","",unlist(y)))
+                          y
+                       })
+  names(fc_sum_files) <- types
+  fc_files          <- lapply(types, function(x) {
+                          y <- gsub(".summary$","",fc_sum_files[[x]])
+                          names(y) <- gsub(".+mantis.","",gsub(".counts.tsv","",unlist(y)))
+                          y
+                        })
+  names(fc_files) <- types
+  dbs               <- unique(gsub(".+mantis.","",gsub(".counts.tsv","",unlist(fc_files))))
+}
+if(ann == "hmmer"){
+  dbs               <- unlist(strsplit(snakemake@params[["hmmer_dbs"]],split=" "))
+  fc_sum_files <- list()
+  for(type in types){
+    fc_sum_files[[type]] <- list()
+    for(db in dbs){
+      fc_sum_files[[type]][[db]] <- paste0("Analysis/annotation/",type,".",db,".counts.tsv.summary")
+    }
+  }
+  fc_files          <- lapply(types, function(x) setNames(gsub(".summary$","",fc_sum_files[[x]]),
+                                                          dbs)) 
+  #fc_files          <- lapply(types, function(x) gsub(".summary$","",fc_sum_files[[x]]))  
+}
 out_file_tsv        <- snakemake@output[[1]] #"Stats/all_stats.tsv"
 out_file_rdat       <- snakemake@output[[2]] #"Stats/all_stats.Rdata"
 if(length(snakemake@output)>2) out_file_bins <- snakemake@output[[3]] #"Stats/all_bin_stats.tsv"
@@ -162,34 +192,29 @@ if(file.exists(paste0("Stats/",types[1],"/",ass,".assembly.contig_flagstat.txt")
 ###################################################################################################
 ## Reads mapping to Annotations
 ###################################################################################################
-if(file.exists(paste0("Analysis/annotation/",types[1],".",dbs[1],".counts.tsv.summary"))){
-  fcStats_files <- list()
-  for(type in types){
-    fcStats_files[[type]] <- list()
-    for(db in dbs){
-      fcStats_files[[type]][[db]] <- paste0("Analysis/annotation/",type,".",db,".counts.tsv.summary")
-    }
-  }
+if(any(sapply(unlist(fc_sum_files),function(x) file.exists(pattern=x)))){
   
   print("Reading map stats for features.")
   for(type in types){
-      mapTemp <- data.frame("type"=type,
+    mapTemp <- data.frame("type"=type,
                           "step"=paste("mapping to", dbs),
                           "number"=sapply(dbs,function(x){
-													  if(file.exists(fcStats_files[[type]][[x]])){
-                            mapTab <- read.delim(fcStats_files[[type]][[x]],stringsAsFactors=F,header = T)
-                            mapTab[1,2]
-														}else{0}
-                          }),
+   	                      if(file.exists(fc_sum_files[[type]][[x]])){
+                                mapTab <- read.delim(fc_sum_files[[type]][[x]],
+                                            stringsAsFactors=F,header = T)
+                                mapTab[1,2]
+			      }else{0}
+                            }),
                           stringsAsFactors=F)
     if(!"statsTab" %in% ls()){
-        statsTab <- mapTemp
+      statsTab <- mapTemp
     }else{
-        statsTab <- rbind(statsTab,
+      statsTab <- rbind(statsTab,
                         mapTemp)
-		}
+    }
   }
 }
+
 ###################################################################################################
 ## Assembly stats
 ###################################################################################################
@@ -293,11 +318,6 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
     depthGeneStats_files[[type]] <- paste0("Stats/",type,"/annotation/",type,".gene_depth.avg")
   }
   
-  featureCount_files <- list()
-  for(db in dbs){
-    featureCount_files[[db]] <- paste0("Analysis/annotation/",type[1],".",db,".counts.tsv")
-  }
-  
   annTemp <- data.frame("type"=ass,
                         "step"=c("genes","mean gene length",
                                  "CDSs","rRNAs","tmRNAs","tRNAs",
@@ -312,7 +332,7 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
                                      length(grep(patt,gene_gff$attribute))
                                    }),
                                    sapply(dbs,function(x){
-                                     fileoi <- featureCount_files[[x]]
+                                     fileoi <- fc_files[[1]][[x]]
                                      as.numeric(unlist(strsplit(system2("wc",
                                                                         args=c("-l",fileoi),
                                                                         stdout=T),split=" "))[1])-2

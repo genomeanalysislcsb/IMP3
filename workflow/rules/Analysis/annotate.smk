@@ -1,3 +1,8 @@
+# Rules for annotation w/ Mantis
+include:
+    "mantis.smk"
+
+# HMMER: protein annotation
 rule hmmer:
     input:
         "Analysis/annotation/prokka.faa"
@@ -19,6 +24,7 @@ rule hmmer:
           --tblout {output} {params.dbs}/*.hmm {input} >/dev/null 2> {log}
         """
 
+# GFF from HMMER output
 rule makegff:
     input:
         "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan",
@@ -43,10 +49,13 @@ rule makegff:
          -n {params[0]} {params[1]} -o {output} -g $(grep ">" {input[2]} | wc -l) > {log} 2>&1
         """
 
+# Merge GFFs
 rule mergegff:
     input:
-        "Analysis/annotation/annotation.filt.gff",
-        expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff",db=config["hmm_DBs"].split())
+        "Analysis/annotation/annotation.filt.gff", # from prokkaC.smk
+        expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff", db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],
+        ["Analysis/annotation/intermediary/annotation.CDS.RNA.essential.gff"] if (config["annotation"] != "hmmer" and "binny" in BIN_STEPS) else [],
+        [rules.makegff_mantis.output] if config["annotation"] == "mantis" else []
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     resources:
@@ -60,10 +69,14 @@ rule mergegff:
         {SRCDIR}/mergegffs.pl {output} {input} > {log} 2>&1
         """
 
+# Compress intermediate files
 rule tar_annotation:
     input:
-        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-        expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split())
+        gff="Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+        # from featureCount.smk
+        counts_hmmer=expand("Analysis/annotation/{type}.{db}.counts.tsv", type=TYPES, db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],
+        counts_ess=["Analysis/annotation/intermediary/annotation.CDS.RNA.essential.gff"] if (config["annotation"] != "hmmer" and "binny" in BIN_STEPS) else [],
+        counts_mantis=aggregate_mantis_fc if config["annotation"] == "mantis" else []
     output:
         "Analysis/annotation/intermediary.tar.gz"
     threads: 1
@@ -72,12 +85,12 @@ rule tar_annotation:
         mem = MEMCORE
     params:
         intermediary = "Analysis/annotation/intermediary/"
-    log: "logs/annotation_tar_annotation.log"
-    message: "tar_annotation: Compressing intermediary steps of annotation."
+    log:
+        "logs/annotation_tar_annotation.log"
+    message:
+        "tar_annotation: Compressing intermediary steps of annotation."
     shell:
        """
-       tar cvzf {output} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1
+       tar cvzf {output} {params.intermediary} >> {log} 2>&1 && \
+       rm -r {params.intermediary} >> {log} 2>&1
        """
-
-        
-        

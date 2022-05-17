@@ -175,6 +175,14 @@ properties:
         overlap:
           type: number
           minimum: 1
+  annotation:
+    type: string
+    enum:
+      - "hmmer"
+      - "mantis"
+    default: "hmmer"
+  mantis:
+    type: object
   hmm_DBs:
     type: string
   hmm_settings:

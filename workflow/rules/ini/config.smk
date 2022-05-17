@@ -217,3 +217,11 @@ if not os.path.isabs(TMPDIR):
 if not os.path.exists(TMPDIR):
     os.makedirs(TMPDIR)
 
+# annotation
+# ignore non-required HMMs if annotation was/should be done w/ Mantis
+if config["annotation"] == "mantis":
+    if "binny" in BIN_STEPS:
+        assert "essential" in config["hmm_DBs"].split(), "When using Mantis and Binny you need the \"essential genes\" HMM for annotation"
+        config["hmm_DBs"] = "essential"
+    else:
+        config["hmm_DBs"] = ""

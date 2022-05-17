@@ -100,6 +100,7 @@ makeCircosFiles <- function(contigs,genes,col,circos_files){
     }
   }else {
     kt <- ""
+    lt <- ""
   }
   write.table(kt,paste0(circos_files,"/data/essentialGenes.highlights.txt",sep=""),row.names=F,col.names=F,quote=F)
   write.table(lt,paste0(circos_files,"/data/essentialGenes.links.txt",sep=""),row.names=F,col.names=F,quote=F)
@@ -214,7 +215,7 @@ if("depthGeneStat" %in% ls()){
 for(bin in unique(cont2bin[["DASTool"]]$bin)){
   circ_genes <- gffGetID(gene_gff[gene_gff$contig %in% cont2bin[["DASTool"]]$contig[cont2bin[["DASTool"]]$bin==bin],])
   circ_genes <- gffAddComplete(circ_genes)
-  if("essential" %in% dbs){
+  if("essential" %in% dbs | "binny" %in% binners){
     circ_genes <- gffAddFunc(circ_genes,"essential")
   }
   if("mg" %in% types){

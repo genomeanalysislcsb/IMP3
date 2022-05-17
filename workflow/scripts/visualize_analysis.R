@@ -84,7 +84,7 @@ plot(expand_hist_mids(length_hist_log),
           las=1,xlim=c(log10(50),max(length_hist_log$mids)*1.03),xaxs="i",
           ylim=c(0,max(length_hist_log$counts)*1.04),yaxs="i",
           ylab="",col= brewer.pal(9,"RdPu")[7],
-          xlab=expression("log"["2"]*" gene length"),cex.lab=9/7,axes=F,lwd=0.8)
+          xlab=expression("log"["10"]*" gene length"),cex.lab=9/7,axes=F,lwd=0.8)
 lines(expand_hist_mids(length_comp_hist_log),
      expand_hist_counts(length_comp_hist_log),col=brewer.pal(9,"RdPu")[7],lwd=1)
 lines(expand_hist_mids(length_part_hist_log),

@@ -1,0 +1,58 @@
+##################################################
+# MODULES
+
+import os
+import re
+import pandas
+
+# utils
+include:
+    "rules/common.smk"
+
+##################################################
+# CONFIG
+
+# paths
+ENV_DIR = srcdir("envs")
+SRC_DIR = srcdir("scripts")
+
+# default executable for snakemake
+shell.executable("bash")
+
+# working directory
+workdir:
+    config["db_path"]
+
+##################################################
+# TARGETS
+
+TARGETS = [
+    os.path.join("adapters", "trimmomatic.done"),
+    os.path.join("sortmerna", "sortmerna.done"),
+#    "gtdbtk", # NOTE: comment out for quick tests (big archive, many files),
+    "mantis/setup.done",
+] + [ # genomes
+    "filtering/{}.fa".format(genome) for genome in config["genomes"].keys()
+] + flatten_list([ # Kraken2 databases
+    expand("{kdb}/{fname}", kdb=kdb, fname=get_kraken2db_file_names()) for kdb in config["kraken2"].keys()
+])
+
+# TODO: other targets?
+
+##################################################
+# RULES
+
+# Main rule
+rule ALL:
+    input:
+        TARGETS
+
+# other rules
+include:
+    "rules/preprocessing.smk"
+
+include:
+    "rules/taxonomy.smk"
+
+include:
+    "rules/analysis.smk"

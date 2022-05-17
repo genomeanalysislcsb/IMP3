@@ -181,43 +181,53 @@ def reads_input_files_SE(wildcards):
             base += trimmed_fq_files
     return expand(base, type=wildcards.type)
 
+def filtering_reads_pe_input(wildcards):
+    """Input files for paired-end MG/MT reads filtering (excl. rRNA filtering)"""
+    return filtering_reads_input(wildcards, True)
 
-def filtering_mg_input(wildcards):
-    n = len(wildcards.filterstep.split("."))
-    if n == 1:
-        return ['Preprocessing/mg.r1.trimmed.fq',
-        'Preprocessing/mg.r2.trimmed.fq',
-        'Preprocessing/mg.se.trimmed.fq']
-    elif n > 1:
-        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Preprocessing/mg.r1.trimmed.','Preprocessing/mg.r2.trimmed.','Preprocessing/mg.se.trimmed.' ]]
-    else:
-        raise ValueError("invalid filter length %s" % n)
+def filtering_reads_se_input(wildcards):
+    """Input files for single-end MG/MT reads filtering (excl. rRNA filtering)"""
+    return filtering_reads_input(wildcards, False)
 
-def filtering_mg_SE_input(wildcards):
-    n = len(wildcards.filterstep.split("."))
-    if n == 1:
-        return ['Preprocessing/mg.se.trimmed.fq']
-    elif n > 1:
-        return ['Preprocessing/mg.se.trimmed.' + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq"]
-    else:
-        raise ValueError("invalid filter length %s" % n)
+def filtering_reads_input(wildcards, paired=True):
+    """
+    FASTQ input files for the paired-/single-end MG/MT reads filtering rule.
+    Note, that rRNA filtering for MT reads has a separate rule.
 
-def filtering_mt_input(wildcards):
-    n = len(wildcards.filterstep.split("."))
-    if n == 1:
-        return ['Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq']
-    elif n > 1:
-        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Preprocessing/mt.r1.trimmed.rna_filtered.','Preprocessing/mt.r2.trimmed.rna_filtered.','Preprocessing/mt.se.trimmed.rna_filtered.' ]]
-    else:
-        raise ValueError("invalid filter length %s" % n)
+    Parameters
+    ----------
+    wildcards :
+        wildcards from the rule, must contain keywords 'type', 'filterstep'
+    paired : bool
+        paired-end (R1, R2, SE) or single-end (SE) reads
+    """
+    import re
+    # list of steps
+    filtersteps = wildcards.filterstep.split(".")
+    # checks
+    assert wildcards.type in TYPES, 'invalid reads type: {} for {}'.format(wildcards.type, wildcards.filterstep)
+    if wildcards.type == 'mg':
+        assert re.match(r"trimmed", wildcards.filterstep), 'no trimmed in {} for {}'.format(wildcards.filterstep, wildcards.type)
+    elif wildcards.type == 'mt':
+        assert re.match(r"trimmed\.rna_filtered", wildcards.filterstep), 'no trimmed.rna_filtered in {} for {}'.format(wildcards.filterstep, wildcards.type)
+    # input files
+    ifiles = expand(
+        'Preprocessing/{type}.{read}.{filterstep}.fq',
+        type=wildcards.type,
+        read=['r1', 'r2', 'se'] if paired else ['se'],
+        filterstep='.'.join(filtersteps[:-1])
+    )
+    # print("{}: {}".format(filtersteps, ifiles))
+    return ifiles
 
 def filtering_filter(wildcards):
+    """Reference input files for the paired-/single-end MG/MT reads filtering rule."""
     return ancient(expand(
-            "{dir}/filtering/{filter}.{ext}", filter=wildcards.filterstep.split(".")[-1].split("_")[0],
-            ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa'], dir=DBPATH))
-
+        "{dir}/filtering/{filter}.{ext}",
+        dir=DBPATH,
+        filter=wildcards.filterstep.split(".")[-1].split("_")[0],
+        ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa']
+    ))
 
 # for archiving checkpoint:
 def gather_reads(wildcards):
@@ -288,4 +298,16 @@ def getBam(wildcards):
     ori_sample = wildcards.clusterID.split(".")[0]
     return expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
                 raw_directory=samples.path[ori_sample])
+
+
+def aggregate_mantis_fc(wildcards):
+    checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
+    return expand("Analysis/annotation/{type}.mantis.{i}.counts.tsv",
+           i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
+
+
+
+
+
+
 
