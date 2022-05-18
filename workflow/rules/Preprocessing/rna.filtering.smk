@@ -43,7 +43,7 @@ rule filter_rrna_pe:
         rrna_r2="Preprocessing/mt.r2.trimmed.rna.fq",
 	    otu="Preprocessing/otu_map.txt",
         # temp: working and index directories
-        wdir=directory("Preprocessing/sortmerna_pe"),
+        wdir=temp(directory("Preprocessing/sortmerna_pe")),
         idx=temp(directory("Preprocessing/sortmerna_idx")), # store index files separately so they can be re-used in filter_rrna_se
     log:
         "logs/preprocessing_filter_rrna_pe.log"
@@ -89,7 +89,7 @@ rule filter_rrna_se:
         filt_se="Preprocessing/mt.se.trimmed.rna_filtered.fq",
         rrna_se="Preprocessing/mt.se.trimmed.rna.fq",
         # temp: working directory
-        wdir=directory("Preprocessing/sortmerna_se"),
+        wdir=temp(directory("Preprocessing/sortmerna_se")),
     log:
         "logs/preprocessing_filter_rrna_se.log"
     threads: getThreads(8)
