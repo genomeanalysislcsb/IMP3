@@ -1,0 +1,71 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "IMP3 installation"
+description: Snakemake config for IMP3 installation
+type: object
+properties:
+  db_path:
+    $ref: "#/definitions/path_dir"
+  trimmomatic:
+    $ref: "#/definitions/git"
+  sortmerna:
+    $ref: "#/definitions/git"
+  genomes:
+    type: object
+    patternProperties:
+      ".+":
+        $ref: "#/definitions/url_obj"
+  kraken2:
+    type: object
+    patternProperties:
+      ".+":
+        $ref: "#/definitions/url_obj"
+  gtdbtk:
+    $ref: "#/definitions/url_obj"
+  mantis:
+    type: object
+    properties:
+      default:
+        type: object
+        patternProperties:
+          "^.+_ref_folder$":
+            if:
+              type: string
+            then:
+              $ref: "#/definitions/path_dir"
+        additionalProperties: false
+      custom:
+        type: array
+        default: []
+        items:
+          type: string
+          pattern: "" # TODO
+required:
+  - db_path
+
+# definitions for specific data types
+definitions:
+  path_dir: # absolute directory path
+    type: string
+    pattern: "^/(.+)/([^/]+)/?$"
+  path_file: # absolute file path
+    type: string
+    pattern: "^/(.+)/([^/]+)$"
+  url: # URL
+    type: string
+    # based on https://urlregex.com/
+    pattern: "^(https://(www\\.)?|ftp://|ftp\\.)(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+  git: # git repository
+    type: object
+    properties:
+      url:
+        $ref: "#/definitions/url"
+      commit:
+        type: string
+        pattern: "^[0-9a-z]+$"
+    required: [url, commit]
+  url_obj: # object of <key>/<url> mapping
+    type: object
+    properties:
+      url:
+        $ref: "#/definitions/url"
+    required: [url]

@@ -4,6 +4,7 @@
 import os
 import re
 import pandas
+from snakemake.utils import validate
 
 # utils
 include:
@@ -11,6 +12,10 @@ include:
 
 ##################################################
 # CONFIG
+
+# Config validation
+validate(config, srcdir("../schemas/schema.install.yaml"))
+print(f"CONFIG:\n{config}")
 
 # paths
 ENV_DIR = srcdir("envs")
@@ -26,18 +31,58 @@ workdir:
 ##################################################
 # TARGETS
 
-TARGETS = [
-    os.path.join("adapters", "trimmomatic.done"),
-    os.path.join("sortmerna", "sortmerna.done"),
-#    "gtdbtk", # NOTE: comment out for quick tests (big archive, many files),
-    "mantis/setup.done",
-] + [ # genomes
-    "filtering/{}.fa".format(genome) for genome in config["genomes"].keys()
-] + flatten_list([ # Kraken2 databases
-    expand("{kdb}/{fname}", kdb=kdb, fname=get_kraken2db_file_names()) for kdb in config["kraken2"].keys()
-])
+TARGETS = []
 
-# TODO: other targets?
+# adapters, Trimmomatic
+if "trimmomatic" in config:
+    print("ADD: trimmomatic")
+    include:
+        "rules/trimmomatic.smk"
+    TARGETS.append("adapters/trimmomatic.done")
+
+# rRNA filtering, SortMeRNA
+if "sortmerna" in config:
+    print("ADD: sortmerna")
+    include:
+        "rules/sortmerna.smk"
+    TARGETS.append("sortmerna/sortmerna.done")
+
+# reads filtering, reference genomes
+if "genomes" in config:
+    print("ADD: genomes")
+    include:
+        "rules/genomes.smk"
+    TARGETS += expand(
+        "filtering/{genome}.fa",
+        genome=config["genomes"].keys()
+    )
+
+# taxonomy, Kraken2 databases
+if "kraken2" in config:
+    print("ADD: kraken2")
+    include:
+        "rules/kraken2.smk"
+    TARGETS += flatten_list([expand(
+        "{kdb}/{fname}",
+        kdb=kdb, fname=get_kraken2db_file_names()
+    ) for kdb in config["kraken2"].keys()])
+
+# taxonomy, GTDBtk
+# NOTE: big archive, many files
+if "gtdbtk" in config:
+    print("ADD: gtdbtk")
+    include:
+        "rules/gtdbtk.smk"
+    TARGETS.append("gtdbtk")
+
+# annotation, Mantis
+if "mantis" in config:
+    print("ADD: mantis")
+    assert config["mantis"]["default"] or config["mantis"]["custom"], \
+        "mantis in config but no default or custom databases given"
+    include:
+        "rules/mantis.smk"
+    TARGETS.append("mantis/setup.done")
 
 ##################################################
 # RULES
@@ -46,13 +91,3 @@ TARGETS = [
 rule ALL:
     input:
         TARGETS
-
-# other rules
-include:
-    "rules/preprocessing.smk"
-
-include:
-    "rules/taxonomy.smk"
-
-include:
-    "rules/analysis.smk"

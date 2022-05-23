@@ -37,23 +37,3 @@ rule kraken2db_files:
     shell:
         "find {input}/ -type f ! -name '.snakemake_timestamp' ! -name 'imp3_install_*' | sed 's@{input}/@@' | sort > {output.flist} && "
         "rsync -rtP --no-R --log-file={log} --files-from={output.flist} {input} $(dirname {output.flist})/ 2>> {log}"
-
-##################################################
-# GTDB-tk
-##################################################
-
-rule gtdbtk_download:
-    output:
-        result=directory("gtdbtk"),
-        download=temp(directory("downloads/files/gtdbtk")),
-    log:
-        "gtdbtk/download.log"
-    params:
-        url=config["gtdbtk"]["url"]
-    threads: 4
-    conda:
-        os.path.join(ENV_DIR, "utils.yaml")
-    message:
-        "GTDB-tk data download: {params.url}"
-    script:
-        os.path.join(SRC_DIR, "download_and_decompress.py")
