@@ -13,9 +13,8 @@ include:
 ##################################################
 # CONFIG
 
-# Config validation
+# config validation
 validate(config, srcdir("../schemas/schema.install.yaml"))
-print(f"CONFIG:\n{config}")
 
 # paths
 ENV_DIR = srcdir("envs")
@@ -29,27 +28,24 @@ workdir:
     config["db_path"]
 
 ##################################################
-# TARGETS
+# TARGETS & RULES
 
 TARGETS = []
 
 # adapters, Trimmomatic
 if "trimmomatic" in config:
-    print("ADD: trimmomatic")
     include:
         "rules/trimmomatic.smk"
     TARGETS.append("adapters/trimmomatic.done")
 
 # rRNA filtering, SortMeRNA
 if "sortmerna" in config:
-    print("ADD: sortmerna")
     include:
         "rules/sortmerna.smk"
     TARGETS.append("sortmerna/sortmerna.done")
 
 # reads filtering, reference genomes
 if "genomes" in config:
-    print("ADD: genomes")
     include:
         "rules/genomes.smk"
     TARGETS += expand(
@@ -59,7 +55,6 @@ if "genomes" in config:
 
 # taxonomy, Kraken2 databases
 if "kraken2" in config:
-    print("ADD: kraken2")
     include:
         "rules/kraken2.smk"
     TARGETS += flatten_list([expand(
@@ -70,14 +65,12 @@ if "kraken2" in config:
 # taxonomy, GTDBtk
 # NOTE: big archive, many files
 if "gtdbtk" in config:
-    print("ADD: gtdbtk")
     include:
         "rules/gtdbtk.smk"
     TARGETS.append("gtdbtk")
 
 # annotation, Mantis
 if "mantis" in config:
-    print("ADD: mantis")
     assert config["mantis"]["default"] or config["mantis"]["custom"], \
         "mantis in config but no default or custom databases given"
     include:
@@ -88,6 +81,7 @@ if "mantis" in config:
 # RULES
 
 # Main rule
+localrules: ALL
 rule ALL:
     input:
         TARGETS
