@@ -32,7 +32,7 @@ sortmerna:
 genomes:
   # PhiX phage
   PhiX:
-    url: "ftp://ftp.ncbi.nlm.nih.gov/genomes/Viruses/enterobacteria_phage_phix174_sensu_lato_uid14015/NC_001422.fna"
+    url: "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/819/615/GCF_000819615.1_ViralProj14015/GCF_000819615.1_ViralProj14015_cds_from_genomic.fna.gz"
   # human genome
   GCF_000001405.38_GRCh38.p12:
     url: "ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.38_GRCh38.p12/GCF_000001405.38_GRCh38.p12_genomic.fna.gz"
