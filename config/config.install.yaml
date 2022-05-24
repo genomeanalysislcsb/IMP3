@@ -64,10 +64,16 @@ gtdbtk:
 mantis:
   # default HMMs (name/path mapping)
   default: # set paths null if a database should not be used
+    kofam_ref_folder: "/path/to/mantis/kofam/database/"
+    ncbi_ref_folder: "/path/to/mantis/ncbi/database/"
     nog_ref_folder: "/path/to/mantis/nog/database/"
-    pfam_ref_folder: "/path/to/mantis/nog/database/"
-    kofam_ref_folder: "/path/to/mantis/nog/database/"
-    ncbi_ref_folder: "/path/to/mantis/nog/database/"
-    tcdb_ref_folder: "/path/to/mantis/nog/database/"
+    pfam_ref_folder: "/path/to/mantis/pfam/database/"
+    tcdb_ref_folder: "/path/to/mantis/tcdb/database/"
   # custom HMMs (list of paths)
   custom: [] # set to [] if not used otherwise provide at least one path
+  # weights: format <name>_hmm_folder: <name>_weight
+  weights:
+    ncbi_weight: 0.9
+    nog_weight: 0.8
+    pfam_weight: 0.9
+    uniprot_ec_weight: 0.9
