@@ -45,9 +45,11 @@ genomes:
 
 kraken2:
   # https://ccb.jhu.edu/software/kraken2/index.shtml?t=downloads
+  # Minikraken v2 (bacteria, archaea, viral libraries & human genome; 8 GB)
   minikraken2:
     url: "ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz"
-  # ???
+  # https://benlangmead.github.io/aws-indexes/k2
+  # PlusPFP-8 (standard + protozoa, fungi & plant; 8 GB)
   kraken_pfp8:
     url: "https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_8gb_20210517.tar.gz"
 
