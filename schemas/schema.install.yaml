@@ -37,8 +37,7 @@ properties:
         type: array
         default: []
         items:
-          type: string
-          pattern: "" # TODO
+          $ref: "#/definitions/path_dir"
 required:
   - db_path
 
