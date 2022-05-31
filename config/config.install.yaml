@@ -4,7 +4,7 @@
 #   For more information on git commit hashes, see here: https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection.
 
 # path where to download/copy the data(bases)
-db_path: "/mnt/lscratch/users/ohickl/databases/imp3"
+db_path: "/where/to/create/databases/"
 
 ##################################################
 # Adapters for reads trimming
@@ -27,50 +27,53 @@ sortmerna:
 ##################################################
 # References for reads filtering
 ##################################################
-
 # NOTE: the downloaded and decompressed data should be a single file
+
 genomes:
+  # PhiX phage
   PhiX:
-    url: "ftp://ftp.ncbi.nlm.nih.gov/genomes/Viruses/enterobacteria_phage_phix174_sensu_lato_uid14015/NC_001422.fna"
-#  GCF_000001405.38_GRCh38.p12: # human
-#    url: "ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.38_GRCh38.p12/GCF_000001405.38_GRCh38.p12_genomic.fna.gz"
+    url: "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/819/615/GCF_000819615.1_ViralProj14015/GCF_000819615.1_ViralProj14015_cds_from_genomic.fna.gz"
+  # human genome
+  GCF_000001405.38_GRCh38.p12:
+    url: "ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.38_GRCh38.p12/GCF_000001405.38_GRCh38.p12_genomic.fna.gz"
 
 ##################################################
 # Kraken2 databases for tax. analysis
 ##################################################
-# NOTE: A kraken2 databases has to have the following files: taxo.k2d, opts.k2d, hash.k2d
+# NOTE: A kraken2 database has to have the following files: taxo.k2d, opts.k2d, hash.k2d
 #       Reference: https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#kraken-2-databases
 
 kraken2:
   # https://ccb.jhu.edu/software/kraken2/index.shtml?t=downloads
+  # Minikraken v2 (bacteria, archaea, viral libraries & human genome; 8 GB)
   minikraken2:
     url: "ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz"
-  # ???
+  # https://benlangmead.github.io/aws-indexes/k2
+  # PlusPFP-8 (standard + protozoa, fungi & plant; 8 GB)
   kraken_pfp8:
     url: "https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_8gb_20210517.tar.gz"
 
 # GTDB-tk
 gtdbtk:
-  url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/release202/202.0/auxillary_files/gtdbtk_r202_data.tar.gz"
+  url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/release207/207.0/auxillary_files/gtdbtk_r207_v2_data.tar.gz"
 
 ##################################################
 # Mantis
 ##################################################
 # https://github.com/PedroMTQ/mantis
-# Set paths to null to use only some of the default databases
+# https://github.com/PedroMTQ/mantis/wiki/Configuration#setting-your-own-paths
 
 mantis:
-  # default HMMs
-  default: # set to null if no database, otherwise provide a path
-    nog_ref_folder: null
-    pfam_ref_folder: '/mnt/lscratch/users/ohickl/databases/imp3/mantis'
-    kofam_ref_folder: null
-    ncbi_ref_folder: null
-    tcdb_ref_folder: null
-  # custom HMMs (list)
-  custom:
-    # - "/path/to/custom/references/"
-  # weights: <name>_hmm_folder --> <name>_weight
+  # default HMMs (name/path mapping)
+  default: # set paths null if a database should not be used
+    kofam_ref_folder: "/path/to/mantis/kofam/database/"
+    ncbi_ref_folder: "/path/to/mantis/ncbi/database/"
+    nog_ref_folder: "/path/to/mantis/nog/database/"
+    pfam_ref_folder: "/path/to/mantis/pfam/database/"
+    tcdb_ref_folder: "/path/to/mantis/tcdb/database/"
+  # custom HMMs (list of paths)
+  custom: [] # set to [] if not used otherwise provide at least one path
+  # weights: format <name>_hmm_folder: <name>_weight
   weights:
     ncbi_weight: 0.9
     nog_weight: 0.8

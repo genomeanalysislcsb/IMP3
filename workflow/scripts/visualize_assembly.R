@@ -66,7 +66,7 @@ for(type in types){
                                     to=log10(max(sapply(depthAssStat,function(x) max(x$depth)))),
                                     length.out = 100),plot=F)
 }
-plot(1,type="n",axes=F,ylab="",xlab=expression("log"["2"]*" contig coverage depth"),cex.lab=9/7,
+plot(1,type="n",axes=F,ylab="",xlab=expression("log"["10"]*" contig coverage depth"),cex.lab=9/7,
      xlim=c(min(depth_hist_log[[1]]$mids)*ifelse(min(depth_hist_log[[1]]$mids)<0,1.03,0.97),
             max(depth_hist_log[[1]]$mids)*1.03),xaxs="i",
      ylim=c(0,max(sapply(depth_hist_log,function(x) max(x$counts)))))

@@ -4,6 +4,7 @@
 # IMPORTS
 ##############################
 import pandas
+import logging
 
 ##############################
 # FUNCTIONS
@@ -14,8 +15,15 @@ def read_in_gff(fname):
     gff_cols = ["seqname", "source", "feature", "start", "end", "score", "strand", "frame", "attr"]
     # read in
     gff = pandas.read_csv(fname, sep="\t", header=None, names=gff_cols, comment="#")
+    # NOTE: Ang GFF feature which has an entry in the FAA file (used for annotation w/ Mantis) is expected to have an ID.
+    #       Any entry with an ID is removed as the IDs are used as index/row names.
+    #       Cases w/o an ID are reported as this should ideally not happen.
+    gff = gff.assign(fID=gff.attr.str.extract(r"(^|;)ID=(?P<id>\w+)(;|$)")["id"])
+    if any(pandas.isnull(gff.fID)):
+        logging.warning(f"Some features in {fname} don't have an ID:\n{gff.loc[pandas.isnull(gff.fID)]}")
+        gff = gff.loc[pandas.notnull(gff.fID),:]
     # set row names: feature ID extracted from the attributes column
-    gff.set_index(keys=gff.attr.str.extract(r"(^|;)ID=(?P<id>\w+);")["id"], inplace=True, verify_integrity=True)
+    gff.set_index(keys="fID", drop=True, inplace=True, verify_integrity=True)
     return gff
 
 def read_mantis_consensus(fname):
@@ -102,7 +110,7 @@ def mantis_gff_attrs_generator(links_str, sep1="|", sep2=":"):
 # MAIN
 ##############################
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # read in
     gff    = read_in_gff(snakemake.input.gff)
     mantis = read_mantis_consensus(snakemake.input.mantis)
@@ -132,6 +140,6 @@ if __name__ == "__main__":
                 op = snakemake.params.prefix + "." + k + ".gff"
                 k_links.drop(columns="Key").to_csv(op, sep="\t", header=False, index=False, mode="a" if op in opend_files else "w")
                 opend_files.add(op)
-    
+
     # save
-    gff.to_csv(snakemake.output.gff, sep="\t", header=False, index=False)
+    gff.to_csv(snakemake.output.gff, sep="\t", header=False, index=False, index_label=None)

@@ -1,53 +1,115 @@
-FASTAFILES = expand("{path}/{files}.fasta", files=config["sortmerna"]["files"], path=DBPATH + "/sortmerna")
+# SortMeRNA:
+#   https://github.com/biocore/sortmerna/
+#   https://github.com/biocore/sortmerna/wiki/User-manual-v4.0
 
-REF = ' '.join('--ref %s' % (a) for a in zip(FASTAFILES))
+# NOTE
+#   The helper function below should be moved later to a designated file.
+#
+#   The check whether the working directory exists and is not empty
+#   should not be required (as snakemake should remove it when (re-)running the rule)
+#   but it is included anyway for additional safety.
 
-SORTME_MEM = int(MEMCORE[:-1]) * 1000
+def smk_get_sortmerna_params(wildcards, input):
+    """For snakemake: get SortMeRNA parameters"""
+    # reference files
+    # --fastx: output aligned reads
+    # -m: memory requirements for indexing
+    # --aligned/--other: output (non)-aligned reads
+    params = "{refs} --fastx -m {mem} --aligned --other".format(
+        refs=" ".join(["--ref %s" % ref for ref in input.refs]),
+        mem=int(MEMCORE[:-1]) * 1000
+    )
+    # additional parameters for PE reads
+    if hasattr(input, "r1"):
+        assert hasattr(input, "r2"), f"Found R1 but not R2 in {input}"
+        # --otu-map: OTU map (input to QIIME's make_otu_table.py)
+        # --paired_in: flags the PE reads as "aligned", when either of them is aligned
+        # --out2: output paired reads into separate files
+        params = f"{params} --otu_map --paired_in --out2"
+    return params
 
-FILTER_RNA_SHELL = """
-  TMP_R12=$(mktemp --tmpdir={TMPDIR} -t "tmp_XXXXXX.R12")
-  if [ -d {TMPDIR}/kvdb ]; then rm -Rf {TMPDIR}/kvdb; fi 
-  sortmerna {params.ref} --reads {input[0]} --reads {input[1]} --workdir tmp --fastx --aligned {TMPDIR}/$TMP_R12.rrna \
-   --other {TMPDIR}/$TMP_R12.rrna_filt --threads {threads} --idx-dir {DBPATH}/sortmerna --otu_map --paired_in -m {params.sortmernamem} >> {log} 2>&1
-  otufile=`find . -name otu_map.txt`
-  touch Preprocessing/otu_map.txt
-  cp $otufile Preprocessing/
-  if [ -s $otufile ]; then echo "# WARNING: OTU from sortmerna file does not exists" >status/sortmerna.warning; fi
-  {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna.fq {output[3]} {output[4]} >> {log} 2>&1
-  {BINDIR}/unmerge-paired-reads.sh {TMPDIR}/$TMP_R12.rrna_filt.fq {output[0]} {output[1]} >> {log} 2>&1
-  rm -f {TMPDIR}/kvdb/*
-  sortmerna {params.ref} --reads {input[2]} --fastx --aligned Preprocessing/mt.se.trimmed.rna --idx-dir {DBPATH}/sortmerna --workdir {TMPDIR} \
-   --other Preprocessing/mt.se.trimmed.rna_filtered --threads {threads} -m {params.sortmernamem} >> {log} 2>&1
-  rm -Rf {TMPDIR}/$TMP_R12* 
-"""
-
-rule filter_rna:
+rule filter_rrna_pe:
     input:
-        'Preprocessing/mt.r1.trimmed.fq',
-        'Preprocessing/mt.r2.trimmed.fq',
-        'Preprocessing/mt.se.trimmed.fq',
-        expand(
-            "{db}/sortmerna/idx/{files}.{ext}",
-            files=config["sortmerna"]["files"],
-            ext=['bursttrie_0.dat', 'kmer_0.dat', 'pos_0.dat', 'stats'],
-            db=DBPATH)
+        r1="Preprocessing/mt.r1.trimmed.fq",
+        r2="Preprocessing/mt.r2.trimmed.fq",
+        refs=expand(
+            "{dbpath}/sortmerna/{fasta}.fasta",
+            dbpath=DBPATH, fasta=config["sortmerna"]["files"]
+        ),
     output:
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r1.trimmed.rna.fq',
-        'Preprocessing/mt.r2.trimmed.rna.fq',
-        'Preprocessing/mt.se.trimmed.rna.fq',
-	'Preprocessing/otu_map.txt'
+        filt_r1="Preprocessing/mt.r1.trimmed.rna_filtered.fq",
+        filt_r2="Preprocessing/mt.r2.trimmed.rna_filtered.fq",
+        rrna_r1="Preprocessing/mt.r1.trimmed.rna.fq",
+        rrna_r2="Preprocessing/mt.r2.trimmed.rna.fq",
+	    otu="Preprocessing/otu_map.txt",
+        # temp: working and index directories
+        wdir=temp(directory("Preprocessing/sortmerna_pe")),
+        idx=temp(directory("Preprocessing/sortmerna_idx")), # store index files separately so they can be re-used in filter_rrna_se
+    log:
+        "logs/preprocessing_filter_rrna_pe.log"
     threads: getThreads(8)
     resources:
         runtime = "48:00:00",
         mem = MEMCORE
     params:
-        ref = REF,
-        sortmernamem = str(SORTME_MEM)
-    conda: ENVDIR + "/IMP_preprocessing.yaml"
-    log: "logs/preprocessing_filter_rna.log"
-    message: "filter_rna: filtering rRNA from mt reads."
+        params=smk_get_sortmerna_params,
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    message:
+        "filter_rna: filtering rRNA from mt PE reads."
     shell:
-        FILTER_RNA_SHELL
+        """
+        if [ -d "{output.wdir}" ] && [ "$(ls -A {output.wdir})" ]; then
+            echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline."
+            exit 1
+        fi
+        sortmerna {params.params} --threads {threads} --reads {input.r1} --reads {input.r2} --workdir {output.wdir}/ --idx-dir {output.idx}/ &> {log}
+        cat {output.wdir}/out/aligned.log >> {log}
+        mv {output.wdir}/out/other_fwd.fq {output.filt_r1}
+        mv {output.wdir}/out/other_rev.fq {output.filt_r2}
+        mv {output.wdir}/out/aligned_fwd.fq {output.rrna_r1}
+        mv {output.wdir}/out/aligned_rev.fq {output.rrna_r2}
+        if [ -f {output.wdir}/out/otu_map.txt ]; then
+            mv {output.wdir}/out/otu_map.txt {output.otu}
+        else
+            touch {output.otu}
+            echo "# WARNING: SortMeRNA OTUs file does not exist" > status/sortmerna.warning
+        fi
+        """
+
+rule filter_rrna_se:
+    input:
+        se="Preprocessing/mt.se.trimmed.fq",
+        refs=expand(
+            "{dbpath}/sortmerna/{fasta}.fasta",
+            dbpath=DBPATH, fasta=config["sortmerna"]["files"]
+        ),
+        idx=rules.filter_rrna_pe.output.idx, # to avoid additional overhead
+    output:
+        filt_se="Preprocessing/mt.se.trimmed.rna_filtered.fq",
+        rrna_se="Preprocessing/mt.se.trimmed.rna.fq",
+        # temp: working directory
+        wdir=temp(directory("Preprocessing/sortmerna_se")),
+    log:
+        "logs/preprocessing_filter_rrna_se.log"
+    threads: getThreads(8)
+    resources:
+        runtime = "24:00:00",
+        mem = MEMCORE
+    params:
+        params=smk_get_sortmerna_params,
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    message:
+        "filter_rna: filtering rRNA from mt SE reads."
+    shell:
+        """
+        if [ -d "{output.wdir}" ] && [ "$(ls -A {output.wdir})" ]; then
+            echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline."
+            exit 1
+        fi
+        sortmerna {params.params} --threads {threads} --reads {input.se} --workdir {output.wdir}/ --idx-dir {input.idx}/ &>> {log}
+        cat {output.wdir}/out/aligned.log >> {log}
+        mv {output.wdir}/out/other.fq {output.filt_se}
+        mv {output.wdir}/out/aligned.fq {output.rrna_se}
+        """
