@@ -30,7 +30,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "databases"
+db_path: "/mnt/lscratch/users/ohickl/databases/imp3"
 trimmomatic:
   adapter:
     mg: "TruSeq3-PE"

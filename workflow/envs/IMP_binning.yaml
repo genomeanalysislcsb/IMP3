@@ -5,6 +5,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - semibin=0.7.0
+  - semibin=1.0.1
   - abawaca=1.07
   - perl-bioperl-core

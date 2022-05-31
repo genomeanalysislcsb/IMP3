@@ -4,7 +4,7 @@
 #   For more information on git commit hashes, see here: https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection.
 
 # path where to download/copy the data(bases)
-db_path: "databases"
+db_path: "/mnt/lscratch/users/ohickl/databases/imp3"
 
 ##################################################
 # Adapters for reads trimming
@@ -51,7 +51,7 @@ kraken2:
 
 # GTDB-tk
 gtdbtk:
-  url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/release207/207.0/auxillary_files/gtdbtk_r207_data.tar.gz"
+  url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/release202/202.0/auxillary_files/gtdbtk_r202_data.tar.gz"
 
 ##################################################
 # Mantis
@@ -63,7 +63,7 @@ mantis:
   # default HMMs
   default: # set to null if no database, otherwise provide a path
     nog_ref_folder: null
-    pfam_ref_folder: null
+    pfam_ref_folder: '/mnt/lscratch/users/ohickl/databases/imp3/mantis'
     kofam_ref_folder: null
     ncbi_ref_folder: null
     tcdb_ref_folder: null

@@ -7,12 +7,12 @@ rule setup_checkm:
         checkm_db=directory("checkm"),
         setup_check="checkm/checkm_db.ready"
     params:
-        str1_to_fix = 'best_bin_set=binsA',
-        str1_replacement = 'mv binsA binsO; mv binsA.stats binsO.stats; best_bin_set=binsO; rm -rf tmp.fa',
-        str2_to_fix= '; then',
-        str2_replacement=' && [[ ! $n_binnings -eq 1 ]]; then',
-        str3_to_fix= 'if \[\[ \$n_binnings \-ne 1 \]\]\; then',
-        str3_replacement='if [[ $n_binnings -ge 1 ]]; then'
+        str1_to_fix='best_bin_set=binsA',
+        str1_replacement='mv binsA binsO; mv binsA.stats binsO.stats; best_bin_set=binsO; rm -rf tmp.fa',
+        str2_to_fix='; then',
+        str2_replacement=' && [[ ! \$n_binnings -eq 1 ]]; then',
+        str3_to_fix='if \[\[ \$n_binnings \-ne 1 \]\]\; then',
+        str3_replacement='if [[ \$n_binnings -ge 1 ]]; then'
     conda:
         os.path.join(MAIN_ENV_DIR, "IMP_metawrap.yaml")
     log:
@@ -31,13 +31,13 @@ rule setup_checkm:
         echo "Setup done." >> {log} 2>&1
         
         # Fix lines that lead to crash with MW, if theres only one binner output
-        sed -i -e "331s/${params.str1_to_fix}/${params.str1_replacement}/g" \
-               -e "397s/${params.str2_to_fix}/${params.str2_replacement}/g" \
-               -e "451s/${params.str3_to_fix}/${params.str3_replacement}/g" \
-               ${CONDA_PREFIX}/bin/metawrap-modules/bin_refinement.sh
+        sed -i -e "331s/{params.str1_to_fix}/{params.str1_replacement}/g" \
+               -e "397s/{params.str2_to_fix}/{params.str2_replacement}/g" \
+               -e "451s/{params.str3_to_fix}/{params.str3_replacement}/g" \
+               ${{CONDA_PREFIX}}/bin/metawrap-modules/bin_refinement.sh
         
-        # Adjust score formula from 'completeness - (contamination * 5)' to 'completeness - (contamination * 2.5)'
-        sed -i -e "s/\*5/*2.5/g" ${CONDA_PREFIX}/bin/metawrap-scripts/consolidate_two_sets_of_bins.py
+        # Adjust score formula from 'completeness - (contamination * 5)' to 'completeness - (contamination * 2.0)'
+        sed -i -e "s/\*5/*2.5/g" ${{CONDA_PREFIX}}/bin/metawrap-scripts/consolidate_two_sets_of_bins.py
         """
 
 ##################################################
@@ -63,7 +63,7 @@ rule binny_setup:
     shell:
         """
         echo "Downloading binny." >> {log} 2>&1
-        git clone -b binny_beta_v0.50_multi_bam_v031 --single-branch https://github.com/ohickl/binny.git \
+        git clone -b v2.1.beta50-36 --single-branch https://github.com/a-h-b/binny.git \
         {output.binny_dir} >> {log} 2>&1
 
         cd {output.binny_dir}

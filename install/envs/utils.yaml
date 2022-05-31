@@ -1,3 +1,4 @@
+name: IMP_install_utils
 channels:
   - conda-forge
   # - bioconda

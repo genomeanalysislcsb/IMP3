@@ -693,7 +693,7 @@ if ($nocrispr) {
   my $gff = Bio::Tools::GFF->new(-fh => $MINCED, -gff_version => 3);
   while (my $feat = $gff->next_feature) {
     my $num_rpt = $feat->score; # save for later
-    $feat->remove_tag('ID');    # we don't give these a locus_tag ?
+    # $feat->remove_tag('ID');    # we don't give these a locus_tag ?
     $feat->remove_tag('score'); # https://github.com/tseemann/prokka/issues/328
 
     # http://www.insdc.org/controlled-vocabulary-rpttype-qualifier

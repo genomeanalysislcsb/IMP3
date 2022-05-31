@@ -23,8 +23,8 @@ rule mantis_annot:
     threads:
         getThreads(64)
     resources:
-        runtime="24:00:00", # TODO: need runtime estimate for large samples
-        mem=MEMCORE,
+        runtime="48:00:00",
+        mem=MEMCORE
     message:
         "Mantis: annotate {input}"
     conda:
@@ -32,7 +32,11 @@ rule mantis_annot:
     shell:
         """
         rm -rf Analysis/annotation/intermediary/mantis*
-        mantis run -i {input.faa} -o {params.odir} -mc {input.config} {params.params} -c {threads} &> {log}
+        mantis run -i {input.faa} \
+                   -o {params.odir} \
+                   -mc {input.config} \
+                   {params.params} \
+                   -c {threads} &> {log}
         """
 
 # Mantis: reformat consensus output for easier downstream processing
@@ -66,6 +70,8 @@ checkpoint makegff_mantis:
         runtime="1:00:00",
         mem=MEMCORE,
     message:
-        "Mantis: create GFF from {input}"
+        "Mantis: Create GFF from {input}"
+    log:
+        "logs/analysis_mantis_make_gff.log"
     script:
         os.path.join(SRCDIR, "Analysis", "mantis_gff.py")

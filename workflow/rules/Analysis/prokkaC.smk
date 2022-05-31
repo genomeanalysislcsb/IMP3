@@ -19,12 +19,21 @@ rule annotate:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         export LC_ALL=en_US.utf-8
-        if [ ! -f $CONDA_PREFIX/db/hmm/HAMAP.hmm.h3m ]; then
-          {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db --setupdb
-        fi 
-	{BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db --force --outdir Analysis/annotation --prefix prokka --noanno --cpus {threads} --metagenome {input[0]} >> {log} 2>&1
         
-	# Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
+        if [ ! -f $CONDA_PREFIX/db/hmm/HAMAP.hmm.h3m ]; then
+          {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db \
+                           --setupdb
+        fi 
+        
+	    {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db \
+	                     --force \
+	                     --outdir Analysis/annotation \
+	                     --prefix prokka \
+	                     --noanno \
+	                     --cpus {threads} \
+	                     --metagenome {input[0]} >> {log} 2>&1
+        
+	    # Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
         # And keeps only the gff table.
 
         LN=`grep -Hn "^>" Analysis/annotation/prokka.gff | head -n1 | cut -f2 -d ":" || if [[ $? -eq 141 ]]; then true; else exit $?; fi`
