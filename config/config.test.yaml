@@ -13,7 +13,7 @@ mem:
   big_mem_per_core: 1750
 tmp_dir: tmp
 raws:
-  Metagenomics: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/test/Reads/test.mg.1.fastq /mnt/irisgpfs/users/ohickl/local_tools/imp3/test/Reads/test.mg.2.fastq"
+  Metagenomics: "/abs/path/to/imp3/test/Reads/test.mg.1.fastq /abs/path/to/imp3/test/Reads/test.mg.2.fastq"
   Metatranscriptomics: ""
   LongReads: ""
   LongReadTech: ""
@@ -22,7 +22,7 @@ raws:
   Alignment_metatranscriptomics: ""
   Gff: ""
 sample: test
-outputdir: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/test/out"
+outputdir: "/abs/path/to/out_dir"
 summarydir: ""
 # Options stats, vis
 summary_steps: "stats"
@@ -30,7 +30,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db"
+db_path: "/abs/path/to/db"
 trimmomatic:
   adapter:
     mg: "TruSeq3-PE"
@@ -70,7 +70,7 @@ assembly:
   cap3:
     identity: 98
     overlap: 100
-# hmmer (default) / mantis
+# mantis (default) / hmmer
 annotation: "mantis"
 mantis:
   # default HMMs
@@ -78,7 +78,7 @@ mantis:
   default:
     nog_ref_folder: null
     pfam_ref_folder: null
-    kofam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db/mantis"
+    kofam_ref_folder: "/abs/path/to/db/mantis"
     ncbi_ref_folder: null
     tcdb_ref_folder: null
   # custom HMMs (list)
@@ -90,8 +90,7 @@ mantis:
     nog_weight: 0.8
     pfam_weight: 0.9
     uniprot_ec_weight: 0.9
-#hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
-hmm_DBs: ""
+hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
 hmm_settings:
   KEGG:
     cutoff: ""
@@ -148,7 +147,7 @@ binning:
       max_iterations: 50
     clustering:
       hdbscan_epsilon_range: '0.500,0.000'
-      hdbscan_min_samples_range: '1,2,4,6,8,20'
+      hdbscan_min_samples_range: '1,2,4,6,8'
       include_depth_initial: 'False'
       include_depth_main: 'True'
     bin_quality:

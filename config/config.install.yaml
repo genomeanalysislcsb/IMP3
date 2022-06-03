@@ -4,8 +4,7 @@
 #   For more information on git commit hashes, see here: https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection.
 
 # path where to download/copy the data(bases)
-#db_path: "/where/to/create/databases/"
-db_path: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db"
+db_path: "/abs/path/to/db"
 
 ##################################################
 # Adapters for reads trimming
@@ -67,12 +66,7 @@ gtdbtk:
 mantis:
   # default HMMs (name/path mapping)
   default: # set paths null (i.e.: ncbi_ref_folder: null), if a database should not be used
-#    kofam_ref_folder: "/path/to/mantis/kofam/database/"
-#    ncbi_ref_folder: "/path/to/mantis/ncbi/database/"
-#    nog_ref_folder: "/path/to/mantis/nog/database/"
-#    pfam_ref_folder: "/path/to/mantis/pfam/database/"
-#    tcdb_ref_folder: "/path/to/mantis/tcdb/database/"
-    kofam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db/mantis"
+    kofam_ref_folder: "/abs/path/to/db/mantis"
     ncbi_ref_folder: null
     nog_ref_folder: null
     pfam_ref_folder: null
