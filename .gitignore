@@ -35,10 +35,7 @@ condai/
 runIMP3_tmux.sh
 testoutput/
 runIMP3_multi_tmux.sh
-submodules
-submodules/binny/*
-submodules/binny
-submodules/ESOM
+submodules/
 IMP3.initialised/
 workflow/rules/Binning/binny/binny.smk
 workflow/rules/Binning/binny/binny2dastool.smk
@@ -56,3 +53,5 @@ hmm/
 install/logs/
 run_cami_imp_test.sh
 run_imp_install_gtdbtk.sh
+*-install_imp-*.out
+tmp_dir/
