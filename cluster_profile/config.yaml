@@ -18,7 +18,7 @@ configfile:
 # resources
 default-resources:
   # tmp directory
-  - tmpdir="/tmp" # USER_INPUT
+  - tmpdir="/mnt/irisgpfs/users/ohickl/local_tools/imp3/tmp_dir" # USER_INPUT
 
 # go on with independent jobs if a job fails
 keep-going: True
@@ -30,7 +30,7 @@ reason: True
 printshellcmds: True
 # conda
 use-conda: True
-conda-prefix: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/conda" # USER_INPUT
+conda-prefix: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_conda" # USER_INPUT
 # wait given seconds if an output file of a job is not present after the job finished
 latency-wait: 60
 

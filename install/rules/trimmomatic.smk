@@ -8,7 +8,7 @@ rule trimmomatic_adapters:
     output:
         os.path.join("adapters", "trimmomatic.done")
     log:
-        os.path.join("adapters", "trimmomatic.log")
+        os.path.join(INSTALL_DIR, "logs/adapters_trimmomatic.log")
     message:
         "Adapters: Trimmomatic adapters"
     shell:

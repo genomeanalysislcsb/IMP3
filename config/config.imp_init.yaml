@@ -13,7 +13,7 @@ mem:
   big_mem_per_core: 36
 tmp_dir: tmp
 raws:
-  Metagenomics: "test/Reads/test.mg.1.fastq test/Reads/test.mg.2.fastq"
+  Metagenomics: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/test/Reads/test.mg.1.fastq /mnt/irisgpfs/users/ohickl/local_tools/imp3/test/Reads/test.mg.2.fastq"
   Metatranscriptomics: ""
   LongReads: ""
   LongReadTech: ""
@@ -30,7 +30,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/mnt/lscratch/users/ohickl/databases/imp3"
+db_path: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db"
 trimmomatic:
   adapter:
     mg: "TruSeq3-PE"
@@ -74,10 +74,10 @@ assembly:
 annotation: "hmmer"
 mantis:
   # default HMMs
-  # set to null if no database, otherwise provide a path
+  # set to null (i.e.: ncbi_ref_folder: null), if no database, otherwise provide a path
   default:
     nog_ref_folder: null
-    pfam_ref_folder: null
+    pfam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db/mantis/"
     kofam_ref_folder: null
     ncbi_ref_folder: null
     tcdb_ref_folder: null
@@ -135,11 +135,12 @@ binning:
     esom_max: 5000
   binny:
     kmers: '2,3,4'
+    mask_disruptive_sequences: 'True'
     NX_value: 95
     min_cont_length_cutoff: 500
     max_cont_length_cutoff: 1000
-    min_cont_length_cutoff_marker: 100
-    max_cont_length_cutoff_marker: 300
+    min_cont_length_cutoff_marker: 250
+    max_cont_length_cutoff_marker: 400
     max_n_contigs: 3.5e5
     distance_metric: 'manhattan'
     embedding:
@@ -150,9 +151,9 @@ binning:
       include_depth_initial: 'False'
       include_depth_main: 'True'
     bin_quality:
-      min_completeness: 62.5
-      start_completeness: 92.5
-      purity: 92.5
+      min_completeness: 70
+      start_completeness: 90
+      purity: 90
   CONCOCT:
     cutoff: 1000
   MaxBin:

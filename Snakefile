@@ -1,7 +1,8 @@
 # include global functions
 ROOTDIR = srcdir(".")
 
-print('workflow.cores:{}, {}'.format(workflow.cores, workflow.nodes))
+print(f'workflow.cores, workflow.nodes: {workflow.cores}, {workflow.nodes}')
+print(f'workflow.conda_prefix: {workflow.conda_prefix}')
 
 include:
     "workflow/rules/function.definitions.smk"

@@ -7,10 +7,11 @@ rule gtdbtk_download:
         result=directory("gtdbtk"),
         download=temp(directory("downloads/files/gtdbtk")),
     log:
-        "gtdbtk/download.log"
+        os.path.join(INSTALL_DIR, "logs/gtdbtk_download.log")
     params:
         url=config["gtdbtk"]["url"]
-    threads: 4
+    threads:
+        4
     conda:
         os.path.join(ENV_DIR, "utils.yaml")
     message:

@@ -15,6 +15,11 @@ config["binning"]["binny"]["outputdir"] = os.path.join(config["outputdir"], "Bin
 config["binning"]["binny"]["raws"] = {"assembly": f"Assembly/{ASS}.assembly.merged.fa",
                                       "contig_depth": f"Stats/mg/{ASS}.assembly.contig_depth.txt"}
 
+# Get conda env dir
+config["binning"]["binny"]["conda_source"] = workflow.conda_prefix if workflow.conda_prefix else srcdir("../conda")
+
+config["binning"]["binny"]["write_contig_data"] = "True"
+
 binny_contig_data = os.path.join(config["binning"]["binny"]["outputdir"], "contig_data.tsv.gz")
 binny_s2b = "Binning/binny/scaffold2bin.tsv"
 
@@ -35,7 +40,7 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
     params:
         binny_cfg=os.path.join(ROOTDIR, "submodules/binny/config/binny_mantis.cfg")
     threads:
-        getThreads(32)
+        getThreads(80)
     resources:
         runtime="24:00:00",
         mem=MEMCORE
@@ -53,7 +58,8 @@ use rule binny from binny_workflow as binny_binny with:
         hmm_markers="Binning/binny/intermediary/mantis_out/consensus_annotation.tsv"
     output:
         directory('Binning/binny/bins'),
-        contig_data=os.path.join(config["outputdir"], "Binning/binny/contig_data.tsv.gz")
+        os.path.join(config["outputdir"],"Binning/binny/contig_data.tsv.gz"),
+        os.path.join(config["outputdir"], "Binning/binny/binny.done")
     params:
         binny_out=config["binning"]["binny"]["outputdir"],
         sample=config['sample'],
@@ -65,6 +71,7 @@ use rule binny from binny_workflow as binny_binny with:
         start_completeness=config["binning"]["binny"]["bin_quality"]["start_completeness"],
         purity=config["binning"]["binny"]["bin_quality"]["purity"],
         kmers=config["binning"]["binny"]["kmers"],
+        mask_disruptive_sequences=config["binning"]["binny"]["mask_disruptive_sequences"],
         min_cutoff=config["binning"]["binny"]["min_cont_length_cutoff"],
         max_cutoff=config["binning"]["binny"]["max_cont_length_cutoff"],
         min_cutoff_marker=config["binning"]["binny"]["min_cont_length_cutoff_marker"],
@@ -76,9 +83,10 @@ use rule binny from binny_workflow as binny_binny with:
         include_depth_initial=config["binning"]["binny"]["clustering"]["include_depth_initial"],
         include_depth_main=config["binning"]["binny"]["clustering"]["include_depth_main"],
         hdbscan_min_samples_range=config["binning"]["binny"]["clustering"]["hdbscan_min_samples_range"],
-        hdbscan_epsilon_range=config["binning"]["binny"]["clustering"]["hdbscan_epsilon_range"]
+        hdbscan_epsilon_range=config["binning"]["binny"]["clustering"]["hdbscan_epsilon_range"],
+        write_contig_data="True"
     threads:
-        getThreads(32)
+        getThreads(80)
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE

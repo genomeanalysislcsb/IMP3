@@ -6,7 +6,7 @@ rule genome_download:
         result="filtering/{genome}.fa",
         download=temp(directory("downloads/filtering/{genome}")),
     log:
-        "filtering/{genome}.log"
+        os.path.join(INSTALL_DIR, "logs/filtering_{genome}.log")
     wildcard_constraints:
         genome="|".join(config["genomes"].keys())
     params:

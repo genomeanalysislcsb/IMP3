@@ -33,9 +33,9 @@ IMP2to3/*
 rules/CRISPR
 condai/
 runIMP3_tmux.sh
-config/config.test.yaml
 testoutput/
 runIMP3_multi_tmux.sh
+submodules
 submodules/binny/*
 submodules/binny
 submodules/ESOM

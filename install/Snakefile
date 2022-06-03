@@ -10,6 +10,8 @@ from snakemake.utils import validate
 include:
     "rules/common.smk"
 
+# print(workflow.snakefile, workflow.basedir, workflow.conda_prefix)
+
 ##################################################
 # CONFIG
 
@@ -19,7 +21,7 @@ validate(config, srcdir("../schemas/schema.install.yaml"))
 # paths
 ENV_DIR = srcdir("envs")
 SRC_DIR = srcdir("scripts")
-CONDA_DIR = srcdir("../conda")
+CONDA_DIR = workflow.conda_prefix if workflow.conda_prefix else srcdir("../conda")
 SUBMOD_DIR = srcdir("../submodules")
 INSTALL_DIR = srcdir("")
 MAIN_ENV_DIR = srcdir("../workflow/envs")
@@ -36,7 +38,11 @@ workdir:
 ##################################################
 # TARGETS & RULES
 
-TARGETS = []
+include:
+        "rules/binning.smk"
+
+TARGETS = ["checkm/checkm_db.ready", os.path.join(SUBMOD_DIR, "binny/setup.done"), "SemiBin_setup.done",
+           os.path.join(SUBMOD_DIR, "ESOM/setup.done")]
 
 # adapters, Trimmomatic
 if "trimmomatic" in config:

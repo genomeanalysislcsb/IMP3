@@ -12,7 +12,7 @@ rule semibin:
         db_dir=os.path.join(config["db_path"], "gtdb_semibin"),
         tmp_dir=os.path.join(config["tmp_dir"])
     threads:
-        getThreads(32)
+        getThreads(80)
     resources:
         runtime = "24:00:00",
         mem = MEMCORE
@@ -26,22 +26,6 @@ rule semibin:
         """
         ## Create SemiBin dir
         mkdir -p {output.out_dir}
-
-        # # Annotate assembly using mmseqs and gtdb-tk
-        # mmseqs createdb {input.assembly} \
-        #                 {output.out_dir}/mmseqs_assembly_db >> {log} 2>&1
-        # mmseqs taxonomy {output.out_dir}/mmseqs_assembly_db \
-        #                 {params.db_dir}/gtdbtk \
-        #                 {output.out_dir}/mmseqs_annotation \
-        #                 {params.tmp_dir} >> {log} 2>&1
-        # mmseqs createtsv {output.out_dir}/mmseqs_assembly_db \
-        #                  {output.out_dir}/mmseqs_annotation \
-        #                  {output.out_dir}/taxonomyResult.tsv >> {log} 2>&1
-        # 
-        # tree {output.out_dir}
-        
-        # for custom db
-        # --taxonomy-annotation-table {output.out_dir}/taxonomyResult.tsv \
         
         ## Run SemiBin
         SemiBin \

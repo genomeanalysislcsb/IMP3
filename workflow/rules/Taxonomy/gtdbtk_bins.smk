@@ -26,7 +26,7 @@ rule GTDBtk_bins_single:
         echo "to_gb_dict[config["mem"]["mem_unit"]]": {params.t2} >> {log} 2>&1
         echo "BIGCORENO": {params.t3} >> {log} 2>&1
         echo "int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45)": {params.t4} >> {log} 2>&1
-        export GTDBTK_DATA_PATH="{DBPATH}/gtdbtk/release202"
+        export GTDBTK_DATA_PATH="{DBPATH}/gtdbtk/release207_v2"
         export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
         gtdbtk classify_wf --genome_dir {input}/ \
                            --extension fasta \

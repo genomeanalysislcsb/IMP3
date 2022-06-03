@@ -9,8 +9,8 @@ rule setup_checkm:
     params:
         str1_to_fix='best_bin_set=binsA',
         str1_replacement='mv binsA binsO; mv binsA.stats binsO.stats; best_bin_set=binsO; rm -rf tmp.fa',
-        str2_to_fix='; then',
-        str2_replacement=' && [[ ! \$n_binnings -eq 1 ]]; then',
+        str2_to_fix='\[ \$dereplicate \!\= \"false\" ]; then',
+        str2_replacement='\[ \$dereplicate \!\= \"false\" ] \&\& \[\[ \! \$n_binnings \-eq 1 \]\]; then',
         str3_to_fix='if \[\[ \$n_binnings \-ne 1 \]\]\; then',
         str3_replacement='if [[ \$n_binnings -ge 1 ]]; then'
     conda:
@@ -36,8 +36,8 @@ rule setup_checkm:
                -e "451s/{params.str3_to_fix}/{params.str3_replacement}/g" \
                ${{CONDA_PREFIX}}/bin/metawrap-modules/bin_refinement.sh
         
-        # Adjust score formula from 'completeness - (contamination * 5)' to 'completeness - (contamination * 2.0)'
-        sed -i -e "s/\*5/*2.5/g" ${{CONDA_PREFIX}}/bin/metawrap-scripts/consolidate_two_sets_of_bins.py
+        # Adjust score formula from 'completeness - (contamination * 5)' to 'completeness - (contamination * 2)'
+        sed -i -e "s/\*5/*2/g" ${{CONDA_PREFIX}}/bin/metawrap-scripts/consolidate_two_sets_of_bins.py
         """
 
 ##################################################
@@ -53,7 +53,7 @@ rule binny_setup:
     log:
         os.path.join(INSTALL_DIR, "logs/binny_setup.log")
     params:
-        prokka_env = os.path.join(MAIN_ENV_DIR,"IMP_annotation.yaml"),
+        prokka_env=os.path.join(MAIN_ENV_DIR,"IMP_annotation.yaml"),
         mantis_env=os.path.join(MAIN_ENV_DIR, "IMP_mantis.yaml"),
         snakemake_env=os.path.join(CONDA_DIR, "snakemake_env")
     threads:
@@ -67,6 +67,11 @@ rule binny_setup:
         {output.binny_dir} >> {log} 2>&1
 
         cd {output.binny_dir}
+
+        # Prevent binny subworkflow from changing IMP out dir
+        sed -i -e "s|workdir\:|# workdir:|g" \
+               -e "s|    OUTPUTDIR|#     OUTPUTDIR|g" Snakefile
+        
         echo "Changing config file." >> {log} 2>&1
  
         sed -i -e "s|prokka_env: \\"\\"|prokka_env: \\"{params.prokka_env}\\"|g" \
@@ -114,7 +119,7 @@ rule abawaca_setup:
         esom_dir=directory(os.path.join(SUBMOD_DIR, "ESOM")),
         out=os.path.join(SUBMOD_DIR, "ESOM/setup.done")
     log:
-        os.path.join(INSTALL_DIR,"logs/abawaca_setup.log")
+        os.path.join(INSTALL_DIR, "logs/abawaca_setup.log")
     threads:
         1
     conda:
