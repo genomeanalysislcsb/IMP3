@@ -55,6 +55,8 @@ checkpoint makegff_mantis:
         mantis=rules.mantis_reformat_consensus.output.contab,
     output:
         gff=temp("Analysis/annotation/intermediary/mantis/consensus_annotation.reformatted.gff")
+    log:
+        "logs/analysis_mantis_gff.log"
     params:
         sep="|", # separator used in mantis_reformat_consensus
         prefix="Analysis/annotation/intermediary/mantis/consensus_annotation.mantis"

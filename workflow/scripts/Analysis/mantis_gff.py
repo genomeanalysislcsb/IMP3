@@ -9,6 +9,24 @@ import logging
 ##############################
 # FUNCTIONS
 ##############################
+def setup_logger(logfile=None, level=logging.DEBUG):
+    """
+    Setup a logger
+    """
+    # create logger
+    logger = logging.getLogger()
+    logger.setLevel(level)
+
+    # console handler
+    ch = logging.StreamHandler()
+    logger.addHandler(ch)
+
+    # file handler
+    if logfile:
+        fh = logging.FileHandler(logfile)
+        logger.addHandler(fh)
+    return
+
 def read_in_gff(fname):
     """Read in a GFF"""
     # column names (https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md#description-of-the-format)
@@ -32,7 +50,25 @@ def read_mantis_consensus(fname):
     annot = pandas.read_csv(fname, sep="\t", header=0, index_col=0)
     return annot
 
-def mantis_gff_attrs_generator(links_str, sep="|"):
+def mantis_links2df(links_str, sep="|"):
+    """
+    Split Mantis' protein annotations and return a table with keys and values
+
+    Parameters
+    ----------
+    links_str : str
+        Links string provided by Mantis in the consensus output table
+    sep : str
+        Character/string used to separate anotations
+
+    Returns
+    -------
+    pandas.DataFrame
+        Table with all annotations (except description) stored in columns 'Key' and 'Value'
+    """
+    return pandas.DataFrame([tuple(hit.split(":")) for hit in links_str.split(sep)], columns=["Key", "Value"])
+
+def mantis_links_generator(links_str, sep="|"):
     """
     Generator yielding summarized Mantis' annotations in GFF attribute format
 
@@ -46,19 +82,18 @@ def mantis_gff_attrs_generator(links_str, sep="|"):
     Yields
     ------
     str
-        Summarized annotation for a particular key in GFF attribute format, i.e. <key>=<value1,value2,...>
+        Summarized annotation per type (key value) in GFF attribute format (<key>=<value1,value2,...>)
     """
-    # data frame of keys and values
-    df_links = pandas.DataFrame([tuple(hit.split(":")) for hit in links_str.split(sep)], columns=["Key","Value"])
-    # remove description
+    # table of keys and values w/o description
+    df_links =  mantis_links2df(links_str, sep)
     df_links = df_links.loc[df_links.Key != "description",:]
     # generator
     for gr_name, gr_df in df_links.groupby("Key"):
         yield "{}={}".format(gr_name, ",".join(gr_df.Value.astype(str)))
 
-def mantis_gff_attrs_pair(links_str, sep="|"):
+def mantis_links_pairs(links_str, sep="|"):
     """
-    Mantis' annotations as pair for GFF attribute format
+    Mantis' annotations for a protein as a table with key and key/value string in GFF format
 
     Parameters
     ----------
@@ -70,22 +105,23 @@ def mantis_gff_attrs_pair(links_str, sep="|"):
     Yields
     ------
     pandas
-        All key-value-couples + column in GFF attribute format, i.e. <key1>=<value1>
+        Annotations type (key value) and key/value pairs in GFF attribute format (<key>=<value>)
     """
-    # data frame of keys and values
-    df_links = pandas.DataFrame([tuple(hit.split(":")) for hit in links_str.split(sep)], columns=["Key","Value"])
-    # remove description
+    # table of keys and values w/o description
+    df_links =  mantis_links2df(links_str, sep)
     df_links = df_links.loc[df_links.Key != "description",:]
-    # return panda df
-    df_links["Pair"] = df_links.apply("=".join,axis=1) 
-    df_links.drop("Value",inplace=True, axis=1)
+    # create pairs and drop values
+    df_links["Pair"] = df_links.apply("=".join, axis=1) 
+    df_links.drop("Value", inplace=True, axis=1)
     return df_links
 
 ##############################
 # MAIN
 ##############################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    setup_logger(snakemake.log[0])
+
     # read in
     gff    = read_in_gff(snakemake.input.gff)
     mantis = read_mantis_consensus(snakemake.input.mantis)
@@ -98,19 +134,24 @@ if __name__ == '__main__':
     assert len(gff_keys.intersection(mantis_keys)) == 0, "There are common attribute keys in {}: {}".format(input, gff_keys.intersection(mantis_keys))
 
     # add GFF attributes based on Mantis' annotations
-    for pid in mantis.index:
-        gff.loc[pid, "attr"] = ";".join(
-            [gff.loc[pid, "attr"]] + list(mantis_gff_attrs_generator(mantis.loc[pid, "Links"], sep=snakemake.params.sep))
-        )
-        # add gff attributes for featureCounts
-        curlinks = mantis_gff_attrs_pair(mantis.loc[pid, "Links"],sep=snakemake.params.sep)
-        if not curlinks is None:
-            curline = gff.loc[[pid]*len(curlinks.index),gff.columns != "attr"].copy()
-            curline = curline.set_index(curlinks.index[:len(curline)]).reindex(curlinks.index, method='ffill')
-            curall = pandas.concat([curline,curlinks], axis=1)
-            curkeys = curall.groupby("Key")
-            for k in curkeys.groups:
-                op = snakemake.params.prefix + "." + k + ".gff"
-                curkeys.get_group(k).copy().drop("Key", axis=1).to_csv(op,sep="\t", header=False, index=False,mode='a')
-    # save
-    gff.to_csv(snakemake.output.gff, sep="\t", header=False, index=False, index_label=None)
+    with open(snakemake.output.gff, "w") as o_gff:
+        for pid in gff.index:
+            # save (updated) annotations to output GFF
+            pid_line = gff.loc[pid,:].copy()
+            if pid in mantis.index:
+                pid_line.loc["attr"] = ";".join(
+                    [pid_line["attr"]] + list(mantis_links_generator(mantis.loc[pid, "Links"], sep=snakemake.params.sep))
+                )
+            o_gff.write("\t".join(pid_line.astype(str)) + "\n")
+            # save GFF attributes for featureCounts
+            if pid in mantis.index:
+                pid_links = mantis_links_pairs(mantis.loc[pid, "Links"], sep=snakemake.params.sep)
+                if not pid_links is None:
+                    # copy GFF info for each annot and save them together
+                    pid_gff = gff.loc[[pid]*pid_links.shape[0],:].copy().set_index(pid_links.index)
+                    pid_gff = pandas.concat([pid_gff, pid_links], axis=1)
+                    for key, key_df in pid_gff.groupby("Key"):
+                        key_df.drop(columns=["attr", "Key"]).to_csv(
+                            snakemake.params.prefix + "." + key + ".gff",
+                            sep="\t", header=False, index=False, mode="a"
+                        )
