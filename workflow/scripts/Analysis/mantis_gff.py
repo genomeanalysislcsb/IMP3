@@ -147,11 +147,8 @@ if __name__ == "__main__":
             if pid in mantis.index:
                 pid_links = mantis_links_pairs(mantis.loc[pid, "Links"], sep=snakemake.params.sep)
                 if not pid_links is None:
-                    # copy GFF info for each annot and save them together
-                    pid_gff = gff.loc[[pid]*pid_links.shape[0],:].copy().set_index(pid_links.index)
-                    pid_gff = pandas.concat([pid_gff, pid_links], axis=1)
-                    for key, key_df in pid_gff.groupby("Key"):
-                        key_df.drop(columns=["attr", "Key"]).to_csv(
-                            snakemake.params.prefix + "." + key + ".gff",
-                            sep="\t", header=False, index=False, mode="a"
-                        )
+                    # save GFF info + new attribute to file
+                    for key, key_df in pid_links.groupby("Key"):
+                        with open(f"{snakemake.params.prefix}.{key}.gff", "a") as o_fc:
+                            for key_v in key_df.Pair:
+                                o_fc.write("\t".join(list(pid_line.drop(["attr"]).astype(str)) + [key_v]) + "\n")
