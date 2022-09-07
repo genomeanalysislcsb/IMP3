@@ -30,7 +30,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db"
+db_path: "/abs/path/to/imp3_test_db/dir"
 trimmomatic:
   adapter: 
     mg: "TruSeq3-PE"
@@ -78,7 +78,7 @@ mantis:
   default:
     nog_ref_folder: null
     pfam_ref_folder: null
-    kofam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db/mantis"
+    kofam_ref_folder: "/abs/path/to/imp3_test_db/dir/mantis"
     ncbi_ref_folder: null
     tcdb_ref_folder: null
   # custom HMMs (list)

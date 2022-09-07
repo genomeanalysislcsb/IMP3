@@ -11,9 +11,9 @@ mem:
   big_mem_total: 224000
   big_mem_cores: 128
   big_mem_per_core: 1750
-tmp_dir: '/mnt/irisgpfs/users/ohickl/local_tools/imp3/tmp_dir'
+tmp_dir: '/abs/path/to/tmp_dir'
 raws:
-  Metagenomics: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/test/Reads/test.mg.1.fastq /mnt/irisgpfs/users/ohickl/local_tools/imp3/test/Reads/test.mg.2.fastq"
+  Metagenomics: "/abs/path/to/test.mg.1.fastq /abs/path/to/test.mg.2.fastq"
   Metatranscriptomics: ""
   LongReads: ""
   LongReadTech: ""
@@ -22,7 +22,7 @@ raws:
   Alignment_metatranscriptomics: ""
   Gff: ""
 sample: test
-outputdir: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/test/out"
+outputdir: "/abs/path/to/test/out"
 summarydir: ""
 # Options stats, vis
 summary_steps: "stats"
@@ -30,7 +30,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db"
+db_path: "/abs/path/to/imp3_test_db/dir"
 trimmomatic:
   adapter:
     mg: "TruSeq3-PE"

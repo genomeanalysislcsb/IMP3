@@ -13,7 +13,7 @@ mem:
   big_mem_per_core: 36
 tmp_dir: tmp
 raws:
-  Metagenomics: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/test/Reads/test.mg.1.fastq /mnt/irisgpfs/users/ohickl/local_tools/imp3/test/Reads/test.mg.2.fastq"
+  Metagenomics: ""
   Metatranscriptomics: ""
   LongReads: ""
   LongReadTech: ""
@@ -30,7 +30,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db"
+db_path: "/abs/path/to/imp3_test_db/dir"
 trimmomatic:
   adapter:
     mg: "TruSeq3-PE"
@@ -77,7 +77,7 @@ mantis:
   # set to null (i.e.: ncbi_ref_folder: null), if no database, otherwise provide a path
   default:
     nog_ref_folder: null
-    pfam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db/mantis/"
+    pfam_ref_folder: "/abs/path/to/imp3_test_db/dir/mantis/"
     kofam_ref_folder: null
     ncbi_ref_folder: null
     tcdb_ref_folder: null
