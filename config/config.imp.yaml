@@ -128,38 +128,47 @@ proteomics:
   host_proteome: ""
   insert_variants: false
 binning:
-  # Options: abawaca CONCOCT binny MaxBin MetaBAT SemiBin
-  binners: "abawaca CONCOCT binny MaxBin MetaBAT SemiBin"
+  # Options: abawaca CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
+  # NOTE: IMP supports a maximum of six binners only atm.
+  binners: "CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin"
   abawaca:
     esom_min: 3000
     esom_max: 5000
   binny:
     kmers: '2,3,4'
     mask_disruptive_sequences: 'True'
-    NX_value: 95
-    min_cont_length_cutoff: 500
-    max_cont_length_cutoff: 1000
-    min_cont_length_cutoff_marker: 250
-    max_cont_length_cutoff_marker: 400
-    max_n_contigs: 3.5e5
+    extract_scmags: 'True'
+    coassembly_mode: 'auto'
+    NX_value: 90
+    min_cont_length_cutoff: 2250
+    max_cont_length_cutoff: 2250
+    min_cont_length_cutoff_marker: 2250
+    max_cont_length_cutoff_marker: 2250
+    max_n_contigs: 5.0e5
+    # 0: 'domain', 1: 'phylum', 2: 'class', 3: 'order', 4: 'family', 5: 'genus', 6: 'species'
+    max_marker_lineage_depth_lvl: 2
     distance_metric: 'manhattan'
     embedding:
       max_iterations: 50
     clustering:
-      hdbscan_epsilon_range: '0.500,0.000'
-      hdbscan_min_samples_range: '1,2,4,6,8'
+      hdbscan_epsilon_range: '0.250,0.000'
+      hdbscan_min_samples_range: '1,5,10'
       include_depth_initial: 'False'
-      include_depth_main: 'True'
+      include_depth_main: 'False'
     bin_quality:
-      min_completeness: 70
-      start_completeness: 90
-      purity: 90
+      min_completeness: 72.5
+      start_completeness: 92.5
+      purity: 95
   CONCOCT:
     cutoff: 1000
   MaxBin:
     cutoff: 1000
   MetaBAT:
+    # Minimum is 1500
     cutoff: 1500
+  MetaDecoder:
+    # Minimum is 2000
+    cutoff: 2000
   SemiBin:
     # Choose between: global human_gut human_oral mouse_gut pig_gut dog_gut cat_gut wastewater ocean soil
     # leave empty to create my_built_environment and after use that as param
@@ -168,7 +177,7 @@ binning:
   DAS_Tool:
     score_threshhold: 0.3
   MetaWrap:
-    min_completeness: 60
+    min_completeness: 70
     max_contamination: 10
 krakendb: minikraken2
 eukdetect:

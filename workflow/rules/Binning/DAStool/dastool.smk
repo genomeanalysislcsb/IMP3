@@ -87,9 +87,13 @@ rule format_protein_names:
     resources:
         runtime = "4:00:00",
         mem = MEMCORE
-    threads: 1
-    log: "logs/binning_format_protein_names.log"
-    message: "format_protein_names: Preparing protein sequences for DAS tool."
+    threads:
+        # Ensure at least 10gb of mem
+        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+    log:
+        "logs/binning_format_protein_names.log"
+    message:
+        "format_protein_names: Preparing protein sequences for DAS tool."
     shell:
         """
         TMP_PROT=$(mktemp --tmpdir={TMPDIR} -t "proteins_XXXXXX.faa")

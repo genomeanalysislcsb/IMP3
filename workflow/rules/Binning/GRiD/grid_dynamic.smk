@@ -1,4 +1,5 @@
 import glob
+import math
 
 localrules: grid_all
 
@@ -28,7 +29,8 @@ if "taxonomy" not in IMP_STEPS:
         message:
             "GRID_summarize: Summarizing binning results."
         threads:
-            1
+            # Ensure at least 5gb of mem
+            max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
         run:
             # Check if MetaWrap output is empty
             if os.stat(input.mw_stats).st_size > 0:

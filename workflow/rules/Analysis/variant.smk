@@ -1,3 +1,5 @@
+import math
+
 rule variant_calling:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS,
@@ -7,10 +9,15 @@ rule variant_calling:
     resources:
         runtime = "48:00:00",
         mem = MEMCORE
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    threads: 1
-    log: "logs/analysis_variant_calling.{type}.log"
-    message: "variant_calling: Calling variants using bcftools for {wildcards.type} reads."
+    conda:
+        ENVDIR + "/IMP_mapping.yaml"
+    threads:
+        # Ensure at least 20gb of mem
+        max(int(math.ceil(20 / (int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
+    log:
+        "logs/analysis_variant_calling.{type}.log"
+    message:
+        "variant_calling: Calling variants using bcftools for {wildcards.type} reads."
     shell:
         """
         #temporary directory and files

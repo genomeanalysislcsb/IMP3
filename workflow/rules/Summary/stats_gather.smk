@@ -1,4 +1,6 @@
-localrules: ALL_stats 
+import math
+
+localrules: ALL_stats
 
 gathered = [report("Stats/all_stats.tsv",category="Stats"),
             "Stats/all_stats.Rdata"]
@@ -23,10 +25,15 @@ rule gather_stats:
         hmmer_dbs = config["hmm_DBs"] if config['annotation'] == "hmmer" else "",
         mantis_dir = "Analysis/annotation/" if config["annotation"] == "mantis" else [],
         mantis_pattern = ".mantis.+tsv.summary" if config["annotation"] == "mantis" else []
-    log: "logs/stats_gather_stats.log"
-    message: "gather_stats: Summarizing stats."
-    threads: 1
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    log:
+        "logs/stats_gather_stats.log"
+    message:
+        "gather_stats: Summarizing stats."
+    threads:
+        # Ensure at least 5gb of mem
+        max(int(math.ceil(5 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+    conda:
+        ENVDIR + "/IMP_annotation.yaml"
     script:
         SRCDIR + "/summarize_all_stats.R"
          

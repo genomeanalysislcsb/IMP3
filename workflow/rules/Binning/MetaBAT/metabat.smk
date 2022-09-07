@@ -7,7 +7,8 @@ rule metabat:
         out_dir=directory("Binning/MetaBAT"),
         out_bin_dir=directory("Binning/MetaBAT/bins")
     params:
-        res="Binning/MetaBAT/metabat_res"
+        res="Binning/MetaBAT/metabat_res",
+        min_cont_size=config[binning][MetaBAT][cutoff]
     threads:
         getThreads(8)
     resources:
@@ -32,7 +33,7 @@ rule metabat:
                  --saveCls \
                  -o {params.res} \
                  -t {threads} -v \
-                 -m {config[binning][MetaBAT][cutoff]} >> {log} 2>&1
+                 -m {params.min_cont_size} >> {log} 2>&1
         mv {params.res} {output.s2b}
         rm $TMP_FILE
         # Move bin fastas and rename.

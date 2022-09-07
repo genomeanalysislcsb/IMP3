@@ -8,12 +8,17 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.gene_depth.avg",
         "Stats/{type}/annotation/{type}.gene.len"
     resources:
-        runtime = "8:00:00",
+        runtime = "24:00:00",
         mem = BIGMEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/analysis_call_gene_depth.{type}.log"
-    message: "call_gene_depth: Getting data on gene coverage with {wildcards.type} reads."
+    threads:
+        # Ensure at least 5gb of mem
+        max(int(math.ceil(5 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+    conda:
+        ENVDIR + "/IMP_mapping.yaml"
+    log:
+        "logs/analysis_call_gene_depth.{type}.log"
+    message:
+        "call_gene_depth: Getting data on gene coverage with {wildcards.type} reads."
     shell:
         """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "annotation_cov_XXXXXX.bed")

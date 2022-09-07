@@ -200,8 +200,11 @@ PREPROCESSING_FILTERING = config['preprocessing_filtering']
 FILTER = config['filtering']['filter'].split()
 IMP_ASSEMBLER = config['assembly']['assembler']
 BIN_STEPS = config['binning']['binners'].split()
+if len(BIN_STEPS) > 6:
+    raise Exception('A maximum of six binning methods per run are supported at the moment.')
 if not MG and not MGaln:
-    BIN_STEPS = list(set(BIN_STEPS).difference(["MaxBin", "binny"]))
+    # BIN_STEPS = list(set(BIN_STEPS).difference(["MaxBin", "binny"]))
+    BIN_STEPS = ['MetaBAT']
 SUM_STEPS = config['summary_steps'].split()
 
 # hardware parameters

@@ -2,8 +2,6 @@ import glob
 
 localrules: MetaWrap_refine_check
 
-# print(expand("Binning/{binner}/bins",binner=BIN_STEPS + ['DASTool']))
-
 checkpoint MetaWrap_refine_check:
     input:
         expand("Binning/{binner}/bins",binner=BIN_STEPS + ['DASTool'])
@@ -20,10 +18,6 @@ binner_out_path_list = [OUTPUTDIR + "/Binning/" + binner + "/bins" for binner in
                                                                                   "/bins/*.fasta")))]
 if glob.glob(OUTPUTDIR + "/Binning/DASTool/bins/*.fasta"):
     binner_out_path_list.extend([OUTPUTDIR + "/Binning/DASTool/bins"])
-
-# print('binner_out_path_list:', binner_out_path_list)
-# print('get_mw_binner_inputs:', get_mw_binner_inputs(binner_out_path_list, mw_min_comp, mw_max_cont))
-
 
 rule MetaWrap_refine:
     input:
@@ -44,7 +38,7 @@ rule MetaWrap_refine:
     threads:
         getThreads(BIGCORENO)
     resources:
-        runtime = "24:00:00",
+        runtime = "12:00:00",
         mem = BIGMEMCORE
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
@@ -60,6 +54,16 @@ rule MetaWrap_refine:
         final_out={params.prefix_1}
         bin_folder="metawrap_{params.mw_min_comp}_{params.mw_max_cont}_bins"
         binner_input_array=({input.binner_fasta_dirs})
+        
+        # Ensure no special chars in bin names, which lead to MetaWrap CheckM crash
+        for i in ${{binner_input_array[@]}}; do
+          for bin in ${{i}}/*.fasta; do
+            fixed_name=$(python -c "print(\\"${{bin}}\\".replace('|', '___'))")
+            if [[ "${{fixed_name}}" != "${{bin}}" ]]; then
+              mv "${{bin}}" "${{fixed_name}}"
+            fi
+          done
+        done
         
         if [ ${{#binner_input_array[@]}} -eq 0 ]; then
           mkdir -p {output.out_dir}/bins
@@ -127,8 +131,22 @@ rule MetaWrap_refine:
           mv ${{i}} ${{i/metawrap_{params.mw_min_comp}_{params.mw_max_cont}_/}}
         done
         
+        if [[ ! -d Visualization ]]; then
+          mkdir Visualization
+        fi
+        
         mv {output.out_dir}/figures/* Visualization/
         rm -rf {output.out_dir}/figures
+        
+        # Revert no special chars in bin names, which lead to MetaWrap CheckM crash
+        for i in ${{binner_input_array[@]}}; do
+          for bin in ${{i}}/*.fasta; do
+            unfixed_name=$(python -c "print(\\"${{bin}}\\".replace('___', '|'))")
+            if [[ "${{unfixed_name}}" != "${{bin}}" ]]; then
+              mv "${{bin}}" "${{unfixed_name}}"
+            fi
+          done
+        done
         """
 
 

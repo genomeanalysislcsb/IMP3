@@ -12,7 +12,7 @@ rule semibin:
         db_dir=os.path.join(config["db_path"], "gtdb_semibin"),
         tmp_dir=os.path.join(config["tmp_dir"])
     threads:
-        getThreads(80)
+        getThreads(128)
     resources:
         runtime = "24:00:00",
         mem = MEMCORE
@@ -26,6 +26,10 @@ rule semibin:
         """
         ## Create SemiBin dir
         mkdir -p {output.out_dir}
+        
+        # Overwrite 64 core limit
+        NUMEXPR_MAX_THREADS={threads}
+        export NUMEXPR_MAX_THREADS
         
         ## Run SemiBin
         SemiBin \

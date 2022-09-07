@@ -45,6 +45,11 @@ if "MetaBAT" in BIN_STEPS:
     include:
         '../../../Binning/MetaBAT/metabat.smk'
 
+## MetaDecoder
+if "MetaDecoder" in BIN_STEPS:
+    inputs_binning.append("Binning/MetaDecoder/scaffold2bin.tsv")
+    include:
+        '../../../Binning/MetaDecoder/metadecoder.smk'
 ## SemiBin
 if "SemiBin" in BIN_STEPS:
     inputs_binning.append("Binning/SemiBin/scaffold2bin.tsv")

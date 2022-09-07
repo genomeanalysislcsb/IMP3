@@ -63,14 +63,14 @@ rule binny_setup:
     shell:
         """
         echo "Downloading binny." >> {log} 2>&1
-        git clone -b v2.1.beta50-36 --single-branch https://github.com/a-h-b/binny.git \
+        git clone -b v2.2.15 --single-branch https://github.com/a-h-b/binny.git \
         {output.binny_dir} >> {log} 2>&1
 
         cd {output.binny_dir}
 
         # Prevent binny subworkflow from changing IMP out dir
-        sed -i -e "s|workdir\:|# workdir:|g" \
-               -e "s|    OUTPUTDIR|#     OUTPUTDIR|g" Snakefile
+        sed -i -e "196s|workdir\:|# workdir:|g" \
+               -e "197s|    OUTPUTDIR|#     OUTPUTDIR|g" Snakefile
         
         echo "Changing config file." >> {log} 2>&1
  
@@ -128,7 +128,9 @@ rule abawaca_setup:
         "abawaca: Setting up ESOM for abawaca"
     shell:
         """
+        # Get ESOM and stop it from messing with fasta headers
         echo "Downloading ESOM for abawaca." >> {log} 2>&1
         git clone https://github.com/tetramerFreqs/Binning {output.esom_dir} >> {log} 2>&1 && \
+        sed -i '286,292d' {output.esom_dir}/esomWrapper.pl && \
         touch {output.out}
         """

@@ -1,3 +1,5 @@
+import math
+
 include:
     "mantis_config.smk"
 
@@ -21,9 +23,9 @@ rule mantis_annot:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
         params="-gff -km -da heuristic",
     threads:
-        getThreads(64)
+        getThreads(128)
     resources:
-        runtime="48:00:00",
+        runtime="12:00:00",
         mem=MEMCORE
     message:
         "Mantis: annotate {input}"
@@ -67,8 +69,11 @@ checkpoint makegff_mantis:
         sep="|", # separator used in mantis_reformat_consensus
         prefix="Analysis/annotation/intermediary/mantis/consensus_annotation.mantis"
     resources:
-        runtime="1:00:00",
-        mem=MEMCORE,
+        runtime="12:00:00",
+        mem=MEMCORE
+    threads:
+        # Ensure at least 10gb of mem
+        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
     message:
         "Mantis: Create GFF from {input}"
     log:

@@ -1,3 +1,5 @@
+import math
+
 # Rules for annotation w/ Mantis
 include:
     "mantis.smk"
@@ -36,12 +38,16 @@ rule makegff:
         "{db}",
         lambda wildcards: config["hmm_settings"][wildcards.db]["trim"]
     resources:
-        runtime = "4:00:00",
+        runtime = "6:00:00",
         mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_annotation.yaml"
-    log: "logs/analysis_makegff.{db}.log"
-    message: "makegff: Adding hmmer results of {wildcards.db} to gff."
+    threads:
+        1
+    conda:
+        ENVDIR + "/IMP_annotation.yaml"
+    log:
+        "logs/analysis_makegff.{db}.log"
+    message:
+        "makegff: Adding hmmer results of {wildcards.db} to gff."
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
@@ -60,11 +66,15 @@ rule mergegff:
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     resources:
-        runtime = "8:00:00",
+        runtime = "12:00:00",
         mem = MEMCORE
-    threads: 1
-    log: "logs/analysis_mergegff.log"
-    message: "mergegff: Merging gffs with hmmer results."
+    threads:
+        # Ensure at least 10gb of mem
+        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
+    log:
+        "logs/analysis_mergegff.log"
+    message:
+        "mergegff: Merging gffs with hmmer results."
     shell:
         """
         {SRCDIR}/mergegffs.pl {output} {input} > {log} 2>&1
@@ -81,7 +91,9 @@ rule tar_annotation:
         counts_mantis=aggregate_mantis_fc if config["annotation"] == "mantis" else []
     output:
         "Analysis/annotation/intermediary.tar.gz"
-    threads: 1
+    threads:
+        # Ensure at least 10gb of mem
+        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     resources:
         runtime = "8:00:00",
         mem = MEMCORE

@@ -1,3 +1,5 @@
+import math
+
 rule call_contig_depth:
     input:
         "Assembly/{type}.reads.sorted.bam",
@@ -11,10 +13,15 @@ rule call_contig_depth:
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/analysis_call_contig_depth.{type}.log"
-    message: "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
+    threads:
+        # Ensure at least 20gb of mem
+        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
+    conda:
+        ENVDIR + "/IMP_mapping.yaml"
+    log:
+        "logs/analysis_call_contig_depth.{type}.log"
+    message:
+        "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
     shell:
         """
         coverageBed -b {input[0]} -a {input[3]} -sorted > {output[0]} 2>> {log}
@@ -25,7 +32,7 @@ rule call_contig_depth:
         echo "Depth calculation done" >> {log}
 
         ## This method of depth calculation was adapted and modified from the CONCOCT code
-	perl {SRCDIR}/calcAvgCoverage.pl $TMP_DEPTH {input[1]} >{output[1]}	
+	    perl {SRCDIR}/calcAvgCoverage.pl $TMP_DEPTH {input[1]} >{output[1]}	
 
         echo "Remove the temporary file" >> {log}
         rm $TMP_DEPTH
