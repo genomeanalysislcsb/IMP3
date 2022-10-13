@@ -12,7 +12,8 @@ rule kraken_contigs:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     threads: getThreads(KRAKTHREADS)
-    conda: ENVDIR + "/IMP_taxonomy.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log: "logs/analysis_kraken_contigs.log"
     message: "kraken_contigs: Running kraken2 on contigs against {config[krakendb]}."
     shell:	
@@ -31,7 +32,8 @@ rule kraken_parse:
     resources:
         runtime = "2:00:00",
         mem = MEMCORE
-    conda: ENVDIR + "/IMP_taxonomy.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log: "logs/analysis_kraken_parse.log"
     message: "kraken_parse: Parsing kraken2 output for contigs."
     shell:

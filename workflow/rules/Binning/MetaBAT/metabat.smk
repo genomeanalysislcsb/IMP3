@@ -8,7 +8,7 @@ rule metabat:
         out_bin_dir=directory("Binning/MetaBAT/bins")
     params:
         res="Binning/MetaBAT/metabat_res",
-        min_cont_size=config[binning][MetaBAT][cutoff]
+        min_cont_size=config["binning"]["MetaBAT"]["cutoff"]
     threads:
         getThreads(8)
     resources:

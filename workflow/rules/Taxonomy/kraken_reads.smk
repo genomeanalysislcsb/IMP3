@@ -18,7 +18,7 @@ rule kraken_reads:
     threads:
         getThreads(KRAKTHREADS)
     conda:
-        ENVDIR + "/IMP_taxonomy.yaml"
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
         "logs/analysis_kraken_reads.{type}.log"
     message:

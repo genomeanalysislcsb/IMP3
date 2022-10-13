@@ -64,7 +64,8 @@ elif MGaln or MTaln:
             runtime = "8:00:00",
             mem = MEMCORE
         threads: 1
-        conda: ENVDIR + "/IMP_mapping.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_mapping.yaml")
 #    log: "logs/analysis_read_numbers.{type}.log"
         message: "reads_count: Getting number of reads from {wildcards.type} bam file."
         shell:

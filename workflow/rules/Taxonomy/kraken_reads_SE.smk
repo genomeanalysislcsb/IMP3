@@ -15,7 +15,8 @@ rule kraken_reads:
     params:
         tmp_out= lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
     threads: getThreads(KRAKTHREADS) 
-    conda: ENVDIR + "/IMP_taxonomy.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log: "logs/analysis_kraken_reads.{type}.log"
     message: "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."
     shell:

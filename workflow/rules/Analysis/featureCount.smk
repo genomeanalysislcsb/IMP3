@@ -10,7 +10,8 @@ rule feature_count_hmmer:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: getThreads(8)
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     log: "logs/analysis_feature_count.{type}.{db}.log"
     message: "feature_count: Quantifying {wildcards.db} with {wildcards.type} reads."
     shell:
@@ -30,7 +31,8 @@ rule feature_count_mantis:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: getThreads(8)
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     log: "logs/analysis_feature_count.{type}.mantis.{db}.log"
     message: "feature_count: Quantifying {wildcards.db} with {wildcards.type} reads."
     shell:
@@ -51,7 +53,8 @@ rule feature_count_gene:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: getThreads(8)
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     log: "logs/analysis_feature_count_gene.{feature}.{type}.genes.log"
     message: "feature_count_gene: Quantifying {wildcards.feature} with {wildcards.type} reads."
     shell:

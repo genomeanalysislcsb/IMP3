@@ -10,7 +10,8 @@ if config['nextseq']:
         resources:
             runtime="12:00:00",
             mem = MEMCORE
-        conda: ENVDIR + "/IMP_preprocessing.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log: "logs/preprocessing_trimming.{type}.log"
         message: "trimming: Trimmming {wildcards.type} reads."
         shell:
@@ -34,7 +35,8 @@ if config['nextseq']:
         resources:
             runtime="12:00:00",
             mem = MEMCORE
-        conda: ENVDIR + "/IMP_preprocessing.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log: "logs/preprocessing_nextseq_trimming.{type}.{read}.log"
         message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
         shell:
@@ -55,7 +57,8 @@ else:
         resources:
             runtime="12:00:00",
             mem = MEMCORE
-        conda: ENVDIR + "/IMP_preprocessing.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log: "logs/preprocessing_trimming.{type}.log"
         message: "trimming: Trimmming {wildcards.type} reads."
         shell:

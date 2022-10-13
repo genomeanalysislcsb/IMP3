@@ -13,7 +13,7 @@ rule GTDBtk_bins_single:
         t3 = BIGCORENO,
         t4 = int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45),
     conda:
-        ENVDIR + "/IMP_gtdbtk.yaml"
+        os.path.join(ENVDIR, "IMP_gtdbtk.yaml")
     log:
         "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
     message:
