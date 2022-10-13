@@ -24,7 +24,7 @@ usage() {
     echo "       -g <goTo> alternative target of the workflow." 1>&2
 }
 
-while getopts n:t:g:udflcrhi flag
+while getopts n:t:g:udflcrhis flag
 do
     case $flag in
         i)
