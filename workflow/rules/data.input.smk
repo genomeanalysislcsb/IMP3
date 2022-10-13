@@ -218,7 +218,8 @@ rule check_bam_input:
         runtime = "4:00:00",
         mem = MEMCORE
     message: "Checking {wildcards.type} alignment."
-    conda: ENVDIR + "/IMP_mapping.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
     shell:
         """
         samtools quickcheck {input[1]} || (echo "ERROR: {input[1]} corrupt." && exit 1)
@@ -238,7 +239,8 @@ rule check_ann_input:
         runtime = "4:00:00",
         mem = MEMCORE
     message: "Checking annotation."
-    conda: ENVDIR + "/IMP_bioperl.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_bioperl.yaml")
     shell:
         """
         if [ -s {input[1]} ]; then
