@@ -16,7 +16,8 @@ rule hmmer:
     resources:
         runtime = "12:00:00", ## 48
         mem = MEMCORE
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     threads: getThreads(12)
     log: "logs/analysis_hmmer.{db}.log"
     message: "hmmer: Running HMMER for {wildcards.db}."
@@ -43,7 +44,7 @@ rule makegff:
     threads:
         1
     conda:
-        ENVDIR + "/IMP_annotation.yaml"
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     log:
         "logs/analysis_makegff.{db}.log"
     message:
