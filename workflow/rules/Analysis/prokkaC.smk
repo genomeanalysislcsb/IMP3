@@ -13,7 +13,8 @@ rule annotate:
         runtime = "8:00:00",
         mem = MEMCORE
     log: "logs/analysis_annotate.log"
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     message: "annotate: Running prokkaC."
     shell:
         """
@@ -32,6 +33,9 @@ rule annotate:
 	                     --noanno \
 	                     --cpus {threads} \
 	                     --metagenome {input[0]} >> {log} 2>&1
+
+        #remove partial fasta files
+        rm -f prokka.fna_*.fasta
         
 	    # Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
         # And keeps only the gff table.
