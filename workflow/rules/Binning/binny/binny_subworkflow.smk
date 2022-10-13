@@ -11,7 +11,7 @@ config["binning"]["binny"]["db_path"] = os.path.join(ROOTDIR, "submodules/binny/
 config["binning"]["binny"]["snakemake_env"] = os.path.join(ROOTDIR, "conda/snakemake_env")
 config["binning"]["binny"]["prokka_env"] = os.path.join(ROOTDIR, "workflow/envs/IMP_annotation.yaml")
 config["binning"]["binny"]["mantis_env"] = os.path.join(ROOTDIR, "workflow/envs/IMP_mantis.yaml")
-config["binning"]["binny"]["outputdir"] = os.path.join(config["outputdir"], "Binning/binny")
+config["binning"]["binny"]["outputdir"] = os.path.join( "Binning/binny")
 config["binning"]["binny"]["raws"] = {"assembly": f"Assembly/{ASS}.assembly.merged.fa",
                                       "contig_depth": f"Stats/mg/{ASS}.assembly.contig_depth.txt"}
 
@@ -58,8 +58,8 @@ use rule binny from binny_workflow as binny_binny with:
         hmm_markers="Binning/binny/intermediary/mantis_out/consensus_annotation.tsv"
     output:
         directory('Binning/binny/bins'),
-        os.path.join(config["outputdir"],"Binning/binny/contig_data.tsv.gz"),
-        os.path.join(config["outputdir"], "Binning/binny/binny.done")
+        os.path.join("Binning/binny/contig_data.tsv.gz"),
+        os.path.join("Binning/binny/binny.done")
     params:
         binny_out=config["binning"]["binny"]["outputdir"],
         sample=config['sample'],
