@@ -372,16 +372,17 @@ if(file.exists(bin_in_file)){
   print("Reading binning stats.")
   binTab <- read.delim(bin_in_file,
                        stringsAsFactors=F,header = T)
+  binTab <- binTab[binTab$bin!=""&!is.na(binTab$bin)&binTab$bin!="bin",]
 
-  rnas_bin_tab <- as.data.frame(matrix(0,nrow=length(binTab$bin[binTab$bin!=""]),
+  rnas_bin_tab <- as.data.frame(matrix(0,nrow=nrow(binTab),
                          ncol=14,
-                         dimnames=list(binTab$bin[binTab$bin!=""],
+                         dimnames=list(binTab$bin,
                                        c("complete_16S","partial_16S","complete_23S","partial_23S",
                                          "any_5S","tRNAs","mean_coverage_depth","genes",
                                          "expressed_genes","essential_genes","unique_essential_genes",
                                          "mOTU_phyla","mOTU_genera","mOTUs"))),
                           stringsAsFactors=F)
-  for(bin in binTab$bin[binTab$bin!=""&!is.na(binTab$bin)]){
+  for(bin in binTab$bin){
     if(file.exists(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"))){
       contigs_temp <- read.delim(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"),
                                stringsAsFactors=F,header = F)[,1]
@@ -421,7 +422,11 @@ if(file.exists(bin_in_file)){
       rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(ess_bin)
       rnas_bin_tab[rownames(rnas_bin_tab)==bin,11] <- length(unique(ess_bin))
       rm(ess_bin)
-    }
+    }else{
+       if("is_essential_gene" %in% dbs){
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(grep("is_essential_gene=",
+                                                    gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9]))
+    }}
     if(file.exists("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")){
       if(!grepl("^=",scan("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",what=character(),n=1))){
       mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F)
@@ -462,33 +467,33 @@ if(file.exists(bin_in_file)){
                                  "LQ_drafts",
                                  "binned_length"),
                         "number"=c(nrow(binTab),
-                                   length(which(binTab$completeness>90 &
-                                                  binTab$contamination<5 &
+                                   length(which(as.numeric(binTab$completeness)>90 &
+                                                  as.numeric(binTab$contamination)<5 &
                                                   binTab$complete_16S>0 &
                                                   binTab$complete_23S>0 &
                                                   binTab$any_5S>0 &
                                                   binTab$tRNAs >= 18)),
-                                   length(which(binTab$completeness>90 &
-                                                  binTab$contamination<5 &
+                                   length(which(as.numeric(binTab$completeness)>90 &
+                                                  as.numeric(binTab$contamination)<5 &
                                                   (binTab$complete_16S+binTab$partial_16S)>0 &
                                                   (binTab$complete_23S+binTab$partial_23S)>0 &
                                                   !(binTab$complete_16S>0 &
                                                       binTab$complete_23S>0) &
                                                   binTab$any_5S>0 &
                                                   binTab$tRNAs >= 18)),
-                                   length(which(binTab$completeness>90 &
-                                                  binTab$contamination<5 &
+                                   length(which(as.numeric(binTab$completeness)>90 &
+                                                  as.numeric(binTab$contamination)<5 &
                                                   !((binTab$complete_16S+binTab$partial_16S)>0 &
                                                       (binTab$complete_23S+binTab$partial_23S)>0 &
                                                       binTab$any_5S>0 &
                                                       binTab$tRNAs >= 18))),
-                                   length(which(binTab$completeness>=50 &
-                                                  binTab$contamination<10 &
-                                                  !(binTab$completeness>90 &
-                                                      binTab$contamination<5))),
-                                   length(which(binTab$completeness<50 &
-                                                  binTab$contamination<10 )),
-                                   sum(binTab$size[binTab$bin!=""])),
+                                   length(which(as.numeric(binTab$completeness)>=50 &
+                                                  as.numeric(binTab$contamination)<10 &
+                                                  !(as.numeric(binTab$completeness)>90 &
+                                                      as.numeric(binTab$contamination)<5))),
+                                   length(which(as.numeric(binTab$completeness)<50 &
+                                                  as.numeric(binTab$contamination)<10 )),
+                                   sum(as.numeric(binTab$size))),
                         stringsAsFactors=F)
 
   if(!"statsTab" %in% ls()){
