@@ -24,7 +24,7 @@ rule ANALYSIS:
         expand("Analysis/annotation/{type}.{feature}_counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
         expand("Analysis/annotation/{type}.{db}.counts.tsv",type=TYPES,db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],
         aggregate_mantis_fc if config["annotation"] == "mantis" else [],
-        "Analysis/annotation/intermediary.tar.gz",
+        "Analysis/annotation/intermediary.tar.gz" if 'binning' not in IMP_STEPS else [],
         "Analysis/annotation/proteomics.final.faa"
     output:
         touch('status/analysis.done')
