@@ -92,7 +92,7 @@ use rule binny from binny_workflow as binny_binny with:
         getThreads(80)
     resources:
         runtime = "24:00:00",
-        mem = BIGMEMCORE
+        mem = MEMCORE
     log:
         "logs/binning_binny.log"
 
