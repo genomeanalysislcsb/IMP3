@@ -3,21 +3,22 @@ import math
 
 localrules: grid_all
 
-rule grid_all:
-    input: 
-        gather_bins,
-        # directory("Binning/MetaWrap/bins/{clusterID}/grid")
-    output:
-        "status/binning_GRiD.done"
-    shell:
-        """
-        touch {output}
-        """
 
 if "taxonomy" not in IMP_STEPS:
-    rule GRID_summarize:
+    rule grid_all:
         input:
             gather_bins,
+            # directory("Binning/MetaWrap/bins/{clusterID}/grid")
+        output:
+            "status/binning_GRiD.done"
+        shell:
+            """
+            touch {output}
+            """
+
+    rule GRID_summarize:
+        input:
+            ctrl="status/binning_GRiD.done",
             mw_stats="Binning/MetaWrap/bins.stats"
         output:
             out_file=report("Stats/%s/%s.bins.tsv" %(ASS,ASS), "Binning")
@@ -72,8 +73,7 @@ if "taxonomy" not in IMP_STEPS:
     rule bins_tar:
         input:
             dir="Binning/MetaWrap/bins",
-            ctrl="Stats/%s/%s.bins.tsv" %(ASS,ASS),
-            bins=gather_bins
+            ctrl="Stats/%s/%s.bins.tsv" %(ASS,ASS)
         output:
             "Binning/per_bin_results.tar.gz"
         threads:
@@ -88,7 +88,7 @@ if "taxonomy" not in IMP_STEPS:
         shell:
             """
             if [ -z "$(ls -A {input.dir})" ]; then
-              tar cvzf {output} {input.bins} >> {log} 2>&1 && rm -r {input.bins} >> {log} 2>&1
+              tar cvzf {output} {input.dir}/*/grid >> {log} 2>&1 && rm -r {input.dir}/*/grid >> {log} 2>&1
             else
               touch {output}
             fi
@@ -112,8 +112,9 @@ checkpoint getBins:
         if os.stat("Binning/MetaWrap/bins.stats").st_size > 0:
             selected_bins=pd.read_table("Binning/MetaWrap/bins.stats")['bin']
             for BIN in selected_bins:
-                shell("mkdir -p Binning/MetaWrap/bins/{BIN} && cp Binning/MetaWrap/bins/{BIN}.fasta "
-                      "Binning/MetaWrap/bins/{BIN}/contigs.fasta")
+                shell("if [ -f Binning/MetaWrap/bins/{BIN}.fasta ]; then "
+                      "mkdir -p Binning/MetaWrap/bins/{BIN} && cp Binning/MetaWrap/bins/{BIN}.fasta "
+                      "Binning/MetaWrap/bins/{BIN}/contigs.fasta; fi")
         shell("touch {output}")
 
 rule grid:
