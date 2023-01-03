@@ -5,6 +5,7 @@ VARCONFIG=$2
 DIR=$(dirname $VARCONFIG)
 JNAME=$3
 THREADS=$4
+TARGET=$5
 
 while IFS=$'\t' read var val; do unset $var ; declare $var="$val" ; done < $VARCONFIG
 if [ "$SNAKEMAKE_VIA_CONDA" = true ]; then
@@ -33,13 +34,15 @@ if [ "$LOCK_SETTINGS" = true ]; then
                         {cluster.threads}{threads} {cluster.partition} {cluster.stdout}" --configfile $CONFIGFILE \
              --config sessionName=$JNAME locked_normalMem=$NORMAL_MEM_EACH locked_bigMem=$BIGMEM_MEM_EACH \
                       locked_bigCores=$BIGMEM_CORES locked_bigTotal=$BIGMEM_TOTAL settingsLocked=true sessionKind=cluster \
-             --use-conda --conda-prefix $DIR/conda  --local-cores 1 >> $JNAME.stdout 2>> $JNAME.stderr
+#             --rerun-incomplete \
+             --use-conda --conda-prefix $DIR/conda  --local-cores 1 $TARGET >> $JNAME.stdout 2>> $JNAME.stderr
 else
   snakemake --cores $THREADS --jobs $THREADS -s $DIR/Snakefile --keep-going --cluster-config $DIR/config/$SCHEDULER.config.yaml \
             --cluster "{cluster.call}$COREBINDER {cluster.runtime}{resources.runtime} {cluster.mem_per_cpu}{resources.mem} \
                        {cluster.threads}{threads} {cluster.partition} {cluster.stdout}" --configfile $CONFIGFILE \
             --config sessionName=$JNAME sessionKind=cluster --use-conda --conda-prefix $DIR/conda \
-            --local-cores 1 >> $JNAME.stdout 2>> $JNAME.stderr
+#            --rerun-incomplete \
+            --local-cores 1 $TARGET >> $JNAME.stdout 2>> $JNAME.stderr
 fi
 
 snakemake --cores 1 -s $DIR/Snakefile --report report.html --configfile $CONFIGFILE
