@@ -35,7 +35,7 @@ rule annotate:
 	                     --metagenome {input[0]} >> {log} 2>&1
 
         #remove partial fasta files
-        rm -f prokka.fna_*.fasta
+        rm -f Analysis/annotation/prokka.fna_*.fasta
         
 	    # Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
         # And keeps only the gff table.
