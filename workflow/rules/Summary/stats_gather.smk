@@ -31,7 +31,7 @@ rule gather_stats:
         "gather_stats: Summarizing stats."
     threads:
         # Ensure at least 5gb of mem
-        max(int(math.ceil(5 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        max(int(math.ceil(5 / (int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     script:
