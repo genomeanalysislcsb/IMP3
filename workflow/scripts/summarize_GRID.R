@@ -14,9 +14,9 @@ libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
 ## Files from snakemake
 ###################################################################################################
 
-cluster_dirs        <- snakemake@input #"Binning/MetaWrap/bins/{i}"
+cluster_dirs        <- snakemake@input[["dirs"]] #"Binning/MetaWrap/bins/{i}"
 out_file            <- snakemake@output #"Stats/%s/bins.tsv" %ASS
-metawrap_stats      <- "Binning/MetaWrap/bins.stats"
+metawrap_stats      <- snakemake@input[["stats"]] #"Binning/MetaWrap/bins.stats"
 # binners             <- unlist(strsplit(snakemake@config[["binning"]][["binners"]],split=" "))
 #
 # ###################################################################################################
