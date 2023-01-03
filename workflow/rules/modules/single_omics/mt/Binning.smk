@@ -28,6 +28,9 @@ include:
 if not 'taxonomy' in IMP_STEPS:
     inputs_binning.append("Binning/per_bin_results.tar.gz")
 
+## tar annotation
+if 'analysis' in IMP_STEPS:
+    inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
 
 ## master command
 rule BINNING:
