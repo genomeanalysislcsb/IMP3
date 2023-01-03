@@ -4,9 +4,9 @@ localrules: MetaWrap_refine_check
 
 checkpoint MetaWrap_refine_check:
     input:
-        expand("Binning/{binner}/bins",binner=BIN_STEPS + ['DASTool'])
+        expand("Binning/{binner}/bins",binner=BIN_STEPS )
     output:
-        "Binning/MetaWrap_refine.ready"
+        "status/MetaWrap_refine.ready"
     shell:
         "touch {output}"
 
@@ -38,7 +38,7 @@ rule MetaWrap_refine:
     threads:
         getThreads(BIGCORENO)
     resources:
-        runtime = "12:00:00",
+        runtime = "48:00:00",
         mem = BIGMEMCORE
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
@@ -89,6 +89,7 @@ rule MetaWrap_refine:
         
         # Round 2
         if [[ ${{#binner_input_array[*]}} > 3 ]]; then
+            mv {output.out_dir}/{params.prefix_1}/${{bin_folder}} {output.out_dir}/{params.prefix_1}/${{bin_folder}}_round_01
             metawrap bin_refinement -o {output.out_dir}/{params.prefix_2} \
                     -t {threads} \
                     -m {params.total_mem} \
@@ -104,9 +105,10 @@ rule MetaWrap_refine:
             rm -rf {output.out_dir}/{params.prefix_1} {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*/
             final_out={params.prefix_2}
         fi
-        
+
         # Round 3
         if [[ ${{#binner_input_array[*]}} > 5 ]]; then
+            mv {output.out_dir}/{params.prefix_2}/${{bin_folder}} {output.out_dir}/{params.prefix_2}/${{bin_folder}}_round_02
             metawrap bin_refinement -o {output.out_dir}/{params.prefix_3} \
                     -t {threads} \
                     -m {params.total_mem} \
@@ -124,13 +126,14 @@ rule MetaWrap_refine:
         fi
 
         # Clean up
-        rm -rf {output.out_dir}/${{final_out}}/bins {output.out_dir}/${{final_out}}/${{bin_folder}}/binsA \
+        rm -rf {output.out_dir}/${{final_out}}/bins \
                {output.out_dir}/${{final_out}}/work_files
         mv {output.out_dir}/${{final_out}}/* {output.out_dir}/ && rm -rf {output.out_dir}/${{final_out}}
         for i in {output.out_dir}/metawrap_{params.mw_min_comp}_{params.mw_max_cont}*; do
           mv ${{i}} ${{i/metawrap_{params.mw_min_comp}_{params.mw_max_cont}_/}}
         done
         
+
         if [[ ! -d Visualization ]]; then
           mkdir Visualization
         fi
