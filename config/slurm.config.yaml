@@ -1,5 +1,5 @@
 __default__: 
-  nodes: ""
+  nodes: "-N 1"
   partition: "-p batch"
   qos: "--qos normal"
   call: "sbatch"
@@ -15,6 +15,10 @@ mg_filtering:
 
 mt_filtering:
   nodes: "-N 1"
+
+reads_filtering:
+  nodes: "-N 1"
+  partition: "-p bigmem"
 
 trimming:
   nodes: "-N 1"

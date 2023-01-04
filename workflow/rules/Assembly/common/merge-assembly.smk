@@ -79,7 +79,7 @@ elif config["assembly"]["merge"] == "flye":
             sample = SAMPLE,
             iters = 0,
             minoverlap = 1000
-        threads: getThreads(BIGCORENO)
+        threads: getThreads(BIGCORENO, bigmem=True)
         conda:
             os.path.join(ENVDIR, "IMP_assembly.yaml")
         log:

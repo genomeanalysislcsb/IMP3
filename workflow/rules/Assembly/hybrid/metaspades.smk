@@ -45,7 +45,7 @@ else:
             runtime = "48:00:00", ###120
             mem = BIGMEMCORE
         threads:
-            getThreads(BIGCORENO)
+            getThreads(BIGCORENO, bigmem=True)
         conda:
             ENVDIR + "/IMP_assembly.yaml"
         log:
@@ -79,7 +79,7 @@ rule metaspades_hybrid_assembly_2:
         runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
-        getThreads(BIGCORENO)
+        getThreads(BIGCORENO, bigmem=True)
     conda:
         ENVDIR + "/IMP_assembly.yaml"
     log:

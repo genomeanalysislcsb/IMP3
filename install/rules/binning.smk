@@ -9,10 +9,16 @@ rule setup_checkm:
     params:
         str1_to_fix='best_bin_set=binsA',
         str1_replacement='mv binsA binsO; mv binsA.stats binsO.stats; best_bin_set=binsO; rm -rf tmp.fa',
-        str2_to_fix='\[ \$dereplicate \!\= \"false\" ]; then',
-        str2_replacement='\[ \$dereplicate \!\= \"false\" ] \&\& \[\[ \! \$n_binnings \-eq 1 \]\]; then',
+        str2_to_fix='\[ \$dereplicate \!\= \"false\" \]\; then',
+        str2_replacement='\[ \$dereplicate \!\= \"false\" \] \&\& \[\[ \! \$n_binnings \-eq 1 \]\]; then',
         str3_to_fix='if \[\[ \$n_binnings \-ne 1 \]\]\; then',
-        str3_replacement='if [[ \$n_binnings -ge 1 ]]; then'
+        str3_replacement='if [[ \$n_binnings -ge 1 ]]; then',
+        str4_to_fix='\${{bins1\#\#\*\/}}',
+        str4_replacement='binsA',
+        str5_to_fix='\${{bins2\#\#\*\/}}',
+        str5_replacement='binsB',
+        str6_to_fix='\${{bins3\#\#\*\/}}',
+        str6_replacement='binsC'
     conda:
         os.path.join(MAIN_ENV_DIR, "IMP_metawrap.yaml")
     log:
@@ -34,6 +40,9 @@ rule setup_checkm:
         sed -i -e "331s/{params.str1_to_fix}/{params.str1_replacement}/g" \
                -e "397s/{params.str2_to_fix}/{params.str2_replacement}/g" \
                -e "451s/{params.str3_to_fix}/{params.str3_replacement}/g" \
+               -e "462,463s/{params.str4_to_fix}/{params.str4_replacement}/g" \
+               -e "465,466s/{params.str5_to_fix}/{params.str5_replacement}/g" \
+               -e "469,470s/{params.str6_to_fix}/{params.str6_replacement}/g" \
                ${{CONDA_PREFIX}}/bin/metawrap-modules/bin_refinement.sh
         
         # Adjust score formula from 'completeness - (contamination * 5)' to 'completeness - (contamination * 2)'
@@ -43,6 +52,10 @@ rule setup_checkm:
 ##################################################
 # binny
 ##################################################
+if config["binny"]["snakemake_env_path"]:
+    sm_env_path = os.path.join(config["binny"]["snakemake_env_path"], "snakemake_env")
+else:
+    sm_env_path = os.path.join(CONDA_DIR, "snakemake_env")
 
 rule binny_setup:
     input:
@@ -55,7 +68,7 @@ rule binny_setup:
     params:
         prokka_env=os.path.join(MAIN_ENV_DIR,"IMP_annotation.yaml"),
         mantis_env=os.path.join(MAIN_ENV_DIR, "IMP_mantis.yaml"),
-        snakemake_env=os.path.join(CONDA_DIR, "snakemake_env")
+        snakemake_env=sm_env_path
     threads:
         4
     message:

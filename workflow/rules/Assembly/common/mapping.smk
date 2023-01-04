@@ -16,10 +16,16 @@ rule mapping_on_assembly:
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/assembly_mapping_on_assembly.{type}.log"
-    message: "mapping_on_assembly: Mapping {wildcards.type} reads on merged assembly."
+    threads:
+        getThreads(BIGCORENO, bigmem=True)
+    conda:
+        ENVDIR + "/IMP_mapping.yaml"
+    log:
+        "logs/assembly_mapping_on_assembly.{type}.log"
+    wildcard_constraints:
+        type="|".join(TYPES)
+    message:
+        "mapping_on_assembly: Mapping {wildcards.type} reads on merged assembly."
     shell:
         """
         SAMHEADER="@RG\\tID:{SAMPLE}\\tSM:{wildcards.type}"
@@ -57,10 +63,14 @@ rule index_bam:
     resources:
         runtime = "8:00:00",
         mem = BIGMEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/assembly_index.{sorted_bam}.log"
-    message: "index_bam: Indexing {wildcards.sorted_bam}."
+    threads:
+        1
+    conda:
+        ENVDIR + "/IMP_mapping.yaml"
+    log:
+        "logs/assembly_index.{sorted_bam}.log"
+    message:
+        "index_bam: Indexing {wildcards.sorted_bam}."
     shell:
         """
         samtools index {input} > {log} 2>&1

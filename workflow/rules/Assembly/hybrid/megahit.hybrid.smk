@@ -16,7 +16,7 @@ rule megahit_hybrid_assembly_1:
         runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
-        getThreads(BIGCORENO)
+        getThreads(BIGCORENO, bigmem=True)
     params:
         max_mem = int(BIGMEMTOTAL * byte_dict[config["mem"]["mem_unit"]])
     conda:
@@ -59,7 +59,7 @@ rule megahit_hybrid_assembly_2:
         runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
-        getThreads(BIGCORENO)
+        getThreads(BIGCORENO, bigmem=True)
     params:
         max_mem = int(BIGMEMTOTAL * byte_dict[config["mem"]["mem_unit"]])
     conda:

@@ -34,9 +34,9 @@ rule MetaWrap_refine:
         prefix_1="metawrap_round_01",
         prefix_2="metawrap_round_02",
         prefix_3="metawrap_round_03",
-        total_mem=int(float(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]) * getThreads(BIGCORENO))
+        total_mem=int(float(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]) * getThreads(BIGCORENO, bigmem=True))
     threads:
-        getThreads(BIGCORENO)
+        getThreads(BIGCORENO, bigmem=True)
     resources:
         runtime = "12:00:00",
         mem = BIGMEMCORE
@@ -64,7 +64,7 @@ rule MetaWrap_refine:
             fi
           done
         done
-        
+        tree {output.out_dir} >> {log}
         if [ ${{#binner_input_array[@]}} -eq 0 ]; then
           mkdir -p {output.out_dir}/bins
           touch {output.out_dir}/bins.stats {output.out_dir}/bins.contigs
@@ -79,14 +79,14 @@ rule MetaWrap_refine:
                                 {params.binner_inputs_list[0]} \
                                 -c {params.mw_min_comp} \
                                 -x {params.mw_max_cont} >> {log} 2>&1
-                
+        tree {output.out_dir} >> {log}
         # Rename bin fastas back to .fasta
         for bin in {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*.fa; do
           bin_id=$(basename -s .fa ${{bin}})
           mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
         done
         rm -rf {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*/
-        
+        tree {output.out_dir} >> {log}
         # Round 2
         if [[ ${{#binner_input_array[*]}} > 3 ]]; then
             metawrap bin_refinement -o {output.out_dir}/{params.prefix_2} \
@@ -95,7 +95,7 @@ rule MetaWrap_refine:
                     {params.binner_inputs_list[1]} \
                     -c {params.mw_min_comp} \
                     -x {params.mw_max_cont} >> {log} 2>&1
-            
+            tree {output.out_dir} >> {log}
             # Rename bin fastas back to .fasta
             for bin in {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*.fa; do
               bin_id=$(basename -s .fa ${{bin}})
@@ -104,7 +104,7 @@ rule MetaWrap_refine:
             rm -rf {output.out_dir}/{params.prefix_1} {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*/
             final_out={params.prefix_2}
         fi
-        
+        tree {output.out_dir} >> {log}
         # Round 3
         if [[ ${{#binner_input_array[*]}} > 5 ]]; then
             metawrap bin_refinement -o {output.out_dir}/{params.prefix_3} \

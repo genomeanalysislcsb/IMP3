@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 import glob
-
+import math
 
 # Snakefile
 def open_output(filename):
@@ -11,15 +11,46 @@ def open_output(filename):
 def workflow_ctrl(wildcards):
     return(["status/" + s + ".done" for s in IMP_STEPS if s != "summary"])
 
-def getThreads(max):
-    if workflow.cores:
-        # print('workflow.cores:', workflow.cores, 'max:', max, min(max, workflow.cores))
-        realThreads = min(max, workflow.cores)
-    elif workflow.nodes:
-        # print('workflow.nodes:', workflow.nodes, 'max:', max, min(max, workflow.cores))
-        realThreads = min(max, workflow.nodes)
+def getThreads(cores, bigmem=False):
+    if bigmem:
+        mem_core = int(config["mem"]["big_mem_per_core"])
+        mem_total = int(config["mem"]["big_mem_total"])
+        n_cores_from_mem = max(math.floor(mem_total / mem_core), 1)
+        n_cores = int(config["mem"]["big_mem_cores"])
+        assert n_cores_from_mem == n_cores, f"Number of big_mem cores specified differs from number calculated from " \
+                                            f"total memory available and memory per big_mem core: {n_cores} vs " \
+                                            f"{n_cores_from_mem}. Please check config.\n" \
+                                            f"mem_core: {mem_core}\n" \
+                                            f"n_cores: {n_cores}\n" \
+                                            f"mem_total: {mem_total}"
+        max_cores = int(config["mem"]["big_mem_cores_max"])
     else:
-        realThreads = max
+        mem_core = int(config["mem"]["mem_per_core"])
+        mem_total = int(config["mem"]["mem_total"])
+        n_cores = max(math.floor(mem_total / mem_core), 1)
+        max_cores = int(config["mem"]["mem_cores_max"])
+
+    # print(f"mem_core: {mem_core}")
+    # print(f"mem_total: {mem_total}")
+    # if bigmem:
+    #     print(f"n_cores_from_mem: {n_cores_from_mem}")
+    # print(f"n_cores: {n_cores}")
+    # print(f"max_cores: {max_cores}")
+    # print(f"bigmem: {bigmem}")
+
+    # Ensure the maximum number of cores to use per job is actually possible
+    assert max_cores <= n_cores, "Maximum number of cores allowed per rule is larger than node core count."
+
+    if workflow.cores:
+        realThreads = min(cores, max_cores)
+    # What is this for?
+    elif workflow.nodes:
+        realThreads = min(cores, workflow.nodes)
+    else:
+        realThreads = max_cores
+
+    # print(f"realThreads: {realThreads}")
+    # print("##############################")
     return realThreads
 
 # data input

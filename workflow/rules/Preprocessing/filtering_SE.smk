@@ -12,7 +12,7 @@ rule reads_filtering:
     resources:
         runtime = "24:00:00",
         mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
+    threads: getThreads(BIGCORENO, bigmem=True)
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:

@@ -34,7 +34,7 @@ if LONG:
             runtime = "48:00:00", ###120
             mem = BIGMEMCORE
         threads:
-            getThreads(BIGCORENO)
+            getThreads(BIGCORENO, bigmem=True)
         params:
             gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
         conda:
@@ -59,7 +59,7 @@ else:
             runtime = "48:00:00", ###120
             mem = BIGMEMCORE
         threads:
-            getThreads(BIGCORENO)
+            getThreads(BIGCORENO, bigmem=True)
         params:
             gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
         conda:
@@ -84,7 +84,7 @@ rule metaspades_assembly_from_unmapped:
         runtime = "48:00:00", ###120
         mem = BIGMEMCORE
     threads:
-        getThreads(BIGCORENO)
+        getThreads(BIGCORENO, bigmem=True)
     params:
         gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
     conda:

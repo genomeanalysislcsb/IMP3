@@ -17,17 +17,19 @@ rule motus:
         se="Preprocessing/{type}.se.preprocessed.fq"
     output:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
-    threads: getThreads(6)
+    threads:
+        getThreads(6)
     params:
         # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
         # -A: print all tax. levels together
         # -c: return counts
-        params="-A -c"
+        params="-A -c",
+        # database = os.path.join(DBPATH, 'motus')
     resources:
         runtime = "12:00:00",
         mem = MEMCORE
     conda:
-        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
+        os.path.join(ENVDIR, "IMP_motus.yaml")
     log:
         "logs/analysis_motus.{type}.log"
     message:
@@ -35,10 +37,22 @@ rule motus:
     shell:
         """
         if [ -s {input.se} ] && [ -s {input.r1} ] && [ -s {input.r2} ]; then
-            motus profile -f {input.r1} -r {input.r2} -s {input.se} -o {output} {params.params} -t {threads} >& {log}
+            motus profile -f {input.r1} \
+                          -r {input.r2} \
+                          -s {input.se} \
+                          -o {output} \
+                          {params.params} \
+                          -t {threads} >& {log}
         elif [ -s {input.se} ]; then
-            motus profile -s {input.se} -o {output} {params.params} -t {threads} >& {log}
+            motus profile -s {input.se} \
+                          -o {output} \
+                          {params.params} \
+                          -t {threads} >& {log}
         else
-            motus profile -f {input.r1} -r {input.r2} -o {output} {params.params} -t {threads} >& {log}
+            motus profile -f {input.r1} \
+                          -r {input.r2} \
+                          -o {output} \
+                          {params.params} \
+                          -t {threads} >& {log}
         fi 
         """

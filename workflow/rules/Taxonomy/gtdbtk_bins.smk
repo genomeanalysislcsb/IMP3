@@ -19,7 +19,7 @@ rule GTDBtk_bins_single:
     message:
         "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
     threads:
-        getThreads(BIGCORENO)
+        getThreads(BIGCORENO, bigmem=True)
     shell:
         """
         echo "int(BIGMEMCORE[:-1])": {params.t1} >> {log} 2>&1

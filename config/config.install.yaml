@@ -5,7 +5,7 @@
 
 # path where to download/copy the data(bases)
 #db_path: "/where/to/create/databases/"
-db_path: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db"
+db_path: "/mnt/lscratch/users/ohickl/databases/imp3"
 
 ##################################################
 # Adapters for reads trimming
@@ -45,6 +45,9 @@ genomes:
 #       Reference: https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#kraken-2-databases
 
 kraken2:
+#  # kraken2 prebuild db based on gtdb 207 release > 400 GB
+#  struo2_gtdb_207:
+#    url: "http://ftp.tue.mpg.de/ebio/projects/struo2/GTDB_release207/kraken2"
   # https://ccb.jhu.edu/software/kraken2/index.shtml?t=downloads
   # Minikraken v2 (bacteria, archaea, viral libraries & human genome; 8 GB)
   minikraken2:
@@ -67,16 +70,11 @@ gtdbtk:
 mantis:
   # default HMMs (name/path mapping)
   default: # set paths null (i.e.: ncbi_ref_folder: null), if a database should not be used
-#    kofam_ref_folder: "/path/to/mantis/kofam/database/"
-#    ncbi_ref_folder: "/path/to/mantis/ncbi/database/"
-#    nog_ref_folder: "/path/to/mantis/nog/database/"
-#    pfam_ref_folder: "/path/to/mantis/pfam/database/"
-#    tcdb_ref_folder: "/path/to/mantis/tcdb/database/"
-    kofam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db/mantis"
-    ncbi_ref_folder: null
-    nog_ref_folder: null
-    pfam_ref_folder: null
-    tcdb_ref_folder: null
+    kofam_ref_folder: "/mnt/lscratch/users/ohickl/databases/imp3/mantis/kofam"
+    ncbi_ref_folder: "/mnt/lscratch/users/ohickl/databases/imp3/mantis/ncbi"
+    nog_ref_folder: "/mnt/lscratch/users/ohickl/databases/imp3/mantis/nog"
+    pfam_ref_folder: "/mnt/lscratch/users/ohickl/databases/imp3/mantis/pfam"
+    tcdb_ref_folder: "/mnt/lscratch/users/ohickl/databases/imp3/mantis/tcdb"
   # custom HMMs (list of paths)
   custom: [] # set to [] if not used otherwise provide at least one path
   # weights: format <name>_hmm_folder: <name>_weight
@@ -85,3 +83,8 @@ mantis:
     nog_weight: 0.8
     pfam_weight: 0.9
     uniprot_ec_weight: 0.9
+
+binny:
+  # Set only, if path to snakemake env is not the IMP3 default, i.e. the one created following the IMP3 install guide.
+  # Default: ""
+  snakemake_env_path: "/mnt/irisgpfs/users/ohickl/miniconda3/envs"

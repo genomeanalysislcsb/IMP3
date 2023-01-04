@@ -14,7 +14,9 @@ rule mantis_config:
         def write_ref_path(file_handle, ref_path, ref_name):
             """Write ref path to file"""
             if ref_path:
-                assert os.path.exists(ref_path) and os.path.isdir(ref_path), f"Mantis ref path does not exist or is not a path: {ref_path}"
+                if not os.path.exists(ref_path):
+                    os.makedirs(ref_path)
+                    assert os.path.exists(ref_path) and os.path.isdir(ref_path), f"Mantis ref path does not exist or is not a path: {ref_path}"
                 file_handle.write(f"{ref_name}={ref_path}\n")
             elif ref_name != "custom_ref":
                 file_handle.write(f"{ref_name}=NA\n")

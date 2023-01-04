@@ -123,9 +123,11 @@ def mantis_links_pairs(links_str, sep="|"):
     # table of keys and values w/o description
     df_links = mantis_links2df(links_str, sep)
     df_links = df_links.loc[df_links.Key != "description", :]
-    # create pairs and drop values
-    df_links["Pair"] = df_links.apply("=".join, axis=1)
-    df_links.drop("Value", inplace=True, axis=1)
+
+    if not df_links.empty:
+        # create pairs and drop values
+        df_links["Pair"] = df_links.apply("=".join, axis=1)
+        df_links.drop("Value", inplace=True, axis=1)
     return df_links
 
 ##############################
@@ -142,11 +144,18 @@ if __name__ == '__main__':
     logging.info('Reading Mantis output.')
     mantis = read_mantis_consensus(snakemake.input.mantis)
 
+    # # Fill NAs in Links col to prevent breaking of processing
+    mantis['Links'].fillna('Annotation_status:Unannotated', inplace=True)
+    # print(mantis[mantis['Links'] == 'Unannotated'])
+
     # check attribute keys appearing in given input files: there should be no overlap
     logging.info('Assure no overlap in input file keys.')
     gff_keys = gff.attr.apply(lambda x: set([y.split("=")[0] for y in x.split(";")])).values
     gff_keys = set.union(*gff_keys)
-    mantis_keys = mantis.Links.apply(lambda x: set([y.split(":")[0] for y in x.split(snakemake.params.sep)])).values
+    # mantis_keys = mantis.Links.apply(lambda x: set([y.split(":")[0] for y in x.split(snakemake.params.sep)])).values
+    mantis_keys = mantis.Links.apply(lambda x: set([y.split(":")[0] for y in x.split(snakemake.params.sep)])
+                                               if isinstance(x, str) else set()).values
+
     mantis_keys = set.union(*mantis_keys)
     assert len(gff_keys.intersection(mantis_keys)) == 0,\
            f'There are common attribute keys in {input}: {gff_keys.intersection(mantis_keys)}'
@@ -163,6 +172,7 @@ if __name__ == '__main__':
 
     with open(snakemake.output.gff, "w") as o_gff:
         for pid in gff.index:
+            # print(f'pid: {pid}')
             start_gff_pid = timer()
             # save (updated) annotations to output GFF
             pid_line = gff.loc[pid, :].copy()
@@ -178,6 +188,7 @@ if __name__ == '__main__':
             start_mantis_pid_total = timer()
             if pid in mantis.index:
                 start_mantis_pid_links = timer()
+                # print(f'mantis.loc[pid, "Links"]: {mantis.loc[pid, "Links"]}')
                 pid_links = mantis_links_pairs(mantis.loc[pid, "Links"], sep=snakemake.params.sep)
                 end_mantis_pid_links = timer()
                 times_per_mantis_pid_links.append(end_mantis_pid_links - start_mantis_pid_links)

@@ -1,7 +1,7 @@
 rule semibin:
     input:
         assembly="Assembly/%s.assembly.merged.fa" % ASS,
-        mapping="Assembly/%s.reads.sorted.bam" % ASS
+        mapping="Assembly/mg.reads.sorted.bam"
     output:
         s2b="Binning/SemiBin/scaffold2bin.tsv",
         out_dir=directory("Binning/SemiBin"),

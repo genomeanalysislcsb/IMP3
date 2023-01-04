@@ -1,13 +1,10 @@
 name: IMP_taxonomy
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
-  - motus=3.0.1
   - kraken2=2.1.2
   - popt=1.16
-  - perl-bioperl=1.6
-  - r=4.1
-
-
+  - perl-bioperl=1.7.8
+  - r=4.2

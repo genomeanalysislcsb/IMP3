@@ -12,11 +12,13 @@ import pandas as pd
 from pathlib import Path
 from snakemake.utils import validate
 
+if not workflow.config:
+    # default configuration file
+    configfile:
+        srcdir("../../../config/config.imp.yaml")
 
-# default configuration file
-configfile:
-    srcdir("../../../config/config.imp.yaml")
 
+print(config['mem'])
 
 # default executable for snakmake
 shell.executable("bash")
@@ -24,62 +26,65 @@ shell.executable("bash")
 validate(config,schema="../../../schemas/schema.imp.yaml")
 
 
-if config['sessionKind'] == "cluster":
-    if str(config['settingsLocked']).lower() in ['true','t']:
-        config['settingsLocked'] = True
-        ini_normalMem = config['locked_normalMem']
-        ini_bigMem = config['locked_bigMem']
-        ini_bigCores = config['locked_bigCores']
-        ini_bigTotal = config['locked_bigTotal']
-
-        if ini_normalMem == 0 or ini_bigMem == 0 or ini_bigCores == 0:
-            raise Exception("You're attempting to submit IMP3 to a cluster and but you've requested 0 cores or 0G memory per core. Ask the person who set up IMP3 to specify proper values in " + ROOTDIR + "/VARIABLE_CONFIG")
-        config['mem']['normal_mem_per_core'] = int(ini_normalMem)
-        config['mem']['big_mem_per_core'] = int(ini_bigMem)
-        config['mem']['big_mem_cores'] = int(ini_bigCores)
-        config['mem']['big_mem_total'] = max(int(ini_bigTotal), int(config['mem']['big_mem_cores']) * int(config['mem']['big_mem_per_core']))
-        print("These memory requirements will be used:")
-        print("normal mem: " + str(config['mem']['normal_mem_per_core']) + config['mem']['mem_unit'])
-        print("big mem: " + str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit'])
-        print("big mem cores: " + str(config['mem']['big_mem_cores']))
-        print("big mem total: " + str(config['mem']['big_mem_total']) + config['mem']['mem_unit'])
-    else:
-        config['settingsLocked'] = False
-elif config['sessionKind'] == "dryrun":
-    if str(config['settingsLocked']).lower() in ['true','t']:
-        config['settingsLocked'] = True
-        ini_normalMem = config['locked_normalMem']
-        ini_bigMem = config['locked_bigMem']
-        ini_bigCores = config['locked_bigCores']
-        ini_bigTotal = config['locked_bigTotal']
-        config['mem']['normal_mem_per_core'] = int(ini_normalMem)
-        config['mem']['big_mem_per_core'] = int(ini_bigMem)
-        config['mem']['big_mem_cores'] = int(ini_bigCores)
-        config['mem']['big_mem_total'] = max(int(ini_bigTotal), int(config['mem']['big_mem_cores']) * int(config['mem']['big_mem_per_core']))
-        if ini_normalMem == 0 or ini_bigMem == 0 or ini_bigCores == 0:
-            print("You've requested 0 cores or 0G memory per core. Ask the person who set up IMP3 to specify proper values in " + ROOTDIR + "/VARIABLE_CONFIG")
-        else: 
-            print("These memory requirements would be used:")
-            print("normal mem: " + str(config['mem']['normal_mem_per_core']) + config['mem']['mem_unit'])
-            print("big mem: " + str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit'])
-            print("big mem cores: " + str(config['mem']['big_mem_cores']))
-            print("big mem total: " + str(config['mem']['big_mem_total']) + config['mem']['mem_unit'])
-    else:
-        config['settingsLocked'] = False
-else:
-    config['mem']['big_mem_cores'] = workflow.cores
-    if(config['mem']['big_mem_per_core'] != config['mem']['normal_mem_per_core']):
-        config['mem']['normal_mem_per_core'] = max(config['mem']['normal_mem_per_core'], config['mem']['big_mem_per_core'])
-        config['mem']['big_mem_per_core'] = max(config['mem']['normal_mem_per_core'], config['mem']['big_mem_per_core'])
-        config['mem']['big_mem_total'] = config['mem']['big_mem_cores'] * config['mem']['big_mem_per_core']
-        print("adjusted memory settings because there is only one kind of core in this run. CAUTION: we're using the "
-              "bigger number of normal_mem_per_core and big_mem_per_core and the number of threads granted to IMP3.")
-    print("Final resource settings:")
-    print("maximal number of cores: " + str(workflow.cores))
-    print("normal mem: " + str(config['mem']['normal_mem_per_core']) + config['mem']['mem_unit'])
-    print("big mem: " + str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit'])
-    print("big mem cores: " + str(config['mem']['big_mem_cores']))
-    print("big mem total: " + str(config['mem']['big_mem_total']) + config['mem']['mem_unit'])
+# if config['sessionKind'] == "cluster":
+#     if str(config['settingsLocked']).lower() in ['true','t']:
+#         config['settingsLocked'] = True
+#         ini_normalMem = config['locked_normalMem']
+#         ini_bigMem = config['locked_bigMem']
+#         ini_bigCores = config['locked_bigCores']
+#         ini_bigTotal = config['locked_bigTotal']
+#
+#         if ini_normalMem == 0 or ini_bigMem == 0 or ini_bigCores == 0:
+#             raise Exception("You're attempting to submit IMP3 to a cluster and but you've requested 0 cores or 0G memory per core. Ask the person who set up IMP3 to specify proper values in " + ROOTDIR + "/VARIABLE_CONFIG")
+#         config['mem']['mem_per_core_gb'] = int(ini_normalMem)
+#         config['mem']['big_mem_per_core'] = int(ini_bigMem)
+#         config['mem']['big_mem_cores'] = int(ini_bigCores)
+#         config['mem']['big_mem_total'] = max(int(ini_bigTotal), int(config['mem']['big_mem_cores']) * int(config['mem']['big_mem_per_core']))
+#         print("These memory requirements will be used:")
+#         print("normal mem: " + str(config['mem']['mem_per_core_gb']) + config['mem']['mem_unit'])
+#         print("big mem: " + str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit'])
+#         print("big mem cores: " + str(config['mem']['big_mem_cores']) + 'AAAAA')
+#         print("big mem total: " + str(config['mem']['big_mem_total']) + config['mem']['mem_unit'])
+#     else:
+#         config['settingsLocked'] = False
+# elif config['sessionKind'] == "dryrun":
+#     if str(config['settingsLocked']).lower() in ['true','t']:
+#         config['settingsLocked'] = True
+#         ini_normalMem = config['locked_normalMem']
+#         ini_bigMem = config['locked_bigMem']
+#         ini_bigCores = config['locked_bigCores']
+#         ini_bigTotal = config['locked_bigTotal']
+#         config['mem']['mem_per_core_gb'] = int(ini_normalMem)
+#         config['mem']['big_mem_per_core'] = int(ini_bigMem)
+#         config['mem']['big_mem_cores'] = int(ini_bigCores)
+#         config['mem']['big_mem_total'] = max(int(ini_bigTotal), int(config['mem']['big_mem_cores']) * int(config['mem']['big_mem_per_core']))
+#         if ini_normalMem == 0 or ini_bigMem == 0 or ini_bigCores == 0:
+#             print("You've requested 0 cores or 0G memory per core. Ask the person who set up IMP3 to specify proper values in " + ROOTDIR + "/VARIABLE_CONFIG")
+#         else:
+#             print("These memory requirements would be used:")
+#             print("normal mem: " + str(config['mem']['mem_per_core_gb']) + config['mem']['mem_unit'])
+#             print("big mem: " + str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit'])
+#             print("big mem cores: " + str(config['mem']['big_mem_cores']) + 'BBBBB')
+#             print("big mem total: " + str(config['mem']['big_mem_total']) + config['mem']['mem_unit'])
+#     else:
+#         config['settingsLocked'] = False
+# else:
+#     # Probably a bad idea to mess with the config here
+#     # config['mem']['big_mem_cores'] = workflow.cores
+#     if(config['mem']['big_mem_per_core'] != config['mem']['mem_per_core_gb']):
+#         print(f"bm*c: {config['mem']['big_mem_per_core']}")
+#         print(f"m*c: {config['mem']['mem_per_core_gb']}")
+#         config['mem']['mem_per_core_gb'] = max(config['mem']['mem_per_core_gb'], config['mem']['big_mem_per_core'])
+#         config['mem']['big_mem_per_core'] = max(config['mem']['mem_per_core_gb'], config['mem']['big_mem_per_core'])
+#         config['mem']['big_mem_total'] = config['mem']['big_mem_cores'] * config['mem']['big_mem_per_core']
+#         print("adjusted memory settings because there is only one kind of core in this run. CAUTION: we're using the "
+#               "bigger number of mem_per_core and big_mem_per_core and the number of threads granted to IMP3.")
+#     print("Final resource settings:")
+#     print("maximal number of cores: " + str(workflow.cores))
+#     print("normal mem: " + str(config['mem']['mem_per_core_gb']) + config['mem']['mem_unit'])
+#     print("big mem: " + str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit'])
+#     print("big mem cores: " + str(config['mem']['big_mem_cores']))
+#     print("big mem total: " + str(config['mem']['big_mem_total']) + config['mem']['mem_unit'])
 
 
 # some parameters
@@ -110,7 +115,7 @@ if config['raws']['Metagenomics']:
 else:
     MG = config['raws']['Metagenomics']
 if config['raws']['Metatranscriptomics']:
-    MT = [os.path.expandvars(x) if os.path.isabs(os.path.expandvars(x)) else os.getcwd() + "/" + os.path.expandvars(x) for x in config['raws']['Metatranscriptomics'].split()]    
+    MT = [os.path.expandvars(x) if os.path.isabs(os.path.expandvars(x)) else os.getcwd() + "/" + os.path.expandvars(x) for x in config['raws']['Metatranscriptomics'].split()]
 else:
     MT = config['raws']['Metatranscriptomics']
 if config['raws']['LongReads']:
@@ -159,7 +164,7 @@ if not os.path.isabs(DBPATH):
     DBPATH = os.path.join(ROOTDIR, DBPATH)
 if not os.path.exists(DBPATH):
     os.makedirs(DBPATH)
-    
+
 # define the data types used and the assembly
 if MG and MT and config['assembly']['hybrid']:
     TYPES = ['mg', 'mt']
@@ -192,8 +197,6 @@ elif CONTIGS and MT:
     TYPES = ['mt']
     ASS = 'mg'
 
-#print(TYPES)
-
 # settings
 IMP_STEPS = sorted(config['steps'].split())
 PREPROCESSING_FILTERING = config['preprocessing_filtering']
@@ -210,8 +213,13 @@ SUM_STEPS = config['summary_steps'].split()
 # hardware parameters
 BIGCORENO = config['mem']['big_mem_cores']
 BIGMEMTOTAL = config['mem']['big_mem_total']
-MEMCORE = str(config['mem']['normal_mem_per_core']) + config['mem']['mem_unit']
+MEMCORE = str(config['mem']['mem_per_core']) + config['mem']['mem_unit']
 BIGMEMCORE = str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit']
+
+print(f"BIGCORENO: {BIGCORENO}")
+print(f"BIGMEMTOTAL: {BIGMEMTOTAL}")
+print(f"MEMCORE: {MEMCORE}")
+print(f"BIGMEMCORE: {BIGMEMCORE}")
 
 byte_dict = {'K': 1e3, 'M': 1e6, 'G': 1e9, 'T': 1e12}
 to_gb_dict = {'K': 1e-6, 'M': 1e-3, 'G': 1e0, 'T': 1e3}

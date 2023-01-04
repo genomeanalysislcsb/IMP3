@@ -12,7 +12,7 @@ rule bwa_index:
         mem = MEMCORE
     threads: 1
     conda: ENVDIR + "/IMP_mapping.yaml"
-#    log: "logs/assembly_bwa_index.log"
+    log: "logs/assembly_bwa_index_{fasta}.log"
     message: "bwa_index: Indexing {wildcards.fasta} for bwa."
     shell:
         """

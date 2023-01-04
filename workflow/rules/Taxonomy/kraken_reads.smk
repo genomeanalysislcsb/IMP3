@@ -1,5 +1,5 @@
-from os.path import getsize
-KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['krakendb'] + "/hash.k2d" )) / 1000000000
+from os.path import getsize, join
+KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['kraken']['krakendb'] + "/hash.k2d" )) / 1000000000
 KRAKTHREADS = round((KRAKSIZE / (float(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]])) + 0.5)
 # print('KRAKTHREADS:', KRAKTHREADS, KRAKSIZE, float(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]])
 
@@ -14,19 +14,27 @@ rule kraken_reads:
         runtime = "8:00:00",
         mem = BIGMEMCORE
     params:
-        tmp_out= lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output"
+        tmp_out = lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output",
+        confidence = config['kraken']['confidence'],
+        database = os.path.join(DBPATH, config['kraken']['krakendb'])
     threads:
-        getThreads(KRAKTHREADS)
+        getThreads(KRAKTHREADS, bigmem=True)
     conda:
         ENVDIR + "/IMP_taxonomy.yaml"
     log:
         "logs/analysis_kraken_reads.{type}.log"
     message:
-        "kraken_reads: Running kraken2 on {wildcards.type} reads against {config[krakendb]}."
+        "kraken_reads: Running kraken2 on {wildcards.type} reads against {params.database}."
     shell:
-	    """
+        """
 	    mkdir -p Analysis/taxonomy/kraken
-	    kraken2 -db {DBPATH}/{config[krakendb]} --threads {threads} --paired --use-names --output {params.tmp_out} --report {output[1]} {input} > {log} 2>&1
-            gzip {params.tmp_out}
+	    kraken2 --db {params.database} \
+	            --threads {threads} \
+	            --paired \
+	            --use-names \
+	            --output {params.tmp_out} \
+	            --report {output[1]} \
+	            {input} > {log} 2>&1
+        gzip {params.tmp_out}
 	    """
 

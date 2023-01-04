@@ -22,7 +22,7 @@ rule mantis_setup:
     log:
         os.path.join(INSTALL_DIR, "logs/mantis_setup.log")
     threads:
-        8
+        workflow.cores
     conda:
         os.path.join(MAIN_ENV_DIR, "IMP_mantis.yaml")
     message:

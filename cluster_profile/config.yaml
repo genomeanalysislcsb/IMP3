@@ -13,12 +13,12 @@ local-cores: 1
 
 # config file(s)
 configfile:
-  - "config/config.test.yaml" # USER_INPUT (in general, it should not be changed)
+  - "/mnt/irisgpfs/users/ohickl/local_tools/imp3/config/config.GxExA.Cecum_023.yaml" # USER_INPUT (in general, it should not be changed)
 
 # resources
 default-resources:
   # tmp directory
-  - tmpdir="/abs/path/to/tmp_dir" # USER_INPUT
+  - tmpdir="/mnt/lscratch/users/ohickl/GxExA/tmp" # USER_INPUT
 
 # go on with independent jobs if a job fails
 keep-going: True
@@ -30,7 +30,7 @@ reason: True
 printshellcmds: True
 # conda
 use-conda: True
-conda-prefix: "/abs/path/to/imp3/conda/dir" # USER_INPUT
+conda-prefix: "/mnt/irisgpfs/users/ohickl/miniconda3/envs/imp3_envs" # USER_INPUT
 # wait given seconds if an output file of a job is not present after the job finished
 latency-wait: 60
 
@@ -40,7 +40,7 @@ restart-times: 0
 cluster: "{cluster.call} {cluster.runtime}{resources.runtime} {cluster.mem_per_cpu}{resources.mem} \
           {cluster.threads}{threads} {cluster.partition} {cluster.stdout}"
 # slurm config (ABSOLUTE PATH !!!)
-cluster-config: "/abs/path/to/imp3/config/slurm_simple.config.yaml" # USER_INPUT
+cluster-config: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/config/slurm_simple.config.yaml" # USER_INPUT
 # max. number of cluster/drmaa jobs per second
 max-jobs-per-second: 1
 # max. number of job status checks per second

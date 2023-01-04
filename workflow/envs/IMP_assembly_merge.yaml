@@ -1,0 +1,10 @@
+name: IMP_assembly_merge
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - quickmerge=0.3
+  - mummer4=4.0.0
+  - seqkit=2.3.1
+  - cd-hit=4.8.1

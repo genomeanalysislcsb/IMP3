@@ -1,0 +1,7 @@
+name: IMP_motus
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - motus=3.0.3

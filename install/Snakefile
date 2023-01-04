@@ -26,8 +26,6 @@ SUBMOD_DIR = srcdir("../submodules")
 INSTALL_DIR = srcdir("")
 MAIN_ENV_DIR = srcdir("../workflow/envs")
 
-# print(ENV_DIR, SRC_DIR, CONDA_DIR, SUBMOD_DIR, INSTALL_DIR, MAIN_ENV_DIR)
-
 # default executable for snakemake
 shell.executable("bash")
 
@@ -41,8 +39,11 @@ workdir:
 include:
         "rules/binning.smk"
 
+include:
+        "rules/mummer4.smk"
+
 TARGETS = ["checkm/checkm_db.ready", os.path.join(SUBMOD_DIR, "binny/setup.done"), "SemiBin_setup.done",
-           os.path.join(SUBMOD_DIR, "ESOM/setup.done")]
+           os.path.join(SUBMOD_DIR, "ESOM/setup.done"), "qm.ready"]
 
 # adapters, Trimmomatic
 if "trimmomatic" in config:
@@ -91,6 +92,8 @@ if "mantis" in config:
 
 ##################################################
 # RULES
+
+print(TARGETS)
 
 # Main rule
 localrules: ALL
