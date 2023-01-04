@@ -16,7 +16,8 @@ rule hmmer:
     resources:
         runtime = "12:00:00", ## 48
         mem = MEMCORE
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     threads: getThreads(12)
     log: "logs/analysis_hmmer.{db}.log"
     message: "hmmer: Running HMMER for {wildcards.db}."
@@ -43,7 +44,7 @@ rule makegff:
     threads:
         1
     conda:
-        ENVDIR + "/IMP_annotation.yaml"
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     log:
         "logs/analysis_makegff.{db}.log"
     message:
@@ -87,13 +88,14 @@ rule tar_annotation:
         # from featureCount.smk
         counts_hmmer=expand("Analysis/annotation/{type}.{db}.counts.tsv", type=TYPES, db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],
         # counts_ess=["Analysis/annotation/intermediary/annotation.CDS.RNA.essential.gff"] if (config["annotation"] != "hmmer" and "binny" in BIN_STEPS) else [],
-        counts_ess=[],
-        counts_mantis=aggregate_mantis_fc if config["annotation"] == "mantis" else []
+        # counts_ess=[],
+        counts_mantis=aggregate_mantis_fc if config["annotation"] == "mantis" else [],
+        bins="Binning/MetaWrap/bins.stats" if 'binning' in IMP_STEPS else []
     output:
         "Analysis/annotation/intermediary.tar.gz"
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        max(int(math.ceil(10 / (int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     resources:
         runtime = "8:00:00",
         mem = MEMCORE

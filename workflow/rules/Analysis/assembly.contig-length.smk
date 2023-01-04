@@ -8,7 +8,8 @@ rule assembly_contig_length:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     log: "logs/analysis_assembly_contig_length.log"
     message: "assembly_contig_length: Getting data on assembly length and GC content."
     shell:

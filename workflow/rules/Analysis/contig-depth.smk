@@ -17,7 +17,7 @@ rule call_contig_depth:
         # Ensure at least 20gb of mem
         max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
     conda:
-        ENVDIR + "/IMP_mapping.yaml"
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:
         "logs/analysis_call_contig_depth.{type}.log"
     message:

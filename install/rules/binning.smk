@@ -22,7 +22,7 @@ rule setup_checkm:
     conda:
         os.path.join(MAIN_ENV_DIR, "IMP_metawrap.yaml")
     log:
-        os.path.join(INSTALL_DIR, "logs/MetaWrap_CheckM_setup.log")
+        os.path.join(INSTALL_DIR, "logs/Metawrap_CheckM_setup.log")
     message:
         "MetaWrap: Setting up CheckM."
     shell:
@@ -33,6 +33,8 @@ rule setup_checkm:
         tar -xvf {output.checkm_db}/checkm_data_2015_01_16.tar.gz -C {output.checkm_db} >> {log} 2>&1 && \
         rm -rf {output.checkm_db}/checkm_data_2015_01_16.tar.gz &&\
         echo "Setting up CheckM" >> {log} 2>&1 &&\
+        unset PYTHONHOME
+        SETUPTOOLS_USE_DISTUTILS=stdlib
         printf "%s\n" {output.checkm_db} | checkm >> {log} 2>&1 && touch {output.setup_check} && \
         echo "Setup done." >> {log} 2>&1
         
@@ -82,15 +84,15 @@ rule binny_setup:
         cd {output.binny_dir}
 
         # Prevent binny subworkflow from changing IMP out dir
-        sed -i -e "196s|workdir\:|# workdir:|g" \
-               -e "197s|    OUTPUTDIR|#     OUTPUTDIR|g" Snakefile
+        sed -i -e "s|workdir\:|# workdir:|g" \
+               -e "s|    OUTPUTDIR$|#     OUTPUTDIR|g" Snakefile
         
         echo "Changing config file." >> {log} 2>&1
  
-        sed -i -e "s|prokka_env: \\"\\"|prokka_env: \\"{params.prokka_env}\\"|g" \
-               -e "s|mantis_env: \\"\\"|mantis_env: \\"{params.mantis_env}\\"|g" \
-               -e "s|conda_source: \\"\\"|conda_source: \\"{CONDA_DIR}\\"|g" \
-               -e "s|snakemake_env: \\"\\"|snakemake_env: \\"{params.snakemake_env}\\"|g" config/config.*.yaml
+        sed -i -e "s|^prokka_env: \\"\\"|prokka_env: \\"{params.prokka_env}\\"|g" \
+               -e "s|^mantis_env: \\"\\"|mantis_env: \\"{params.mantis_env}\\"|g" \
+               -e "s|^conda_source: \\"\\"|conda_source: \\"{CONDA_DIR}\\"|g" \
+               -e "s|^snakemake_env: \\"\\"|snakemake_env: \\"{params.snakemake_env}\\"|g" config/config.*.yaml
         echo "Setting up binny." >> {log} 2>&1
         ./binny -i config/config.init.yaml >> {log} 2>&1 && touch {output.out}
         cd ../../

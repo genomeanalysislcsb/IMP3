@@ -29,7 +29,8 @@ rule fetchmg:
     params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary/marker_genes"
     log: "logs/analysis_fetchmg.log"
-    conda: ENVDIR + "/IMP_annotation.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
     message: "fetchmg: Finding mOTU marker genes in open reading frames."
     shell:
         """
@@ -68,7 +69,8 @@ rule extract_mOTU_db_genes:
         coglist = ",".join(map(str, COGS_LIST)),
         fasta = "share/motus-3.0.1/db_mOTU/db_mOTU_DB_CEN.fasta",
         coordinates = "share/motus-3.0.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
-    conda: ENVDIR + "/IMP_taxonomy.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log: "logs/analysis_extract_mOTU_db_genes.log"
     message: "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
@@ -89,7 +91,8 @@ rule blast_mOTU_db_genes:
     resources:
         runtime = "12:00:00",
         mem = MEMCORE
-    conda: ENVDIR + "/IMP_taxonomy.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log: "logs/analysis_blast_mOTU_db_genes.{COG}.log"
     message: "blast_mOTU_db_genes: Blasting {wildcards.COG} genes to present mOTUs."
     shell:

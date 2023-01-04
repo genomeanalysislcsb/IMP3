@@ -83,20 +83,6 @@ def get_ori_files(wildcards):
         out = inputs
     return(out)
 		
-# def prepare_input_files(inputs, outputs):
-#     """
-#     Prepare file names from input into snakemake pipeline.
-#     """
-#     if len(inputs) != len(outputs):
-#         raise OSError("//Inputs and outputs are not of the same length: %s <> %s" % (', '.join(inputs), ', '.join(outputs)))
-#     for infilename, outfilename in zip(inputs, outputs):
-#         _, fname1 = os.path.split(infilename)
-#         _process_file(fname1, infilename, outfilename)
-#     # check if r1,r2 are in outputs, if yes, check if both have the same number of lines
-#     # quickcheck samtools for bam input
-#     # for bam and assembly check number of SQ headers and contigs are equal
-#     # for assembly and gff file check that they match
-
 def symlink_input_files(data):
     for infilename, outfilename in data:
         print('symlink',  infilename, '=>', outfilename)
@@ -106,23 +92,6 @@ def touch_fake_output(files):
     for outfile in files:
         print('touching', outfile)
         Path(outfile).touch()
-
-# def _process_file(fname, inp, outfilename):
-#     """
-#     Write the input to the output. Handle raw, zip, or bzip input files.
-#     """
-#     print(inp, '=>', outfilename)
-#     import bz2
-#     # ungunzip
-#     if os.path.splitext(fname)[-1] in ['.gz', '.gzip']:
-#         with open(outfilename, 'wb') as whandle, gzip.open(inp, 'rb') as rhandle:
-#             whandle.write(rhandle.read())
-#     # unbzip2
-#     elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
-#         shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
-#     # copy
-#     else:
-#         shutil.copy(inp, outfilename)
 
 # PREPROCESSING:
 def no_filtering_input(wildcards):
@@ -291,7 +260,7 @@ def gather_bins(wildcards):
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
     print('gather_GTDB_bins checkpoint_output:',checkpoint_output)
-    return expand("Binning/MetaWrap/bins/{i}/GTDB", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i)  # +\
+    return expand("Binning/MetaWrap/bins/{i}/{tool}", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i, tool=["GTDB","grid"])  # +\
            # expand("Binning/MetaWrap/bins/{i}/GTDB", i=glob_wildcards("Binning/MetaWrap/bins/{i}/reads.fastq.gz").i)
 
 def check_bintabs(wildcards):
@@ -331,49 +300,20 @@ def get_mw_binner_inputs(binner_fasta_dirs, min_comp, max_cont):
     out_list.append([input_round_1])
     if len(binner_fasta_dirs) > 3:
         input_round_2 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
-                                  zip(prefixes, [OUTPUTDIR + f'/Binning/MetaWrap/metawrap_round_01/metawrap_{min_comp}_{max_cont}_bins']
+                                  zip(prefixes, [OUTPUTDIR + f'/Binning/MetaWrap/metawrap_round_01/metawrap_{min_comp}_{max_cont}_bins_round_01']
                                                 + binner_fasta_dirs[3:5])])
         out_list.append([input_round_2])
     else:
         out_list.append([])
     if len(binner_fasta_dirs) > 5:
         input_round_3 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
-                                  zip(prefixes, [OUTPUTDIR + f'/Binning/MetaWrap/metawrap_round_02/metawrap_{min_comp}_{max_cont}_bins']
+                                  zip(prefixes, [OUTPUTDIR + f'/Binning/MetaWrap/metawrap_round_02/metawrap_{min_comp}_{max_cont}_bins_round_02']
                                                 + binner_fasta_dirs[5:])])
         out_list.append([input_round_3])
     else:
         out_list.append([])
     return out_list
 
-def check_bintabs_multi(wildcards):
-    checkpoint_output = checkpoints.DASTool_check.get(**wildcards).output[0]
-    binners = config['dereplication']['cross_mapping_rebinning']['binners'].split()
-    valid_binners = []
-    for binner in binners:
-        if os.stat(OUTPUTDIR + "/Dereplication/" + binner + "/" + wildcards.sample + "/scaffold2bin.tsv").st_size > 0:
-            valid_binners.append(binner)
-    return expand("Dereplication/{binner}/{sample}/scaffold2bin.tsv",binner=valid_binners,sample=wildcards.sample)
-
-# MULTI:
-def getCatIn(wildcards):
-    inputs = ["Catalogue/catalogue_anno.tsv"]
-    if config['catalogue']['kraken']['do']:
-        inputs.append("Catalogue/catalogue_kraken.parsed.tsv")
-    if config['catalogue']['mapping']['do']:
-        for type in TYPES:
-            inputs.append("Catalogue/" + type + ".counts.tsv")
-    return inputs
-    
-def gather_multi_bins(wildcards):
-    checkpoint_output = checkpoints.pre_grid.get(**wildcards).output[0]
-    return expand("Dereplication/GRiD_multi/{i}/grid/reads.GRiD.txt",
-           i=glob_wildcards("Dereplication/GRiD_multi/{i}/contigs.fasta").i)
-    
-def gather_multi_GTDB_bins(wildcards):
-    checkpoint_output = checkpoints.dRep_multi.get(**wildcards).output[0]
-    return expand("Dereplication/GTDB_multi/{i}.GTDB_out",
-           i=glob_wildcards("Dereplication/dRep_multi_out/dereplicated_genomes/{i}.contigs.fasta").i)
-           
 def getBam(wildcards):
     ori_sample = wildcards.clusterID.split(".")[0]
     return expand("{raw_directory}/Assembly/mg.reads.sorted.bam",

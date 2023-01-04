@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 VARCONFIG=$DIR/VARIABLE_CONFIG
 
-while read var val; do unset $var ; declare $var="$val" ; done < $VARCONFIG
+while IFS=$'\t' read var val; do unset $var ; declare $var="$val" ; done < $VARCONFIG
 
 if [ -z "$MAX_THREADS" ]; then
     MAX_THREADS=50
@@ -24,7 +24,7 @@ usage() {
     echo "       -g <goTo> alternative target of the workflow." 1>&2
 }
 
-while getopts n:t:g:udflcrhi flag
+while getopts n:t:g:udflcrhis flag
 do
     case $flag in
         i)

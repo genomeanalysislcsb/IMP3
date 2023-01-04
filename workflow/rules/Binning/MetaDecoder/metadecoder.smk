@@ -25,9 +25,9 @@ rule metadecoder:
         cd {params.work_dir}/{output.out_dir}
         
         # Create sam files
-        echo "Creating sam files."
+        echo "Creating sam files." >> {log} 2>&1
         set -x
-        metadecoder --version
+        metadecoder --version >> {log} 2>&1
         
         # parallel -j $THREADS "samtools view -@ 1 -h {{}} -o {params.work_dir}/{output.out_dir}/sam_files/{{/.}}.sam" ::: ${{ASSEMBLY_MAP[*]}}
         # SAM_FILES=({output.out_dir}/sam_files/*.sam)

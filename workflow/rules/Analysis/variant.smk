@@ -10,7 +10,7 @@ rule variant_calling:
         runtime = "48:00:00",
         mem = MEMCORE
     conda:
-        ENVDIR + "/IMP_mapping.yaml"
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
     threads:
         # Ensure at least 20gb of mem
         max(int(math.ceil(20 / (int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)

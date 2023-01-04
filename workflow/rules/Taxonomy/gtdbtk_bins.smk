@@ -13,7 +13,7 @@ rule GTDBtk_bins_single:
         t3 = BIGCORENO,
         t4 = int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45),
     conda:
-        ENVDIR + "/IMP_gtdbtk.yaml"
+        os.path.join(ENVDIR, "IMP_gtdbtk.yaml")
     log:
         "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
     message:
@@ -52,7 +52,8 @@ rule GTDBtk_summarize:
         gather_GTDB_bins,
         mw_stats="Binning/MetaWrap/bins.stats"
     output:
-        out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy")
+        out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy"),
+        grid="status/binning_GRiD.done"
     resources:
         runtime = "12:00:00",
         mem = MEMCORE
@@ -90,6 +91,7 @@ rule GTDBtk_summarize:
                         else:
                             next(f)
                         stats_data[bin].extend(next(f).strip(' \t\n').split('\t')[1:])
+                os.mknod(output.grid)
 
             print("Reading GTDBtk results.")
             with open(output.out_file,'w') as of:
@@ -118,9 +120,7 @@ if MG:
     rule bins_tar:
         input:
             dir="Binning/MetaWrap/bins",
-            ctrl="Stats/%s/%s.bins.tsv" % (ASS, ASS),
-            gridbins=gather_bins,
-            gtdbbins=gather_GTDB_bins
+            ctrl="Stats/%s/%s.bins.tsv" % (ASS, ASS)
         output:
             "Binning/per_bin_results.tar.gz"
         threads:
@@ -135,7 +135,7 @@ if MG:
         shell:
             """
             if [ -z "$(ls -A {input.dir})" ]; then
-              tar czf {output} {input.gridbins} {input.gtdbbins} && rm -r {input.gridbins} {input.gtdbbins} >> {log} 2>&1
+              tar czf {output} {input.dir}/*/grid {input.dir}/*/GTDB && rm -r {input.dir}/*/grid {input.dir}/*/GTDB >> {log} 2>&1
             else
               touch {output}
             fi
@@ -144,8 +144,7 @@ else:
     rule bins_tar:
         input:
             dir="Binning/MetaWrap/bins",
-            ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS),
-            gtdbbins=gather_GTDB_bins
+            ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS)
         output:
             "Binning/per_bin_results.tar.gz"
         threads:
@@ -160,7 +159,7 @@ else:
         shell:
             """
             if [ -z "$(ls -A {input.dir})" ]; then
-              tar czf {output} {input.gtdbbins} && rm -r {input.gtdbbins} >> {log} 2>&1
+              tar czf {output} {input.dir}/*/GTDB && rm -r {input.dir}/*/GTDB >> {log} 2>&1
             else
               touch {output}
             fi

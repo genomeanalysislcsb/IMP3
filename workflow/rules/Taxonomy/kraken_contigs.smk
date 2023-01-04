@@ -46,7 +46,7 @@ rule kraken_parse:
         runtime = "2:00:00",
         mem = MEMCORE
     conda:
-        ENVDIR + "/IMP_taxonomy.yaml"
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
         "logs/analysis_kraken_parse.log"
     message:

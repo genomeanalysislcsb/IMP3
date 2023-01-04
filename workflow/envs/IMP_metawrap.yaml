@@ -4,4 +4,6 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
+  - python=2.7.15
   - metawrap-mg=1.3.2
+  - gfortran_linux-64

@@ -10,8 +10,7 @@ include:
 
 mw_min_comp = config['binning']['MetaWrap']['min_completeness']
 mw_max_cont = config['binning']['MetaWrap']['max_contamination']
-inputs_binning = ["Binning/DASTool/selected_DASTool_summary.txt", "status/binning_GRiD.done",
-                  f"Binning/MetaWrap/bins.stats"]
+inputs_binning = ["status/binning_GRiD.done","Binning/MetaWrap/bins.stats"]
 
 ## abawaca
 if "abawaca" in BIN_STEPS:
@@ -63,6 +62,10 @@ include:
 if not 'taxonomy' in IMP_STEPS:
     inputs_binning.append("Binning/per_bin_results.tar.gz")
 
+
+## tar annotation
+if 'analysis' in IMP_STEPS:
+    inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
 
 ## master command
 rule BINNING:

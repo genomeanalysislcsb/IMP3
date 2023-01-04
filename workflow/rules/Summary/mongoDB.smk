@@ -18,7 +18,8 @@ rule mongo_server:
     log: "logs/summary_mongo_server.log"
     message: "mongoDB_server: Running mongo."
     threads: 1
-    conda: ENVDIR + "/IMP_multi.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_multi.yaml")
     shell:
         """
         numactl --interleave=all mongod --dbpath {input[0]} --port {params.port} --auth --logpath {log}
@@ -68,7 +69,8 @@ rule mongoDB_bins:
     log: "logs/summary_mongoDB_bins.log"
     message: "mongoDB_bins: Filling bin documents."
     threads: 1
-    conda: ENVDIR + "/IMP_multi.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_multi.yaml")
     script:
         SRCDIR + "/mongify_bins_single_IMP3.py"
          
@@ -92,7 +94,8 @@ rule mongoDB_contigs:
     log: "logs/summary_mongoDB_contigs.log"
     message: "mongoDB_bins: Filling contig documents."
     threads: 1
-    conda: ENVDIR + "/IMP_multi.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_multi.yaml")
     script:
         SRCDIR + "/mongify_contigs_single_IMP3.py"
 

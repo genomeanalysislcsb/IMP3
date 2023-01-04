@@ -14,7 +14,8 @@ if config['proteomics']['insert_variants']:
         params:
             minPep = config['proteomics']['filter_N_peptides'],
             out = "Analysis/annotation/proteomics"
-        conda: ENVDIR + "/IMP_bioperl.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_bioperl.yaml")
         threads: 1
         log: "logs/analysis_insertVariants.log"
         message: "insertVariants: inserting variants in protein predictions."
@@ -36,7 +37,8 @@ elif config['proteomics']['filter_N_peptides']:
             mem = MEMCORE
         params:
             minPep = config['proteomics']['filter_N_peptides']
-        conda: ENVDIR + "/IMP_bioperl.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_bioperl.yaml")
         threads: 1
         log: "logs/analysis_cutends.log"
         message: "cutends: removing non-tryptic peptides from protein predictions."
@@ -54,7 +56,8 @@ else:
         resources: 
             runtime = "4:00:00",
             mem = MEMCORE
-        conda: ENVDIR + "/IMP_bioperl.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_bioperl.yaml")
         threads: 1
         log: "logs/analysis_renameProteomics.log"
         message: "renameProteomics: renaming protein predictions."
@@ -76,7 +79,8 @@ if config['proteomics']['host_proteome'].split():
         params:
             host = config['proteomics']['host_proteome'].split()
         threads: 1
-        conda: ENVDIR + "/IMP_fasta.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_fasta.yaml")
         log: "logs/analysis_mergeProteomicsHost.log"
         message: "mergeProteomicsHost: merging metaomics and host protein predictions."
         shell:
@@ -93,7 +97,8 @@ else:
             runtime = "4:00:00",
             mem = MEMCORE
         threads: 1
-        conda: ENVDIR + "/IMP_fasta.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_fasta.yaml")
         log: "logs/analysis_formatProteomics.log"
         message: "formatProteomics."
         shell:

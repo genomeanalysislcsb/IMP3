@@ -40,7 +40,7 @@ elif config["assembly"]["merge"] == "cap3":
         params:
             sample = SAMPLE
         threads: 1
-        conda: ENVDIR + "/IMP_assembly.yaml"
+        conda: os.path.join(ENVDIR, "IMP_assembly.yaml")
         log: "logs/assembly_merge_assembly_cap3.log"
         message: "merge_assembly_cap3: Merging assemblies."
         shell:

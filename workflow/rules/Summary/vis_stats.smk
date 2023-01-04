@@ -37,7 +37,8 @@ rule visualize_read_stats:
     log: "logs/visualize_read_stats.log"
     message: "visualize_read_stats: Plotting reads figure."
     threads: 1
-    conda: ENVDIR + "/IMP_visualize.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_visualize.yaml")
     script:
         SRCDIR + "/visualize_reads.R"
 
@@ -55,7 +56,8 @@ rule visualize_assembly_stats:
     log: "logs/visualize_assembly_stats.log"
     message: "visualize_assembly_stats: Plotting figures for contigs."
     threads: 1
-    conda: ENVDIR + "/IMP_visualize.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_visualize.yaml")
     script:
         SRCDIR + "/visualize_assembly.R"
 
@@ -73,7 +75,8 @@ rule visualize_analysis_stats:
     log: "logs/visualize_analysis_stats.log"
     message: "visualize_analysis_stats: Plotting gene figures."
     threads: 1
-    conda: ENVDIR + "/IMP_visualize.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_visualize.yaml")
     script:
         SRCDIR + "/visualize_analysis.R"
  
@@ -91,7 +94,8 @@ if CONTIGS or "assembly" in IMP_STEPS:
         log: "logs/visualize_kraken_reads.log"
         message: "visualize_kraken_reads: Plotting taxonomy results."
         threads: 1
-        conda: ENVDIR + "/IMP_visualize.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_visualize.yaml")
         script:
             SRCDIR + "/visualize_taxonomy_kraken_withAssembly.R"
 else:
@@ -107,7 +111,8 @@ else:
         log: "logs/visualize_kraken_reads.log"
         message: "visualize_kraken_reads: Plotting taxonomy results."
         threads: 1
-        conda: ENVDIR + "/IMP_visualize.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_visualize.yaml")
         script:
             SRCDIR + "/visualize_taxonomy_kraken.R"
 
@@ -125,7 +130,8 @@ if "analysis" in IMP_STEPS:
         log: "logs/visualize_mOTU_reads.log"
         message: "visualize_mOTU_reads: Plotting taxonomy results."
         threads: 1
-        conda: ENVDIR + "/IMP_visualize.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_visualize.yaml")
         script:
             SRCDIR + "/visualize_mOTU_withAnalysis.R"
 else:
@@ -141,7 +147,8 @@ else:
         log: "logs/visualize_mOTU_reads.log"
         message: "visualize_mOTU_reads: Plotting taxonomy results."
         threads: 1
-        conda: ENVDIR + "/IMP_visualize.yaml"
+        conda:
+            os.path.join(ENVDIR, "IMP_visualize.yaml")
         script:
             SRCDIR + "/visualize_mOTU.R"
 
@@ -162,7 +169,8 @@ else:
 #         log: "logs/visualize_bins.log"
 #         message: "visualize_bins: Plotting binning results."
 #         threads: 1
-#         conda: ENVDIR + "/IMP_visualize.yaml"
+#         conda:
+#             os.path.join(ENVDIR, "IMP_visualize.yaml")
 #         script:
 #             SRCDIR + "/visualize_binning.R"
 # else:
@@ -180,7 +188,8 @@ rule visualize_bins:
     log: "logs/visualize_bins.log"
     message: "visualize_bins: Plotting binning results."
     threads: 1
-    conda: ENVDIR + "/IMP_visualize.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_visualize.yaml")
     script:
         SRCDIR + "/visualize_binning.R"
 

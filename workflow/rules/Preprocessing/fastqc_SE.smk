@@ -10,7 +10,8 @@ rule fastqc_raw:
         mem = MEMCORE
     params:
         outputdir = 'Stats/{type}'
-    conda: ENVDIR + "/IMP_preprocessing.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     log: "logs/preprocessing_fastqc_raw.{type}.log"
     message: "fastqc_raw: Running fastQC on raw {wildcards.type} reads."
     shell:
@@ -34,7 +35,8 @@ rule fastqc_preprocessed:
         outputdir = 'Stats/{type}'
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
     message: "fastqc_preprocessed: Running fastqc on preprocessed {wildcards.type} reads."
-    conda: ENVDIR + "/IMP_preprocessing.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     shell:
         """
         if [[ -s {input[0]} ]]

@@ -1,0 +1,511 @@
+#!/bin/R
+
+###################################################################################################
+## Load required packages
+###################################################################################################
+libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
+.libPaths(libs)
+.libPaths()
+
+###################################################################################################
+## Functions
+###################################################################################################
+
+N50 <- function(lengths){
+  tot <- sum(lengths)
+  contls <- sort(lengths,decreasing = T)
+  n50c <- max(which(cumsum(contls)<tot/2))
+  n50 <- contls[n50c]
+}
+
+
+###################################################################################################
+## Files from file system
+###################################################################################################
+
+steps               <- c("assembly","analysis","binning","summary","taxonomy")
+ass                 <- "mg"
+types               <- "mg"
+ann                 <- "mantis"
+if(ann == "mantis"){
+  mantis_dir        <- "Analysis/annotation/"
+  mantis_pattern    <- ".mantis.+tsv.summary"
+  fc_sum_files      <- lapply(types, function(x){
+                          y <- paste0("Analysis/annotation/",list.files(path=mantis_dir,pattern=paste0(x,mantis_pattern)))
+                          names(y) <- gsub(".+mantis.","",gsub(".counts.tsv.summary","",unlist(y)))
+                          y
+                       })
+  names(fc_sum_files) <- types
+  fc_files          <- lapply(types, function(x) {
+                          y <- gsub(".summary$","",fc_sum_files[[x]])
+                          names(y) <- gsub(".+mantis.","",gsub(".counts.tsv","",unlist(y)))
+                          y
+                        })
+  names(fc_files) <- types
+  dbs               <- unique(gsub(".+mantis.","",gsub(".counts.tsv","",unlist(fc_files))))
+}
+#if(ann == "hmmer"){
+#  dbs               <- unlist(strsplit(snakemake@params[["hmmer_dbs"]],split=" "))
+#  fc_sum_files <- list()
+#  for(type in types){
+#    fc_sum_files[[type]] <- list()
+#    for(db in dbs){
+#      fc_sum_files[[type]][[db]] <- paste0("Analysis/annotation/",type,".",db,".counts.tsv.summary")
+#    }
+#  }
+#    fc_files          <- lapply(types, function(x) setNames(gsub(".summary$","",fc_sum_files[[x]]),
+#                                                          dbs))
+#}
+out_file_tsv        <- "Stats/all_stats.tsv"
+out_file_rdat       <- "Stats/all_stats.Rdata"
+out_file_bins <- "Stats/all_bin_stats.tsv"
+
+
+###################################################################################################
+## Read Preprocessing stats
+###################################################################################################
+if(file.exists(paste0("Stats/",types[1],"/",types[1],".read_counts.txt"))){
+  readStats_files <- list()
+  for(type in types){
+    readStats_files[[type]] <- paste0("Stats/",type,"/",type,".read_counts.txt")
+  }
+
+  print("Reading read stats.")
+  for(type in types){
+    if(!"statsTab" %in% ls()){
+      statsTab <- data.frame("type"=type,
+                             read.delim(readStats_files[[type]],stringsAsFactors=F,header = F),
+                             stringsAsFactors = F)
+      colnames(statsTab)[2:3] <- c("step","number")
+    }else{
+      tmpTab <- data.frame("type"=type,
+                           read.delim(readStats_files[[type]],stringsAsFactors=F,header = F),
+                           stringsAsFactors = F)
+        colnames(tmpTab)[2:3] <- c("step","number")
+      statsTab <- rbind(statsTab,tmpTab)
+    }
+  }
+}
+###################################################################################################
+## Reads analysed by kraken
+###################################################################################################
+if(file.exists(paste0("Analysis/taxonomy/kraken/",types[1],".kraken.report"))){
+  krakStats_files <- list()
+  for(type in types){
+    krakStats_files[[type]] <- paste0("Analysis/taxonomy/kraken/",type,".kraken.report")
+  }
+
+  print("Reading Kraken results.")
+  for(type in types){
+    krakRep <- read.delim(krakStats_files[[type]],stringsAsFactors=F,header = F)
+    krakTemp <- data.frame("type"=type,
+                           "step"=c("kraken classified reads","kraken unclassified reads",
+                                    "kraken species","kraken genera"),
+                           "number"=c(krakRep$V2[2],krakRep$V2[1],
+                                      length(which(krakRep$V4=="S")),length(which(krakRep$V4=="G"))),
+                           stringsAsFactors=F)
+    rm(krakRep)
+    if(!"statsTab" %in% ls()){
+      statsTab <- krakTemp
+    }else{
+      statsTab <- rbind(statsTab,
+                        krakTemp)
+    }
+  }
+}
+###################################################################################################
+## Reads analysed by mOTUs
+###################################################################################################
+if(file.exists(paste0("Analysis/taxonomy/mOTUs/",types[1],".mOTU.counts.tsv"))){
+  motuStats_files <- list()
+  for(type in types){
+    motuStats_files[[type]] <- paste0("Analysis/taxonomy/mOTUs/",type,".mOTU.counts.tsv")
+  }
+
+  print("Reading mOTU results.")
+  for(type in types){
+          if(nrow(read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F,nrows=2))>1){
+      motuRep <- read.delim(motuStats_files[[type]],stringsAsFactors=F,header = F, comment.char = "#")
+      motuTemp <- data.frame("type"=type,
+                           "step"=c("mOTU mapping reads",
+                                    "mOTU species","mOTU genera"),
+                           "number"=c(motuRep$V2[1],
+                                      length(grep("s__",motuRep$V1)),length(grep("g__",motuRep$V1))),
+                           stringsAsFactors=F)
+      rm(motuRep)
+      if(!"statsTab" %in% ls()){
+        statsTab <- motuTemp
+      }else{
+        statsTab <- rbind(statsTab,
+                        motuTemp)
+      }
+    }
+  }
+}
+
+
+###################################################################################################
+## Reads mapping to Assembly
+###################################################################################################
+if(file.exists(paste0("Stats/",types[1],"/",ass,".assembly.contig_flagstat.txt"))){
+  mapStats_files <- list()
+  for(type in types){
+    mapStats_files[[type]] <- paste0("Stats/",type,"/",ass,".assembly.contig_flagstat.txt")
+  }
+
+  print("Reading map stats.")
+  for(type in types){
+    mapTab <- read.delim(mapStats_files[[type]],stringsAsFactors=F,header = F)
+    mapTemp <- data.frame("type"=type,
+                          "step"=c("paired reads","se reads",
+                                   "primary lines in bam",
+                                   "segments mapped",
+                                   "both partners map","one partner maps"),
+                          "number"=c(mapTab$V1[7],mapTab$V1[1]-mapTab$V1[2]-mapTab$V1[6],
+                                     mapTab$V1[1]-mapTab$V1[2],
+                                     mapTab$V1[5],
+                                     mapTab$V1[10]/2,mapTab$V1[11]),
+                          stringsAsFactors=F)
+    if(!"statsTab" %in% ls()){
+      statsTab <- mapTemp
+    }else{
+      statsTab <- rbind(statsTab,
+                        mapTemp)
+    }
+  }
+}
+
+
+###################################################################################################
+## Reads mapping to Annotations
+###################################################################################################
+if(any(sapply(unlist(fc_sum_files),function(x) file.exists(pattern=x)))){
+
+  print("Reading map stats for features.")
+  for(type in types){
+    mapTemp <- data.frame("type"=type,
+                          "step"=paste("mapping to", dbs),
+                          "number"=sapply(dbs,function(x){
+                              if(file.exists(fc_sum_files[[type]][[x]])){
+                                mapTab <- read.delim(fc_sum_files[[type]][[x]],
+                                            stringsAsFactors=F,header = T)
+                                mapTab[1,2]
+                              }else{0}
+                            }),
+                          stringsAsFactors=F)
+    if(!"statsTab" %in% ls()){
+      statsTab <- mapTemp
+    }else{
+      statsTab <- rbind(statsTab,
+                        mapTemp)
+    }
+  }
+}
+
+###################################################################################################
+## Assembly stats
+###################################################################################################
+if(file.exists(paste0("Stats/",ass,"/",ass,".assembly.length.txt"))){
+  print("Reading assembly stats.")
+  contig_length <- read.delim(paste0("Stats/",ass,"/",ass,".assembly.length.txt"),
+                              stringsAsFactors=F,header = F)
+  colnames(contig_length) <- c("contig","length")
+  contig_gc <- read.delim(paste0("Stats/",ass,"/",ass,".assembly.gc_content.txt"),
+                          stringsAsFactors=F,header = T)
+  colnames(contig_gc) <- c("contig","GC")
+
+  depthAssStats_files <- list()
+  breadthAssStats_files <- list()
+  for(type in types){
+    depthAssStats_files[[type]] <- paste0("Stats/",type,"/",ass,".assembly.contig_depth.txt")
+    breadthAssStats_files[[type]] <- paste0("Stats/",type,"/",ass,".assembly.contig_coverage.txt")
+  }
+
+  assTemp <- data.frame("type"=rep(ass,4),
+                        "step"=c("contigs","total assembly length",
+                                 "N50",
+                                 "mean contig length"),
+                        "number"=c(nrow(contig_length),sum(contig_length$length),
+                                   N50(contig_length$length),
+                                   round(mean(contig_length$length))),
+                        stringsAsFactors=F)
+
+  if(!"statsTab" %in% ls()){
+    statsTab <- assTemp
+  }else{
+    statsTab <- rbind(statsTab,
+                      assTemp)
+  }
+
+  depthAssStat <- list()
+  breadthAssStat <- list()
+  for(type in types){
+    depthAssStat[[type]] <- read.delim(depthAssStats_files[[type]],stringsAsFactors=F,header = F)
+    breadthAssStat[[type]] <- read.delim(breadthAssStats_files[[type]],stringsAsFactors=F,header = F)[,c(1,7)]
+    colnames(depthAssStat[[type]]) <- c("contig","depth")
+    colnames(breadthAssStat[[type]]) <- c("contig","breadth")
+    covTemp <- data.frame("type"=type,
+                          "step"=c("contigs_max_depth",
+                                   "contigs_mean_depth>0","contigs_mean_depth>1",
+                                   "contigs_breadth>0","contigs_breadth=1"),
+                          "number"=c(round(max(depthAssStat[[type]]$depth)),
+                                     nrow(depthAssStat[[type]]),length(which(depthAssStat[[type]]$depth>=1)),
+                                     length(which(breadthAssStat[[type]]$breadth>0)),length(which(breadthAssStat[[type]]$breadth==1))),
+                          stringsAsFactors=F)
+    if(!"statsTab" %in% ls()){
+      statsTab <- covTemp
+    }else{
+      statsTab <- rbind(statsTab,
+                        covTemp)
+    }
+  }
+}
+###################################################################################################
+## Contigs analysed by kraken
+###################################################################################################
+if(file.exists(paste0("Analysis/taxonomy/kraken/",ass,".kraken.parsed.tsv"))){
+  print("Reading Kraken contig results.")
+  krakAssFile <- paste0("Analysis/taxonomy/kraken/",ass,".kraken.parsed.tsv")
+  krakTemp <- data.frame("type"=ass,
+                         "step"=c("kraken classified contigs"),
+                         "number"=c(as.numeric(unlist(strsplit(system2("wc",
+                                                                       args=c("-l",krakAssFile),
+                                                                       stdout=T),split=" "))[1])-1),
+                         stringsAsFactors=F)
+  if(!"statsTab" %in% ls()){
+    statsTab <- krakTemp
+  }else{
+    statsTab <- rbind(statsTab,
+                      krakTemp)
+  }
+}
+
+
+###################################################################################################
+## Annotation stats
+###################################################################################################
+if(file.exists("Analysis/annotation/annotation_CDS_RNA_hmms.gff")){
+    gene_gff <- read.delim("Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+                              stringsAsFactors=F,header = F)
+    colnames(gene_gff) <- c("contig","source","feature","start","end","score","strand","frame","attribute")
+}else if(file.exists("Analysis/annotation/annotation.filt.gff")){
+    gene_gff <- read.delim("Analysis/annotation/annotation.filt.gff",
+                           stringsAsFactors=F,header = F)
+  colnames(gene_gff) <- c("contig","source","feature","start","end","score","strand","frame","attribute")
+}
+
+if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
+  print("Reading annotation stats.")
+  gene_length <- read.delim(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"),
+                            stringsAsFactors=F,header = F)
+  colnames(gene_length) <- c("gene","length")
+
+  c2g <- data.frame("contig"=gene_gff$contig,
+                    "gene"=gsub("ID=([^;]+);.+","\\1",gene_gff$attribute))
+  depthGeneStats_files <- list()
+  for(type in types){
+    depthGeneStats_files[[type]] <- paste0("Stats/",type,"/annotation/",type,".gene_depth.avg")
+  }
+
+  annTemp <- data.frame("type"=ass,
+                        "step"=c("genes","mean gene length",
+                                 "CDSs","rRNAs","tmRNAs","tRNAs",
+                                 dbs, paste(dbs,"categories")),
+                        "number"=c(nrow(gene_length),round(mean(gene_length$length)),
+                                   length(which(gene_gff$feature=="CDS")),
+                                   length(which(gene_gff$feature=="rRNA")),
+                                   length(which(gene_gff$feature=="tmRNA")),
+                                   length(which(gene_gff$feature=="tRNA")),
+                                   sapply(dbs,function(x){
+                                     patt=paste0(";",x,"=")
+                                     length(grep(patt,gene_gff$attribute))
+                                   }),
+                                   sapply(dbs,function(x){
+                                     fileoi <- fc_files[[1]][[x]]
+                                     as.numeric(unlist(strsplit(system2("wc",
+                                                                        args=c("-l",fileoi),
+                                                                        stdout=T),split=" "))[1])-2
+                                   })),
+                        stringsAsFactors=F)
+
+  if(!"statsTab" %in% ls()){
+    statsTab <- annTemp
+  }else{
+    statsTab <- rbind(statsTab,
+                      annTemp)
+  }
+
+  depthGeneStat <- list()
+  for(type in types){
+    depthGeneStat[[type]] <- read.delim(depthGeneStats_files[[type]],stringsAsFactors=F,header = F)
+    colnames(depthGeneStat[[type]]) <- c("gene","depth")
+    covTemp <- data.frame("type"=type,
+                          "step"=c("max_gene_depth","genes_mean_depth>0"),
+                          "number"=c(round(max(depthGeneStat[[type]]$depth)),length(which(depthGeneStat[[type]]$depth>0))),
+                          stringsAsFactors=F)
+    if(!"statsTab" %in% ls()){
+      statsTab <- covTemp
+    }else{
+      statsTab <- rbind(statsTab,
+                        covTemp)
+    }
+  }
+}
+
+
+###################################################################################################
+## Binning stats
+###################################################################################################
+bin_in_file <- paste0("Stats/",ass,"/",ass,".bins.tsv")
+if(file.exists(bin_in_file)){
+  if(file.info(bin_in_file)$size==0){
+          system(paste0("touch ",out_file_bins))
+        }else{
+  print("Reading binning stats.")
+  binTab <- read.delim(bin_in_file,
+                       stringsAsFactors=F,header = T)
+  binTab <- binTab[binTab$bin!=""&!is.na(binTab$bin)&binTab$bin!="bin",]
+
+  rnas_bin_tab <- as.data.frame(matrix(0,nrow=nrow(binTab),
+                         ncol=14,
+                         dimnames=list(binTab$bin,
+                                       c("complete_16S","partial_16S","complete_23S","partial_23S",
+                                         "any_5S","tRNAs","mean_coverage_depth","genes",
+                                         "expressed_genes","essential_genes","unique_essential_genes",
+                                         "mOTU_phyla","mOTU_genera","mOTUs"))),
+                          stringsAsFactors=F)
+  for(bin in binTab$bin){
+    if(file.exists(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"))){
+      contigs_temp <- read.delim(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"),
+                               stringsAsFactors=F,header = F)[,1]
+    }else{
+     contigs_temp <- read.delim("Binning/MetaWrap/bins.contigs", header=F, stringsAsFactors=F)
+     contigs_temp <- contigs_temp[contigs_temp$V2 == bin,1]
+   }
+    products_bin <- gsub(".+;product=","",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature != "CDS",9])
+    if(length(products_bin)>0){
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,1] <- length(which(grepl("16S ribosomal RNA",products_bin) &
+                                                                    !grepl("partial",products_bin)))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,2] <- length(which(grepl("16S ribosomal RNA",products_bin) &
+                                                                    grepl("partial",products_bin)))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,3] <- length(which(grepl("23S ribosomal RNA",products_bin) &
+                                                                    !grepl("partial",products_bin)))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,4] <- length(which(grepl("23S ribosomal RNA",products_bin) &
+                                                                    grepl("partial",products_bin)))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,5] <- length(which(grepl("5S ribosomal RNA",products_bin)))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,6] <- length(unique(grep("tRNA",products_bin,value = T)))
+    }
+    rm(products_bin)
+
+    if("mg" %in% types){
+      bin_depth <- merge(contigs_temp,depthAssStat[["mg"]],by=1,all.x=T)
+      bin_depth$depth[is.na(bin_depth$depth)] <- 0
+      bin_depth <- weighted.mean(bin_depth$depth,sapply(bin_depth$x,function(x)contig_length$length[contig_length$contig==x]))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,7] <- bin_depth
+      rm(bin_depth)
+    }
+    cds_bin <- gsub("ID=([^;]+);.+","\\1",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9])
+    rnas_bin_tab[rownames(rnas_bin_tab)==bin,8] <- length(cds_bin)
+    if("mt" %in% types){
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,9] <- length(which(depthGeneStat[["mt"]]$depth[depthGeneStat[["mt"]]$gene %in% cds_bin]>0))
+    }
+    if("essential" %in% dbs){
+      ess_bin <- gsub(".+;essential=([^;]+);*","\\1",
+                      grep("essential=",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9],value=T))
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(ess_bin)
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,11] <- length(unique(ess_bin))
+      rm(ess_bin)
+    }else{
+       if("is_essential_gene" %in% dbs){
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(grep("is_essential_gene=",
+                                                    gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9]))
+    }}
+    if(file.exists("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")){
+      if(!grepl("^=",scan("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",what=character(),n=1))){
+      mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F)
+      }else if(as.numeric(gsub(" .+","",system2("wc", c("-l", "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"),T)))>1){
+       mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F,comment.char="=",header=F)
+       colnames(mgenes) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
+      }else{
+      mgenes <- read.table(text="",col.names=c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU"),stringsAsFactors=F)
+      }
+      mgenes <- mgenes[mgenes$queryID %in% cds_bin,]
+      if(nrow(mgenes)>0){
+        taxtp <- sort(table(sub("[0-9NA]+ ","",mgenes$phylum)),decreasing=T)
+        if(length(taxtp)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,12] <- paste(paste0(names(taxtp),
+                                                                                         "(",taxtp,")"),
+                                                                                  sep=";",collapse=";")
+        taxtg <- sort(table(sub("[0-9NA]+ ","",mgenes$genus)),decreasing=T)
+        if(length(taxtg)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,13] <- paste(paste0(names(taxtg),
+                                                                                         "(",taxtg,")"),
+                                                                                  sep=";",collapse=";")
+        taxtm <- sort(table(sub("[0-9NA]+ ","",mgenes$mOTU)),decreasing=T)
+        if(length(taxtm)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,14] <- paste(paste0(names(taxtm),
+                                                                                         "(",taxtm,")"),
+                                                                                  sep=";",collapse=";")
+        rm(taxtm,taxtg,taxtp,cds_bin,mgenes)
+      }
+    }
+    rm(contigs_temp)
+  }
+
+  binTab <- merge(binTab,rnas_bin_tab,by.x="bin",by.y=0,all.x=T)
+
+  binTemp <- data.frame("type"=ass,
+                        "step"=c("total_bins",
+                                 "HQ_drafts",
+                                 "HQ_drafts_partial_RNAs",
+                                 "HQ_drafts_minus_RNAs",
+                                 "MQ_drafts",
+                                 "LQ_drafts",
+                                 "binned_length"),
+                        "number"=c(nrow(binTab),
+                                   length(which(as.numeric(binTab$completeness)>90 &
+                                                  as.numeric(binTab$contamination)<5 &
+                                                  binTab$complete_16S>0 &
+                                                  binTab$complete_23S>0 &
+                                                  binTab$any_5S>0 &
+                                                  binTab$tRNAs >= 18)),
+                                   length(which(as.numeric(binTab$completeness)>90 &
+                                                  as.numeric(binTab$contamination)<5 &
+                                                  (binTab$complete_16S+binTab$partial_16S)>0 &
+                                                  (binTab$complete_23S+binTab$partial_23S)>0 &
+                                                  !(binTab$complete_16S>0 &
+                                                      binTab$complete_23S>0) &
+                                                  binTab$any_5S>0 &
+                                                  binTab$tRNAs >= 18)),
+                                   length(which(as.numeric(binTab$completeness)>90 &
+                                                  as.numeric(binTab$contamination)<5 &
+                                                  !((binTab$complete_16S+binTab$partial_16S)>0 &
+                                                      (binTab$complete_23S+binTab$partial_23S)>0 &
+                                                      binTab$any_5S>0 &
+                                                      binTab$tRNAs >= 18))),
+                                   length(which(as.numeric(binTab$completeness)>=50 &
+                                                  as.numeric(binTab$contamination)<10 &
+                                                  !(as.numeric(binTab$completeness)>90 &
+                                                      as.numeric(binTab$contamination)<5))),
+                                   length(which(as.numeric(binTab$completeness)<50 &
+                                                  as.numeric(binTab$contamination)<10 )),
+                                   sum(as.numeric(binTab$size))),
+                        stringsAsFactors=F)
+
+  if(!"statsTab" %in% ls()){
+    statsTab <- binTemp
+  }else{
+    statsTab <- rbind(statsTab,
+                      binTemp)
+  }
+}
+}
+
+
+###################################################################################################
+## Save concatenated output
+###################################################################################################
+
+print("Writing concatenated read table.")
+write.table(statsTab,out_file_tsv,sep="\t",quote=F,row.names=F)
+if("binTab" %in% ls()){
+  write.table(binTab,out_file_bins,sep="\t",quote=F,row.names=F)
+}
+save.image(out_file_rdat)

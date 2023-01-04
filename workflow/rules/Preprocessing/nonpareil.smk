@@ -7,6 +7,7 @@ else:
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "no_short_XXXXXX.fq")
         seqkit seq {input} -j {threads} -m 24 >> $TMP_FILE
         nonpareil -s $TMP_FILE -T kmer -f fastq -b {params.out1}.{wildcards.read}{params.out2} >> {log}
+        rm $TMP_FILE
         """ 
 
 rule nonpareil:
@@ -23,7 +24,8 @@ rule nonpareil:
     threads: 1
     log: "logs/preprocessing_nonpareil.{read}.log"
     message: "nonpareil: processed {wildcards.read} fastq file."
-    conda: ENVDIR + "/IMP_nonpareil.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_nonpareil.yaml")
     shell:
         nonpareil_cmd
 
@@ -37,7 +39,8 @@ rule nonpareil_curve:
         runtime = "8:00:00",
         mem = MEMCORE
     threads: 1
-    conda: ENVDIR + "/IMP_nonpareil.yaml"
+    conda:
+        os.path.join(ENVDIR, "IMP_nonpareil.yaml")
     log: "logs/preprocessing_nonpareil_curve.{read}.log"
     message: "nonpareil_curve: processed {wildcards.read} data."
     script:

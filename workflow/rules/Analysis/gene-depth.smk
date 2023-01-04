@@ -16,7 +16,7 @@ rule call_gene_depth:
         # Ensure at least 5gb of mem
         max(int(math.ceil(5 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     conda:
-        ENVDIR + "/IMP_mapping.yaml"
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:
         "logs/analysis_call_gene_depth.{type}.log"
     message:
