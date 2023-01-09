@@ -28,7 +28,7 @@ def getThreads(cores, bigmem=False):
         mem_core = int(config["mem"]["mem_per_core"])
         mem_total = int(config["mem"]["mem_total"])
         n_cores = max(math.floor(mem_total / mem_core), 1)
-        max_cores = int(config["mem"]["mem_cores_max"])
+        max_cores = int(config["mem"]["cores_max"])
 
     # print(f"mem_core: {mem_core}")
     # print(f"mem_total: {mem_total}")

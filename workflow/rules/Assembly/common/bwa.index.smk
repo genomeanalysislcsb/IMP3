@@ -10,10 +10,14 @@ rule bwa_index:
     resources:
         runtime = "24:00:00",
         mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/assembly_bwa_index_{fasta}.log"
-    message: "bwa_index: Indexing {wildcards.fasta} for bwa."
+    threads:
+        1
+    conda:
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
+    log:
+        "logs/assembly_bwa_index_{fasta}.log"
+    message:
+        "bwa_index: Indexing {wildcards.fasta} for bwa."
     shell:
         """
         bwa index {wildcards.fasta} 

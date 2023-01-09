@@ -3,14 +3,17 @@ rule tar_intermediary:
         "Assembly/%s.assembly.merged.fa" % ASS
     output:
         "Assembly/intermediary.tar.gz"
-    threads: 1
+    threads:
+        1
     resources:
         runtime = "8:00:00",
         mem = MEMCORE
     params:
         intermediary = "Assembly/intermediary/"
-    log: "logs/assembly_tar_intermediary.log"
-    message: "tar_intermediary: Compressing intermediary steps of assembly."
+    log:
+        "logs/assembly_tar_intermediary.log"
+    message:
+        "tar_intermediary: Compressing intermediary steps of assembly."
     shell:
        """
        tar czf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1
@@ -24,10 +27,14 @@ rule contig_fasta_indexing:
     resources:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/assembly_contig_fasta_indexing.log"
-    message: "contig_fasta_indexing: Indexing assembly."
+    threads:
+        1
+    conda:
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
+    log:
+        "logs/assembly_contig_fasta_indexing.log"
+    message:
+        "contig_fasta_indexing: Indexing assembly."
     shell:
         """
         samtools faidx {input[0]} > {log} 2>&1
@@ -42,9 +49,11 @@ rule contig_fasta2bed_conversion:
     resources:
         runtime = "8:00:00",
         mem = MEMCORE
-    threads: 1
+    threads:
+        1
 #    log: "logs/assembly_fastabed.log"
-    message: "contig_fasta2bed_conversion: Writing bed file for assembly."
+    message:
+        "contig_fasta2bed_conversion: Writing bed file for assembly."
     shell:
         """
         cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output}

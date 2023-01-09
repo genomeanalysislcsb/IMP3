@@ -43,12 +43,14 @@ rule get_present_mOTUs:
         expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",type=TYPES)
     output:
         "Analysis/taxonomy/mOTU_links/intermediary/all.mOTUs.present"
-    threads: 1
+    threads:
+        1
     resources:
         runtime = "1:00:00",
         mem = MEMCORE
 #    log: "logs/analysis_get_present_mOTUs.log"
-    message: "get_present_mOTUs: Extracting identity of present mOTUs."
+    message:
+        "get_present_mOTUs: Extracting identity of present mOTUs."
     shell:
         """
         grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output} || touch {output} status/taxonomy_mOTUs.impossible
@@ -59,7 +61,8 @@ rule extract_mOTU_db_genes:
         "Analysis/taxonomy/mOTU_links/intermediary/all.mOTUs.present"
     output:
         expand("Analysis/taxonomy/mOTU_links/intermediary/{COG}.present.DBgenes.fna",COG=COGS_LIST)
-    threads: 1
+    threads:
+        1
     resources:
         runtime = "12:00:00",
         mem = MEMCORE
@@ -71,8 +74,10 @@ rule extract_mOTU_db_genes:
         coordinates = "share/motus-3.0.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
-    log: "logs/analysis_extract_mOTU_db_genes.log"
-    message: "extract_mOTU_db_genes: Extracting genes for present mOTUs."
+    log:
+        "logs/analysis_extract_mOTU_db_genes.log"
+    message:
+        "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/perl5/site_perl/5.22.0
@@ -87,14 +92,17 @@ rule blast_mOTU_db_genes:
         "Analysis/taxonomy/mOTU_links/intermediary/marker_genes/{COG}.fna"
     output:
         "Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHits.tsv",
-    threads: 1
+    threads:
+        1
     resources:
         runtime = "12:00:00",
         mem = MEMCORE
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
-    log: "logs/analysis_blast_mOTU_db_genes.{COG}.log"
-    message: "blast_mOTU_db_genes: Blasting {wildcards.COG} genes to present mOTUs."
+    log:
+        "logs/analysis_blast_mOTU_db_genes.{COG}.log"
+    message:
+        "blast_mOTU_db_genes: Blasting {wildcards.COG} genes to present mOTUs."
     shell:
         """
         if [ -s {input[0]} ]; then 
@@ -110,16 +118,20 @@ rule parse_blast_mOTU:
         "Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHits.tsv"
     output:
         "Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHitPhylogeny.tsv"
-    threads: 1
+    threads:
+        1
     resources:
         runtime = "12:00:00",
         mem = MEMCORE
     params:
         metaphy = "/share/motus-3.0.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
         refphy = "/share/motus-3.0.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
-    conda: ENVDIR + "/IMP_taxonomy.yaml"
-    log: "logs/analysis_parse_blast_mOTU.{COG}.log"
-    message: "parse_blast_mOTU: Parsing blast results of {wildcards.COG} genes."
+    conda:
+        ENVDIR + "/IMP_taxonomy.yaml"
+    log:
+        "logs/analysis_parse_blast_mOTU.{COG}.log"
+    message:
+        "parse_blast_mOTU: Parsing blast results of {wildcards.COG} genes."
     script:
         SRCDIR + "/mergeMOTUblast.R"
 
@@ -128,14 +140,17 @@ rule tar_intermediary_mOTU:
         "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
     output:
         "Analysis/taxonomy/mOTU_links/intermediary.tar.gz"
-    threads: 1
+    threads:
+        1
     resources:
         runtime = "8:00:00",
         mem = MEMCORE
     params:
         intermediary = "Analysis/taxonomy/mOTU_links/intermediary/"
-    log: "logs/mOTUlinks_tar_intermediary.log"
-    message: "tar_intermediary_mOTU: Compressing intermediary steps of mOTU linking."
+    log:
+        "logs/mOTUlinks_tar_intermediary.log"
+    message:
+        "tar_intermediary_mOTU: Compressing intermediary steps of mOTU linking."
     shell:
        """
        tar cvzf {output} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1

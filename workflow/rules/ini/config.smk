@@ -215,6 +215,8 @@ BIGCORENO = config['mem']['big_mem_cores']
 BIGMEMTOTAL = config['mem']['big_mem_total']
 MEMCORE = str(config['mem']['mem_per_core']) + config['mem']['mem_unit']
 BIGMEMCORE = str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit']
+CORESMAX = config['mem']['cores_max']
+BIGCORESMAX = config['mem']['big_mem_cores_max']
 
 print(f"BIGCORENO: {BIGCORENO}")
 print(f"BIGMEMTOTAL: {BIGMEMTOTAL}")

@@ -28,7 +28,7 @@ properties:
   mem:
     type: object
     properties:
-      normal_mem_per_core:
+      mem_per_core:
         type: number
         minimum: 1
       big_mem_total:
