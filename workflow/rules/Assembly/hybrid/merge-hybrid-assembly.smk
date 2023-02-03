@@ -35,8 +35,8 @@ elif config["assembly"]["merge"] == "cap3":
         output:
             'Assembly/mgmt.assembly.merged.fa'
         resources:
-            runtime = "48:00:00", ### 72
-            mem = BIGMEMCORE
+            runtime = "48:00:00",
+            mem_mb = BIGMEMCORE_MB
         params:
             sample = SAMPLE
         threads: 1
@@ -74,7 +74,7 @@ elif config["assembly"]["merge"] == "flye":
             final="Assembly/mgmt.assembly.merged.fa"
         resources:
             runtime = "24:00:00",
-            mem = BIGMEMCORE
+            mem_mb = BIGMEMCORE_MB
         params:
             sample = SAMPLE,
             iters = 0,
@@ -113,7 +113,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             os.path.join(ENVDIR, "logs",  "quickmerge_install_benchmark.tsv")
         resources:
             runtime = "01:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         threads:
             1
         conda:
@@ -147,7 +147,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             os.path.join(OUTPUTDIR,"logs","assembly_merge_hybrid_format_fastas_benchmark.tsv")
         resources:
             runtime = "02:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         params:
             sample = SAMPLE,
             # assembly_nr = lambda wc: wc.get("assembly_nr")
@@ -179,7 +179,7 @@ elif config["assembly"]["merge"] == "quickmerge":
     #         os.path.join(OUTPUTDIR,"status","qm_fastas.ready")
     #     resources:
     #         runtime = "00:01:00",
-    #         mem = MEMCORE
+    #         mem_mb = MEMCORE_MB
     #     threads:
     #         1
     #     shell:
@@ -204,7 +204,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             os.path.join(OUTPUTDIR, "logs",  "join_h1_with_h2_benchmark.tsv")
         resources:
             runtime = "12:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         params:
             sample = SAMPLE,
             work_dir = OUTPUTDIR,

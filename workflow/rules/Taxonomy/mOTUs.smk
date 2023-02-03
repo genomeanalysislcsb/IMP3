@@ -23,11 +23,12 @@ rule motus:
         # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
         # -A: print all tax. levels together
         # -c: return counts
-        params="-A -c",
+        params = "-A -c",
+        sample = config["sample"]
         # database = os.path.join(DBPATH, 'motus')
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
+        runtime = "08:00:00",
+        mem_mb = MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_motus.yaml")
     log:
@@ -41,17 +42,20 @@ rule motus:
                           -r {input.r2} \
                           -s {input.se} \
                           -o {output} \
+                          -n {params.sample} \
                           {params.params} \
                           -t {threads} >& {log}
         elif [ -s {input.se} ]; then
             motus profile -s {input.se} \
                           -o {output} \
+                          -n {params.sample} \
                           {params.params} \
                           -t {threads} >& {log}
         else
             motus profile -f {input.r1} \
                           -r {input.r2} \
                           -o {output} \
+                          -n {params.sample} \
                           {params.params} \
                           -t {threads} >& {log}
         fi 

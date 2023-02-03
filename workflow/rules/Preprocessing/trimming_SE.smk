@@ -9,7 +9,7 @@ if config['nextseq']:
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log: "logs/preprocessing_trimming.{type}.log"
@@ -34,7 +34,7 @@ if config['nextseq']:
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log: "logs/preprocessing_nextseq_trimming.{type}.{read}.log"
@@ -56,7 +56,7 @@ else:
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log: "logs/preprocessing_trimming.{type}.log"

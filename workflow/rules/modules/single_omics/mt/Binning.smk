@@ -1,6 +1,6 @@
 # include rules for the Binning part of the workflow
 
-## DAStool
+# DAStool
 include:
     '../../../Binning/DAStool/dastool.smk'
 
@@ -11,7 +11,7 @@ include:
 mw_min_comp = config['binning']['MetaWrap']['min_completeness']
 mw_max_cont = config['binning']['MetaWrap']['max_contamination']
 inputs_binning = ["Binning/DASTool/selected_DASTool_summary.txt",
-                  f"Binning/MetaWrap/bins.stats"]
+                  "Binning/MetaWrap/bins.stats"]
 
 ## MaxBin doesn't work without mg coverage
 ## MetaBAT
@@ -29,8 +29,8 @@ if not 'taxonomy' in IMP_STEPS:
     inputs_binning.append("Binning/per_bin_results.tar.gz")
 
 ## tar annotation
-if 'analysis' in IMP_STEPS:
-    inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
+# if 'analysis' in IMP_STEPS:
+#     inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
 
 ## master command
 rule BINNING:

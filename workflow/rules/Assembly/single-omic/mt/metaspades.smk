@@ -32,8 +32,8 @@ rule metaspades_assembly_from_preprocessing:
         'Assembly/intermediary/mt.metaspades_preprocessed.1/transcripts.fasta',
         'Assembly/intermediary/mt.metaspades_preprocessed.1.fa'
     resources:
-        runtime = "48:00:00", ###120
-        mem = BIGMEMCORE
+        runtime = "48:00:00",
+        mem_mb = BIGMEMCORE_MB
     threads: getThreads(BIGCORENO, bigmem=True)
     conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_metaspades_assembly_from_preprocessing.mt.log"
@@ -51,8 +51,8 @@ rule metaspades_assembly_from_unmapped:
         'Assembly/intermediary/mt.metaspades_unmapped.2/transcripts.fasta',
         'Assembly/intermediary/mt.metaspades_unmapped.2.fa'
     resources:
-        runtime = "48:00:00", ###120
-        mem = BIGMEMCORE
+        runtime = "48:00:00",
+        mem_mb = BIGMEMCORE_MB
     threads: getThreads(BIGCORENO, bigmem=True)
     conda: ENVDIR + "/IMP_assembly.yaml"
     log: "logs/assembly_metaspades_assembly_from_unmapped.mt.log"

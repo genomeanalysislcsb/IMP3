@@ -47,10 +47,11 @@ rule filter_rrna_pe:
         idx=temp(directory("Preprocessing/sortmerna_idx")), # store index files separately so they can be re-used in filter_rrna_se
     log:
         "logs/preprocessing_filter_rrna_pe.log"
-    threads: getThreads(8)
+    threads:
+        getThreads(8)
     resources:
-        runtime = "48:00:00",
-        mem = MEMCORE
+        runtime = "24:00:00",
+        mem_mb = MEMCORE_MB
     params:
         params=smk_get_sortmerna_params,
     conda:
@@ -92,10 +93,11 @@ rule filter_rrna_se:
         wdir=temp(directory("Preprocessing/sortmerna_se")),
     log:
         "logs/preprocessing_filter_rrna_se.log"
-    threads: getThreads(8)
+    threads:
+        getThreads(8)
     resources:
-        runtime = "24:00:00",
-        mem = MEMCORE
+        runtime = "12:00:00",
+        mem_mb = MEMCORE_MB
     params:
         params=smk_get_sortmerna_params,
     conda:

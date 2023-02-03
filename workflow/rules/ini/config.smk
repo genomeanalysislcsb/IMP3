@@ -17,9 +17,6 @@ if not workflow.config:
     configfile:
         srcdir("../../../config/config.imp.yaml")
 
-
-print(config['mem'])
-
 # default executable for snakmake
 shell.executable("bash")
 
@@ -159,7 +156,7 @@ if SAMPLE == "":
     SAMPLE = "_".join(OUTPUTDIR.split("/")[-2:])
 SAMPLE = re.sub("_+","_",re.sub("[;|.-]","_",SAMPLE))
 DBPATH = os.path.expandvars(config['db_path'])
-print(ROOTDIR)
+
 if not os.path.isabs(DBPATH):
     DBPATH = os.path.join(ROOTDIR, DBPATH)
 if not os.path.exists(DBPATH):
@@ -218,13 +215,20 @@ BIGMEMCORE = str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit']
 CORESMAX = config['mem']['cores_max']
 BIGCORESMAX = config['mem']['big_mem_cores_max']
 
-print(f"BIGCORENO: {BIGCORENO}")
-print(f"BIGMEMTOTAL: {BIGMEMTOTAL}")
-print(f"MEMCORE: {MEMCORE}")
-print(f"BIGMEMCORE: {BIGMEMCORE}")
+# print(f"BIGCORENO: {BIGCORENO}")
+# print(f"BIGMEMTOTAL: {BIGMEMTOTAL}")
+# print(f"MEMCORE: {MEMCORE}")
+# print(f"BIGMEMCORE: {BIGMEMCORE}")
 
 byte_dict = {'K': 1e3, 'M': 1e6, 'G': 1e9, 'T': 1e12}
 to_gb_dict = {'K': 1e-6, 'M': 1e-3, 'G': 1e0, 'T': 1e3}
+to_mb_dict = {'K': 1e-3, 'M': 1e0, 'G': 1e3, 'T': 1e6}
+
+MEMCORE_MB = int(float(MEMCORE[:-1]) * to_mb_dict[config["mem"]["mem_unit"]])
+BIGMEMCORE_MB = int(float(BIGMEMCORE[:-1]) * to_mb_dict[config["mem"]["mem_unit"]])
+
+# print(f"MEMCORE_MB: {MEMCORE_MB}")
+# print(f"BIGMEMCORE_MB: {BIGMEMCORE_MB}")
 
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless a absolute path is set

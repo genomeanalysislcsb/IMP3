@@ -15,7 +15,7 @@ rule mapping_on_assembly:
         'Assembly/{type}.reads.sorted.bam'
     resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE
+        mem_mb = BIGMEMCORE_MB
     threads:
         getThreads(BIGCORENO, bigmem=True)
     conda:
@@ -61,8 +61,8 @@ rule index_bam:
     output:
         '{sorted_bam}.bai'
     resources:
-        runtime = "8:00:00",
-        mem = BIGMEMCORE
+        runtime = "04:00:00",
+        mem_mb = BIGMEMCORE_MB
     threads:
         1
     conda:

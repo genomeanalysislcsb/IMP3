@@ -107,7 +107,7 @@ rule ED_runaln:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     log: "logs/analysis_eukdetect_aln.{sample}.log"
     message: "runaln: Running mapping for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -128,7 +128,7 @@ rule ED_bam2fastq:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     log: "logs/analysis_eukdetect_bam2fastq.{sample}.log"
     message: "bam2fastq: Running bam2fastq for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -145,7 +145,7 @@ rule ED_find_low_complexity:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
 #    log: "logs/analysis_eukdetect_find_low_complexity.{sample}.log"
     message: "find_low_complexity: Finding low complexity for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"

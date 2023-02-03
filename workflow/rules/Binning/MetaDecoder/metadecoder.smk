@@ -11,8 +11,8 @@ rule metadecoder:
     threads:
         getThreads(8)
     resources:
-        runtime = "06:00:00",
-        mem = MEMCORE
+        runtime = "04:00:00",
+        mem_mb = MEMCORE_MB
     conda:
         ENVDIR + "/IMP_metadecoder.yaml"
     log:
@@ -66,8 +66,8 @@ rule metadecoder_contig2bin:
     output:
         metadecoder_s2b="Binning/MetaDecoder/scaffold2bin.tsv"
     resources:
-        runtime = "2:00:00",
-        mem = MEMCORE
+        runtime = "00:10:00",
+        mem_mb = MEMCORE_MB
     threads:
         1
     message:

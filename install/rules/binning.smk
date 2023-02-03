@@ -35,7 +35,7 @@ rule setup_checkm:
         echo "Setting up CheckM" >> {log} 2>&1 &&\
         unset PYTHONHOME
         SETUPTOOLS_USE_DISTUTILS=stdlib
-        printf "%s\n" {output.checkm_db} | checkm >> {log} 2>&1 && touch {output.setup_check} && \
+        printf "%s\n" {output.checkm_db} | checkm data setRoot >> {log} 2>&1 && touch {output.setup_check} && \
         echo "Setup done." >> {log} 2>&1
         
         # Fix lines that lead to crash with MW, if theres only one binner output
@@ -78,7 +78,7 @@ rule binny_setup:
     shell:
         """
         echo "Downloading binny." >> {log} 2>&1
-        git clone -b v2.2.15 --single-branch https://github.com/a-h-b/binny.git \
+        git clone https://github.com/a-h-b/binny.git \
         {output.binny_dir} >> {log} 2>&1
 
         cd {output.binny_dir}

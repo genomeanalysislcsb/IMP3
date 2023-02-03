@@ -7,8 +7,8 @@ rule maxbin_contig2bin:
         out_dir=directory('Binning/MaxBin/bins')
     threads: 1
     resources:
-        runtime = "3:00:00",
-        mem = MEMCORE
+        runtime = "01:00:00",
+        mem_mb = MEMCORE_MB
     log: "logs/binning_maxbin_contig2bin.log"
     message: "maxbin_contig2bin: Getting contig to bin mapping."
     shell:

@@ -9,15 +9,17 @@ rule mongo_server:
         db_output
     output:
         touch("status/DB_filling.running")
-    threads: 1
     params:
         port = config["mongo_port"]
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/summary_mongo_server.log"
-    message: "mongoDB_server: Running mongo."
-    threads: 1
+        runtime = "08:00:00",
+        mem_mb = MEMCORE_MB
+    log:
+        "logs/summary_mongo_server.log"
+    message:
+        "mongoDB_server: Running mongo."
+    threads:
+        1
     conda:
         os.path.join(ENVDIR, "IMP_multi.yaml")
     shell:
@@ -32,7 +34,8 @@ rule shut_mongo:
         touch("status/DB_filling.done")
     params:
         port = config["mongo_port"],
-    message: "shut_mongo: killing mongod on config["mongo_port"]."
+    message:
+        "shut_mongo: killing mongod on config["mongo_port"]."
     shell:
         """
         mongod --dbpath {input[0]} --port {params.port} --shutdown
@@ -54,7 +57,8 @@ rule mongoDB_bins:
         "DB"
     output:
         pipe("DB/bins.bson")
-    threads: 1
+    threads:
+        1
     params:
         ass = ASS,
         sample = SAMPLE,
@@ -64,11 +68,12 @@ rule mongoDB_bins:
         password = config["mongo_password"],
         port = config["mongo_port"]
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/summary_mongoDB_bins.log"
-    message: "mongoDB_bins: Filling bin documents."
-    threads: 1
+        runtime = "08:00:00",
+        mem_mb = MEMCORE_MB
+    log:
+        "logs/summary_mongoDB_bins.log"
+    message:
+        "mongoDB_bins: Filling bin documents."
     conda:
         os.path.join(ENVDIR, "IMP_multi.yaml")
     script:
@@ -79,7 +84,8 @@ rule mongoDB_contigs:
         "DB"
     output:
         pipe("DB/contigs.bson")
-    threads: 1
+    threads:
+        1
     params:
         ass = ASS,
         sample = SAMPLE,
@@ -89,11 +95,12 @@ rule mongoDB_contigs:
         password = config["mongo_password"],
         port = config["mongo_port"],
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/summary_mongoDB_contigs.log"
-    message: "mongoDB_bins: Filling contig documents."
-    threads: 1
+        runtime = "08:00:00",
+        mem_mb = MEMCORE_MB
+    log:
+        "logs/summary_mongoDB_contigs.log"
+    message:
+        "mongoDB_bins: Filling contig documents."
     conda:
         os.path.join(ENVDIR, "IMP_multi.yaml")
     script:

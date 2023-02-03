@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - motus=3.0.3
+  - perl-bioperl=1.7.8

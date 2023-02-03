@@ -29,7 +29,9 @@ module binny_workflow:
     config:
         config["binning"]["binny"]
 
-use rule * from binny_workflow as binny_*
+# use rule * from binny_workflow as binny_*
+
+# localrules: prepare_input_data, binny_prepare_input_data
 
 use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_marker_sets with:
     input:
@@ -43,7 +45,7 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
         getThreads(64)
     resources:
         runtime="24:00:00",
-        mem=MEMCORE
+        mem_mb = MEMCORE_MB
     log:
         "logs/binning_binny_mantis_checkm.log"
     message:
@@ -91,8 +93,8 @@ use rule binny from binny_workflow as binny_binny with:
     threads:
         getThreads(64)
     resources:
-        runtime = "24:00:00",
-        mem = MEMCORE
+        runtime = "48:00:00",
+        mem_mb = MEMCORE_MB
     log:
         "logs/binning_binny.log"
 
@@ -102,8 +104,8 @@ rule binny_contig2bin:
     output:
         binny_s2b
     resources:
-        runtime = "2:00:00",
-        mem = MEMCORE
+        runtime = "01:00:00",
+        mem_mb = MEMCORE_MB
     threads:
         1
     message:

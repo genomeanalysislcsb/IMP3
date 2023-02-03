@@ -42,8 +42,11 @@ include:
 include:
         "rules/mummer4.smk"
 
+include:
+        "rules/motus.smk"
+
 TARGETS = ["checkm/checkm_db.ready", os.path.join(SUBMOD_DIR, "binny/setup.done"), "SemiBin_setup.done",
-           os.path.join(SUBMOD_DIR, "ESOM/setup.done"), "qm.ready"]
+           os.path.join(SUBMOD_DIR, "ESOM/setup.done"), "qm.ready", "motus_db_download.done"]
 
 # adapters, Trimmomatic
 if "trimmomatic" in config:
@@ -92,8 +95,6 @@ if "mantis" in config:
 
 ##################################################
 # RULES
-
-print(TARGETS)
 
 # Main rule
 localrules: ALL

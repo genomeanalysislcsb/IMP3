@@ -39,8 +39,8 @@ rule extract_unmapped_from_megahit:
         'Assembly/intermediary/{type}.r2.unmapped.fq',
         'Assembly/intermediary/{type}.se.unmapped.fq'
     resources:
-        runtime = "12:00:00",
-        mem = BIGMEMCORE
+        runtime = "08:00:00",
+        mem_mb = BIGMEMCORE_MB
     threads: getThreads(BIGCORENO, bigmem=True)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_extract_unmapped_from_megahit.{type}.log"
@@ -65,7 +65,7 @@ rule extract_unmapped_from_hybrid_assembly:
         'Assembly/intermediary/mgmt.se.{assembler}_hybrid.{type}.unmapped.fq'
     resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE
+        mem_mb = BIGMEMCORE_MB
     threads: getThreads(BIGCORENO, bigmem=True)
     conda: ENVDIR + "/IMP_mapping.yaml"
     log: "logs/assembly_extract_unmapped_from_hybrid_assembly.{assembler}.{type}.log"

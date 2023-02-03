@@ -1,6 +1,6 @@
 # include rules for the Binning part of the workflow
 
-## DAStool
+# DAStool
 include:
     '../../../Binning/DAStool/dastool.smk'
 

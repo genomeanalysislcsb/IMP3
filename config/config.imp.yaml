@@ -71,17 +71,32 @@ assembly:
   cap3:
     identity: 98
     overlap: 100
-# hmmer (default) / mantis
-annotation: "hmmer"
+  quickmerge:
+    min_overlap: 100
+    # Default: 0
+    len_cutoff: 0
+    # Overlap cutoff used in selection of anchor contigs.
+    # Ratio overlapping region/non-overlapping region (?).
+    # Default: 5.0
+    hco: 5.0
+    # Overlap cutoff for contigs used for extension of the anchor contig
+    # hco represents high confidence overlaps and used for seeding of the merging process.
+    # 'c' is used to filter out overall alignments.
+    # any alignment under 'c' will never be considered for merging.
+    # so 'hco' is a subset of 'c'.
+    # Default: 1.5
+    c: 1.5
+# mantis (default) / hmmer
+annotation: "mantis"
 mantis:
   # default HMMs
   # set to null (i.e.: ncbi_ref_folder: null), if no database, otherwise provide a path
   default:
-    nog_ref_folder: null
-    pfam_ref_folder: null
-    kofam_ref_folder: "/abs/path/to/imp3_test_db/dir/mantis"
-    ncbi_ref_folder: null
-    tcdb_ref_folder: null
+    kofam_ref_folder: "/abs/path/to/imp3_dbs/mantis/kofam"
+    ncbi_ref_folder: "/abs/path/to/imp3_dbs/mantis/ncbi"
+    nog_ref_folder: "/abs/path/to/imp3_dbs/mantis/nog"
+    pfam_ref_folder: "/abs/path/to/imp3_dbs/mantis/pfam"
+    tcdb_ref_folder: "/abs/path/to/imp3_dbs/mantis/tcdb"
   # custom HMMs (list)
   custom:
     # - "/path/to/custom/references/"
@@ -91,7 +106,9 @@ mantis:
     nog_weight: 0.8
     pfam_weight: 0.9
     uniprot_ec_weight: 0.9
-hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
+# Choose between nothing and one or multiple of: KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM
+# e.g. "KEGG essential Pfam_A"
+hmm_DBs: ""
 hmm_settings: 
   KEGG:
     cutoff: ""
@@ -120,6 +137,8 @@ hmm_settings:
   Resfams:
     cutoff: ""
     trim: ""
+# Choose between nothing and one or multiple of: COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552
+# e.g. "COG0012 COG0018 COG0215"
 COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
 featureCountsStranding:
   mt: 2
@@ -133,7 +152,7 @@ binning:
   # NOTE: IMP supports a maximum of six binners only atm.
   binners: "CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin"
   abawaca:
-    esom_min: 3000
+    esom_min: 2500
     esom_max: 5000
   binny:
     kmers: '2,3,4'
@@ -171,18 +190,19 @@ binning:
     # Minimum is 2000
     cutoff: 2000
   SemiBin:
+    # Using self-supervised mode now, so pre-trained models arent needed, subject to change depending on performance
     # Choose between: global human_gut human_oral mouse_gut pig_gut dog_gut cat_gut wastewater ocean soil
     # leave empty to create my_built_environment and after use that as param
-    model: 'global'
-    cutoff: 1000
+    # model: 'human_gut'
+    cutoff: 2000
   DAS_Tool:
-    score_threshhold: 0.3
+    score_threshhold: 0.6
   MetaWrap:
-    min_completeness: 70
+    min_completeness: 60
     max_contamination: 10
 kraken:
   confidence: 0.75
-  krakendb: minikraken2
+  krakendb: kraken_struo2_gtdb_207
 eukdetect:
   run_eukdetect: false
   eukdetect_dir: ../EukDetect

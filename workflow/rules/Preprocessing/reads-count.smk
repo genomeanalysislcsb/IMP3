@@ -4,11 +4,14 @@ rule reads_count:
     output:
         report('Stats/{type}/{type}.read_counts.txt',category="Preprocessing")
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: 1
-#    log: "logs/analysis_read_numbers.{type}.log"
-    message: "reads_count: Getting length of {wildcards.type} fastq files."
+        runtime = "02:00:00",
+        mem_mb = MEMCORE_MB
+    threads:
+        1
+    # log:
+    #     "logs/analysis_read_numbers.{type}.log"
+    message:
+        "reads_count: Getting length of {wildcards.type} fastq files."
     run:
         for fs in {input.reads}:
             for f in fs:
@@ -20,10 +23,12 @@ rule reads_gzip:
     output:
         "status/preprocessing_{type}.reads.compressed"
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: 1
-    message: "reads_gzip: Gzipped fastq files {input}."
+        runtime = "00:01:00",
+        mem_mb = MEMCORE_MB
+    threads:
+        1
+    message:
+        "reads_gzip: Gzipped fastq files {input}."
     shell:
         """
         touch {output}
@@ -38,14 +43,18 @@ rule gzip_ori_files:
         read="r.",
         type="m."
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: getThreads(5)
+        runtime = "04:00:00",
+        mem_mb = MEMCORE_MB
+    threads:
+        getThreads(5)
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-    message: "gzip_ori_files: Gzipping fastq files {input}."
+    message:
+        "gzip_ori_files: Gzipping fastq files {input}."
     shell:
-        "pigz -p {threads} -q {input} || touch {input}"
+        "pigz -p {threads} \
+              -q \
+              {input} || touch {input}"
 
 
 rule gzip_files:
@@ -54,14 +63,18 @@ rule gzip_files:
     output:
         "Preprocessing/{type}.{read}.{stage}.fq.gz"
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: getThreads(5)
+        runtime = "04:00:00",
+        mem_mb = MEMCORE_MB
+    threads:
+        getThreads(5)
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-    message: "gzip_files: Gzipping fastq files {input}."
+    message:
+        "gzip_files: Gzipping fastq files {input}."
     shell:
-        "pigz -p {threads} -q {input}"
+        "pigz -p {threads} \
+              -q \
+              {input}"
 
 checkpoint reads_gziped:
     input:
@@ -69,10 +82,12 @@ checkpoint reads_gziped:
     output:
         "status/preprocessing_{type}.reads.detected"
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: 1
-    message: "reads_gziped: Collecting reads for compression."
+        runtime = "00:01:00",
+        mem_mb = MEMCORE_MB
+    threads:
+        1
+    message:
+        "reads_gziped: Collecting reads for compression."
     run:
         shell("touch {output}")
         

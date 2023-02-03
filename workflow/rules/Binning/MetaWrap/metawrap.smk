@@ -12,6 +12,7 @@ checkpoint MetaWrap_refine_check:
 
 mw_min_comp = config['binning']['MetaWrap']['min_completeness']
 mw_max_cont = config['binning']['MetaWrap']['max_contamination']
+
 binner_out_path_list = [OUTPUTDIR + "/Binning/" + binner + "/bins" for binner in BIN_STEPS
                         if (glob.glob(OUTPUTDIR + "/Binning/" + binner + "/bins/*.fasta")
                             and any(os.stat(bin).st_size > 0 for bin in glob.glob(OUTPUTDIR + "/Binning/" + binner +
@@ -38,8 +39,8 @@ rule MetaWrap_refine:
     threads:
         getThreads(BIGCORENO, bigmem=True)
     resources:
-        runtime = "48:00:00",
-        mem = BIGMEMCORE
+        runtime = "24:00:00",
+        mem_mb = BIGMEMCORE_MB
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:
@@ -91,11 +92,12 @@ rule MetaWrap_refine:
         if [[ ${{#binner_input_array[*]}} > 3 ]]; then
             mv {output.out_dir}/{params.prefix_1}/${{bin_folder}} {output.out_dir}/{params.prefix_1}/${{bin_folder}}_round_01
             metawrap bin_refinement -o {output.out_dir}/{params.prefix_2} \
-                    -t {threads} \
-                    -m {params.total_mem} \
-                    {params.binner_inputs_list[1]} \
-                    -c {params.mw_min_comp} \
-                    -x {params.mw_max_cont} >> {log} 2>&1
+                                    --quick \
+                                    -t {threads} \
+                                    -m {params.total_mem} \
+                                    {params.binner_inputs_list[1]} \
+                                    -c {params.mw_min_comp} \
+                                    -x {params.mw_max_cont} >> {log} 2>&1
             
             # Rename bin fastas back to .fasta
             for bin in {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*.fa; do
@@ -110,11 +112,12 @@ rule MetaWrap_refine:
         if [[ ${{#binner_input_array[*]}} > 5 ]]; then
             mv {output.out_dir}/{params.prefix_2}/${{bin_folder}} {output.out_dir}/{params.prefix_2}/${{bin_folder}}_round_02
             metawrap bin_refinement -o {output.out_dir}/{params.prefix_3} \
-                    -t {threads} \
-                    -m {params.total_mem} \
-                    {params.binner_inputs_list[2]} \
-                    -c {params.mw_min_comp} \
-                    -x {params.mw_max_cont} >> {log} 2>&1
+                                    --quick \
+                                    -t {threads} \
+                                    -m {params.total_mem} \
+                                    {params.binner_inputs_list[2]} \
+                                    -c {params.mw_min_comp} \
+                                    -x {params.mw_max_cont} >> {log} 2>&1
             
             # Rename bin fastas back to .fasta
             for bin in {output.out_dir}/{params.prefix_3}/${{bin_folder}}/*.fa; do
@@ -138,7 +141,7 @@ rule MetaWrap_refine:
         fi
         
         mv {output.out_dir}/figures/* Visualization/
-        rm -rf {output.out_dir}/figures
+        rm -rf {output.out_dir}/figures {output.out_dir}/bins{{A,B,C}}*
         
         # Revert no special chars in bin names, which lead to MetaWrap CheckM crash
         for i in ${{binner_input_array[@]}}; do

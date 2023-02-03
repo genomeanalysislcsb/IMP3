@@ -9,8 +9,8 @@ rule metabat:
     threads:
         getThreads(8)
     resources:
-        runtime = "24:00:00",
-        mem = MEMCORE
+        runtime = "04:00:00",
+        mem_mb = MEMCORE_MB
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:

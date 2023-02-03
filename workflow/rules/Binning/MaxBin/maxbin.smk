@@ -6,10 +6,10 @@ rule maxbin:
        "Binning/MaxBin/maxbin_res.log",
        "Binning/MaxBin/maxbin_res.summary"
     threads:
-        getThreads(8)
+        getThreads(14)
     resources:
         runtime = "24:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:

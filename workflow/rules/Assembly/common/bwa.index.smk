@@ -1,3 +1,5 @@
+import math
+
 rule bwa_index:
     input:
         "{fasta}"
@@ -9,16 +11,17 @@ rule bwa_index:
         "{fasta}.ann"
     resources:
         runtime = "24:00:00",
-        mem = MEMCORE
+        mem_mb = BIGMEMCORE_MB
     threads:
-        1
+        # Ensure at least 20gb of mem
+        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
+    params:
+        fasta_file = lambda wc: "_".join(wc.get("fasta").split("/")[-2:]),
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
-    log:
-        "logs/assembly_bwa_index_{fasta}.log"
     message:
-        "bwa_index: Indexing {wildcards.fasta} for bwa."
+        "bwa_index: Indexing {params.fasta_file} for bwa."
     shell:
         """
-        bwa index {wildcards.fasta} 
+        bwa index {wildcards.fasta}
         """

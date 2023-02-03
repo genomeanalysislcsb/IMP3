@@ -257,11 +257,13 @@ def gather_bins(wildcards):
     else:
         return ""
 
+
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
     print('gather_GTDB_bins checkpoint_output:',checkpoint_output)
     return expand("Binning/MetaWrap/bins/{i}/{tool}", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i, tool=["GTDB","grid"])  # +\
            # expand("Binning/MetaWrap/bins/{i}/GTDB", i=glob_wildcards("Binning/MetaWrap/bins/{i}/reads.fastq.gz").i)
+
 
 def check_bintabs(wildcards):
     checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
@@ -272,6 +274,7 @@ def check_bintabs(wildcards):
         if os.stat(OUTPUTDIR + "/Binning/" + binner + "/scaffold2bin.tsv").st_size > 0:
             valid_binners.append(binner)
     return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
+
 
 def check_binner_bin_fastas(wildcards):
     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
@@ -290,6 +293,7 @@ def check_binner_bin_fastas(wildcards):
     print('check_binner_bin_fastas out', binner_out_paths)
 
     return binner_out_paths
+
 
 def get_mw_binner_inputs(binner_fasta_dirs, min_comp, max_cont):
     out_list = []
@@ -314,6 +318,7 @@ def get_mw_binner_inputs(binner_fasta_dirs, min_comp, max_cont):
         out_list.append([])
     return out_list
 
+
 def getBam(wildcards):
     ori_sample = wildcards.clusterID.split(".")[0]
     return expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
@@ -326,8 +331,7 @@ def aggregate_mantis_fc(wildcards):
            i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
 
 
-
-
-
-
-
+def aggregate_mantis_fc_per_contig(wildcards):
+    checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
+    return expand("Stats/{type}/annotation/{type}.mantis.{i}.counts.tsv",
+           i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)

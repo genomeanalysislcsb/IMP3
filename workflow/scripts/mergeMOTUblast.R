@@ -20,8 +20,11 @@ COG <- snakemake@wildcards[["COG"]]
 blastoutput <- snakemake@input[[1]]
 outfile <- snakemake@output[[1]]
 CONDA <- Sys.getenv("CONDA_PREFIX")
-ref_phylo <- paste0(CONDA,snakemake@params[["refphy"]])
-meta_phylo <- paste0(CONDA,snakemake@params[["metaphy"]])
+# ref_phylo <- paste0(CONDA,snakemake@params[["refphy"]])
+# meta_phylo <- paste0(CONDA,snakemake@params[["metaphy"]])
+ref_phylo <- snakemake@params[["refphy"]]
+meta_phylo <- snakemake@params[["metaphy"]]
+
 
 if(file.info(blastoutput)$size[1]!=0 & length(scan(blastoutput,comment.char = "#",what="character"))>0){
  refphy <- read.delim(ref_phylo,stringsAsFactors=F)

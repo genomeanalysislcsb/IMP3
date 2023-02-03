@@ -7,40 +7,33 @@ rule semibin:
         out_dir=directory("Binning/SemiBin"),
         out_bin_dir=directory("Binning/SemiBin/bins")
     params:
-        model=config["binning"]["SemiBin"]["model"],
+#         model=config["binning"]["SemiBin"]["model"],
         cutoff=config["binning"]["SemiBin"]["cutoff"],
         db_dir=os.path.join(config["db_path"], "gtdb_semibin"),
         tmp_dir=os.path.join(config["tmp_dir"])
     threads:
         getThreads(128)
     resources:
-        runtime = "24:00:00",
-        mem = MEMCORE
+        runtime = "12:00:00",
+        mem_mb = MEMCORE_MB
     conda:
-        ENVDIR + "/IMP_binning.yaml"
+        ENVDIR + "/IMP_semibin.yaml"
     log:
         "logs/binning_SemiBin.log"
     message:
         "Running SemiBin."
     shell:
         """
-        ## Create SemiBin dir
-        mkdir -p {output.out_dir}
-        
-        # Overwrite 64 core limit
-        NUMEXPR_MAX_THREADS={threads}
-        export NUMEXPR_MAX_THREADS
-        
-        ## Run SemiBin
+        # Run SemiBin
         SemiBin \
             single_easy_bin \
                 --input-fasta {input.assembly} \
                 --input-bam {input.mapping} \
-                --environment {params.model} \
+                --self-supervised \
                 --threads {threads} \
                 --random-seed 0 \
-                --reference-db-data-dir {params.db_dir}\
                 --min-len {params.cutoff} \
+                --reference-db-data-dir {params.db_dir} \
                 --output {output.out_dir} >> {log} 2>&1
 
         # Move bin fastas and rename.

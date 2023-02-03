@@ -6,8 +6,8 @@ rule tar_intermediary:
     threads:
         1
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
+        runtime = "04:00:00",
+        mem_mb = MEMCORE_MB
     params:
         intermediary = "Assembly/intermediary/"
     log:
@@ -25,8 +25,8 @@ rule contig_fasta_indexing:
     output:
         "Assembly/%s.assembly.merged.fa.fai" % ASS
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
+        runtime = "04:00:00",
+        mem_mb = MEMCORE_MB
     threads:
         1
     conda:
@@ -47,11 +47,12 @@ rule contig_fasta2bed_conversion:
     output:
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
+        runtime = "02:00:00",
+        mem_mb = MEMCORE_MB
     threads:
         1
-#    log: "logs/assembly_fastabed.log"
+    # log:
+    #     "logs/assembly_fastabed.log"
     message:
         "contig_fasta2bed_conversion: Writing bed file for assembly."
     shell:

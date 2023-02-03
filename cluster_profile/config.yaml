@@ -37,10 +37,17 @@ latency-wait: 60
 # number of times to restart failing jobs
 restart-times: 0
 # execute snakemake rules with the given submit command
-cluster: "{cluster.call} {cluster.runtime}{resources.runtime} {cluster.mem_per_cpu}{resources.mem} \
-          {cluster.threads}{threads} {cluster.partition} {cluster.stdout}"
+cluster: "{cluster.call} {cluster.runtime}{resources.runtime} {cluster.mem_per_cpu}{resources.mem_mb} \
+          {cluster.threads}{threads} {cluster.qos} {cluster.nodes} {cluster.ntasks} {cluster.partition} \
+          {cluster.stdout}"
 # slurm config (ABSOLUTE PATH !!!)
-cluster-config: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/config/slurm_simple.config.yaml" # USER_INPUT
+cluster-config: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/config/slurm.config.yaml" # USER_INPUT
+# Simple setup
+#cluster: "{cluster.call} {cluster.runtime}{resources.runtime} {cluster.mem_per_cpu}{resources.mem_mb} \
+#          {cluster.threads}{threads} {cluster.nodes} {cluster.ntasks} {cluster.partition} \
+#          {cluster.stdout}"
+## slurm config (ABSOLUTE PATH !!!)
+#cluster-config: "/mnt/irisgpfs/users/ohickl/local_tools/imp3/config/slurm_simple.config.yaml" # USER_INPUT
 # max. number of cluster/drmaa jobs per second
 max-jobs-per-second: 1
 # max. number of job status checks per second

@@ -50,7 +50,7 @@ if(ann == "mantis"){
 #  for(type in types){
 #    fc_sum_files[[type]] <- list()
 #    for(db in dbs){
-#      fc_sum_files[[type]][[db]] <- paste0("Analysis/annotation/",type,".",db,".counts.tsv.summary")
+#      fc_sum_files[[type]][[db]] <- paste0("Analysis/annotation/",type,".hmmer.",db,".counts.tsv.summary")
 #    }
 #  }
 #    fc_files          <- lapply(types, function(x) setNames(gsub(".summary$","",fc_sum_files[[x]]),

@@ -9,9 +9,9 @@ rule concoct:
     params:
         min_cont_size=config['binning']['CONCOCT']['cutoff']
     threads:
-        getThreads(8)
+        getThreads(14)
     resources:
-        runtime = "24:00:00",
+        runtime = "08:00:00",
         mem = MEMCORE
     conda:
         ENVDIR + "/IMP_metawrap.yaml"

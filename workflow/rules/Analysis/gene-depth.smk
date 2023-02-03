@@ -10,8 +10,8 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.gene_depth.avg",
         "Stats/{type}/annotation/{type}.gene.len"
     resources:
-        runtime = "24:00:00",
-        mem = BIGMEMCORE
+        runtime = "12:00:00",
+        mem_mb = BIGMEMCORE_MB
     threads:
         # Ensure at least 5gb of mem
         max(int(math.ceil(5 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
@@ -28,10 +28,10 @@ rule call_gene_depth:
 
         paste <(cat $TMP_FILE | cut -f9 | cut -f1 -d \";\" | sed -e \"s/ID=//g\") \
          <(cut -f10,11,12,13 $TMP_FILE) > {output[0]}
-	rm $TMP_FILE
-         
-	# Record average gene coverage
-	{SRCDIR}/calcAvgCoverage.pl {output[0]} > {output[1]}
+        rm $TMP_FILE
+
+        # Record average gene coverage
+        {SRCDIR}/calcAvgCoverage.pl {output[0]} > {output[1]}
 
         # Record gene length file
         cut -f 1,4 {output[0]} | uniq > {output[2]}

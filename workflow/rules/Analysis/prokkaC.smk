@@ -8,14 +8,17 @@ rule annotate:
         "Analysis/annotation/prokka.ffn",
         "Analysis/annotation/prokka.fsa",
         "Analysis/annotation/prokka.gff.gz"
-    threads: getThreads(12) 
+    threads:
+        getThreads(14)
     resources:
-        runtime = "8:00:00",
+        runtime = "08:00:00",
         mem = MEMCORE
-    log: "logs/analysis_annotate.log"
+    log:
+        "logs/analysis_annotate.log"
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
-    message: "annotate: Running prokkaC."
+    message:
+        "annotate: Running prokkaC."
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2

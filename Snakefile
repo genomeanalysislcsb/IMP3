@@ -52,9 +52,10 @@ if MG and MT:
         include:
             "workflow/rules/modules/integrative/Binning.smk"
 
-    if 'summary' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/common/Summary.smk"
+# Already in line 167 ??
+#     if 'summary' in IMP_STEPS:
+#         include:
+#             "workflow/rules/modules/common/Summary.smk"
 
 
 # Single omics MG workflow
@@ -160,7 +161,7 @@ else:
 
 
 # master command summary and archiving
-inputs_all = ['status/inputs.done','status/workflow.done']
+inputs_all = ['status/inputs.done','status/workflow.done', 'Analysis/annotation/intermediary.tar.gz']
 if "summary" in IMP_STEPS:
     inputs_all.append('status/summary.done')
     include:
@@ -182,4 +183,3 @@ rule workflow:
         workflow_ctrl
     output:
         touch('status/workflow.done')
-

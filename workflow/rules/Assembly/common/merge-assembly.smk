@@ -35,8 +35,8 @@ elif config["assembly"]["merge"] == "cap3":
         output:
             'Assembly/%s.assembly.merged.fa' % ASS,
         resources:
-            runtime = "48:00:00", ### 72
-            mem = BIGMEMCORE
+            runtime = "48:00:00",
+            mem_mb = BIGMEMCORE_MB
         params:
             sample = SAMPLE
         threads: 1
@@ -73,8 +73,8 @@ elif config["assembly"]["merge"] == "flye":
             # final files
             final='Assembly/%s.assembly.merged.fa' % ASS,
         resources:
-            runtime = "24:00:00",
-            mem = BIGMEMCORE
+            runtime = "12:00:00",
+            mem_mb = BIGMEMCORE_MB
         params:
             sample = SAMPLE,
             iters = 0,

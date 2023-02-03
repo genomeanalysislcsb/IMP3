@@ -7,8 +7,8 @@ rule variant_calling:
     output:
         "Analysis/snps/{type}.variants.samtools.vcf.gz",
     resources:
-        runtime = "48:00:00",
-        mem = MEMCORE
+        runtime = "24:00:00",
+        mem_mb = MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     threads:

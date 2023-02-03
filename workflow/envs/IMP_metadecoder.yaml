@@ -8,4 +8,4 @@ dependencies:
   - python=3.8.6
   - samtools=1.15.1
   - pip:
-    - https://github.com/liu-congcong/MetaDecoder/releases/download/v1.0.13/metadecoder-1.0.13-py3-none-any.whl
+    - https://github.com/liu-congcong/MetaDecoder/releases/download/v1.0.16/metadecoder-1.0.16-py3-none-any.whl

@@ -6,8 +6,8 @@ rule fastqc_raw:
         'Stats/{type}/{type}.se_fastqc.zip'
     threads: getThreads(2)
     resources:
-        runtime = "1:00:00",
-        mem = MEMCORE
+        runtime = "01:00:00",
+        mem_mb = MEMCORE_MB
     params:
         outputdir = 'Stats/{type}'
     conda:
@@ -29,8 +29,8 @@ rule fastqc_preprocessed:
         'Stats/{type}/{type}.se.preprocessed_fastqc.zip'
     threads: getThreads(3)
     resources:
-        runtime = "1:00:00",
-        mem = MEMCORE
+        runtime = "01:00:00",
+        mem_mb = MEMCORE_MB
     params:
         outputdir = 'Stats/{type}'
     log: "logs/preprocessing_fastqc_preprocessed.{type}.log"

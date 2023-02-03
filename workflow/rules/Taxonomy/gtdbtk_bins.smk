@@ -5,9 +5,9 @@ rule GTDBtk_bins_single:
         gtdbtk_out=directory("Binning/MetaWrap/bins/{clusterID}/GTDB")
     resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE
+        mem_mb = BIGMEMCORE_MB
     params:
-        pplacer_cpus=getThreads(min(BIGCORENO, max(1, int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45)))),
+        pplacer_cpus=getThreads(min(BIGCORENO, max(1, int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45))), bigmem=True),
         t1 = int(BIGMEMCORE[:-1]),
         t2 = to_gb_dict[config["mem"]["mem_unit"]],
         t3 = BIGCORENO,
@@ -55,8 +55,8 @@ rule GTDBtk_summarize:
         out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy"),
         grid="status/binning_GRiD.done"
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
+        runtime = "00:10:00",
+        mem_mb = MEMCORE_MB
     log:
         "logs/taxonomy_GTDBtk_summarize.log"
     message:
@@ -67,8 +67,7 @@ rule GTDBtk_summarize:
         # Check if MetaWrap output is empty
         if os.stat(input.mw_stats).st_size > 0:
             stats_data = {}
-            got_grid_header = False
-            got_gtdbtk_header = False
+
             # Get stats
             print('Getting MetaWrap bin stats.')
             with open(input.mw_stats,'r') as mws:
@@ -78,6 +77,10 @@ rule GTDBtk_summarize:
                     line = line.strip('\n \t').split('\t')
                     bin = line[0]
                     stats_data[bin] = line
+
+            # Read GRiD out
+            got_grid_header = False
+
             print("Reading GRiD results.")
             # Get all GTBtk stat files
             grid_out = glob.glob("Binning/MetaWrap/bins/*/grid/reads.GRiD.txt")
@@ -93,6 +96,9 @@ rule GTDBtk_summarize:
                         stats_data[bin].extend(next(f).strip(' \t\n').split('\t')[1:])
                 os.mknod(output.grid)
 
+            # Read GTDBtk out
+            got_gtdbtk_header = False
+
             print("Reading GTDBtk results.")
             with open(output.out_file,'w') as of:
                 # Get all GTBtk stat files
@@ -104,7 +110,7 @@ rule GTDBtk_summarize:
                             if not got_gtdbtk_header:
                                 header = header + '\t' + '\t'.join(next(f).strip(' \t').split('\t')[1:])
                                 of.write(header)
-                                got_grid_header = True
+                                got_gtdbtk_header = True
                             else:
                                 next(f)
                             of.write('\t'.join(stats_data[bin] + next(f).split('\t')[1:]))
@@ -127,7 +133,7 @@ if MG:
             1
         resources:
             runtime = "8:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         log:
             "logs/taxonomy_bins_tar.log"
         message:
@@ -151,7 +157,7 @@ else:
             1
         resources:
             runtime = "8:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         log:
             "logs/taxonomy_bins_tar.log"
         message:

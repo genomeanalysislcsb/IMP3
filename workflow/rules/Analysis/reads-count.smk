@@ -45,11 +45,14 @@ if MG or MT:
         output:
             'Stats/{type}/{type}.read_counts.txt'
         resources:
-            runtime = "8:00:00",
-            mem = MEMCORE
-        threads: 1
-#    log: "logs/analysis_read_numbers.{type}.log"
-        message: "reads_count: Getting length of {wildcards.type} fastq files."
+            runtime = "02:00:00",
+            mem_mb = MEMCORE_MB
+        threads:
+            1
+        # log:
+        #     "logs/analysis_read_numbers.{type}.log"
+        message:
+            "reads_count: Getting length of {wildcards.type} fastq files."
         run:
             for fs in {input}:
                 for f in fs:
@@ -61,13 +64,16 @@ elif MGaln or MTaln:
         output:
             'Stats/{type}/{type}.read_counts.txt'
         resources:
-            runtime = "8:00:00",
-            mem = MEMCORE
-        threads: 1
+            runtime = "02:00:00",
+            mem_mb = MEMCORE_MB
+        threads:
+            1
         conda:
             os.path.join(ENVDIR, "IMP_mapping.yaml")
-#    log: "logs/analysis_read_numbers.{type}.log"
-        message: "reads_count: Getting number of reads from {wildcards.type} bam file."
+        # log:
+        #     "logs/analysis_read_numbers.{type}.log"
+        message:
+            "reads_count: Getting number of reads from {wildcards.type} bam file."
         shell:
              """
              echo -e "{input}\t$(samtools view -c {input})" >> {output}

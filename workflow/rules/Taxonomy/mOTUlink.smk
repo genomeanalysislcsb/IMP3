@@ -5,12 +5,15 @@ rule allmotulinks:
         expand("Analysis/taxonomy/mOTU_links/intermediary/{COG}.bestPresentHitPhylogeny.tsv",COG=COGS_LIST)
     output:
         "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
-    threads: 1
+    threads:
+        1
     resources:
-        runtime = "2:00:00",
-        mem = MEMCORE
-#    log: "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
-    message: "allmotulinks: Extracting phylogeny for best mOTU hits."
+        runtime = "02:00:00",
+        mem_mb = MEMCORE_MB
+    # log:
+    #     "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
+    message:
+        "allmotulinks: Extracting phylogeny for best mOTU hits."
     shell:
         """
         cat <(head -n 1 {input} | tail -n 1) <(cat {input} | grep -v queryID ) > {output}
@@ -22,22 +25,28 @@ rule fetchmg:
         "Analysis/annotation/prokka.faa"
     output:
         expand("Analysis/taxonomy/mOTU_links/intermediary/marker_genes/{COG}.fna",COG=COGS_LIST)
-    threads: getThreads(6)
+    threads:
+        getThreads(6)
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
+        runtime = "08:00:00",
+        mem_mb = MEMCORE_MB
     params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary/marker_genes"
-    log: "logs/analysis_fetchmg.log"
+    log:
+        "logs/analysis_fetchmg.log"
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
-    message: "fetchmg: Finding mOTU marker genes in open reading frames."
+    message:
+        "fetchmg: Finding mOTU marker genes in open reading frames."
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        {BINDIR}/fetchMG/fetchMG.pl -o {params.outdir} -t {threads} -d {input[0]}  -m extraction {input[1]} >> {log} 2>&1
+        {BINDIR}/fetchMG/fetchMG.pl -o {params.outdir} \
+                                    -t {threads} \
+                                    -d {input[0]} \
+                                    -m extraction {input[1]} >> {log} 2>&1
         """
-	
+
 rule get_present_mOTUs:
     input:
         expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",type=TYPES)
@@ -46,9 +55,10 @@ rule get_present_mOTUs:
     threads:
         1
     resources:
-        runtime = "1:00:00",
-        mem = MEMCORE
-#    log: "logs/analysis_get_present_mOTUs.log"
+        runtime = "01:00:00",
+        mem_mb = MEMCORE_MB
+    # log:
+    #     "logs/analysis_get_present_mOTUs.log"
     message:
         "get_present_mOTUs: Extracting identity of present mOTUs."
     shell:
@@ -64,26 +74,31 @@ rule extract_mOTU_db_genes:
     threads:
         1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
+        runtime = "04:00:00",
+        mem_mb = MEMCORE_MB
     params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary",
         outname = "present.DBgenes",
         coglist = ",".join(map(str, COGS_LIST)),
-        fasta = "share/motus-3.0.1/db_mOTU/db_mOTU_DB_CEN.fasta",
-        coordinates = "share/motus-3.0.1/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
+        # fasta = "lib/python3.9/site-packages/motus/db_mOTU/db_mOTU_DB_CEN.fasta",
+        # coordinates = "lib/python3.9/site-packages/motus/db_mOTU/db_mOTU_padding_coordinates_CEN.tsv"
+        fasta =  os.path.join(DBPATH,"motus_metadata","db_mOTU_DB_CEN.fasta"),
+        coordinates =  os.path.join(DBPATH,"motus_metadata","db_mOTU_padding_coordinates_CEN.tsv")
     conda:
-        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
+        os.path.join(ENVDIR, "IMP_motus.yaml")
     log:
         "logs/analysis_extract_mOTU_db_genes.log"
     message:
         "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/perl5/site_perl/5.22.0
-        {SRCDIR}/fastaExtractCoords_mOTUs.pl -f $CONDA_PREFIX/{params.fasta} \
-         -l $CONDA_PREFIX/{params.coordinates} \
-         -m {input} -c {params.coglist} -o {params.outdir} -n {params.outname} > {log} 2>&1 
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl/5.22.0
+        {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {params.fasta} \
+                                             -l {params.coordinates} \
+                                             -m {input} \
+                                             -c {params.coglist} \
+                                             -o {params.outdir} \
+                                             -n {params.outname} > {log} 2>&1 
         """
 
 rule blast_mOTU_db_genes:
@@ -96,7 +111,7 @@ rule blast_mOTU_db_genes:
         1
     resources:
         runtime = "12:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
@@ -106,8 +121,14 @@ rule blast_mOTU_db_genes:
     shell:
         """
         if [ -s {input[0]} ]; then 
-          makeblastdb -in {input[0]} -dbtype nucl -parse_seqids > {log} 2>&1
-          blastn -db {input[0]} -query {input[1]} -outfmt 7 -out {output} -max_target_seqs 1 > {log} 2>&1
+          makeblastdb -in {input[0]} \
+                      -dbtype nucl \
+                      -parse_seqids > {log} 2>&1
+          blastn -db {input[0]} \
+                 -query {input[1]} \
+                 -outfmt 7 \
+                 -out {output} \
+                 -max_target_seqs 1 >> {log} 2>&1
         else
           touch {output} status/taxonomy_mOTU_link.{wildcards.COG}.impossible
         fi
@@ -122,10 +143,12 @@ rule parse_blast_mOTU:
         1
     resources:
         runtime = "12:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     params:
-        metaphy = "/share/motus-3.0.1/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
-        refphy = "/share/motus-3.0.1/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
+        # metaphy = "/lib/python3.9/site-packages/motus/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
+        # refphy = "/lib/python3.9/site-packages/motus/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
+        metaphy=  os.path.join(DBPATH,"motus_metadata","db_mOTU_taxonomy_meta-mOTUs.tsv"),
+        refphy =  os.path.join(DBPATH, "motus_metadata", "db_mOTU_taxonomy_ref-mOTUs.tsv")
     conda:
         ENVDIR + "/IMP_taxonomy.yaml"
     log:

@@ -19,10 +19,10 @@ if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in I
         include:
             'Assembly/common/bwa.index.smk'
 
-if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
-    if ANN:
-        include:
-            'Binning/DAStool/translate2DAStool.smk'
+# if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
+#     if ANN:
+#         include:
+#             'Binning/DAStool/translate2DAStool.smk'
     
 
 localrules: check_inputs, check_read_se_input, check_assembly_input, check_read_r_input, check_longread_input
@@ -122,10 +122,11 @@ rule prepare_input_data_copy:
         get_ori_files
     output:
         input_files_list
-    threads: getThreads(5)
+    threads:
+        getThreads(5)
     resources:
-        runtime = "1:00:00",
-        mem = MEMCORE
+        runtime = "01:00:00",
+        mem_mb = MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
@@ -216,7 +217,7 @@ rule check_bam_input:
     threads: 1
     resources:
         runtime = "4:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     message: "Checking {wildcards.type} alignment."
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
@@ -237,7 +238,7 @@ rule check_ann_input:
     threads: 1
     resources:
         runtime = "4:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     message: "Checking annotation."
     conda:
         os.path.join(ENVDIR, "IMP_bioperl.yaml")

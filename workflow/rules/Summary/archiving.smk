@@ -18,14 +18,19 @@ rule sync_final:
         "status/workflow.done"
     output:
         SUMDIR
-    threads: 1
+    threads:
+        1
     resources:
-        runtime = "24:00:00",
+        runtime = "02:00:00",
         mem = MEMCORE
-    message: "Synching {OUTPUTDIR} to {SUMDIR}"
+    message:
+        "Synching {OUTPUTDIR} to {SUMDIR}"
     shell:
         """
-        rsync -a --remove-source-files {input[0]} {output}
+        rsync -a \
+              --remove-source-files \
+              {input[0]} \
+              {output}
         """
 
 def entry_gz:
@@ -63,11 +68,13 @@ if MG or MT:
             entry_gz
         output:
             "{file}.gz"
-        threads: 1  
+        threads:
+            1
         resources:
-            runtime = "4:00:00",
+            runtime = "04:00:00",
             mem = MEMCORE
-        message: "gzip: gzipping {wildcards.file}."
+        message:
+            "gzip: gzipping {wildcards.file}."
         shell:
             "gzip {input[0]}"
 
@@ -77,11 +84,13 @@ rule tar_gzip_directory:
         directory="{directory}"
     output:
         "{directory}.tar.gz"
-    threads: 1
+    threads:
+        1
     resources:
-        runtime = "4:00:00",
+        runtime = "04:00:00",
         mem = MEMCORE
-    message: "tar_gzip: tarring and gzipping {wildcards.directory}."
+    message:
+        "tar_gzip: tarring and gzipping {wildcards.directory}."
     shell:
         "tar -cvzf {output} {input.directory} && rm -R {input.directory}"
 

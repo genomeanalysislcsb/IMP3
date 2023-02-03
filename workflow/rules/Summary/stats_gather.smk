@@ -15,8 +15,8 @@ rule gather_stats:
     output:
         gathered
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
+        runtime = "02:00:00",
+        mem_mb = MEMCORE_MB
     params:
         steps = IMP_STEPS,
         ass = ASS,

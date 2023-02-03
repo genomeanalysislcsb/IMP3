@@ -42,8 +42,8 @@ else:
             contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa",
             gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
         resources:
-            runtime = "48:00:00", ###120
-            mem = BIGMEMCORE
+            runtime = "48:00:00",
+            mem_mb = BIGMEMCORE_MB
         threads:
             getThreads(BIGCORENO, bigmem=True)
         conda:
@@ -76,8 +76,8 @@ rule metaspades_hybrid_assembly_2:
         contigs = "",
         gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
     resources:
-        runtime = "48:00:00", ###120
-        mem = BIGMEMCORE
+        runtime = "48:00:00",
+        mem_mb = BIGMEMCORE_MB
     threads:
         getThreads(BIGCORENO, bigmem=True)
     conda:
@@ -103,7 +103,7 @@ rule concatenate_mapped_unmapped:
         'Assembly/intermediary/mt.metaspades_preprocessed.1.final.contig.fa'
     resources:
         runtime = "02:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     threads:
         1
     conda:

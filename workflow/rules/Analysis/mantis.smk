@@ -26,7 +26,7 @@ rule mantis_annot:
         getThreads(64)
     resources:
         runtime="12:00:00",
-        mem=MEMCORE
+        mem_mb = MEMCORE_MB
     message:
         "Mantis: annotate {input}"
     conda:
@@ -48,10 +48,10 @@ rule mantis_reformat_consensus:
     input:
         contab=rules.mantis_annot.output.contab
     output:
-        contab=temp("Analysis/annotation/intermediary/mantis/consensus_annotation.reformatted.tsv")
+        contab="Analysis/annotation/intermediary/mantis/consensus_annotation.reformatted.tsv"  # Used to be temp()
     resources:
-        runtime="1:00:00",
-        mem=MEMCORE
+        runtime="01:00:00",
+        mem_mb = MEMCORE_MB
     message:
         "Mantis: reformat {input}"
     shell:
@@ -64,13 +64,13 @@ checkpoint makegff_mantis:
         gff="Analysis/annotation/annotation.filt.gff", # TODO: use rules.annotate.output.XXX when the outputs are named in that rule
         mantis=rules.mantis_reformat_consensus.output.contab,
     output:
-        gff=temp("Analysis/annotation/intermediary/mantis/consensus_annotation.reformatted.gff")
+        gff="Analysis/annotation/intermediary/mantis/consensus_annotation.reformatted.gff"  # used to be temp()
     params:
         sep="|", # separator used in mantis_reformat_consensus
         prefix="Analysis/annotation/intermediary/mantis/consensus_annotation.mantis"
     resources:
         runtime="12:00:00",
-        mem=MEMCORE
+        mem_mb = MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem
         max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)

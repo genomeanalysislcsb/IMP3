@@ -1,6 +1,6 @@
 # include rules for the Binning part of the workflow
 
-## DAStoolBinning/DASTool/selected_DASTool
+# DAStoolBinning/DASTool/selected_DASTool
 include:
     '../../Binning/DAStool/dastool.smk'
 
@@ -10,7 +10,7 @@ include:
 
 mw_min_comp = config['binning']['MetaWrap']['min_completeness']
 mw_max_cont = config['binning']['MetaWrap']['max_contamination']
-inputs_binning = ["Binning/DASTool/selected_DASTool_summary.txt", "status/binning_GRiD.done",
+inputs_binning = ["status/binning_GRiD.done",  # "Binning/DASTool/selected_DASTool_summary.txt",
                   "Binning/MetaWrap/bins.stats"]
 
 ## abawaca
@@ -65,8 +65,8 @@ if not 'taxonomy' in IMP_STEPS:
     inputs_binning.append("Binning/per_bin_results.tar.gz")
 
 ## tar annotation
-if 'analysis' in IMP_STEPS:
-    inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
+# if 'analysis' in IMP_STEPS:
+#     inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
 
 ## master command
 rule BINNING:

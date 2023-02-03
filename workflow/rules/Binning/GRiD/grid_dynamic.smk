@@ -1,10 +1,10 @@
 import glob
 import math
 
-localrules: grid_all
-
-
 if "taxonomy" not in IMP_STEPS:
+
+    localrules: grid_all
+
     rule grid_all:
         input:
             gather_bins,
@@ -23,8 +23,8 @@ if "taxonomy" not in IMP_STEPS:
         output:
             out_file=report("Stats/%s/%s.bins.tsv" %(ASS,ASS), "Binning")
         resources:
-            runtime = "12:00:00",
-            mem = MEMCORE
+            runtime = "00:10:00",
+            mem_mb = MEMCORE_MB
         log:
             "logs/binning_GRID_summarize.log"
         message:
@@ -36,7 +36,6 @@ if "taxonomy" not in IMP_STEPS:
             # Check if MetaWrap output is empty
             if os.stat(input.mw_stats).st_size > 0:
                 mw_stats_data = {}
-                got_grid_header = False
                 # Get stats
                 print('Getting MetaWrap bin stats.')
                 with open(input.mw_stats, 'r') as mws:
@@ -46,6 +45,10 @@ if "taxonomy" not in IMP_STEPS:
                         line = line.strip('\n \t').split('\t')
                         bin = line[0]
                         mw_stats_data[bin] = line
+
+                # Read GRiD out
+                got_grid_header = False
+
                 print("Reading GRiD results.")
                 with open(output.out_file, 'w') as of:
                     # Get all GRiD stat files
@@ -79,8 +82,8 @@ if "taxonomy" not in IMP_STEPS:
         threads:
             1
         resources:
-            runtime = "8:00:00",
-            mem = MEMCORE
+            runtime = "02:00:00",
+            mem_mb = MEMCORE_MB
         log:
             "logs/binning_bins_tar.log"
         message:
@@ -101,7 +104,7 @@ checkpoint getBins:
         "status/binning_GRiD.prepped"
     resources:
         runtime = "8:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     threads:
         1
     # log:
@@ -127,7 +130,7 @@ rule grid:
         clusterInput="Binning/MetaWrap/bins"
     resources:
         runtime = "24:00:00",
-        mem = BIGMEMCORE
+        mem_mb = BIGMEMCORE_MB
     threads:
         1
     conda:
@@ -150,8 +153,8 @@ rule prepare_gridBed:
     output:
         "Binning/MetaWrap/bins/{clusterID}/contigs.bed"
     resources:
-        runtime = "2:00:00",
-        mem = MEMCORE
+        runtime = "01:00:00",
+        mem_mb = MEMCORE_MB
     threads:
         1
     log:
@@ -170,8 +173,8 @@ rule prepare_gridReads:
     output:
         reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
     resources:
-        runtime = "12:00:00",
-        mem = BIGMEMCORE
+        runtime = "08:00:00",
+        mem_mb = BIGMEMCORE_MB
     threads:
         1
     log:

@@ -12,7 +12,7 @@ rule call_contig_depth:
         report("Stats/{type}/%s.assembly.contig_flagstat.txt" % ASS,category="Assembly")
     resources:
         runtime = "12:00:00",
-        mem = BIGMEMCORE
+        mem_mb = BIGMEMCORE_MB
     threads:
         # Ensure at least 20gb of mem
         max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)

@@ -10,7 +10,7 @@ rule kraken_contigs:
         "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS
     resources:
         runtime = "8:00:00",
-        mem = BIGMEMCORE
+        mem_mb = BIGMEMCORE_MB
     params:
         confidence = config['kraken']['confidence'],
         database = os.path.join(DBPATH, config['kraken']['krakendb'])
@@ -44,7 +44,7 @@ rule kraken_parse:
         1
     resources:
         runtime = "2:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:

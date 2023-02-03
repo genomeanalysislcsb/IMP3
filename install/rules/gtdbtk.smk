@@ -4,12 +4,9 @@
 
 rule gtdbtk_download:
     output:
-        result=directory("gtdbtk"),
-        download=temp(directory("downloads/files/gtdbtk")),
+        db_dir=directory("gtdbtk")
     log:
-        os.path.join(INSTALL_DIR, "logs/gtdbtk_download.log")
-    params:
-        url=config["gtdbtk"]["url"]
+        os.path.join(INSTALL_DIR, "logs/motus_download.log")
     threads:
         4
     conda:

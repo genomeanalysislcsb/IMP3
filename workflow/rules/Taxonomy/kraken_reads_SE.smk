@@ -10,8 +10,8 @@ rule kraken_reads:
         "Analysis/taxonomy/kraken/{type}.kraken.output.gz",
         report("Analysis/taxonomy/kraken/{type}.kraken.report",category="Taxonomy")
     resources:
-        runtime = "8:00:00",
-        mem = BIGMEMCORE
+        runtime = "08:00:00",
+        mem_mb = BIGMEMCORE_MB
     params:
         tmp_out= lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output",
         confidence=config['kraken']['confidence'],

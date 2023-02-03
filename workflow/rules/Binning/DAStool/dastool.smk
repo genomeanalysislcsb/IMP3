@@ -13,6 +13,7 @@ rule DAS_tool:
         contigs="Assembly/%s.assembly.merged.fa" % ASS,
         proteins="Binning/prokka.renamed.faa", 
         tabs=check_bintabs
+        # tabs=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS)  # if used without DAS_tool_check
     output:
         dt_summary="Binning/DASTool/selected_DASTool_summary.txt",
         s2b="Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
@@ -24,8 +25,8 @@ rule DAS_tool:
         score_thresh=config["binning"]["DAS_Tool"]["score_threshhold"],
         out_name="Binning/DASTool/dastool"
     resources:
-        runtime = "24:00:00",
-        mem = BIGMEMCORE
+        runtime = "02:00:00",
+        mem_mb = BIGMEMCORE_MB
     conda:
         ENVDIR + "/IMP_annotation.yaml"
     log:
@@ -85,8 +86,8 @@ rule format_protein_names:
         "Analysis/annotation/annotation.filt.contig2ID.tsv",
         "Binning/prokka.renamed.faa"
     resources:
-        runtime = "4:00:00",
-        mem = MEMCORE
+        runtime = "02:00:00",
+        mem_mb = MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem
         max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)

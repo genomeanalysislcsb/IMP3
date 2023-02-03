@@ -7,11 +7,14 @@ rule no_filtering:
         'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq'
     resources:
-        runtime = "1:00:00",
-        mem = MEMCORE
-    threads: 1
-#    log: "logs/preprocessing_no_filtering.{type}.log"
-    message: "no_filtering: not filtering {wildcards.type} reads."
+        runtime = "01:00:00",
+        mem_mb = MEMCORE_MB
+    threads:
+        1
+    # log:
+    #     "logs/preprocessing_no_filtering.{type}.log"
+    message:
+        "no_filtering: not filtering {wildcards.type} reads."
     shell:
         """
         R1=mg.r1.fq

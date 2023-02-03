@@ -5,12 +5,16 @@ rule assembly_contig_length:
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
         "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS),
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_annotation.yaml"
-    log: "logs/analysis_assembly_contig_length.log"
-    message: "assembly_contig_length: Getting data on assembly length and GC content."
+        runtime = "02:00:00",
+        mem_mb = MEMCORE_MB
+    threads:
+        1
+    conda:
+        ENVDIR + "/IMP_annotation.yaml"
+    log:
+        "logs/analysis_assembly_contig_length.log"
+    message:
+        "assembly_contig_length: Getting data on assembly length and GC content."
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2

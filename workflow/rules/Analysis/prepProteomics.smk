@@ -9,21 +9,29 @@ if config['proteomics']['insert_variants']:
             peptideTab="Analysis/annotation/proteomics.pos.tsv",
             addInfo="Analysis/annotation/proteomics.info"
         resources: 
-            runtime = "48:00:00",
-            mem = MEMCORE
+            runtime = "24:00:00",
+            mem_mb = MEMCORE_MB
         params:
             minPep = config['proteomics']['filter_N_peptides'],
             out = "Analysis/annotation/proteomics"
         conda:
             os.path.join(ENVDIR, "IMP_bioperl.yaml")
-        threads: 1
-        log: "logs/analysis_insertVariants.log"
-        message: "insertVariants: inserting variants in protein predictions."
+        threads:
+            1
+        log:
+            "logs/analysis_insertVariants.log"
+        message:
+            "insertVariants: inserting variants in protein predictions."
         shell:
             """
             export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-            {SRCDIR}/variant_monsterProtein_anvioFilter_filter.pl -a {input.annotation} -s {input.assembly} -v {input.var} \
-             -u {params.minPep} -n {params.out} -p -anvio >> {log} 2>&1
+            {SRCDIR}/variant_monsterProtein_anvioFilter_filter.pl -a {input.annotation} \
+                                                                  -s {input.assembly} \
+                                                                  -v {input.var} \
+                                                                  -u {params.minPep} \
+                                                                  -n {params.out} \
+                                                                  -p \
+                                                                  -anvio >> {log} 2>&1
             """
 elif config['proteomics']['filter_N_peptides']:
     rule cutends:
@@ -33,19 +41,24 @@ elif config['proteomics']['filter_N_peptides']:
         output:
             "Analysis/annotation/proteomics.proteins.faa"
         resources: 
-            runtime = "4:00:00",
-            mem = MEMCORE
+            runtime = "02:00:00",
+            mem_mb = MEMCORE_MB
         params:
             minPep = config['proteomics']['filter_N_peptides']
         conda:
             os.path.join(ENVDIR, "IMP_bioperl.yaml")
-        threads: 1
-        log: "logs/analysis_cutends.log"
-        message: "cutends: removing non-tryptic peptides from protein predictions."
+        threads:
+            1
+        log:
+            "logs/analysis_cutends.log"
+        message:
+            "cutends: removing non-tryptic peptides from protein predictions."
         shell:
             """
             export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-            {SRCDIR}/trypsinStartEnd.filter.pl {input} 6 {params.minPep} >> {output}
+            {SRCDIR}/trypsinStartEnd.filter.pl {input} \
+                                               6 \
+                                               {params.minPep} >> {output}
             """
 else:
     rule renameProteomics:
@@ -54,13 +67,16 @@ else:
         output:
             "Analysis/annotation/proteomics.proteins.faa"
         resources: 
-            runtime = "4:00:00",
-            mem = MEMCORE
+            runtime = "02:00:00",
+            mem_mb = MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_bioperl.yaml")
-        threads: 1
-        log: "logs/analysis_renameProteomics.log"
-        message: "renameProteomics: renaming protein predictions."
+        threads:
+            1
+        log:
+            "logs/analysis_renameProteomics.log"
+        message:
+            "renameProteomics: renaming protein predictions."
         shell:
             """
             export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
@@ -74,15 +90,18 @@ if config['proteomics']['host_proteome'].split():
         output:
             "Analysis/annotation/proteomics.final.faa"
         resources: 
-            runtime = "4:00:00",
-            mem = MEMCORE
+            runtime = "02:00:00",
+            mem_mb = MEMCORE_MB
         params:
             host = config['proteomics']['host_proteome'].split()
-        threads: 1
+        threads:
+            1
         conda:
             os.path.join(ENVDIR, "IMP_fasta.yaml")
-        log: "logs/analysis_mergeProteomicsHost.log"
-        message: "mergeProteomicsHost: merging metaomics and host protein predictions."
+        log:
+            "logs/analysis_mergeProteomicsHost.log"
+        message:
+            "mergeProteomicsHost: merging metaomics and host protein predictions."
         shell:
             """
             cat {input} {params.host} | fasta_formatter -w 60 >> {output}
@@ -95,12 +114,15 @@ else:
             "Analysis/annotation/proteomics.final.faa"
         resources: 
             runtime = "4:00:00",
-            mem = MEMCORE
-        threads: 1
+            mem_mb = MEMCORE_MB
+        threads:
+            1
         conda:
             os.path.join(ENVDIR, "IMP_fasta.yaml")
-        log: "logs/analysis_formatProteomics.log"
-        message: "formatProteomics."
+        log:
+            "logs/analysis_formatProteomics.log"
+        message:
+            "formatProteomics."
         shell:
             """
             cat {input} | fasta_formatter -w 60 >> {output}
