@@ -65,6 +65,7 @@ assembly:
   # how to do merge(assembly A, assembly B from reads not mapping to A);
   # none or "" = use only assembly A or "concat" or "flye"
   merge: "cap3"
+  kmer_list: 21,29,39,59,79,99,119,141
   mink: 25
   maxk: 99
   step: 4
@@ -72,7 +73,7 @@ assembly:
     identity: 98
     overlap: 100
   quickmerge:
-    min_overlap: 100
+    min_overlap: 250
     # Default: 0
     len_cutoff: 0
     # Overlap cutoff used in selection of anchor contigs.
@@ -190,10 +191,9 @@ binning:
     # Minimum is 2000
     cutoff: 2000
   SemiBin:
-    # Using self-supervised mode now, so pre-trained models arent needed, subject to change depending on performance
     # Choose between: global human_gut human_oral mouse_gut pig_gut dog_gut cat_gut wastewater ocean soil
     # leave empty to create my_built_environment and after use that as param
-    # model: 'human_gut'
+    model: 'human_gut'
     cutoff: 2000
   DAS_Tool:
     score_threshhold: 0.6

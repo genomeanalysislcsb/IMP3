@@ -1,3 +1,5 @@
+import math
+
 localrules: allmotu
 
 rule allmotu:
@@ -18,7 +20,8 @@ rule motus:
     output:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
     threads:
-        getThreads(6)
+        # Ensure at least 30gb of mem
+        max(int(math.ceil(30 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     params:
         # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
         # -A: print all tax. levels together

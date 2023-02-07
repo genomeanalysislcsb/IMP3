@@ -68,6 +68,7 @@ assembly:
   # how to do merge(assembly A, assembly B from reads not mapping to A);
   # none or "" = use only assembly A or "concat" or "flye"
   merge: "cap3"
+  kmer_list: 21,29,39,59,79,99,119,141
   mink: 25
   maxk: 99
   step: 4

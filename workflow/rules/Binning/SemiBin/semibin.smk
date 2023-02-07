@@ -7,7 +7,7 @@ rule semibin:
         out_dir=directory("Binning/SemiBin"),
         out_bin_dir=directory("Binning/SemiBin/bins")
     params:
-#         model=config["binning"]["SemiBin"]["model"],
+        model=config["binning"]["SemiBin"]["model"],
         cutoff=config["binning"]["SemiBin"]["cutoff"],
         db_dir=os.path.join(config["db_path"], "gtdb_semibin"),
         tmp_dir=os.path.join(config["tmp_dir"])
@@ -29,7 +29,7 @@ rule semibin:
             single_easy_bin \
                 --input-fasta {input.assembly} \
                 --input-bam {input.mapping} \
-                --self-supervised \
+                --environment {params.model} \
                 --threads {threads} \
                 --random-seed 0 \
                 --min-len {params.cutoff} \

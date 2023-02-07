@@ -1,10 +1,14 @@
+import math
+
 rule GTDBtk_bins_single:
     input:
-        "Binning/MetaWrap/bins/{clusterID}"
+        bin = "Binning/MetaWrap/bins/{clusterID}"
     output:
-        gtdbtk_out=directory("Binning/MetaWrap/bins/{clusterID}/GTDB")
+        gtdbtk_out = directory("Binning/MetaWrap/bins/{clusterID}/GTDB"),
+        # summary_bac = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.bac120.markers_summary.tsv",
+        # summary_arc = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.ar53.markers_summary.tsv",
     resources:
-        runtime = "12:00:00",
+        runtime = "02:00:00",
         mem_mb = BIGMEMCORE_MB
     params:
         pplacer_cpus=getThreads(min(BIGCORENO, max(1, int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45))), bigmem=True),
@@ -19,20 +23,17 @@ rule GTDBtk_bins_single:
     message:
         "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
     threads:
-        getThreads(BIGCORENO, bigmem=True)
+        getThreads(32, bigmem=True)
     shell:
         """
-        echo "int(BIGMEMCORE[:-1])": {params.t1} >> {log} 2>&1
-        echo "to_gb_dict[config["mem"]["mem_unit"]]": {params.t2} >> {log} 2>&1
-        echo "BIGCORENO": {params.t3} >> {log} 2>&1
-        echo "int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45)": {params.t4} >> {log} 2>&1
         export GTDBTK_DATA_PATH="{DBPATH}/gtdbtk/release207_v2"
         export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
-        gtdbtk classify_wf --genome_dir {input}/ \
+        gtdbtk classify_wf --genome_dir {input.bin}/ \
                            --extension fasta \
                            --out_dir {output.gtdbtk_out} \
                            --cpus {threads} \
-                           --pplacer_cpus {params.pplacer_cpus} >> {log} 2>&1
+                           --pplacer_cpus {params.pplacer_cpus} >> {log} 2>&1 \
+          || touch {output.gtdbtk_out}/gtdbtk.empty.summary.tsv
         """
 
 localrules: GTDB_all
@@ -52,8 +53,7 @@ rule GTDBtk_summarize:
         gather_GTDB_bins,
         mw_stats="Binning/MetaWrap/bins.stats"
     output:
-        out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy"),
-        grid="status/binning_GRiD.done"
+        out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy")
     resources:
         runtime = "00:10:00",
         mem_mb = MEMCORE_MB
@@ -62,7 +62,8 @@ rule GTDBtk_summarize:
     message:
         "GTDBtk_summarize: Summarizing binning results."
     threads:
-        1
+        # Ensure at least 10gb of mem
+        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
     run:
         # Check if MetaWrap output is empty
         if os.stat(input.mw_stats).st_size > 0:
@@ -94,30 +95,29 @@ rule GTDBtk_summarize:
                         else:
                             next(f)
                         stats_data[bin].extend(next(f).strip(' \t\n').split('\t')[1:])
-                os.mknod(output.grid)
 
             # Read GTDBtk out
             got_gtdbtk_header = False
 
             print("Reading GTDBtk results.")
+            # Get all GTBtk stat files
+            gtdbtk_out = glob.glob("Binning/MetaWrap/bins/*/GTDB/gtdbtk.*.summary.tsv")
+            if gtdbtk_out:
+                for bin_gtdbtk_data in gtdbtk_out:
+                    bin = bin_gtdbtk_data.split('/')[-3]
+                    with open(bin_gtdbtk_data,'r') as f:
+                        if not got_gtdbtk_header:
+                            header = header + '\t' + '\t'.join(next(f).strip(' \t\n').split('\t')[1:]) + '\n'
+                            got_gtdbtk_header = True
+                        else:
+                            next(f)
+                        stats_data[bin].extend(next(f).split('\t')[1:])
+
+            # Write output
             with open(output.out_file,'w') as of:
-                # Get all GTBtk stat files
-                gtdbtk_out = glob.glob("Binning/MetaWrap/bins/*/GTDB/classify/gtdbtk.*.summary.tsv")
-                if gtdbtk_out:
-                    for bin_gtdbtk_data in gtdbtk_out:
-                        bin = bin_gtdbtk_data.split('/')[-4]
-                        with open(bin_gtdbtk_data,'r') as f:
-                            if not got_gtdbtk_header:
-                                header = header + '\t' + '\t'.join(next(f).strip(' \t').split('\t')[1:])
-                                of.write(header)
-                                got_gtdbtk_header = True
-                            else:
-                                next(f)
-                            of.write('\t'.join(stats_data[bin] + next(f).split('\t')[1:]))
-                else:
-                    of.write(header)
-                    for bin in stats_data.keys():
-                        of.write('\t'.join(stats_data[bin] + ['\n']))
+                of.write(header)
+                for bin in stats_data.keys():
+                    of.write('\t'.join(stats_data[bin]) + '\n')
         else:
             print("No output from MetaWrap!")
             os.mknod(output)

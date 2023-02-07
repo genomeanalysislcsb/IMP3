@@ -3,7 +3,6 @@ arch_inputs = "status/workflow.done"
 if MG or MT:
     arch_input.append("status/reads.compressed")
 
-
 localrules: ARCHIVING
 
 rule ARCHIVING:

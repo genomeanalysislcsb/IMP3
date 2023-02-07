@@ -129,10 +129,11 @@ rule grid:
     params:
         clusterInput="Binning/MetaWrap/bins"
     resources:
-        runtime = "24:00:00",
+        runtime = "02:00:00",
         mem_mb = BIGMEMCORE_MB
     threads:
-        1
+        # Ensure at least 5gb of mem
+        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     conda:
         ENVDIR + "/IMP_annotation.yaml"
     log:
@@ -156,7 +157,8 @@ rule prepare_gridBed:
         runtime = "01:00:00",
         mem_mb = MEMCORE_MB
     threads:
-        1
+        # Ensure at least 5gb of mem
+        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     log:
         "logs/binning_prepare_gridBed.{clusterID}.log"
     message:
@@ -173,10 +175,11 @@ rule prepare_gridReads:
     output:
         reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
     resources:
-        runtime = "08:00:00",
+        runtime = "02:00:00",
         mem_mb = BIGMEMCORE_MB
     threads:
-        1
+        # Ensure at least 5gb of mem
+        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     log:
         "logs/binning_prepare_gridReads.{clusterID}.log"
     message:

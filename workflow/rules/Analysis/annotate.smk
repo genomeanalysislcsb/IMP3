@@ -124,5 +124,5 @@ rule tar_annotation:
                                             --processes {threads} \
                                             --rsyncable \
                                             --verbose > {output} 2> {log} && \
-       rm -r {params.intermediary} >> {log} 2>&1
+       rm -rf {params.intermediary} >> {log} 2>&1
        """

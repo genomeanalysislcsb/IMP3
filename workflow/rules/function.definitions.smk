@@ -249,9 +249,9 @@ def gather_reads(wildcards):
 # for checkpoints:
 def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    print('gather_bins checkpoint_output:', checkpoint_output)
+    # print('gather_bins checkpoint_output:', checkpoint_output)
     if MG or MGaln:
-        print('gather_bins out:', expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i))
+        # print('gather_bins out:', expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i))
         return expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i)  # +\
                # expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/reads.fastq.gz").i)
     else:
@@ -260,25 +260,25 @@ def gather_bins(wildcards):
 
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    print('gather_GTDB_bins checkpoint_output:',checkpoint_output)
+    # print('gather_GTDB_bins checkpoint_output:',checkpoint_output)
     return expand("Binning/MetaWrap/bins/{i}/{tool}", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i, tool=["GTDB","grid"])  # +\
            # expand("Binning/MetaWrap/bins/{i}/GTDB", i=glob_wildcards("Binning/MetaWrap/bins/{i}/reads.fastq.gz").i)
 
 
 def check_bintabs(wildcards):
     checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
-    print('check_bintabs checkpoint_output:',checkpoint_output)
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
-        if os.stat(OUTPUTDIR + "/Binning/" + binner + "/scaffold2bin.tsv").st_size > 0:
+        s2b_path = os.path.join(OUTPUTDIR, "Binning", binner, "scaffold2bin.tsv")
+        if os.path.exists(s2b_path) and os.stat(s2b_path).st_size > 0:
             valid_binners.append(binner)
     return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
 
 
 def check_binner_bin_fastas(wildcards):
     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
-    print('check_binner_bin_fastas checkpoint_output:',checkpoint_output)
+    # print('check_binner_bin_fastas checkpoint_output:',checkpoint_output)
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
@@ -290,9 +290,18 @@ def check_binner_bin_fastas(wildcards):
         valid_binners.append("DASTool")
 
     binner_out_paths = expand("Binning/{binner}/bins", binner=valid_binners)
-    print('check_binner_bin_fastas out', binner_out_paths)
+    # print('check_binner_bin_fastas out', binner_out_paths)
 
     return binner_out_paths
+
+
+def check_binner_dirs(wildcards):
+    checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
+
+    binner_out_paths, = glob_wildcards(os.path.join("Binning", "{binner}"))
+
+    return os.path.join("Binning", "{binner}")
+
 
 
 def get_mw_binner_inputs(binner_fasta_dirs, min_comp, max_cont):

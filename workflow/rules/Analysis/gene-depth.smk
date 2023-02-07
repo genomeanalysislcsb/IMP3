@@ -13,8 +13,8 @@ rule call_gene_depth:
         runtime = "12:00:00",
         mem_mb = BIGMEMCORE_MB
     threads:
-        # Ensure at least 5gb of mem
-        max(int(math.ceil(5 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        # Ensure at least 20gb of mem
+        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:

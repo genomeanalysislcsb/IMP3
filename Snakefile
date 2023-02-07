@@ -1,8 +1,8 @@
 # include global functions
 ROOTDIR = srcdir(".")
 
-print(f'workflow.cores, workflow.nodes: {workflow.cores}, {workflow.nodes}')
-print(f'workflow.conda_prefix: {workflow.conda_prefix}')
+# print(f'workflow.cores, workflow.nodes: {workflow.cores}, {workflow.nodes}')
+# print(f'workflow.conda_prefix: {workflow.conda_prefix}')
 
 include:
     "workflow/rules/function.definitions.smk"
@@ -161,7 +161,15 @@ else:
 
 
 # master command summary and archiving
-inputs_all = ['status/inputs.done','status/workflow.done', 'Analysis/annotation/intermediary.tar.gz']
+inputs_all = ['status/inputs.done','status/workflow.done']
+
+if 'analysis' in IMP_STEPS:
+    inputs_all.append('Analysis/annotation/intermediary.tar.gz')
+
+if 'binning' in IMP_STEPS:
+    inputs_all.extend([f'Binning/{binner}.tar.gz' for binner in BIN_STEPS + ['DASTool']])
+
+
 if "summary" in IMP_STEPS:
     inputs_all.append('status/summary.done')
     include:

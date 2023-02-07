@@ -69,10 +69,9 @@ metaspades_hybrid_assembly_2:
 
 collapse_hybrid_assemblies:
   partition: "--partition bigmem"
-  qos: "--qos normal"
 
 extract_unmapped:
-  partition: "--qos bigmem"
+  partition: "--partition bigmem"
 
 DAS_tool:
   partition: "--partition bigmem"

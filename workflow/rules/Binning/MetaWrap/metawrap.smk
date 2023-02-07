@@ -154,4 +154,34 @@ rule MetaWrap_refine:
         done
         """
 
+# Compress single binner out
+rule compress_binner_out:
+    input:
+        # Make sure its done at the very end
+        "status/workflow.done",
+        binner_out = check_binner_dirs
+    output:
+        "Binning/{binner}.tar.gz"
+    threads:
+        # Ensure at least 10gb of mem
+        max(int(math.ceil(10 / (int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 8)
+    resources:
+        runtime = "04:00:00",
+        mem_mb = MEMCORE_MB
+    log:
+        "logs/compress_binner_{binner}.log"
+    message:
+        "compress_binner_out: Compressing output of {wildcards.binner}."
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    shell:
+       """
+       echo '.Compressing {wildcards.binner} output.'
+       tar -cv {input.binner_out} 2> {log} | pigz --stdout \
+                                                  --best \
+                                                  --processes {threads} \
+                                                  --rsyncable \
+                                                  --verbose > {output} 2>> {log} && \
+       rm -rf {input.binner_out} >> {log} 2>&1
+       """
 

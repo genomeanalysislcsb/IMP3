@@ -391,7 +391,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             time cd-hit-est -i {output.out_dir}/merged_with_bridge_singletons.fasta \
                             -o {output.out_dir}/merged_with_bridge_singletons_99id.fasta \
                             -T {threads} \
-                            -c 0.99 \
+                            -c 0.995 \
                             -d 50000 \
                             -M 300000 >> {log} 2>&1 \
               && \
