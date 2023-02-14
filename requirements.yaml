@@ -4,6 +4,6 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - snakemake=7.18.2
+  - snakemake=7.19.1
   - pigz=2.6
   - filetype=1.2.0

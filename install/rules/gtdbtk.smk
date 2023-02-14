@@ -4,11 +4,13 @@
 
 rule gtdbtk_download:
     output:
-        db_dir=directory("gtdbtk")
+        download = directory("gtdbtk")
     log:
         os.path.join(INSTALL_DIR, "logs/motus_download.log")
     threads:
         4
+    params:
+        url = config["gtdbtk"]["url"]
     conda:
         os.path.join(ENV_DIR, "utils.yaml")
     message:
