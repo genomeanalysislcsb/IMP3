@@ -23,7 +23,7 @@ rule mantis_annot:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
         params="-gff -km -da heuristic",
     threads:
-        getThreads(64)
+        getThreads(128)
     resources:
         runtime="12:00:00",
         mem_mb = MEMCORE_MB

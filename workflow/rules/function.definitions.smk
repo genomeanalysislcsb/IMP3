@@ -260,9 +260,7 @@ def gather_bins(wildcards):
 
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    # print('gather_GTDB_bins checkpoint_output:',checkpoint_output)
-    return expand("Binning/MetaWrap/bins/{i}/{tool}", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i, tool=["GTDB","grid"])  # +\
-           # expand("Binning/MetaWrap/bins/{i}/GTDB", i=glob_wildcards("Binning/MetaWrap/bins/{i}/reads.fastq.gz").i)
+    return expand("Binning/MetaWrap/bins/{i}/{tool}", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i, tool=["GTDB","grid"])
 
 
 def check_bintabs(wildcards):

@@ -53,9 +53,10 @@ rule GTDBtk_summarize:
         gather_GTDB_bins,
         mw_stats="Binning/MetaWrap/bins.stats"
     output:
-        out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy")
+        out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy"),
+        grid="status/binning_GRiD.done"
     resources:
-        runtime = "00:10:00",
+        runtime = "00:45:00",
         mem_mb = MEMCORE_MB
     log:
         "logs/taxonomy_GTDBtk_summarize.log"
@@ -83,18 +84,20 @@ rule GTDBtk_summarize:
             got_grid_header = False
 
             print("Reading GRiD results.")
-            # Get all GTBtk stat files
+            # Get all GRiD stat files
             grid_out = glob.glob("Binning/MetaWrap/bins/*/grid/reads.GRiD.txt")
             if grid_out:
                 for bin_grid_data in grid_out:
-                    bin = bin_grid_data.split('/')[-3]
-                    with open(bin_grid_data,'r') as f:
-                        if not got_grid_header:
-                            header = header + '\t' + '\t'.join(next(f).strip(' \t\n').split('\t')[1:])
-                            got_grid_header = True
-                        else:
-                            next(f)
-                        stats_data[bin].extend(next(f).strip(' \t\n').split('\t')[1:])
+                    if os.stat(bin_grid_data).st_size > 0:
+                        bin = bin_grid_data.split('/')[-3]
+                        with open(bin_grid_data,'r') as f:
+                            if not got_grid_header:
+                                header = header + '\t' + '\t'.join(next(f).strip(' \t\n').split('\t')[1:])
+                                got_grid_header = True
+                            else:
+                                next(f)
+                            stats_data[bin].extend(next(f).strip(' \t\n').split('\t')[1:])
+                os.mknod(output.grid)
 
             # Read GTDBtk out
             got_gtdbtk_header = False
@@ -104,14 +107,15 @@ rule GTDBtk_summarize:
             gtdbtk_out = glob.glob("Binning/MetaWrap/bins/*/GTDB/gtdbtk.*.summary.tsv")
             if gtdbtk_out:
                 for bin_gtdbtk_data in gtdbtk_out:
-                    bin = bin_gtdbtk_data.split('/')[-3]
-                    with open(bin_gtdbtk_data,'r') as f:
-                        if not got_gtdbtk_header:
-                            header = header + '\t' + '\t'.join(next(f).strip(' \t\n').split('\t')[1:]) + '\n'
-                            got_gtdbtk_header = True
-                        else:
-                            next(f)
-                        stats_data[bin].extend(next(f).split('\t')[1:])
+                    if os.stat(bin_gtdbtk_data).st_size > 0:
+                        bin = bin_gtdbtk_data.split('/')[-3]
+                        with open(bin_gtdbtk_data,'r') as f:
+                            if not got_gtdbtk_header:
+                                header = header + '\t' + '\t'.join(next(f).strip(' \t\n').split('\t')[1:]) + '\n'
+                                got_gtdbtk_header = True
+                            else:
+                                next(f)
+                            stats_data[bin].extend(next(f).strip(' \t\n').split('\t')[1:])
 
             # Write output
             with open(output.out_file,'w') as of:

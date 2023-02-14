@@ -13,7 +13,7 @@ rule megahit_hybrid_assembly_1:
         contigs_hyb = 'Assembly/intermediary/mgmt.megahit_hybrid.1.fa',
         out_dir = directory('Assembly/intermediary/mgmt.megahit_hybrid.1')
     resources:
-        runtime = "12:00:00",
+        runtime = "24:00:00",
         mem_mb = BIGMEMCORE_MB
     threads:
         getThreads(BIGCORENO, bigmem=True)
