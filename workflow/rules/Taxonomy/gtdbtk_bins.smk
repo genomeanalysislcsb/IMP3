@@ -2,7 +2,7 @@ import math
 
 rule GTDBtk_bins_single:
     input:
-        bin = "Binning/MetaWrap/bins/{clusterID}"
+        bin = ancient("Binning/MetaWrap/bins/{clusterID}")
     output:
         gtdbtk_out = directory("Binning/MetaWrap/bins/{clusterID}/GTDB"),
         # summary_bac = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.bac120.markers_summary.tsv",
@@ -48,30 +48,9 @@ rule GTDB_all:
         touch {output}
         """
 
-checkpoint check_gtdbtk_out:
-    input:
-        "Binning/MetaWrap/bins.stats",
-        "status/binning_GRiD.prepped",
-        "Binning/MetaWrap/bins/{clusterID}/grid",
-        "Binning/MetaWrap/bins/{clusterID}/GTDB"
-    output:
-        "status/binning_GTDBtk_summary.ready"
-    resources:
-        runtime = "00:05:00",
-        mem_mb = MEMCORE_MB
-    threads:
-        1
-    message:
-        "check_gtdbtk_out: Ensuring all data needed for binning summary is present."
-    shell:
-        """
-        touch {output}
-        """
-
 rule GTDBtk_summarize:
     input:
-        "status/binning_GTDBtk_summary.ready",
-        gather_GTDB_bins,
+        ancient(gather_GTDB_bins),
         mw_stats="Binning/MetaWrap/bins.stats"
     output:
         out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy"),
