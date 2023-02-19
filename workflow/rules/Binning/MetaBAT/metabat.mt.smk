@@ -3,9 +3,11 @@ rule metabat:
         assembly="Assembly/%s.assembly.merged.fa" % ASS
     output:
         s2b="Binning/MetaBAT/scaffold2bin.tsv",
-        out_dir=directory("Binning/MetaBAT/bins")
+        out_dir=directory("Binning/MetaBAT"),
+        out_bin_dir=directory("Binning/MetaBAT/bins")
     params:
-        res="Binning/MetaBAT/metabat_res"
+        res="Binning/MetaBAT/metabat_res",
+        min_cont_size=config["binning"]["MetaBAT"]["cutoff"]
     threads:
         getThreads(8)
     resources:
@@ -20,13 +22,14 @@ rule metabat:
     shell:
         """
         ## Create MetaBat dir
+        mkdir -p {output.out_bin_dir}
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "metabat_depth_XXXXXX.tsv")       
         ## Run MetaBat
         metabat2 -i {input.assembly} \
                  --saveCls \
-                 -o {output.res} \
+                 -o {params.res} \
                  -t {threads} \
-                 -m {config[binning][MetaBAT][cutoff]} > {log} 2>&1 
+                 -m {params.min_cont_size} > {log} 2>&1
         mv {params.res} {output.s2b}
         rm $TMP_FILE
 	    # Move bin fastas and rename.

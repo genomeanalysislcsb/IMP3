@@ -1,7 +1,7 @@
 import glob
 import math
 
-if "taxonomy" not in IMP_STEPS:
+if MG and "taxonomy" not in IMP_STEPS:
 
     localrules: grid_all
 
@@ -120,78 +120,79 @@ checkpoint getBins:
                       "Binning/MetaWrap/bins/{BIN}/contigs.fasta; fi")
         shell("touch {output}")
 
-rule grid:
-    input:
-       contigs="Binning/MetaWrap/bins/{clusterID}/contigs.fasta",
-       reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
-    output:
-        directory("Binning/MetaWrap/bins/{clusterID}/grid")
-    params:
-        clusterInput="Binning/MetaWrap/bins"
-    resources:
-        runtime = "02:00:00",
-        mem_mb = BIGMEMCORE_MB
-    threads:
-        # Ensure at least 5gb of mem
-        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
-    conda:
-        ENVDIR + "/IMP_annotation.yaml"
-    log:
-        "logs/binning_grid.{clusterID}.log"
-    message:
-        "grid: Running GRiD on {wildcards.clusterID}."
-    shell:
-        """
-        grid single -r {params.clusterInput}/{wildcards.clusterID} \
-                    -e fastq.gz \
-                    -o {output} \
-                    -g {input.contigs} > {log} 2>&1
-        """
+if MG:
+    rule grid:
+        input:
+           contigs="Binning/MetaWrap/bins/{clusterID}/contigs.fasta",
+           reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
+        output:
+            directory("Binning/MetaWrap/bins/{clusterID}/grid")
+        params:
+            clusterInput="Binning/MetaWrap/bins"
+        resources:
+            runtime = "02:00:00",
+            mem_mb = BIGMEMCORE_MB
+        threads:
+            # Ensure at least 5gb of mem
+            max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        conda:
+            ENVDIR + "/IMP_annotation.yaml"
+        log:
+            "logs/binning_grid.{clusterID}.log"
+        message:
+            "grid: Running GRiD on {wildcards.clusterID}."
+        shell:
+            """
+            grid single -r {params.clusterInput}/{wildcards.clusterID} \
+                        -e fastq.gz \
+                        -o {output} \
+                        -g {input.contigs} > {log} 2>&1
+            """
 
-rule prepare_gridBed:
-    input:
-        "Binning/MetaWrap/bins/{clusterID}/contigs.fasta"
-    output:
-        "Binning/MetaWrap/bins/{clusterID}/contigs.bed"
-    resources:
-        runtime = "01:00:00",
-        mem_mb = MEMCORE_MB
-    threads:
-        # Ensure at least 5gb of mem
-        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
-    log:
-        "logs/binning_prepare_gridBed.{clusterID}.log"
-    message:
-        "prepare_gridBed: Preparing .bed file for GRiD - {wildcards.clusterID}."
-    shell:
-        """
-        {SRCDIR}/fastaBed.pl {input} >> {output} 2> {log}
-        """
+    rule prepare_gridBed:
+        input:
+            "Binning/MetaWrap/bins/{clusterID}/contigs.fasta"
+        output:
+            "Binning/MetaWrap/bins/{clusterID}/contigs.bed"
+        resources:
+            runtime = "01:00:00",
+            mem_mb = MEMCORE_MB
+        threads:
+            # Ensure at least 5gb of mem
+            max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        log:
+            "logs/binning_prepare_gridBed.{clusterID}.log"
+        message:
+            "prepare_gridBed: Preparing .bed file for GRiD - {wildcards.clusterID}."
+        shell:
+            """
+            {SRCDIR}/fastaBed.pl {input} >> {output} 2> {log}
+            """
 
-rule prepare_gridReads:
-    input:
-        assembly="Assembly/mg.reads.sorted.bam",
-        cont_cov="Binning/MetaWrap/bins/{clusterID}/contigs.bed"
-    output:
-        reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
-    resources:
-        runtime = "02:00:00",
-        mem_mb = BIGMEMCORE_MB
-    threads:
-        # Ensure at least 5gb of mem
-        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
-    log:
-        "logs/binning_prepare_gridReads.{clusterID}.log"
-    message:
-        "prepare_gridReads: Preparing fastq file for GRiD - {wildcards.clusterID}."
-    conda:
-        ENVDIR + "/IMP_mapping.yaml"
-    shell:
-        """
-        samtools view -b -F 5 -L {input.cont_cov} {input.assembly} 2>> {log} | \
-          samtools fastq -n - > {output} 2>> {log} 
-        samtools view -b -f 65 -F 4 -L {input.cont_cov} {input.assembly} 2>> {log} | \
-          samtools fastq -n - >> {output} 2>> {log}
-        samtools view -b -f 129 -F 4 -L {input.cont_cov} {input.assembly} 2>> {log} | \
-          samtools fastq -n - >> {output} 2>> {log}
-        """
+    rule prepare_gridReads:
+        input:
+            assembly="Assembly/mg.reads.sorted.bam",
+            cont_cov="Binning/MetaWrap/bins/{clusterID}/contigs.bed"
+        output:
+            reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
+        resources:
+            runtime = "02:00:00",
+            mem_mb = BIGMEMCORE_MB
+        threads:
+            # Ensure at least 5gb of mem
+            max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        log:
+            "logs/binning_prepare_gridReads.{clusterID}.log"
+        message:
+            "prepare_gridReads: Preparing fastq file for GRiD - {wildcards.clusterID}."
+        conda:
+            ENVDIR + "/IMP_mapping.yaml"
+        shell:
+            """
+            samtools view -b -F 5 -L {input.cont_cov} {input.assembly} 2>> {log} | \
+              samtools fastq -n - > {output} 2>> {log}
+            samtools view -b -f 65 -F 4 -L {input.cont_cov} {input.assembly} 2>> {log} | \
+              samtools fastq -n - >> {output} 2>> {log}
+            samtools view -b -f 129 -F 4 -L {input.cont_cov} {input.assembly} 2>> {log} | \
+              samtools fastq -n - >> {output} 2>> {log}
+            """

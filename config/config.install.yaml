@@ -88,3 +88,7 @@ binny:
   # Set only, if path to snakemake env is not the IMP3 default, i.e. the one created following the IMP3 install guide.
   # Default: ""
   snakemake_env_path: ""
+
+cdhit:
+  url: "https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz"
+  max_seq_len: 2500000

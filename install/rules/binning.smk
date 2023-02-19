@@ -31,7 +31,7 @@ rule setup_checkm:
         wget -nv https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_2015_01_16.tar.gz -P {output.checkm_db} >> {log} 2>&1 && \
         echo "Decompressing CheckM database"  >> {log} 2>&1&& \
         tar -xvf {output.checkm_db}/checkm_data_2015_01_16.tar.gz -C {output.checkm_db} >> {log} 2>&1 && \
-        rm -rf {output.checkm_db}/checkm_data_2015_01_16.tar.gz &&\
+        rm -rf {output.checkm_db}/checkm_data_2015_01_16.tar.gz && \
         echo "Setting up CheckM" >> {log} 2>&1 &&\
         unset PYTHONHOME
         SETUPTOOLS_USE_DISTUTILS=stdlib

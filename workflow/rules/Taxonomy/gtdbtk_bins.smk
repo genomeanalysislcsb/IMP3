@@ -54,7 +54,7 @@ rule GTDBtk_summarize:
         mw_stats="Binning/MetaWrap/bins.stats"
     output:
         out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy"),
-        grid="status/binning_GRiD.done"
+        grid="status/binning_GRiD.done" if MG else []
     resources:
         runtime = "00:15:00",
         mem_mb = MEMCORE_MB
@@ -97,7 +97,8 @@ rule GTDBtk_summarize:
                             else:
                                 next(f)
                             stats_data[bin].extend(next(f).strip(' \t\n').split('\t')[1:])
-                os.mknod(output.grid)
+                if output.grid:
+                    os.mknod(output.grid)
 
             # Read GTDBtk out
             got_gtdbtk_header = False

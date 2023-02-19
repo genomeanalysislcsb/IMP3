@@ -51,7 +51,7 @@ rule DAS_tool:
           mkdir {output.bin_dir}
           exit 0
         fi
-        
+
         DAS_Tool --bins=${{TABS// /,}} \
                  --labels=${{TABSl}} \
                  --contigs={input.contigs} \
@@ -60,10 +60,15 @@ rule DAS_tool:
                  --write_bins \
                  --threads={threads} \
                  --score_threshold={params.score_thresh} \
-                 --outputbasename={params.out_name} >> {log} 2>&1 ||\
-                  touch {output.dt_summary} {output.s2b} status/binning_DAStool.impossible
-    
-        mv Binning/DASTool/dastool_DASTool_bins {output.bin_dir}
+                 --outputbasename={params.out_name} >> {log} 2>&1 \
+        || \
+        touch {output.dt_summary} {output.s2b} status/binning_DAStool.impossible
+
+        echo 'test_01'
+
+        mv {output.out_dir}/dastool_DASTool_bins {output.bin_dir}
+
+        echo 'test_02'
 
         # Rename bin fastas
         shopt -s nullglob
@@ -72,7 +77,9 @@ rule DAS_tool:
           mv ${{bin}} ${{bin_name}}.fasta
         done
         shopt -u nullglob
-        
+
+        echo 'test_02'
+
         if [ ! -f {output.dt_summary} ]; then
           touch {output.dt_summary}  {output.s2b} status/binning_DAStool.impossible && mkdir -p  {output.bin_dir}
         fi
