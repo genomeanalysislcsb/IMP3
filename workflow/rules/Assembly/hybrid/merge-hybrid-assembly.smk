@@ -336,7 +336,8 @@ elif config["assembly"]["merge"] == "quickmerge":
             min_overlap=config["assembly"]["quickmerge"]["min_overlap"],
             len_cutoff=config["assembly"]["quickmerge"]["len_cutoff"],
             hco=config["assembly"]["quickmerge"]["hco"],
-            c=config["assembly"]["quickmerge"]["c"]
+            c=config["assembly"]["quickmerge"]["c"],
+            alt_cdhit = os.path.join(ROOTDIR, "submodules", "cdhit", "cd-hit-est")
         threads:
             getThreads(128)
         conda:
@@ -394,9 +395,16 @@ elif config["assembly"]["merge"] == "quickmerge":
                             -c 0.995 \
                             -d 50000 \
                             -M 300000 >> {log} 2>&1 \
-              && \
-              rm -rf {output.out_dir}/merged_with_bridge_singletons.fasta {output.out_dir}/merged_h1h2_with_h2h1.fasta \
-                     {output.out_dir}/bridges_h2h1_rn.fasta {output.out_dir}/merged_h1h2_with_h2h1_rn.fasta \
+            || \
+            time {params.alt_cdhit} -i {output.out_dir}/merged_with_bridge_singletons.fasta \
+                                    -o {output.out_dir}/merged_with_bridge_singletons_99id.fasta \
+                                    -T {threads} \
+                                    -c 0.995 \
+                                    -d 50000 \
+                                    -M 300000 >> {log} 2>&1 \
+            && \
+            rm -rf {output.out_dir}/merged_with_bridge_singletons.fasta {output.out_dir}/merged_h1h2_with_h2h1.fasta \
+                   {output.out_dir}/bridges_h2h1_rn.fasta {output.out_dir}/merged_h1h2_with_h2h1_rn.fasta \
             """
 
     rule clean_up:

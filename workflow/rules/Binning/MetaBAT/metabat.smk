@@ -29,10 +29,12 @@ rule metabat:
         cat {input.depth}  >> $TMP_FILE
         ## Run MetaBat
         metabat2 -i {input.assembly} \
-                 -a $TMP_FILE --cvExt \
+                 -a $TMP_FILE \
+                 --cvExt \
                  --saveCls \
                  -o {params.res} \
-                 -t {threads} -v \
+                 -t {threads} \
+                 -v \
                  -m {params.min_cont_size} >> {log} 2>&1
         mv {params.res} {output.s2b}
         rm $TMP_FILE
