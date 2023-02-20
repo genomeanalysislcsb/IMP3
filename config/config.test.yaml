@@ -18,7 +18,7 @@ mem:
 tmp_dir: '/abs/path/to/tmp_dir'
 raws:
   Metagenomics: "/abs/path/to/test.mg.1.fastq /abs/path/to/test.mg.2.fastq"
-  Metatranscriptomics: ""
+  Metatranscriptomics: "/abs/path/to/test.mt.1.fastq /abs/path/to/test.mt.2.fastq"
   LongReads: ""
   LongReadTech: ""
   Contigs: ""
@@ -63,8 +63,8 @@ sortmerna:
     - silva-bac-23s-id98
     - silva-euk-28s-id98
 assembly:
-  hybrid: false
-  assembler: metaspades
+  hybrid: true
+  assembler: megahit
   # how to do merge(assembly A, assembly B from reads not mapping to A);
   # none or "" = use only assembly A or choose between: concat, flye, cap3, quickmerge
   merge: "quickmerge"
@@ -98,7 +98,7 @@ mantis:
   default:
     nog_ref_folder: null
     pfam_ref_folder: null
-    kofam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/imp3_test_db/mantis"
+    kofam_ref_folder: "ab/path/to/imp3_db/mantis/kofam"
     ncbi_ref_folder: null
     tcdb_ref_folder: null
   # custom HMMs (list)
