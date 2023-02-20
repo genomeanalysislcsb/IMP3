@@ -35,7 +35,7 @@ rule setup_checkm:
         echo "Setting up CheckM" >> {log} 2>&1 && \
         unset PYTHONHOME && \
         SETUPTOOLS_USE_DISTUTILS=stdlib && \
-        printf "%s" {output.checkm_db} | checkm data setRoot >> {log} 2>&1 && touch {output.setup_check} && \
+        printf "%s\n" {output.checkm_db} | checkm data setRoot >> {log} 2>&1 && touch {output.setup_check} && \
         echo "Setup done." >> {log} 2>&1
         
         # Fix lines that lead to crash with MW, if theres only one binner output

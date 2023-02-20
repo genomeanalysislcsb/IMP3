@@ -29,6 +29,7 @@ rule kraken_reads:
         """
 	    mkdir -p Analysis/taxonomy/kraken
 	    kraken2 --db {params.database} \
+	            --confidence {params.confidence} \
 	            --threads {threads} \
 	            --paired \
 	            --use-names \

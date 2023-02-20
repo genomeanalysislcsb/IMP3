@@ -28,7 +28,7 @@ profiles supports slurm only at the moment.
     ```shell
     # Create new one
     my_package_manager='conda'  # conda mamba micromamba
-    ${my_package_manager} create -n snakemake_env -f requirements.yaml
+    ${my_package_manager} env create -n snakemake_env -f requirements.yaml
     ```
     or
     ```shell
@@ -61,7 +61,7 @@ profiles supports slurm only at the moment.
     my_conda_dir="./conda"
     snakemake --snakefile install/Snakefile \
               --configfile config/config.install.yaml \
-              --cores 8 \
+              --cores 14 \
               --use-conda \
               --conda-prefix ${my_conda_dir} \
               --reason \
@@ -80,6 +80,7 @@ profiles supports slurm only at the moment.
     (test files are in the IMP3 dir at `test/Reads`), matching what was done during the installation.
 
     Optional:
+    
     3) Set up `cluster_profile/config.yaml` paths for `configfile`, `default-resources`, `conda-prefix`, and
        `cluster-config`, as well as max numbers of cores to use and jobs to run in parallel.
 
@@ -125,4 +126,5 @@ profiles supports slurm only at the moment.
     1) Set up your config using `config/config.imp.yaml` as template the same way it was described before.
    
     Optional:
+    
     2) Set up your profile using `cluster_profile/config.yaml` as template the same way it was described before.
