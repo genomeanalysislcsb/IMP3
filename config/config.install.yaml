@@ -45,7 +45,7 @@ genomes:
 #       Reference: https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#kraken-2-databases
 
 kraken2:
- # kraken2 prebuild db based on GTDB 207 release ~400 GB
+ # kraken2 prebuild db based on GTDB 207 release ~500 GB
   struo2_gtdb_207:
     url: "http://ftp.tue.mpg.de/ebio/projects/struo2/GTDB_release207/kraken2"
 #  # https://ccb.jhu.edu/software/kraken2/index.shtml?t=downloads

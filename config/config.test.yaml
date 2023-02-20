@@ -66,8 +66,8 @@ assembly:
   hybrid: false
   assembler: metaspades
   # how to do merge(assembly A, assembly B from reads not mapping to A);
-  # none or "" = use only assembly A or "concat" or "flye"
-  merge: "cap3"
+  # none or "" = use only assembly A or choose between: concat, flye, cap3, quickmerge
+  merge: "quickmerge"
   kmer_list: 21,29,39,59,79,99,119,141
   mink: 25
   maxk: 99
@@ -75,6 +75,21 @@ assembly:
   cap3:
     identity: 98
     overlap: 100
+  quickmerge:
+    min_overlap: 250
+    # Default: 0
+    len_cutoff: 0
+    # Overlap cutoff used in selection of anchor contigs.
+    # Ratio overlapping region/non-overlapping region (?).
+    # Default: 5.0
+    hco: 5.0
+    # Overlap cutoff for contigs used for extension of the anchor contig
+    # hco represents high confidence overlaps and used for seeding of the merging process.
+    # 'c' is used to filter out overall alignments.
+    # any alignment under 'c' will never be considered for merging.
+    # so 'hco' is a subset of 'c'.
+    # Default: 1.5
+    c: 1.5
 # hmmer (default) / mantis
 annotation: "mantis"
 mantis:
@@ -136,7 +151,7 @@ proteomics:
 binning:
   # Options: abawaca CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
   # NOTE: IMP supports a maximum of six binners only atm.
-  binners: "binny MetaDecoder"
+  binners: "MetaBAT MetaDecoder"
   abawaca:
     esom_min: 1500
     esom_max: 10000
