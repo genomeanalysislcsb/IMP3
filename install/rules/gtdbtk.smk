@@ -7,6 +7,8 @@ rule gtdbtk_download:
         db_dir=directory("gtdbtk")
     log:
         os.path.join(INSTALL_DIR, "logs/motus_download.log")
+    params:
+        url = config["gtdbtk"]["url"]
     threads:
         4
     conda:

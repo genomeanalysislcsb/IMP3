@@ -64,24 +64,18 @@ rule DAS_tool:
         || \
         touch {output.dt_summary} {output.s2b} status/binning_DAStool.impossible
 
-        echo 'test_01'
+        if [[ -f {output.out_dir}/dastool_DASTool_bins ]]; then
+          mv {output.out_dir}/dastool_DASTool_bins {output.bin_dir}
 
-        mv {output.out_dir}/dastool_DASTool_bins {output.bin_dir}
-
-        echo 'test_02'
-
-        # Rename bin fastas
-        shopt -s nullglob
-        for bin in {output.bin_dir}/*.fa; do
-          bin_name=$(sed -r -e 's/.fasta|.fa//g' <(echo ${{bin}}))
-          mv ${{bin}} ${{bin_name}}.fasta
-        done
-        shopt -u nullglob
-
-        echo 'test_02'
-
-        if [ ! -f {output.dt_summary} ]; then
-          touch {output.dt_summary}  {output.s2b} status/binning_DAStool.impossible && mkdir -p  {output.bin_dir}
+          # Rename bin fastas
+          shopt -s nullglob
+          for bin in {output.bin_dir}/*.fa; do
+            bin_name=$(sed -r -e 's/.fasta|.fa//g' <(echo ${{bin}}))
+            mv ${{bin}} ${{bin_name}}.fasta
+          done
+          shopt -u nullglob
+        else
+          mkdir -p {output.bin_dir}
         fi
         """
 

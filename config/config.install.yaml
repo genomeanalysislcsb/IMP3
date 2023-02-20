@@ -5,7 +5,7 @@
 
 # path where to download/copy the data(bases)
 #db_path: "/where/to/create/databases/"
-db_path: "/mnt/lscratch/users/ohickl/databases/imp3"
+db_path: "/abs/path/to/databases/dir"
 
 ##################################################
 # Adapters for reads trimming
