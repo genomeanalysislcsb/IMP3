@@ -4,7 +4,7 @@ rule concoct:
        depth="Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
         out_dir=directory("Binning/CONCOCT"),
-        s2b="Binning/CONCOCT/scaffold2bin.tsv",
+        s2b="Binning/CONCOCT/contig2bin.tsv",
         out_bin_dir=directory("Binning/CONCOCT/bins")
     params:
         min_cont_size=config['binning']['CONCOCT']['cutoff']

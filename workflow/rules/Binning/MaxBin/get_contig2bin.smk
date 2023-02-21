@@ -3,7 +3,7 @@ rule maxbin_contig2bin:
         "Binning/MaxBin/maxbin_res.log"
     output:
         c2b="Binning/MaxBin/maxbin_contig2bin.txt",
-        s2b="Binning/MaxBin/scaffold2bin.tsv",
+        s2b="Binning/MaxBin/contig2bin.tsv",
         out_dir=directory('Binning/MaxBin/bins')
     threads: 1
     resources:

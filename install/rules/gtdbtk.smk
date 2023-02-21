@@ -4,13 +4,14 @@
 
 rule gtdbtk_download:
     output:
-        download = directory("gtdbtk")
+        download = directory("gtdbtk"),
+        result = directory("gtdbtk/release207_v2")
     log:
         os.path.join(INSTALL_DIR, "logs/motus_download.log")
     params:
         url = config["gtdbtk"]["url"]
     threads:
-        4
+        workflow.cores
     params:
         url = config["gtdbtk"]["url"]
     conda:

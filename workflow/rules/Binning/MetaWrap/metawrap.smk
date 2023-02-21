@@ -10,16 +10,6 @@ checkpoint MetaWrap_refine_check:
     shell:
         "touch {output}"
 
-mw_min_comp = config['binning']['MetaWrap']['min_completeness']
-mw_max_cont = config['binning']['MetaWrap']['max_contamination']
-
-binner_out_path_list = [OUTPUTDIR + "/Binning/" + binner + "/bins" for binner in BIN_STEPS
-                        if (glob.glob(OUTPUTDIR + "/Binning/" + binner + "/bins/*.fasta")
-                            and any(os.stat(bin).st_size > 0 for bin in glob.glob(OUTPUTDIR + "/Binning/" + binner +
-                                                                                  "/bins/*.fasta")))]
-if glob.glob(OUTPUTDIR + "/Binning/DASTool/bins/*.fasta"):
-    binner_out_path_list.extend([OUTPUTDIR + "/Binning/DASTool/bins"])
-
 rule MetaWrap_refine:
     input:
         binner_fasta_dirs=check_binner_bin_fastas,
@@ -29,9 +19,9 @@ rule MetaWrap_refine:
         directory("Binning/MetaWrap/bins"),
         out_dir=directory("Binning/MetaWrap/")
     params:
-        binner_inputs_list=get_mw_binner_inputs(binner_out_path_list, mw_min_comp, mw_max_cont),
-        mw_min_comp=mw_min_comp,
-        mw_max_cont=mw_max_cont,
+        binner_inputs_list=get_mw_binner_inputs,
+        mw_min_comp=config['binning']['MetaWrap']['min_completeness'],
+        mw_max_cont=config['binning']['MetaWrap']['max_contamination'],
         prefix_1="metawrap_round_01",
         prefix_2="metawrap_round_02",
         prefix_3="metawrap_round_03",

@@ -58,13 +58,13 @@ rule metadecoder:
         """
 
 metadecoder_bins = "Binning/MetaDecoder/bins"
-metadecoder_s2b = "Binning/MetaDecoder/scaffold2bin.tsv"
+metadecoder_s2b = "Binning/MetaDecoder/contig2bin.tsv"
 
 rule metadecoder_contig2bin:
     input:
         out_bin_dir="Binning/MetaDecoder/bins"
     output:
-        metadecoder_s2b="Binning/MetaDecoder/scaffold2bin.tsv"
+        metadecoder_s2b="Binning/MetaDecoder/contig2bin.tsv"
     resources:
         runtime = "00:10:00",
         mem_mb = MEMCORE_MB

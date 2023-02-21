@@ -48,17 +48,21 @@ profiles supports slurm only at the moment.
     # Activate environment
     conda activate my_snakemake_env
     
+    # Set conda dir
+    my_conda_dir="./conda"
+    
     # Dry-run
     snakemake --snakefile install/Snakefile \
               --configfile config/config.install.yaml \
               --cores 1 \
+              --use-conda \
+              --conda-prefix ${my_conda_dir} \
               --reason \
               --printshellcmds \
               --verbose \
               --dry-run
               
-    # Set conda dir and run install
-    my_conda_dir="./conda"
+    # Run install
     snakemake --snakefile install/Snakefile \
               --configfile config/config.install.yaml \
               --cores 14 \
@@ -90,8 +94,10 @@ profiles supports slurm only at the moment.
         conda activate my_snakemake_env
         
         # Dry-run
+        my_conda_dir="./conda"
         snakemake --snakefile Snakefile \
                   --configfile config/config.test.yaml \
+                  --conda-prefix ${my_conda_dir} \
                   --cores 1 \
                   --reason \
                   --printshellcmds \

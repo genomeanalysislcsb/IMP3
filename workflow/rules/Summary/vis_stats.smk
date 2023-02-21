@@ -171,8 +171,8 @@ else:
 #     rule visualize_bins:
 #         input:
 #             stats="Stats/all_stats.Rdata",
-#             bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
-#             dastool="Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
+#             bins=expand("Binning/{binner}/contig2bin.tsv",binner=BIN_STEPS),
+#             dastool="Binning/DASTool/DASTool_scaffolds2bin.txt",
 #             vizbin="Binning/binny/%s.vizbin.with-contig-names.points" %ASS
 #         output:
 #             report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),
@@ -192,7 +192,7 @@ else:
 rule visualize_bins:
     input:
         stats="Stats/all_stats.Rdata",
-        bins=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS),
+        bins=expand("Binning/{binner}/contig2bin.tsv",binner=BIN_STEPS),
         metawrap="Binning/MetaWrap/bins.contigs"
     output:
         report("Visualization/Binning_alluvial.png",caption="../../report/stats/Binning_alluvial.rst",category="Binning"),

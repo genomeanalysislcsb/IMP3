@@ -2,7 +2,7 @@ localrules: DAS_tool_check
 
 checkpoint DAS_tool_check:
     input:
-        expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS)
+        expand("Binning/{binner}/contig2bin.tsv",binner=BIN_STEPS)
     output:
         "Binning/DAS_tool.ready"
     shell:
@@ -13,17 +13,17 @@ rule DAS_tool:
         contigs="Assembly/%s.assembly.merged.fa" % ASS,
         proteins="Binning/prokka.renamed.faa", 
         tabs=check_bintabs
-        # tabs=expand("Binning/{binner}/scaffold2bin.tsv",binner=BIN_STEPS)  # if used without DAS_tool_check
+        # tabs=expand("Binning/{binner}/contig2bin.tsv",binner=BIN_STEPS)  # if used without DAS_tool_check
     output:
-        dt_summary="Binning/DASTool/selected_DASTool_summary.txt",
-        s2b="Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
+        dt_summary="Binning/DASTool/selected_DASTool_summary.tsv",
+        s2b="Binning/DASTool/selected_DASTool_contig2bin.tsv",
         bin_dir=directory("Binning/DASTool/bins"),
         out_dir=directory("Binning/DASTool")
     threads:
         getThreads(4)
     params:
         score_thresh=config["binning"]["DAS_Tool"]["score_threshhold"],
-        out_name="Binning/DASTool/dastool"
+        out_name="Binning/DASTool/selected"
     resources:
         runtime = "02:00:00",
         mem_mb = BIGMEMCORE_MB
@@ -38,7 +38,7 @@ rule DAS_tool:
         TABS="{input.tabs}"
         TABS_ARR=(${{TABS}})
         TAB_tmp=${{TABS//Binning\//}}
-        TAB_tmp2=${{TAB_tmp//\/scaffold2bin.tsv/}}
+        TAB_tmp2=${{TAB_tmp//\/contig2bin.tsv/}}
         TABSl=${{TAB_tmp2// /,}}
         
         if [[ ! -d {output.out_dir} ]]; then
@@ -64,8 +64,8 @@ rule DAS_tool:
         || \
         touch {output.dt_summary} {output.s2b} status/binning_DAStool.impossible
 
-        if [[ -f {output.out_dir}/dastool_DASTool_bins ]]; then
-          mv {output.out_dir}/dastool_DASTool_bins {output.bin_dir}
+        if [[ -d {output.out_dir}/selected_DASTool_bins ]]; then
+          mv {output.out_dir}/selected_DASTool_bins {output.bin_dir}
 
           # Rename bin fastas
           shopt -s nullglob

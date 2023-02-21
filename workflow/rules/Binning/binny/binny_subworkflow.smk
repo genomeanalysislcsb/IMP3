@@ -21,7 +21,7 @@ config["binning"]["binny"]["conda_source"] = workflow.conda_prefix if workflow.c
 config["binning"]["binny"]["write_contig_data"] = "True"
 
 binny_contig_data = os.path.join(config["binning"]["binny"]["outputdir"], "contig_data.tsv.gz")
-binny_s2b = "Binning/binny/scaffold2bin.tsv"
+binny_s2b = "Binning/binny/contig2bin.tsv"
 
 module binny_workflow:
     snakefile:

@@ -93,7 +93,7 @@ if os.path.isdir(coordFile):
 
 #read single binner memberships
 for binner in BINNERS:
-    clusterFile = "/Binning/%s/scaffold2bin.tsv" % binner
+    clusterFile = "/Binning/%s/contig2bin.tsv" % binner
     if os.path.isdir(clusterFile):
         contigCnt = 0
         clusterName = binner + "_bin"
@@ -112,7 +112,7 @@ for binner in BINNERS:
 
 
 #read DAStool
-dastoolFile = "Binning/DASTool/selected_DASTool_scaffolds2bin.txt"
+dastoolFile = "Binning/DASTool/selected_DASTool_contig2bin.tsv"
 if os.path.isdir(dastoolFile):
     dastoolCnt = 0
     print("Reading contig bin membership from ", dastoolFile)

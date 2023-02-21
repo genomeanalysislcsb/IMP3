@@ -3,7 +3,7 @@ rule semibin:
         assembly="Assembly/%s.assembly.merged.fa" % ASS,
         mapping="Assembly/mg.reads.sorted.bam"
     output:
-        s2b="Binning/SemiBin/scaffold2bin.tsv",
+        s2b="Binning/SemiBin/contig2bin.tsv",
         out_dir=directory("Binning/SemiBin"),
         out_bin_dir=directory("Binning/SemiBin/bins")
     params:

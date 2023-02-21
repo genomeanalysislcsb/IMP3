@@ -33,7 +33,7 @@ rule GTDBtk_bins_single:
                            --out_dir {output.gtdbtk_out} \
                            --cpus {threads} \
                            --pplacer_cpus {params.pplacer_cpus} >> {log} 2>&1 \
-          || touch {output.gtdbtk_out}/gtdbtk.empty.summary.tsv
+          ||  mkdir -p {output.gtdbtk_out} && touch {output.gtdbtk_out}/gtdbtk.empty.summary.tsv
         """
 
 localrules: GTDB_all

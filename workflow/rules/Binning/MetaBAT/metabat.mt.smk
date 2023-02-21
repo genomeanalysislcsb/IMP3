@@ -2,7 +2,7 @@ rule metabat:
     input:
         assembly="Assembly/%s.assembly.merged.fa" % ASS
     output:
-        s2b="Binning/MetaBAT/scaffold2bin.tsv",
+        s2b="Binning/MetaBAT/contig2bin.tsv",
         out_dir=directory("Binning/MetaBAT"),
         out_bin_dir=directory("Binning/MetaBAT/bins")
     params:

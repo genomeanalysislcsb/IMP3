@@ -3,7 +3,7 @@ rule abawaca:
        assembly="Assembly/%s.assembly.merged.fa" % ASS,
        depth="Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
-        s2b="Binning/abawaca/scaffold2bin.tsv",
+        s2b="Binning/abawaca/contig2bin.tsv",
         out_dir=directory("Binning/abawaca"),
         out_bin_dir=directory("Binning/abawaca/bins")
     params:
