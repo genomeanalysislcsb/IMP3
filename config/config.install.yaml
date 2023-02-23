@@ -59,7 +59,7 @@ kraken2:
 
 # GTDB-tk
 gtdbtk:
-  url: "https://data.ace.uq.edu.au/public/gtdb/data/releases/release207/207.0/auxillary_files/gtdbtk_r207_v2_data.tar.gz"
+  url: "https://data.gtdb.ecogenomic.org/releases/release207/207.0/auxillary_files/gtdbtk_r207_v2_data.tar.gz"
 
 ##################################################
 # Mantis

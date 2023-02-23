@@ -1,4 +1,4 @@
-steps: "preprocessing assembly analysis binning"  # preprocessing assembly analysis binning taxonomy summary
+steps: "preprocessing assembly analysis binning taxonomy summary"  # preprocessing assembly analysis binning taxonomy summary
 email: ""
 sessionName: ""
 sessionKind: ""

@@ -87,7 +87,7 @@ if "kraken2" in config:
 if "gtdbtk" in config:
     include:
         "rules/gtdbtk.smk"
-    TARGETS.append("gtdbtk")
+    TARGETS.append("gtdbtk/release207_v2")
 
 # annotation, Mantis
 if "mantis" in config:

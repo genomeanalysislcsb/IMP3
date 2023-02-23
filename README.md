@@ -9,7 +9,7 @@ profiles supports slurm only at the moment.
 
 1) Clone the repository with git:
     ```shell
-    git clone https://gitlab.lcsb.uni.lu/IMP/imp3.git -b binning_rework_v010
+    git clone https://gitlab.lcsb.uni.lu/IMP/imp3.git -b binning_rework_v011
     cd imp3
     ```
 

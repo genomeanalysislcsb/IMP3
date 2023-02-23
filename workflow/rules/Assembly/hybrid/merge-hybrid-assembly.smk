@@ -108,9 +108,9 @@ elif config["assembly"]["merge"] == "quickmerge":
         output:
             os.path.join(ENVDIR, "qm.ready")
         log:
-            os.path.join(ENVDIR, "logs",  "quickmerge_install.log")
+            os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install.log")
         benchmark:
-            os.path.join(ENVDIR, "logs",  "quickmerge_install_benchmark.tsv")
+            os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install_benchmark.tsv")
         resources:
             runtime = "01:00:00",
             mem_mb = MEMCORE_MB
@@ -199,9 +199,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2")),
             merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta")
         log:
-            os.path.join(OUTPUTDIR, "logs",  "join_h1_with_h2.log")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1_with_h2.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "join_h1_with_h2_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1_with_h2_benchmark.tsv")
         resources:
             runtime = "12:00:00",
             mem_mb = MEMCORE_MB
@@ -263,9 +263,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1")),
             merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
         log:
-            os.path.join(OUTPUTDIR, "logs",  "join_h2_with_h1.log")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h2_with_h1.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "join_h2_with_h1_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h2_with_h1_benchmark.tsv")
         resources:
             runtime = "12:00:00",
             mem = MEMCORE
@@ -325,9 +325,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1h2_with_h2h1")),
             merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
         log:
-            os.path.join(OUTPUTDIR, "logs",  "join_h1h2_with_h2h1.log")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1h2_with_h2h1.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "join_h1h2_with_h2h1_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1h2_with_h2h1_benchmark.tsv")
         resources:
             runtime = "24:00:00",
             mem = MEMCORE
@@ -417,9 +417,9 @@ elif config["assembly"]["merge"] == "quickmerge":
         output:
             final="Assembly/mgmt.assembly.merged.fa"
         log:
-            os.path.join(OUTPUTDIR, "logs",  "clean_up_assembly_merge.log")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_clean_up_assembly_merge.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "clean_up_assembly_merge_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_clean_up_assembly_merge_benchmark.tsv")
         resources:
             runtime = "06:00:00",
             mem = MEMCORE
