@@ -54,10 +54,15 @@ rule setup_checkm:
 ##################################################
 # binny
 ##################################################
-if config["binny"]["snakemake_env_path"]:
-    sm_env_path = os.path.join(config["binny"]["snakemake_env_path"], "snakemake_env")
+import errno
+
+sm_user_path = config["binny"]["snakemake_env_path"]
+
+if os.path.exists(sm_user_path) or sm_user_path == "in_path":
+    sm_env_path = sm_user_path
 else:
-    sm_env_path = os.path.join(CONDA_DIR, "snakemake_env")
+    raise FileNotFoundError(
+    errno.ENOENT, os.strerror(errno.ENOENT), sm_user_path)
 
 rule binny_setup:
     input:

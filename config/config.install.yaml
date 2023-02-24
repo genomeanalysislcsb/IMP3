@@ -85,9 +85,9 @@ mantis:
     uniprot_ec_weight: 0.9
 
 binny:
-  # Set only, if path to snakemake env is not the IMP3 default, i.e. the one created following the IMP3 install guide.
-  # Default: ""
-  snakemake_env_path: ""
+  # Set path to your snakemake env. Following the quickstart it'll be e.g. "/abs/path/to/imp3/conda/snakemake_env".
+  # If Snakemake is always available in PATH you can set it to "in_path".
+  snakemake_env_path: "/abs/path/to/snakemake_env"
 
 cdhit:
   url: "https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz"

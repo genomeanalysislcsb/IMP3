@@ -13,18 +13,7 @@ profiles supports slurm only at the moment.
     cd imp3
     ```
 
-2) Set install configuration:
-
-   You need to set some basic parameters in the config file `config/config.install.yaml` first:
-
-   1) Set `db_path` to where you want to keep your databases. Make sure that there is enough space available as, 
-      depending on which databases you choose for Kraken2 and Mantis, you will need up to ~1tb.
-
-   2) Choose your desired Kraken2 database with the `kraken2` parameter, commenting out the unused ones
-
-   3) Set the desired Mantis dbs, following the instructions in the config at `mantis`.
-
-3) Create a Snakemake environment or add some necessary packages to your existing one
+2) Create a Snakemake environment or add some necessary packages to your existing one
     ```shell
     # Create new one
     my_package_manager='conda'  # conda mamba micromamba
@@ -37,6 +26,24 @@ profiles supports slurm only at the moment.
     ${my_package_manager} activate my_snakemake_env
     ${my_package_manager} install pigz=2.6 filetype=1.2.0 -c conda-forge
     ```
+
+3) Set install configuration:
+
+   You need to set some basic parameters in the config file `config/config.install.yaml` first:
+
+   1) Set `db_path` to where you want to keep your databases. Make sure that there is enough space available as, 
+      depending on which databases you choose for Kraken2 and Mantis, you will need up to ~1tb.
+
+   2) Choose your desired Kraken2 database with the `kraken2` parameter, commenting out the unused ones
+
+   3) Set the desired Mantis dbs, following the instructions in the config at `mantis`.
+   
+   4) Set `snakemake_env_path` under `binny` to the path of either your existing Snakemake environment, the one you
+      might have created in step 2) (e.g. `/abs/path/to/imp3/conda/snakemake_env`) or set it to `in_path`, if it is
+      always available to your system by default.
+
+      (If you want to find the path to your Snakemake environment, you can use `echo ${CONDA_PREFIX}`,
+      while the environment is active.)
 
 4) Install databases and prep some tools:
 
