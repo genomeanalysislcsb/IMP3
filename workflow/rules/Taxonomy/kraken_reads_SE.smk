@@ -26,13 +26,13 @@ rule kraken_reads:
         "kraken_reads: Running kraken2 on {wildcards.type} reads against {params.database}."
     shell:
         """
-	    mkdir -p Analysis/taxonomy/kraken
-	    kraken2 --db {params.database} \
-	            --confidence {params.confidence} \
-	            --threads {threads} \
-	            --use-names \
-	            --output {params.tmp_out} \
-	            --report {output[1]} {input} > {log} 2>&1
-	    gzip {params.tmp_out}
+        mkdir -p Analysis/taxonomy/kraken
+        kraken2 --db {params.database} \
+                --confidence {params.confidence} \
+                --threads {threads} \
+                --use-names \
+                --output {params.tmp_out} \
+                --report {output[1]} {input} > {log} 2>&1
+        gzip {params.tmp_out}
         """
 

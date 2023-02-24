@@ -41,7 +41,7 @@ rule filter_rrna_pe:
         filt_r2="Preprocessing/mt.r2.trimmed.rna_filtered.fq",
         rrna_r1="Preprocessing/mt.r1.trimmed.rna.fq",
         rrna_r2="Preprocessing/mt.r2.trimmed.rna.fq",
-	    otu="Preprocessing/otu_map.txt",
+        otu="Preprocessing/otu_map.txt",
         # temp: working and index directories
         wdir=temp(directory("Preprocessing/sortmerna_pe")),
         idx=temp(directory("Preprocessing/sortmerna_idx")), # store index files separately so they can be re-used in filter_rrna_se

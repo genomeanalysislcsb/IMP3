@@ -23,7 +23,7 @@ rule metabat:
         """
         ## Create MetaBat dir
         mkdir -p {output.out_bin_dir}
-        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "metabat_depth_XXXXXX.tsv")       
+        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "metabat_depth_XXXXXX.tsv")
         ## Run MetaBat
         metabat2 -i {input.assembly} \
                  --saveCls \
@@ -32,8 +32,8 @@ rule metabat:
                  -m {params.min_cont_size} > {log} 2>&1
         mv {params.res} {output.s2b}
         rm $TMP_FILE
-	    # Move bin fastas and rename.
-	    shopt -s nullglob
+        # Move bin fastas and rename.
+        shopt -s nullglob
         for i in {output.out_dir}/*.fa; do
           bin_name=$(basename -s .fa ${{i}})
           mv ${{i}} {output.out_bin_dir}/${{bin_name}}.fasta

@@ -12,7 +12,7 @@ if "taxonomy" in IMP_STEPS:
     stats_figs.append("Visualization/Taxonomy_kraken_plot.png")
     stats_figs.append(expand("Visualization/Taxonomy_{type}_mOTU_tree.png", type=TYPES))
     stats_figs.append("Visualization/Taxonomy_mOTU_plot.png")
-if "binning" in IMP_STEPS:    
+if "binning" in IMP_STEPS:
     stats_figs.append("Visualization/Binning_alluvial.png")
     if "analysis" in IMP_STEPS:
         stats_figs.append(expand("Visualization/Binning_{type}_depth.png",type=TYPES))
@@ -86,7 +86,7 @@ rule visualize_analysis_stats:
     script:
         SRCDIR + "/visualize_analysis.R"
  
-if CONTIGS or "assembly" in IMP_STEPS:        
+if CONTIGS or "assembly" in IMP_STEPS:
     rule visualize_kraken_reads:
         input:
             "Stats/all_stats.Rdata",

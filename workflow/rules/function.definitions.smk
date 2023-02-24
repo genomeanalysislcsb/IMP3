@@ -82,7 +82,7 @@ def get_ori_files(wildcards):
     else:
         out = inputs
     return(out)
-		
+
 def symlink_input_files(data):
     for infilename, outfilename in data:
         print('symlink',  infilename, '=>', outfilename)
@@ -158,7 +158,7 @@ def reads_input_files(wildcards):
             if len(MG) == 3 and wildcards.type == 'mg':
                 base += ["Preprocessing/mg.se.fq"]
             if len(MT) == 3 and wildcards.type == 'mt':
-                base += ["Preprocessing/mt.se.fq"]		
+                base += ["Preprocessing/mt.se.fq"]
     elif MGaln or MTaln:
         base = bam_files
     return expand(base, type=wildcards.type)
@@ -245,7 +245,7 @@ def gather_reads(wildcards):
     return([s + ".gz" for s in valid_reads])
 
 
-# BINNING:		
+# BINNING:
 # for checkpoints:
 def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]

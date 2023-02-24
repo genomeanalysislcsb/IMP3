@@ -22,10 +22,10 @@ rule kraken_contigs:
         "logs/analysis_kraken_contigs.log"
     message:
         "kraken_contigs: Running kraken2 on contigs against {params.database}."
-    shell:	
+    shell:
         """
         kraken2 --db {params.database} \
-	            --confidence {params.confidence} \
+                --confidence {params.confidence} \
                 --threads {threads} \
                 --use-names \
                 --report-zero-counts \

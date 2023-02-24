@@ -19,5 +19,5 @@ rule get_proteins_DAStool:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         {SRCDIR}/translateBacFromGFF.pl  {input[0]} {input[1]} >> {output} 2> {log}
-	    """
+        """
 

@@ -29,18 +29,18 @@ rule annotate:
                            --setupdb
         fi 
         
-	    {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db \
-	                     --force \
-	                     --outdir Analysis/annotation \
-	                     --prefix prokka \
-	                     --noanno \
-	                     --cpus {threads} \
-	                     --metagenome {input[0]} >> {log} 2>&1
+        {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db \
+                         --force \
+                         --outdir Analysis/annotation \
+                         --prefix prokka \
+                         --noanno \
+                         --cpus {threads} \
+                         --metagenome {input[0]} >> {log} 2>&1
 
         #remove partial fasta files
         rm -f Analysis/annotation/prokka.fna_*.fasta
         
-	    # Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
+        # Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
         # And keeps only the gff table.
 
         LN=`grep -Hn "^>" Analysis/annotation/prokka.gff | head -n1 | cut -f2 -d ":" || if [[ $? -eq 141 ]]; then true; else exit $?; fi`

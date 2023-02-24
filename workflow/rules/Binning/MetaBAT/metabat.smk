@@ -24,7 +24,7 @@ rule metabat:
         """
         ## Create MetaBat dir
         mkdir -p {output.out_bin_dir}
-        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "metabat_depth_XXXXXX.tsv")       
+        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "metabat_depth_XXXXXX.tsv")
         echo "# fakeheader" > $TMP_FILE
         cat {input.depth}  >> $TMP_FILE
         ## Run MetaBat

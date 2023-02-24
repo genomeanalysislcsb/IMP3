@@ -93,7 +93,7 @@ rule metaspades_hybrid_assembly_2:
         fi
 
         METASPADES_ASSEMBLY_SHELL 
-	"""
+    """
 
 rule concatenate_mapped_unmapped:
     input:

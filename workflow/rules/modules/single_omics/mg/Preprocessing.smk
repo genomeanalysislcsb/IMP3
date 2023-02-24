@@ -26,7 +26,7 @@ rule PREPROCESSING:
         'Preprocessing/mg.r1.preprocessed.fq',
         'Preprocessing/mg.r2.preprocessed.fq',
         'Preprocessing/mg.se.preprocessed.fq',
-    	'Stats/mg/mg.r1.preprocessed_fastqc.html',
+        'Stats/mg/mg.r1.preprocessed_fastqc.html',
         'Stats/mg/mg.r2.preprocessed_fastqc.html',
         'Stats/mg/mg.se.preprocessed_fastqc.html',
         'Stats/mg/mg.r1.preprocessed_fastqc.zip',

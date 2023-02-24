@@ -32,7 +32,7 @@ rule call_contig_depth:
         echo "Depth calculation done" >> {log}
 
         ## This method of depth calculation was adapted and modified from the CONCOCT code
-	{SRCDIR}/calcAvgCoverage.pl $TMP_DEPTH {input[1]} > {output[1]}	
+    {SRCDIR}/calcAvgCoverage.pl $TMP_DEPTH {input[1]} > {output[1]}
 
         echo "Remove the temporary file" >> {log}
         rm $TMP_DEPTH

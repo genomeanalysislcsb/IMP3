@@ -20,17 +20,17 @@ rule feature_count_hmmer:
         "feature_count: Quantifying {wildcards.db} with {wildcards.type} reads."
     shell:
         """
-	    featureCounts {params.flags} \
-	                  -t CDS \
-	                  -g {wildcards.db} \
-	                  -o {output} \
-	                  -s {params.stranding} \
-	                  -a {input.gff} \
-	                  -T {threads} \
-	                  {input.bam} > {log} 2>&1 \
-	                  || touch {output} \
-	                           status/analysis_featureCounts.{wildcards.type}.{wildcards.db}.impossible
-	    """
+        featureCounts {params.flags} \
+                      -t CDS \
+                      -g {wildcards.db} \
+                      -o {output} \
+                      -s {params.stranding} \
+                      -a {input.gff} \
+                      -T {threads} \
+                      {input.bam} > {log} 2>&1 \
+                      || touch {output} \
+                               status/analysis_featureCounts.{wildcards.type}.{wildcards.db}.impossible
+        """
 
 rule feature_count_mantis:
     input:

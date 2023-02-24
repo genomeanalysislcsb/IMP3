@@ -101,7 +101,7 @@ rule ED_runaln:
     output:
         "Analysis/taxonomy/EukDetect/aln/{sample}_aln_q30_lenfilter.sorted.bam"
     params:
-        inputstring = lambda wildcards,input: construct_input(wildcards,input),                            
+        inputstring = lambda wildcards,input: construct_input(wildcards,input),
         minreadlen = config["eukdetect"]["min_readlen"],
         db = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna"
     threads: 1
@@ -223,7 +223,7 @@ rule ED_rmsort:
     shell:
         """
         samtools sort -o {output} {input} &>> {log}
-        """	
+        """
 
 if not 'assembly' in IMP_STEPS and not 'analysis' in IMP_STEPS:
     rule ED_index:

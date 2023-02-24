@@ -64,7 +64,7 @@ rule get_present_mOTUs:
     shell:
         """
         grep "s__" {input} | cut -f 1 | sed 's#.*s__.* \[##' | sed 's#\]##' | sort | uniq >> {output} || touch {output} status/taxonomy_mOTUs.impossible
-	    """
+        """
 
 rule extract_mOTU_db_genes:
     input:
