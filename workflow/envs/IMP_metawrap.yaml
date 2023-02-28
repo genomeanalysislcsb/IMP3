@@ -1,9 +1,10 @@
 name: IMP_metawrap
 channels:
   - ursky
-  - bioconda
   - conda-forge
+  - bioconda
+  - anaconda
 dependencies:
-  - python=2.7.15
   - metawrap-mg=1.3.2
+  - pip=20.1.1
   - gfortran_linux-64

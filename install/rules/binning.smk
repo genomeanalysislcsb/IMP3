@@ -32,10 +32,11 @@ rule setup_checkm:
         echo "Decompressing CheckM database"  >> {log} 2>&1 && \
         tar -xvf {output.checkm_db}/checkm_data_2015_01_16.tar.gz -C {output.checkm_db} >> {log} 2>&1 && \
         rm -rf {output.checkm_db}/checkm_data_2015_01_16.tar.gz && \
-        echo "Setting up CheckM" >> {log} 2>&1 && \
-        unset PYTHONHOME && \
-        SETUPTOOLS_USE_DISTUTILS=stdlib && \
-        printf "%s\n" {output.checkm_db} | checkm data setRoot >> {log} 2>&1 && touch {output.setup_check} && \
+
+        echo "Setting up CheckM" >> {log} 2>&1
+        unset PYTHONHOME
+        SETUPTOOLS_USE_DISTUTILS=stdlib
+        printf "%s\n" {output.checkm_db} | checkm data setRoot {output.checkm_db} >> {log} 2>&1 && touch {output.setup_check}
         echo "Setup done." >> {log} 2>&1
         
         # Fix lines that lead to crash with MW, if theres only one binner output

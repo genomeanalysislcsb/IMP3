@@ -102,5 +102,5 @@ rule format_protein_names:
         cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
         sed 's/ .*//' {input[0]} >> $TMP_PROT
         {SRCDIR}/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} > {output[1]} 2> {log}
-    """
+        """
 

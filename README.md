@@ -1,7 +1,7 @@
 # IMP version 3
 
 ## Quickstart
-Here is a quick guide on the installation and test run of IMP3. Please check out the longer description 
+A quick guide on the installation of IMP3 with a test run. Please check out the longer description 
 [here](https://imp3.readthedocs.io/en/latest/):
 
 Note: All commands below are meant to be executed from within the imp3 directory after cloning. Cluster execution using 
@@ -47,16 +47,29 @@ profiles supports slurm only at the moment.
 
 4) Install databases and prep some tools:
 
-    You need to choose a path to place the conda environments using Snakemakes `--conda-prefix` parameter, by default it
+    You need to choose a path to place the conda environments using Snakemakes `--conda-prefix` parameter, in the example it
     will be put in `conda` in the IMP3 dir.
+
+    You might need to set your conda channel priority to flexible to be able to install some of the environments. To do
+    so you can run `conda config --set channel_priority flexible` or do it manually in the file `~/.condarc`. It is
+    also recommended to have either no or a basic default channel setup  in `~/.condarc` with only bioconda and conda-forge,
+    e.g. like this:
+    ```yaml
+    channel_priority: flexible
+    channels:
+      - conda-forge
+      - bioconda
+      - anaconda
+    ```
 
     Note that the installation might take a long time, if you selected large databases.
     ```shell
-    # Activate environment
-    conda activate my_snakemake_env
+    # Activate environment (replace name with the one you chose)
+    conda activate snakemake_env
     
-    # Set conda dir
+    # Set conda dir and amount of cores (at least 8)
     my_conda_dir="./conda"
+    cores=14
     
     # Dry-run
     snakemake --snakefile install/Snakefile \
@@ -72,7 +85,7 @@ profiles supports slurm only at the moment.
     # Run install
     snakemake --snakefile install/Snakefile \
               --configfile config/config.install.yaml \
-              --cores 14 \
+              --cores ${cores} \
               --use-conda \
               --conda-prefix ${my_conda_dir} \
               --reason \
