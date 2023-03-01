@@ -304,7 +304,6 @@ def check_binner_dirs(wildcards):
 
 def get_mw_binner_inputs(wildcards):
     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
-    )
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
@@ -343,17 +342,14 @@ def get_mw_binner_inputs(wildcards):
 
 def getBam(wildcards):
     ori_sample = wildcards.clusterID.split(".")[0]
-    return expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
-                raw_directory=samples.path[ori_sample])
+    return expand("{raw_directory}/Assembly/mg.reads.sorted.bam", raw_directory=samples.path[ori_sample])
 
 
 def aggregate_mantis_fc(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
-    return expand("Analysis/annotation/{type}.mantis.{i}.counts.tsv",
-           i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
+    return expand("Analysis/annotation/{type}.mantis.{i}.counts.tsv", i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
 
 
 def aggregate_mantis_fc_per_contig(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
-    return expand("Stats/{type}/annotation/{type}.mantis.{i}.counts.tsv",
-           i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
+    return expand("Stats/{type}/annotation/{type}.mantis.{i}.counts.tsv", i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)

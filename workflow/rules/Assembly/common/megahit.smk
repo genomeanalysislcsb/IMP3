@@ -1,18 +1,18 @@
 MEGAHIT_ASSEMBLY_SHELL = """
-if [ -d "{output.out_dir}" ]; then
-    rm -rf {output.out_dir}
-fi
+                         if [ -d "{output.out_dir}" ]; then
+                           rm -rf {output.out_dir}
+                         fi
 
-megahit -1 {input.r1} \
-        -2 {input.r2} \
-        -r {input.se} \
-        --out-dir {output.out_dir} \
-        --k-list {params.kmer_list} \
-        --num-cpu-threads {threads} \
-        -m {params.max_mem} \
-        --mem-flag 1 > {log} 2>&1
-ln -fs $(echo {output.contigs_final} | cut -f 3,4 -d /) {output.contigs} && touch -h {output.contigs}
-"""
+                         megahit -1 {input.r1} \
+                                 -2 {input.r2} \
+                                 -r {input.se} \
+                                 --out-dir {output.out_dir} \
+                                 --k-list {params.kmer_list} \
+                                 --num-cpu-threads {threads} \
+                                 -m {params.max_mem} \
+                                 --mem-flag 1 > {log} 2>&1
+                         ln -fs $(echo {output.contigs_final} | cut -f 3,4 -d /) {output.contigs} && touch -h {output.contigs}
+                         """
 
 rule megahit_assembly_from_preprocessing:
     input:

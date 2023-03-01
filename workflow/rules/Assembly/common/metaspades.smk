@@ -1,18 +1,18 @@
 METASPADES_ASSEMBLY_SHELL = """
-if [ -d "{output[0]}" ]; then
-    rm -rf {output[0]}
-fi
-spades.py --meta \
- --pe1-1 {input[0]} \
- --pe1-2 {input[1]} \
- --pe1-s {input[2]} \
-  -t {threads} \
-  -m {params.gb_mem_total} \
-  -k {KMER_STEPS} \
-  {LONG_READ_ARG} \
-  -o {output[0]} > {log} 2>&1
-ln -fs $(echo {output[1]} | cut -f 3,4 -d /) {output[2]} && touch -h {output[2]}
-"""
+                            if [ -d "{output[0]}" ]; then
+                                rm -rf {output[0]}
+                            fi
+                            spades.py --meta \
+                                      --pe1-1 {input[0]} \
+                                      --pe1-2 {input[1]} \
+                                      --pe1-s {input[2]} \
+                                      -t {threads} \
+                                      -m {params.gb_mem_total} \
+                                      -k {KMER_STEPS} \
+                                      {LONG_READ_ARG} \
+                                      -o {output[0]} > {log} 2>&1
+                            ln -fs $(echo {output[1]} | cut -f 3,4 -d /) {output[2]} && touch -h {output[2]}
+                            """
 
 kmersteps=range(config['assembly']['mink'],config['assembly']['maxk']+1,config['assembly']['step'])
 KMER_STEPS =",".join(map(str,kmersteps)) 

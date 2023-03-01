@@ -1,6 +1,6 @@
 # config for execution on HPC cluster iris using slurm
 
-# NOTE: change all parameters with the tag "USER_INPUT" !!!
+# NOTE: change all parameters with the tag "### USER_INPUT ####" !!!
 
 # main workflow snakemake file
 snakefile: "Snakefile"
@@ -13,12 +13,12 @@ local-cores: 1
 
 # config file(s)
 configfile:
-  - "/abs/path/to/config/config.yaml" # USER_INPUT
+  - "/abs/path/to/config/config.yaml" ### USER_INPUT ####
 
 # resources
 default-resources:
   # tmp directory
-  - tmpdir="/abs/path/to/tmp/dir" # USER_INPUT
+  - tmpdir="/abs/path/to/tmp/dir" ### USER_INPUT ####
 
 # go on with independent jobs if a job fails
 keep-going: True
@@ -30,7 +30,7 @@ reason: True
 printshellcmds: True
 # conda
 use-conda: True
-conda-prefix: "/abs/path/to/imp3_envs" # USER_INPUT
+conda-prefix: "/abs/path/to/imp3_envs" ### USER_INPUT ####
 # wait given seconds if an output file of a job is not present after the job finished
 latency-wait: 60
 
@@ -41,13 +41,13 @@ cluster: "{cluster.call} {cluster.runtime}{resources.runtime} {cluster.mem_per_c
           {cluster.threads}{threads} {cluster.qos} {cluster.nodes} {cluster.ntasks} {cluster.partition} \
           {cluster.stdout}"
 # slurm config (ABSOLUTE PATH !!!)
-cluster-config: "/abs/path/to/imp3/config/slurm.config.yaml" # USER_INPUT
+cluster-config: "/abs/path/to/imp3/config/slurm.config.yaml" ### USER_INPUT ####
 # Simple setup
 #cluster: "{cluster.call} {cluster.runtime}{resources.runtime} {cluster.mem_per_cpu}{resources.mem_mb} \
 #          {cluster.threads}{threads} {cluster.nodes} {cluster.ntasks} {cluster.partition} \
 #          {cluster.stdout}"
 ## slurm config (ABSOLUTE PATH !!!)
-#cluster-config: "/abs/path/to/imp3/config/slurm_simple.config.yaml" # USER_INPUT
+#cluster-config: "/abs/path/to/imp3/config/slurm_simple.config.yaml" ### USER_INPUT ####
 # max. number of cluster/drmaa jobs per second
 max-jobs-per-second: 1
 # max. number of job status checks per second

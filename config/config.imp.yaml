@@ -4,7 +4,7 @@ sessionName: ""
 sessionKind: ""
 settingsLocked: "false"
 preprocessing_filtering: true
-mem:
+mem:  ### USER_INPUT ####
   # Choose between: K, M, G, T
   mem_unit: "M"
   mem_total: 224000
@@ -15,18 +15,18 @@ mem:
   # Set maximum n cores to use for jobs
   cores_max: 64
   big_mem_cores_max: 128
-tmp_dir: tmp
+tmp_dir: tmp  ### USER_INPUT ####
 raws: 
-  Metagenomics: ""
-  Metatranscriptomics: ""
+  Metagenomics: ""  ### USER_INPUT ####
+  Metatranscriptomics: ""  ### USER_INPUT ####
   LongReads: ""
   LongReadTech: ""
   Contigs: ""
   Alignment_metagenomics: ""
   Alignment_metatranscriptomics: ""
   Gff: ""
-sample: test
-outputdir: ""
+sample: test  ### USER_INPUT ####
+outputdir: "/abs/path/to/output/dir"  ### USER_INPUT ####
 summarydir: ""
 # Options stats, vis
 summary_steps: "stats"
@@ -34,7 +34,7 @@ mongo_user: "myUserAdmin"
 mongo_port: 16626
 mongo_password: "testMongo"
 compress_level: "mid"
-db_path: "/abs/path/to/imp3_test_db/dir"
+db_path: "/abs/path/to/imp3_db"  ### USER_INPUT ####
 trimmomatic:
   adapter: 
     mg: "TruSeq3-PE"
@@ -96,11 +96,11 @@ mantis:
   # default HMMs
   # set to null (i.e.: ncbi_ref_folder: null), if no database, otherwise provide a path
   default:
-    kofam_ref_folder: "/abs/path/to/imp3_dbs/mantis/kofam"
-    ncbi_ref_folder: "/abs/path/to/imp3_dbs/mantis/ncbi"
-    nog_ref_folder: "/abs/path/to/imp3_dbs/mantis/nog"
-    pfam_ref_folder: "/abs/path/to/imp3_dbs/mantis/pfam"
-    tcdb_ref_folder: "/abs/path/to/imp3_dbs/mantis/tcdb"
+    kofam_ref_folder: "/abs/path/to/imp3_dbs/mantis/kofam"  ### USER_INPUT ####
+    ncbi_ref_folder: "/abs/path/to/imp3_dbs/mantis/ncbi"  ### USER_INPUT ####
+    nog_ref_folder: "/abs/path/to/imp3_dbs/mantis/nog"  ### USER_INPUT ####
+    pfam_ref_folder: "/abs/path/to/imp3_dbs/mantis/pfam"  ### USER_INPUT ####
+    tcdb_ref_folder: "/abs/path/to/imp3_dbs/mantis/tcdb"  ### USER_INPUT ####
   # custom HMMs (list)
   custom:
     # - "/path/to/custom/references/"
@@ -205,7 +205,7 @@ binning:
     max_contamination: 10
 kraken:
   confidence: 0.75
-  krakendb: kraken_struo2_gtdb_207
+  krakendb: kraken_struo2_gtdb_207  ### USER_INPUT ####
 eukdetect:
   run_eukdetect: false
   eukdetect_dir: ../EukDetect
