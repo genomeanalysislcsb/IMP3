@@ -41,7 +41,7 @@ rule fetchmg:
     shell:
         """
         export PATH=${{CONDA_PREFIX}}/bin:$PATH
-        export PERL5LIB=$CONDA_PREFIX/lib/perl5
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
         {BINDIR}/fetchMG/fetchMG.pl -o {params.outdir} \
                                     -t {threads} \
                                     -d {input[0]} \
@@ -93,7 +93,7 @@ rule extract_mOTU_db_genes:
         "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
         """
-        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
         {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {params.fasta} \
                                              -l {params.coordinates} \
                                              -m {input} \

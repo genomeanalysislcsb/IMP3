@@ -25,7 +25,7 @@ if config['proteomics']['insert_variants']:
         shell:
             """
             export PATH=${{CONDA_PREFIX}}/bin:$PATH
-            export PERL5LIB=$CONDA_PREFIX/lib/perl5
+            export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
             {SRCDIR}/variant_monsterProtein_anvioFilter_filter.pl -a {input.annotation} \
                                                                   -s {input.assembly} \
                                                                   -v {input.var} \
@@ -57,7 +57,7 @@ elif config['proteomics']['filter_N_peptides']:
         shell:
             """
             export PATH=${{CONDA_PREFIX}}/bin:$PATH
-            export PERL5LIB=$CONDA_PREFIX/lib/perl5
+            export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
             {SRCDIR}/trypsinStartEnd.filter.pl {input} \
                                                6 \
                                                {params.minPep} >> {output}
@@ -82,7 +82,7 @@ else:
         shell:
             """
             export PATH=${{CONDA_PREFIX}}/bin:$PATH
-            export PERL5LIB=$CONDA_PREFIX/lib/perl5
+            export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
             {SRCDIR}/rename4proteomics.pl {input} >> {output}
             """
 

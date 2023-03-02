@@ -27,7 +27,7 @@ rule GTDBtk_bins_single:
     shell:
         """
         export GTDBTK_DATA_PATH="{DBPATH}/gtdbtk/release207_v2"
-        export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
+        export PYTHONPATH=${{CONDA_PREFIX}}/lib/python3.7/site-packages
         gtdbtk classify_wf --genome_dir {input.bin}/ \
                            --extension fasta \
                            --out_dir {output.gtdbtk_out} \

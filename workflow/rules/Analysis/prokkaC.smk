@@ -22,15 +22,15 @@ rule annotate:
     shell:
         """
         export PATH=${{CONDA_PREFIX}}/bin:$PATH
-        export PERL5LIB=$CONDA_PREFIX/lib/perl5
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
         export LC_ALL=en_US.utf-8
         
-        if [ ! -f $CONDA_PREFIX/db/hmm/HAMAP.hmm.h3m ]; then
-          {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db \
+        if [ ! -f ${{CONDA_PREFIX}}/db/hmm/HAMAP.hmm.h3m ]; then
+          {BINDIR}/prokkaC --dbdir ${{CONDA_PREFIX}}/db \
                            --setupdb
         fi 
         
-        {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db \
+        {BINDIR}/prokkaC --dbdir ${{CONDA_PREFIX}}/db \
                          --force \
                          --outdir Analysis/annotation \
                          --prefix prokka \

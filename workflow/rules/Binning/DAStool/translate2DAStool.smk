@@ -18,7 +18,7 @@ rule get_proteins_DAStool:
     shell:
         """
         export PATH=${{CONDA_PREFIX}}/bin:$PATH
-        export PERL5LIB=$CONDA_PREFIX/lib/perl5
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
         {SRCDIR}/translateBacFromGFF.pl  {input[0]} {input[1]} >> {output} 2> {log}
         """
 

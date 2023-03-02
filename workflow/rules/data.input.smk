@@ -246,7 +246,7 @@ rule check_ann_input:
         """
         if [ -s {input[1]} ]; then
           export PATH=${{CONDA_PREFIX}}/bin:$PATH
-          export PERL5LIB=$CONDA_PREFIX/lib/perl5
+          export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
           (perl {SRCDIR}/matchContigsGFF.pl {input} && touch {output} ) || (echo "ERROR: Assembly and {input[1]} do not match." && exit 1)
         else
           echo "ERROR: Annotation file is empty." && exit 1

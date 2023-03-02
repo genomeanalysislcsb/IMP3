@@ -57,7 +57,7 @@ rule makegff:
     shell:
         """
         export PATH=${{CONDA_PREFIX}}/bin:$PATH
-        export PERL5LIB=$CONDA_PREFIX/lib/perl5
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
         {SRCDIR}/hmmscan_addBest2gff.pl -i {input[0]} \
                                         -a {input[1]} \
                                         -n {params[0]} {params[1]} \
