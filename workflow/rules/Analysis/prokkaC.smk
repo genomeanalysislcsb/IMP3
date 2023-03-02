@@ -21,7 +21,8 @@ rule annotate:
         "annotate: Running prokkaC."
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=$CONDA_PREFIX/lib/perl5
         export LC_ALL=en_US.utf-8
         
         if [ ! -f $CONDA_PREFIX/db/hmm/HAMAP.hmm.h3m ]; then

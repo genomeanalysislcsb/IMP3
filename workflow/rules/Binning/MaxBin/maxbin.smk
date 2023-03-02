@@ -18,7 +18,8 @@ rule maxbin:
         "maxbin: Running MaxBin2."
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=$CONDA_PREFIX/lib/perl5
         # Run MaxBin
         run_MaxBin.pl -contig {input.assembly} \
                       -abund {input.depth} \

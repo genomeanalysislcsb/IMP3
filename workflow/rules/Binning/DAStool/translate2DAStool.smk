@@ -17,7 +17,8 @@ rule get_proteins_DAStool:
         "get_proteins_DAStool: Translating sequences based on GFF - code 11."
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=$CONDA_PREFIX/lib/perl5
         {SRCDIR}/translateBacFromGFF.pl  {input[0]} {input[1]} >> {output} 2> {log}
         """
 

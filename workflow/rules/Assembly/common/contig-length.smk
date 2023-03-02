@@ -17,7 +17,8 @@ rule assembly_contig_length:
         "assembly_contig_length: Getting data on assembly length and GC content."
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=$CONDA_PREFIX/lib/perl5
         perl {SRCDIR}/fastaNamesSizes.pl {input} > {output[0]} 2>> {log}
 
         echo "Obtaining GC content" >> {log}

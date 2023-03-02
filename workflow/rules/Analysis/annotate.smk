@@ -56,7 +56,8 @@ rule makegff:
         "makegff: Adding hmmer results of {wildcards.db} to gff."
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=$CONDA_PREFIX/lib/perl5
         {SRCDIR}/hmmscan_addBest2gff.pl -i {input[0]} \
                                         -a {input[1]} \
                                         -n {params[0]} {params[1]} \

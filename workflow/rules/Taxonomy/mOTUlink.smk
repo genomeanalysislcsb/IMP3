@@ -40,7 +40,8 @@ rule fetchmg:
         "fetchmg: Finding mOTU marker genes in open reading frames."
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=$CONDA_PREFIX/lib/perl5
         {BINDIR}/fetchMG/fetchMG.pl -o {params.outdir} \
                                     -t {threads} \
                                     -d {input[0]} \
@@ -92,7 +93,7 @@ rule extract_mOTU_db_genes:
         "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
         """
-        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl/5.22.0
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5
         {SRCDIR}/fastaExtractCoords_mOTUs.pl -f {params.fasta} \
                                              -l {params.coordinates} \
                                              -m {input} \

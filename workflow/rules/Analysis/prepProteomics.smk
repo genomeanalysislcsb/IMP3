@@ -24,7 +24,8 @@ if config['proteomics']['insert_variants']:
             "insertVariants: inserting variants in protein predictions."
         shell:
             """
-            export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+            export PATH=${{CONDA_PREFIX}}/bin:$PATH
+            export PERL5LIB=$CONDA_PREFIX/lib/perl5
             {SRCDIR}/variant_monsterProtein_anvioFilter_filter.pl -a {input.annotation} \
                                                                   -s {input.assembly} \
                                                                   -v {input.var} \
@@ -55,7 +56,8 @@ elif config['proteomics']['filter_N_peptides']:
             "cutends: removing non-tryptic peptides from protein predictions."
         shell:
             """
-            export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+            export PATH=${{CONDA_PREFIX}}/bin:$PATH
+            export PERL5LIB=$CONDA_PREFIX/lib/perl5
             {SRCDIR}/trypsinStartEnd.filter.pl {input} \
                                                6 \
                                                {params.minPep} >> {output}
@@ -79,7 +81,8 @@ else:
             "renameProteomics: renaming protein predictions."
         shell:
             """
-            export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+            export PATH=${{CONDA_PREFIX}}/bin:$PATH
+            export PERL5LIB=$CONDA_PREFIX/lib/perl5
             {SRCDIR}/rename4proteomics.pl {input} >> {output}
             """
 
