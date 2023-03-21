@@ -84,7 +84,7 @@ rule binny_setup:
     shell:
         """
         echo "Downloading binny." >> {log} 2>&1
-        git clone https://github.com/a-h-b/binny.git \
+        git clone -b imp3 https://github.com/ohickl/binny.git \
         {output.binny_dir} >> {log} 2>&1
 
         cd {output.binny_dir}

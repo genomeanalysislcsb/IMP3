@@ -97,7 +97,7 @@ profiles supports slurm only at the moment.
     You can use Snakemakes profile feature, to have it submit different jobs to the cluster or run it locally.
     
     First you will have to set up the test config file at `config/config.test.yaml`:
-    1) Set up the specifications of your cluster nodes/ whatever kind of machine you have. If you don't have a separate
+    1) Set up the specifications of your cluster nodes/whatever kind of machine you have under `mem`. If you don't have a separate
        large memory system you can set all `big_mem` parameter to be identical to the normal ones.
 
     2) Set up all paths for `tmp_dir`, `outputdir`, `krakendb`, the paths at `mantis`, and `Metagenomics` 
