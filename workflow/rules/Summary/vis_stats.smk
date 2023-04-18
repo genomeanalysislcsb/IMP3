@@ -180,7 +180,7 @@ else:
 #             report("Visualization/Binning_vizbin.png",caption="../../report/stats/Binning_vizbin.rst",category="Binning")
 #         resources:
 #             runtime = "2:00:00",
-#             mem = MEMCORE
+#             mem_mb = MEMCORE_MB
 #         log: "logs/visualize_bins.log"
 #         message: "visualize_bins: Plotting binning results."
 #         threads: 1
@@ -199,7 +199,7 @@ rule visualize_bins:
         report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning")
     resources:
         runtime = "2:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     log: "logs/visualize_bins.log"
     message: "visualize_bins: Plotting binning results."
     threads: 1

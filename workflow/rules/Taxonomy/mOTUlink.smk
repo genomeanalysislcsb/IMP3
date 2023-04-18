@@ -161,6 +161,8 @@ rule parse_blast_mOTU:
 
 rule tar_intermediary_mOTU:
     input:
+        # Make sure its done at the very end
+        "status/workflow.done",
         "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
     output:
         "Analysis/taxonomy/mOTU_links/intermediary.tar.gz"
@@ -168,7 +170,7 @@ rule tar_intermediary_mOTU:
         1
     resources:
         runtime = "8:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     params:
         intermediary = "Analysis/taxonomy/mOTU_links/intermediary/"
     log:

@@ -28,7 +28,7 @@ include:
 # master command
 rule ASSEMBLY:
     input:
-        'Assembly/intermediary.tar.gz',
+        # 'Assembly/intermediary.tar.gz',
         'Assembly/mt.assembly.merged.fa',
         'Assembly/mt.assembly.merged.fa.fai',
         'Assembly/mt.assembly.merged.fa.bed3',

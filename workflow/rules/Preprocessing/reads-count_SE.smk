@@ -19,6 +19,8 @@ rule reads_count:
 
 rule reads_gzip:
     input:
+        # Make sure its done at the very end
+        "status/workflow.done",
         togz=gather_reads
     output:
         "status/preprocessing_{type}.reads.compressed"
@@ -36,6 +38,8 @@ rule reads_gzip:
 
 rule gzip_ori_files:
     input:
+        # Make sure its done at the very end
+        "status/workflow.done",
         'Preprocessing/{type}.{read}.fq'
     output:
         'Preprocessing/{type}.{read}.fq.gz'
@@ -59,6 +63,8 @@ rule gzip_ori_files:
 
 rule gzip_files:
     input:
+        # Make sure its done at the very end
+        "status/workflow.done",
         'Preprocessing/{type}.{read}.{stage}.fq'
     output:
         "Preprocessing/{type}.{read}.{stage}.fq.gz"
@@ -78,6 +84,8 @@ rule gzip_files:
 
 checkpoint reads_gziped:
     input:
+        # Make sure its done at the very end
+        "status/workflow.done",
         'Stats/{type}/{type}.read_counts.txt'
     output:
         "status/preprocessing_{type}.reads.detected"

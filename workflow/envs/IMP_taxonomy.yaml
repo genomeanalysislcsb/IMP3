@@ -8,3 +8,4 @@ dependencies:
   - popt=1.16
   - perl-bioperl=1.7.8
   - r=4.2
+  - numpy

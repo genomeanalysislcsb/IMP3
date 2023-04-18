@@ -54,11 +54,13 @@ rule gzip_ori_files:
     shell:
         "pigz -p {threads} \
               -q \
-              {input} || touch {input}"
+              {input} || touch {input}"
 
 
 rule gzip_files:
     input:
+        # Make sure its done at the very end
+        "status/workflow.done",
         'Preprocessing/{type}.{read}.{stage}.fq'
     output:
         "Preprocessing/{type}.{read}.{stage}.fq.gz"
@@ -78,6 +80,8 @@ rule gzip_files:
 
 checkpoint reads_gziped:
     input:
+        # Make sure its done at the very end
+        "status/workflow.done",
         'Stats/{type}/{type}.read_counts.txt'
     output:
         "status/preprocessing_{type}.reads.detected"

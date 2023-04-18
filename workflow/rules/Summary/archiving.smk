@@ -21,7 +21,7 @@ rule sync_final:
         1
     resources:
         runtime = "02:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     message:
         "Synching {OUTPUTDIR} to {SUMDIR}"
     shell:
@@ -63,6 +63,8 @@ rules compress_reads:
 if MG or MT:
     rule gzip_reads:
         input:
+            # Make sure its done at the very end
+            "status/workflow.done",
             "{file}",
             entry_gz
         output:
@@ -71,7 +73,7 @@ if MG or MT:
             1
         resources:
             runtime = "04:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         message:
             "gzip: gzipping {wildcards.file}."
         shell:
@@ -87,11 +89,8 @@ rule tar_gzip_directory:
         1
     resources:
         runtime = "04:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     message:
         "tar_gzip: tarring and gzipping {wildcards.directory}."
     shell:
         "tar -cvzf {output} {input.directory} && rm -R {input.directory}"
-
-
-

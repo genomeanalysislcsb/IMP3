@@ -1,6 +1,5 @@
 # include rules for the Preprocessing part of the workflow
 
-
 include:
     '../../../Preprocessing/fastqc_SE.smk'
 
@@ -28,7 +27,7 @@ rule PREPROCESSING:
         'Preprocessing/mg.se.preprocessed.fq',
         "Stats/mg/mg.se.preprocessed_fastqc.zip",
         "Stats/mg/mg.se.preprocessed_fastqc.html",
-        "Stats/mg/mg.read_counts.txt",
-        'status/preprocessing_mg.reads.compressed'], type=TYPES)
+        "Stats/mg/mg.read_counts.txt",], type=TYPES)
+        # 'status/preprocessing_mg.reads.compressed'], type=TYPES)
     output:
         touch('status/preprocessing.done')

@@ -2,6 +2,7 @@ __default__:
   nodes: "--nodes 1-1"
   ntasks: "--ntasks 1"
   partition: "--partition batch"
+  qos: "--qos normal"
   call: "sbatch"
   mem_per_cpu: "--mem-per-cpu "
   runtime: "--time "

@@ -30,6 +30,6 @@ rule PREPROCESSING:
         'Stats/mt/mt.r2.preprocessed_fastqc.zip',
         'Stats/mt/mt.se.preprocessed_fastqc.zip',
         'Stats/mt/mt.read_counts.txt',
-        'status/preprocessing_mt.reads.compressed'
+        # 'status/preprocessing_mt.reads.compressed'
     output:
         touch('status/preprocessing.done')

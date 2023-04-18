@@ -9,7 +9,7 @@ def open_output(filename):
     return(open(OUTPUTDIR+'/'+filename, 'w+'))
 
 def workflow_ctrl(wildcards):
-    return(["status/" + s + ".done" for s in IMP_STEPS if s != "summary"])
+    return([f"status/{s}.done" for s in IMP_STEPS if s != "summary"])
 
 def getThreads(cores, bigmem=False):
     if bigmem:
@@ -305,13 +305,17 @@ def check_binner_dirs(wildcards):
 def get_mw_binner_inputs(wildcards):
     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
     binners = BIN_STEPS
+
+    min_comp = config['binning']['MetaWrap']['min_completeness']
+    max_cont = config['binning']['MetaWrap']['max_contamination']
+
     valid_binners = []
     for binner in binners:
-        bin_list = glob.glob(OUTPUTDIR + "/Binning/" + binner + "/bins/*.fasta")
+        bin_list = glob.glob(f'{OUTPUTDIR}/Binning/{binner}/bins/*.fasta')
         if bin_list:
             if any(os.stat(bin).st_size > 0 for bin in bin_list):
                 valid_binners.append(binner)
-    if glob.glob(OUTPUTDIR + "/Binning/DASTool/bins/*.fasta"):
+    if glob.glob(f'{OUTPUTDIR}/Binning/DASTool/bins/*.fasta'):
         valid_binners.append("DASTool")
 
     binner_fasta_dirs = [f"Binning/{binner}/bins" for binner in valid_binners]
@@ -324,14 +328,14 @@ def get_mw_binner_inputs(wildcards):
     out_list.append(input_round_1)
     if len(binner_fasta_dirs) > 3:
         input_round_2 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
-                                  zip(prefixes, [OUTPUTDIR + f'/Binning/MetaWrap/metawrap_round_01/metawrap_{min_comp}_{max_cont}_bins_round_01']
+                                  zip(prefixes, [f'{OUTPUTDIR}/Binning/MetaWrap/metawrap_round_01/metawrap_{min_comp}_{max_cont}_bins_round_01']
                                                 + binner_fasta_dirs[3:5])])
         out_list.append(input_round_2)
     else:
         out_list.append('')
     if len(binner_fasta_dirs) > 5:
         input_round_3 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
-                                  zip(prefixes, [OUTPUTDIR + f'/Binning/MetaWrap/metawrap_round_02/metawrap_{min_comp}_{max_cont}_bins_round_02']
+                                  zip(prefixes, [f'{OUTPUTDIR}/Binning/MetaWrap/metawrap_round_02/metawrap_{min_comp}_{max_cont}_bins_round_02']
                                                 + binner_fasta_dirs[5:])])
         out_list.append(input_round_3)
     else:

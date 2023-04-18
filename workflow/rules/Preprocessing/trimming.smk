@@ -8,7 +8,8 @@ if config['nextseq']:
             'Preprocessing/{type}.se1.trimmoed.fq',
             'Preprocessing/{type}.r2.trimmoed.fq',
             'Preprocessing/{type}.se2.trimmoed.fq'
-        threads: getThreads(10)
+        threads:
+            getThreads(10)
         resources:
             runtime="12:00:00",
             mem_mb = MEMCORE_MB,
@@ -119,10 +120,11 @@ else:
             'Preprocessing/{type}.se1.trimmed.fq',
             'Preprocessing/{type}.r2.trimmed.fq',
             'Preprocessing/{type}.se2.trimmed.fq'
-        threads: getThreads(10)
+        threads:
+            getThreads(10)
         resources:
             runtime="12:00:00",
-            mem = MEMCORE,
+            mem_mb = MEMCORE_MB,
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         conda:
@@ -149,7 +151,7 @@ else:
         threads: 1
         resources:
             runtime="12:00:00",
-            mem = MEMCORE
+            mem_mb = MEMCORE_MB
         message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
         shell:
             """

@@ -12,7 +12,7 @@ rule annotate:
         getThreads(14)
     resources:
         runtime = "08:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     log:
         "logs/analysis_annotate.log"
     conda:

@@ -48,7 +48,8 @@ rule filter_rrna_pe:
     log:
         "logs/preprocessing_filter_rrna_pe.log"
     threads:
-        getThreads(8)
+        # Ensure at least 50gb of mem
+        max(int(math.ceil(50 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
     resources:
         runtime = "24:00:00",
         mem_mb = MEMCORE_MB

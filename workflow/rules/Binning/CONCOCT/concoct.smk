@@ -12,7 +12,7 @@ rule concoct:
         getThreads(14)
     resources:
         runtime = "08:00:00",
-        mem = MEMCORE
+        mem_mb = MEMCORE_MB
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:
