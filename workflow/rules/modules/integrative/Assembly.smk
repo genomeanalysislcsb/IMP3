@@ -6,9 +6,9 @@ include:
 
 include:
     '../../Assembly/common/megahit.smk'
-    
-include:
-    '../../Assembly/common/merge-assembly.smk'
+# Dont include this, as were already using the hybrid rules
+# include:
+#     '../../Assembly/common/merge-assembly.smk'
 
 include:
     '../../Assembly/hybrid/%s.hybrid.smk' % IMP_ASSEMBLER

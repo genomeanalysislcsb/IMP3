@@ -95,8 +95,8 @@ rule mergegff:
 rule tar_annotation:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
-        gff="Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+        check = "status/workflow.done",
+        gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         # from featureCount.smk
         counts_hmmer=expand("Analysis/annotation/{type}.hmmer.{db}.counts.tsv", type=TYPES,
                             db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],

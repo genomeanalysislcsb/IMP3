@@ -163,12 +163,17 @@ else:
 # master command summary and archiving
 inputs_all = ['status/inputs.done','status/workflow.done']
 
+if 'preprocessing' in IMP_STEPS:
+    inputs_all.append(expand('status/preprocessing_{type}.reads.compressed', type=TYPES))
+
+if 'assembly' in IMP_STEPS:
+    inputs_all.append("Assembly/intermediary.tar.gz")
+
 if 'analysis' in IMP_STEPS:
     inputs_all.append('Analysis/annotation/intermediary.tar.gz')
 
 if 'binning' in IMP_STEPS:
     inputs_all.extend([f'Binning/{binner}.tar.gz' for binner in BIN_STEPS + ['DASTool']])
-
 
 if "summary" in IMP_STEPS:
     inputs_all.append('status/summary.done')

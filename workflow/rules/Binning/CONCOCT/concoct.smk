@@ -27,10 +27,13 @@ rule concoct:
                 --coverage_file <(cat <(printf "contig\tcov_mean_sample\n") {input.depth}) \
                 -l {params.min_cont_size} \
                 -b {output.out_dir}/ >> {log} 2>&1
-        tail -n +2 <(sed -e 's/,/\t/g' {output.out_dir}/clustering_gt1000.csv) > {output.s2b}
+                
+        tree {output.out_dir} >> {log} 2>&1
+                
+        tail -n +2 <(sed -e 's/,/\t/g' {output.out_dir}/clustering_gt{params.min_cont_size}.csv) > {output.s2b}
         
         # Extract bins as individual FASTA
-        extract_fasta_bins.py --output_path {output.out_bin_dir} {input.assembly} {output.out_dir}/clustering_gt1000.csv
+        extract_fasta_bins.py --output_path {output.out_bin_dir} {input.assembly} {output.out_dir}/clustering_gt{params.min_cont_size}.csv
         # Move bin fastas and rename.
         shopt -s nullglob
         for i in {output.out_bin_dir}/*.fa; do
@@ -38,5 +41,5 @@ rule concoct:
           mv ${{i}} {output.out_bin_dir}/${{bin_name}}.fasta
         done
         shopt -u nullglob
-        rm {output.out_dir}/clustering_gt1000.csv
+        rm {output.out_dir}/clustering_gt{params.min_cont_size}.csv
         """

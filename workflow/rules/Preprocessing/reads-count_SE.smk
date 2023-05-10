@@ -20,8 +20,8 @@ rule reads_count:
 rule reads_gzip:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
-        togz=gather_reads
+        check = "status/workflow.done",
+        togz = gather_reads
     output:
         "status/preprocessing_{type}.reads.compressed"
     resources:
@@ -39,8 +39,8 @@ rule reads_gzip:
 rule gzip_ori_files:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
-        'Preprocessing/{type}.{read}.fq'
+        check = "status/workflow.done",
+        file = 'Preprocessing/{type}.{read}.fq'
     output:
         'Preprocessing/{type}.{read}.fq.gz'
     wildcard_constraints:
@@ -58,14 +58,14 @@ rule gzip_ori_files:
     shell:
         "pigz -p {threads} \
               -q \
-              {input} || touch {input}"
+              {input.file} || touch {input.file}"
 
 
 rule gzip_files:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
-        'Preprocessing/{type}.{read}.{stage}.fq'
+        check = "status/workflow.done",
+        file = 'Preprocessing/{type}.{read}.{stage}.fq'
     output:
         "Preprocessing/{type}.{read}.{stage}.fq.gz"
     resources:
@@ -80,13 +80,13 @@ rule gzip_files:
     shell:
         "pigz -p {threads} \
               -q \
-              {input}"
+              {input.file}"
 
 checkpoint reads_gziped:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
-        'Stats/{type}/{type}.read_counts.txt'
+        check = "status/workflow.done",
+        file = 'Stats/{type}/{type}.read_counts.txt'
     output:
         "status/preprocessing_{type}.reads.detected"
     resources:

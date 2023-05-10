@@ -15,7 +15,7 @@ rule reads_filtering:
     threads:
         getThreads(BIGCORENO, bigmem=True)
     params:
-        mem = str(config['mem']['big_mem_per_core']) + config['mem']['mem_unit']
+        mem = str(max(int(BIGMEMCORE_MB * 0.75), 1)) + 'M'
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -24,9 +24,11 @@ rule reads_filtering:
         """
         TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "alignment_XXXXXX.bam")
         
+        echo "Mapping reads." >> {log} 2>&1
         bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads[0]} {input.reads[1]} 2>> {log} | \
          samtools view --threads {threads} -bS - > ${{TMP_FILE}} 2>> {log}
-        
+         
+        echo "Removing mapped reads." >> {log} 2>&1
         samtools merge --threads {threads} -u - \
          <(samtools view --threads {threads} -u  -f 4 -F 264 ${{TMP_FILE}} 2>> {log}) \
          <(samtools view --threads {threads} -u -f 8 -F 260 ${{TMP_FILE}} 2>> {log}) \
@@ -37,6 +39,7 @@ rule reads_filtering:
         rm ${{TMP_FILE}}
         
         if [[ -s {input.reads[2]} ]]; then
+            echo "Mapping reads." >> {log} 2>&1
             bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads[2]} 2>> {log} | \
              samtools view --threads {threads} -bS - 2>> {log} | \
              samtools view --threads {threads} -uf 4 - 2>> {log} | \

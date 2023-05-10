@@ -62,6 +62,9 @@ rule MetaWrap_refine:
           exit 0
         fi
 
+        echo "############################################### Before Round 1 ##############################################################" > {log}.check_int_out 2>&1
+        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
+        
         # Round 1
         metawrap bin_refinement -o {output.out_dir}/{params.prefix_1} \
                                 --quick \
@@ -77,6 +80,9 @@ rule MetaWrap_refine:
           mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
         done
         rm -rf {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*/
+        
+        echo "############################################### After Round 1 ##############################################################" >> {log}.check_int_out 2>&1
+        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
         
         # Round 2
         if [[ ${{#binner_input_array[*]}} > 3 ]]; then
@@ -94,9 +100,18 @@ rule MetaWrap_refine:
               bin_id=$(basename -s .fa ${{bin}})
               mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
             done
-            rm -rf {output.out_dir}/{params.prefix_1} {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*/
+            
+            echo "############################################### While Round 2 ##############################################################" >> {log}.check_int_out 2>&1
+            tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
+            
+            rm -rf {output.out_dir}/{params.prefix_1} \
+                   {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*/ \
+                   {output.out_dir}/{params.prefix_2}/${{bin_folder}}_round_01*
             final_out={params.prefix_2}
         fi
+        
+        echo "############################################### After Round 2 ##############################################################" >> {log}.check_int_out 2>&1
+        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
         
         # Round 3
         if [[ ${{#binner_input_array[*]}} > 5 ]]; then
@@ -114,10 +129,15 @@ rule MetaWrap_refine:
               bin_id=$(basename -s .fa ${{bin}})
               mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
             done
-            rm -rf {output.out_dir}/{params.prefix_2}  {output.out_dir}/{params.prefix_3}/${{bin_folder}}/*/
+            rm -rf {output.out_dir}/{params.prefix_2} \
+                   {output.out_dir}/{params.prefix_3}/${{bin_folder}}/*/ \
+                   {output.out_dir}/{params.prefix_3}/${{bin_folder}}_round_02*
             final_out={params.prefix_3}
         fi
-
+        
+        echo "############################################### After Round 3 ##############################################################" >> {log}.check_int_out 2>&1
+        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
+        
         # Clean up
         rm -rf {output.out_dir}/${{final_out}}/bins \
                {output.out_dir}/${{final_out}}/work_files
@@ -133,6 +153,9 @@ rule MetaWrap_refine:
         mv {output.out_dir}/figures/* Visualization/
         rm -rf {output.out_dir}/figures {output.out_dir}/bins{{A,B,C}}*
         
+        echo "############################################### After Clean-up ##############################################################" >> {log}.check_int_out 2>&1
+        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
+        
         # Revert no special chars in bin names, which lead to MetaWrap CheckM crash
         for i in ${{binner_input_array[@]}}; do
           for bin in ${{i}}/*.fasta; do
@@ -142,13 +165,17 @@ rule MetaWrap_refine:
             fi
           done
         done
+        
+        echo "############################################### After special char change ##############################################################" >> {log}.check_int_out 2>&1
+        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
+        
         """
 
 # Compress single binner out
 rule compress_binner_out:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
+        check = "status/workflow.done",
         binner_out = check_binner_dirs
     output:
         "Binning/{binner}.tar.gz"

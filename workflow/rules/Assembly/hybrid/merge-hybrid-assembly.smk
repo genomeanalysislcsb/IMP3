@@ -104,29 +104,30 @@ elif config["assembly"]["merge"] == "flye":
             ) &> {log}
             """
 elif config["assembly"]["merge"] == "quickmerge":
-    rule install_qm_mummer4:
-        output:
-            os.path.join(ENVDIR, "qm.ready")
-        log:
-            os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install.log")
-        benchmark:
-            os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install_benchmark.tsv")
-        resources:
-            runtime = "01:00:00",
-            mem_mb = MEMCORE_MB
-        threads:
-            1
-        conda:
-            os.path.join(ENVDIR, "IMP_assembly_merge.yaml")
-        message:
-            "Fixing quickmerge wrapper."
-        shell:
-            """
-            wget https://raw.githubusercontent.com/mahulchak/quickmerge/master/merge_wrapper.py \
-                 -O ${{CONDA_PREFIX}}/bin/merge_wrapper.py >> {log} 2>&1 \
-              && chmod 750 ${{CONDA_PREFIX}}/bin/merge_wrapper.py \
-              && touch {output}
-            """
+    # Now already done during install
+    # rule install_qm_mummer4:
+    #     output:
+    #         os.path.join(ENVDIR, "qm.ready")
+    #     log:
+    #         os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install.log")
+    #     benchmark:
+    #         os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install_benchmark.tsv")
+    #     resources:
+    #         runtime = "01:00:00",
+    #         mem_mb = MEMCORE_MB
+    #     threads:
+    #         1
+    #     conda:
+    #         os.path.join(ENVDIR, "IMP_assembly_merge.yaml")
+    #     message:
+    #         "Fixing quickmerge wrapper."
+    #     shell:
+    #         """
+    #         wget https://raw.githubusercontent.com/mahulchak/quickmerge/master/merge_wrapper.py \
+    #              -O ${{CONDA_PREFIX}}/bin/merge_wrapper.py >> {log} 2>&1 \
+    #           && chmod 750 ${{CONDA_PREFIX}}/bin/merge_wrapper.py \
+    #           && touch {output}
+    #         """
 
     rule format_fastas:
         input:
@@ -196,8 +197,8 @@ elif config["assembly"]["merge"] == "quickmerge":
             assembly_1= "Assembly/intermediary/mgmt.%s_hybrid.1_formatted.fa" % IMP_ASSEMBLER,
             assembly_2= "Assembly/intermediary/mgmt.%s_hybrid.2_formatted.fa" % IMP_ASSEMBLER
         output:
-            out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2")),
-            merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta")
+            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2")),
+            merged_assembly = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta")
         log:
             os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1_with_h2.log")
         benchmark:
@@ -257,11 +258,11 @@ elif config["assembly"]["merge"] == "quickmerge":
             # os.path.join(OUTPUTDIR,"status","qm_fastas.ready"),
             # assembly_1=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"mgmt.{IMP_ASSEMBLER}_hybrid.1_formatted.fa"),
             # assembly_2=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"mgmt.{IMP_ASSEMBLER}_hybrid.2_formatted.fa")
-            assembly_1= "Assembly/intermediary/mgmt.%s_hybrid.1_formatted.fa" % IMP_ASSEMBLER,
-            assembly_2= "Assembly/intermediary/mgmt.%s_hybrid.2_formatted.fa" % IMP_ASSEMBLER
+            assembly_1 = "Assembly/intermediary/mgmt.%s_hybrid.1_formatted.fa" % IMP_ASSEMBLER,
+            assembly_2 = "Assembly/intermediary/mgmt.%s_hybrid.2_formatted.fa" % IMP_ASSEMBLER
         output:
             out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1")),
-            merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
+            merged_assembly = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
         log:
             os.path.join(OUTPUTDIR, "logs",  "assembly_join_h2_with_h1.log")
         benchmark:
@@ -319,11 +320,12 @@ elif config["assembly"]["merge"] == "quickmerge":
         input:
             os.path.join(ENVDIR, "qm.ready"),
             # os.path.join(OUTPUTDIR,"status","qm_fastas.ready"),
-            assembly_h1h2=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta"),
-            assembly_h2h1=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
+            assembly_h1h2 = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta"),
+            assembly_h2h1 = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
         output:
-            out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1h2_with_h2h1")),
-            merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
+            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1h2_with_h2h1")),
+            # merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
+            merged_assembly = "Assembly/%s.assembly.merged.fa" %ASS
         log:
             os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1h2_with_h2h1.log")
         benchmark:
@@ -390,58 +392,60 @@ elif config["assembly"]["merge"] == "quickmerge":
             # cdhit
             echo "Running cdhit-est." >> {log} 2>&1
             time cd-hit-est -i {output.out_dir}/merged_with_bridge_singletons.fasta \
-                            -o {output.out_dir}/merged_with_bridge_singletons_99id.fasta \
+                            -o {OUTPUTDIR}/{output.merged_assembly} \
                             -T {threads} \
                             -c 0.995 \
                             -d 50000 \
                             -M 300000 >> {log} 2>&1 \
             || \
             time {params.alt_cdhit} -i {output.out_dir}/merged_with_bridge_singletons.fasta \
-                                    -o {output.out_dir}/merged_with_bridge_singletons_99id.fasta \
+                                    -o {OUTPUTDIR}/{output.merged_assembly} \
                                     -T {threads} \
                                     -c 0.995 \
                                     -d 50000 \
                                     -M 300000 >> {log} 2>&1 \
-            && \
-            rm -rf {output.out_dir}/merged_with_bridge_singletons.fasta {output.out_dir}/merged_h1h2_with_h2h1.fasta \
-                   {output.out_dir}/bridges_h2h1_rn.fasta {output.out_dir}/merged_h1h2_with_h2h1_rn.fasta \
+            # && \
+            # rm -rf {output.out_dir}/merged_with_bridge_singletons.fasta {output.out_dir}/merged_h1h2_with_h2h1.fasta \
+            #        {output.out_dir}/bridges_h2h1_rn.fasta {output.out_dir}/merged_h1h2_with_h2h1_rn.fasta
             """
 
-    rule clean_up:
-        input:
-            # mg_form=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"mgmt.{IMP_ASSEMBLER}_hybrid.1_formatted.fa"),
-            # mt_form=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"mgmt.{IMP_ASSEMBLER}_hybrid.2_formatted.fa"),
-            mg_form = "Assembly/intermediary/mgmt.%s_hybrid.1_formatted.fa" % IMP_ASSEMBLER,
-            mt_form = "Assembly/intermediary/mgmt.%s_hybrid.2_formatted.fa" % IMP_ASSEMBLER,
-            merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary","join_h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
-        output:
-            final="Assembly/mgmt.assembly.merged.fa"
-        log:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_clean_up_assembly_merge.log")
-        benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_clean_up_assembly_merge_benchmark.tsv")
-        resources:
-            runtime = "06:00:00",
-            mem_mb = MEMCORE_MB
-        params:
-            sample = SAMPLE,
-            s_dir=os.path.join(OUTPUTDIR,"Assembly","intermediary")
-        threads:
-            1
-        conda:
-            os.path.join(ENVDIR, "IMP_assembly_merge.yaml")
-        message:
-            "Compressing sample {params.sample} intermediary files and creating final merged file."
-        shell:
-            """
-            shopt -s nullglob
-
-            for i in {params.s_dir}/*_formatted.fa {params.s_dir}/join*/*.{{fasta,fasta.clstr}}; do
-              if [[ ${{i}} != {input.merged_assembly} ]]; then
-                echo "Compressing ${{i}}." >> {log} 2>&1
-                gzip -c "${{i}}" > "${{i}}.gz" && rm -f "${{i}}"
-              fi
-            done \
-            && \
-            mv {input.merged_assembly} {output.final}
-            """
+    # # Commented compression for now, as its messing with multi-step/re- running of imp
+    # rule clean_up:
+    #     input:
+    #         # Make sure its done at the very end
+    #         # mg_form=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"mgmt.{IMP_ASSEMBLER}_hybrid.1_formatted.fa"),
+    #         # mt_form=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"mgmt.{IMP_ASSEMBLER}_hybrid.2_formatted.fa"),
+    #         mg_form = "Assembly/intermediary/mgmt.%s_hybrid.1_formatted.fa" % IMP_ASSEMBLER,
+    #         mt_form = "Assembly/intermediary/mgmt.%s_hybrid.2_formatted.fa" % IMP_ASSEMBLER,
+    #         merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary","join_h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
+    #     output:
+    #         final="Assembly/mgmt.assembly.merged.fa"
+    #     log:
+    #         os.path.join(OUTPUTDIR, "logs",  "assembly_clean_up_assembly_merge.log")
+    #     benchmark:
+    #         os.path.join(OUTPUTDIR, "logs",  "assembly_clean_up_assembly_merge_benchmark.tsv")
+    #     resources:
+    #         runtime = "06:00:00",
+    #         mem_mb = MEMCORE_MB
+    #     params:
+    #         sample = SAMPLE,
+    #         s_dir=os.path.join(OUTPUTDIR,"Assembly","intermediary")
+    #     threads:
+    #         1
+    #     conda:
+    #         os.path.join(ENVDIR, "IMP_assembly_merge.yaml")
+    #     message:
+    #         "Compressing sample {params.sample} intermediary files and creating final merged file."
+    #     shell:
+    #         """
+    #         shopt -s nullglob
+    #
+    #         # for i in {params.s_dir}/*_formatted.fa {params.s_dir}/join*/*.{{fasta,fasta.clstr}}; do
+    #         #   if [[ ${{i}} != {input.merged_assembly} ]]; then
+    #         #     echo "Compressing ${{i}}." >> {log} 2>&1
+    #         #     gzip -c "${{i}}" > "${{i}}.gz" && rm -f "${{i}}"
+    #         #   fi
+    #         # done \
+    #         # && \
+    #         mv {input.merged_assembly} {output.final}
+    #         """

@@ -64,9 +64,9 @@ if MG or MT:
     rule gzip_reads:
         input:
             # Make sure its done at the very end
-            "status/workflow.done",
-            "{file}",
-            entry_gz
+            check = "status/workflow.done",
+            file = "{file}",
+            checks = entry_gz  # TODO: ???
         output:
             "{file}.gz"
         threads:
@@ -77,7 +77,7 @@ if MG or MT:
         message:
             "gzip: gzipping {wildcards.file}."
         shell:
-            "gzip {input[0]}"
+            "gzip {input.file}"
 
 rule tar_gzip_directory:
     input:

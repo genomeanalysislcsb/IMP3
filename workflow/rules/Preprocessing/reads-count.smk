@@ -60,8 +60,8 @@ rule gzip_ori_files:
 rule gzip_files:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
-        'Preprocessing/{type}.{read}.{stage}.fq'
+        check = "status/workflow.done",
+        file = 'Preprocessing/{type}.{read}.{stage}.fq'
     output:
         "Preprocessing/{type}.{read}.{stage}.fq.gz"
     resources:
@@ -76,7 +76,7 @@ rule gzip_files:
     shell:
         "pigz -p {threads} \
               -q \
-              {input}"
+              {input.file}"
 
 checkpoint reads_gziped:
     input:

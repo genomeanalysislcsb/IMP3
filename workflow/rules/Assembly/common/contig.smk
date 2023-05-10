@@ -1,8 +1,8 @@
 rule tar_intermediary:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
-        "Assembly/%s.assembly.merged.fa" % ASS
+        check = "status/workflow.done",
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS
     output:
         "Assembly/intermediary.tar.gz"
     threads:

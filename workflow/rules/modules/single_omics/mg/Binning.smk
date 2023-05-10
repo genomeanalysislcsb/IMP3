@@ -71,8 +71,8 @@ if not 'taxonomy' in IMP_STEPS:
 
 
 ## tar annotation
-if 'analysis' in IMP_STEPS:
-    inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
+# if 'analysis' in IMP_STEPS:
+#     inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
 
 ## master command
 rule BINNING:

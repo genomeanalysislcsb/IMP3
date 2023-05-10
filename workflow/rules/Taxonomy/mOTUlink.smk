@@ -162,8 +162,8 @@ rule parse_blast_mOTU:
 rule tar_intermediary_mOTU:
     input:
         # Make sure its done at the very end
-        "status/workflow.done",
-        "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
+        check = "status/workflow.done",
+        file = "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"
     output:
         "Analysis/taxonomy/mOTU_links/intermediary.tar.gz"
     threads:
