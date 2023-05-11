@@ -9,7 +9,7 @@ profiles supports slurm only at the moment.
 
 1) Clone the repository with git:
     ```shell
-    git clone https://gitlab.lcsb.uni.lu/IMP/imp3.git -b binning_rework_v011
+    git clone https://gitlab.lcsb.uni.lu/IMP/imp3.git -b binning_rework_v012
     cd imp3
     ```
 
@@ -65,7 +65,7 @@ profiles supports slurm only at the moment.
     Note that the installation might take a long time, if you selected large databases.
     ```shell
     # Activate environment (replace name with the one you chose)
-    conda activate snakemake_env
+    ${my_package_manager} activate snakemake_env
     
     # Set conda dir and amount of cores (at least 8)
     my_conda_dir="./conda"
@@ -117,6 +117,7 @@ profiles supports slurm only at the moment.
         my_conda_dir="./conda"
         snakemake --snakefile Snakefile \
                   --configfile config/config.test.yaml \
+                  --use-conda \
                   --conda-prefix ${my_conda_dir} \
                   --cores 1 \
                   --reason \

@@ -4,7 +4,10 @@ KRAKTHREADS = round((KRAKSIZE / (float(BIGMEMCORE[:-1]) * to_gb_dict[config["mem
 
 rule kraken_contigs:
     input:
-        "Assembly/%s.assembly.merged.fa" % ASS
+        "Assembly/%s.assembly.merged.fa" % ASS,
+        # # To facilitate multi part runs
+        # assembly_h1h2= os.path.join(OUTPUTDIR,"Assembly","intermediary","join_h1_with_h2/merged_h1_with_h2_rn.fasta"),
+        # assembly_h2h1=os.path.join(OUTPUTDIR,"Assembly","intermediary","join_h2_with_h1/merged_h2_with_h1_rn.fasta")
     output:
         "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS,
         "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS

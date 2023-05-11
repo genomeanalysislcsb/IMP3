@@ -84,7 +84,7 @@ rule binny_setup:
     shell:
         """
         echo "Downloading binny." >> {log} 2>&1
-        git clone -b imp3 https://github.com/ohickl/binny.git \
+        git clone --quiet -b imp3 https://github.com/ohickl/binny.git \
         {output.binny_dir} >> {log} 2>&1
 
         cd {output.binny_dir}
@@ -151,7 +151,7 @@ rule abawaca_setup:
         """
         # Get ESOM and stop it from messing with fasta headers
         echo "Downloading ESOM for abawaca." >> {log} 2>&1
-        git clone https://github.com/tetramerFreqs/Binning {output.esom_dir} >> {log} 2>&1 && \
+        git clone --quiet https://github.com/tetramerFreqs/Binning {output.esom_dir} >> {log} 2>&1 && \
         sed -i '286,292d' {output.esom_dir}/esomWrapper.pl && \
         touch {output.out}
         """

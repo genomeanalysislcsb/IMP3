@@ -10,8 +10,6 @@ from snakemake.utils import validate
 include:
     "rules/common.smk"
 
-# print(workflow.snakefile, workflow.basedir, workflow.conda_prefix)
-
 ##################################################
 # CONFIG
 
