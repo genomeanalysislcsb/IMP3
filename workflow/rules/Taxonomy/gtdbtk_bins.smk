@@ -9,13 +9,13 @@ rule GTDBtk_bins_single:
         # summary_arc = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.ar53.markers_summary.tsv",
     resources:
         runtime = "02:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     params:
-        pplacer_cpus=getThreads(min(BIGCORENO, max(1, int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45))), bigmem=True),
-        t1 = int(BIGMEMCORE[:-1]),
-        t2 = to_gb_dict[config["mem"]["mem_unit"]],
-        t3 = BIGCORENO,
-        t4 = int(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]] * BIGCORENO / 45),
+        pplacer_cpus=getThreads(min(MAIN_BIGCORENO, max(1, int(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]] * MAIN_BIGCORENO / 45))), bigmem=True),
+        t1 = int(MAIN_BIGMEMCORE[:-1]),
+        t2 = to_gb_dict[config['cluster_specs']["mem_unit"]],
+        t3 = MAIN_BIGCORENO,
+        t4 = int(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]] * MAIN_BIGCORENO / 45),
     conda:
         os.path.join(ENVDIR, "IMP_gtdbtk.yaml")
     log:
@@ -57,14 +57,14 @@ rule GTDBtk_summarize:
         grid="status/binning_GRiD.done" if MG else []
     resources:
         runtime = "00:15:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/taxonomy_GTDBtk_summarize.log"
     message:
         "GTDBtk_summarize: Summarizing binning results."
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
+        max(int(math.ceil(10 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     run:
         # Check if MetaWrap output is empty
         if os.stat(input.mw_stats).st_size > 0:
@@ -138,7 +138,7 @@ if MG:
             1
         resources:
             runtime = "8:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/taxonomy_bins_tar.log"
         message:
@@ -162,7 +162,7 @@ else:
             1
         resources:
             runtime = "8:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/taxonomy_bins_tar.log"
         message:

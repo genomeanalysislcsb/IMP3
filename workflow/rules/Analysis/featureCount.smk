@@ -9,7 +9,7 @@ rule feature_count_hmmer:
         flags = '-p -O'
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(8)
     conda:
@@ -43,7 +43,7 @@ rule feature_count_mantis:
         flags = '-p -O'
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(8)
     conda:
@@ -78,7 +78,7 @@ rule feature_count_gene:
         flags = '-p -O'
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(8)
     conda:

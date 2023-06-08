@@ -1,0 +1,19 @@
+__default__:
+  nodes: "--nodes 1-1"
+  ntasks: "--ntasks 1"
+  clusters: "--clusters 'aion'"
+  partition: "--partition batch"
+  qos: "--qos normal"
+  call: "sbatch"
+  mem_per_cpu: "--mem-per-cpu "
+  runtime: "--time "
+  threads: "--cpus-per-task "
+  stdout: "--output IMP3.{rule}.%j.stdout"
+
+kraken_contigs:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+
+kraken_reads:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"

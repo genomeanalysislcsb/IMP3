@@ -6,7 +6,7 @@ rule get_proteins_DAStool:
         "Binning/prokka.renamed.faa"
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     conda:

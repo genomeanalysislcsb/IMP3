@@ -9,7 +9,7 @@ rule allmotulinks:
         1
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     # log:
     #     "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
     message:
@@ -29,7 +29,7 @@ rule fetchmg:
         getThreads(6)
     resources:
         runtime = "08:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary/marker_genes"
     log:
@@ -57,7 +57,7 @@ rule get_present_mOTUs:
         1
     resources:
         runtime = "01:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     # log:
     #     "logs/analysis_get_present_mOTUs.log"
     message:
@@ -76,7 +76,7 @@ rule extract_mOTU_db_genes:
         1
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary",
         outname = "present.DBgenes",
@@ -112,7 +112,7 @@ rule blast_mOTU_db_genes:
         1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
@@ -144,7 +144,7 @@ rule parse_blast_mOTU:
         1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         # metaphy = "/lib/python3.9/site-packages/motus/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
         # refphy = "/lib/python3.9/site-packages/motus/db_mOTU/db_mOTU_taxonomy_ref-mOTUs.tsv"
@@ -170,7 +170,7 @@ rule tar_intermediary_mOTU:
         1
     resources:
         runtime = "8:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         intermediary = "Analysis/taxonomy/mOTU_links/intermediary/"
     log:

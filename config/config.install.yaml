@@ -4,7 +4,7 @@
 #   For more information on git commit hashes, see here: https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection.
 
 # path where to download/copy the data(bases)
-db_path: "/abs/path/to/databases/dir"  ### USER_INPUT ####
+db_path: "/mnt/isilon/projects/ecosystem_biology/databases/imp3"  ### USER_INPUT ####
 
 ##################################################
 # Adapters for reads trimming
@@ -44,9 +44,9 @@ genomes:
 #       Reference: https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#kraken-2-databases
 
 kraken2:
- # kraken2 prebuild db based on GTDB 207 release ~500 GB
-#  struo2_gtdb_207:
-#    url: "http://ftp.tue.mpg.de/ebio/projects/struo2/GTDB_release207/kraken2"
+# kraken2 prebuild db based on GTDB 207 release ~500 GB
+  struo2_gtdb_207:
+    url: "http://ftp.tue.mpg.de/ebio/projects/struo2/GTDB_release207/kraken2"
 #  # https://ccb.jhu.edu/software/kraken2/index.shtml?t=downloads
 #  # Minikraken v2 (bacteria, archaea, viral libraries & human genome; 8 GB)
 #  minikraken2:
@@ -69,11 +69,11 @@ gtdbtk:
 mantis:
   # default HMMs (name/path mapping)
   default: # set paths null (i.e.: ncbi_ref_folder: null), if a database should not be used
-    kofam_ref_folder: "/abs/path/to/imp3_dbs/mantis/kofam"  ### USER_INPUT ####
-    ncbi_ref_folder: "/abs/path/to/imp3_dbs/mantis/ncbi"  ### USER_INPUT ####
-    nog_ref_folder: "/abs/path/to/imp3_dbs/mantis/nog"  ### USER_INPUT ####
-    pfam_ref_folder: "/abs/path/to/imp3_dbs/mantis/pfam"  ### USER_INPUT ####
-    tcdb_ref_folder: "/abs/path/to/imp3_dbs/mantis/tcdb"  ### USER_INPUT ####
+    kofam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/databases/imp3/mantis/kofam"  ### USER_INPUT ####
+    ncbi_ref_folder: "/mnt/isilon/projects/ecosystem_biology/databases/imp3/mantis/ncbi"  ### USER_INPUT ####
+    nog_ref_folder: "/mnt/isilon/projects/ecosystem_biology/databases/imp3/mantis/nog"  ### USER_INPUT ####
+    pfam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/databases/imp3/mantis/pfam"  ### USER_INPUT ####
+    tcdb_ref_folder: "/mnt/isilon/projects/ecosystem_biology/databases/imp3/mantis/tcdb"  ### USER_INPUT ####
   # custom HMMs (list of paths)
   custom: [] # set to [] if not used otherwise provide at least one path
   # weights: format <name>_hmm_folder: <name>_weight
@@ -86,7 +86,7 @@ mantis:
 binny:
   # Set path to your snakemake env. Following the quickstart it'll be e.g. "/abs/path/to/imp3/conda/snakemake_env".
   # If Snakemake is always available in PATH you can set it to "in_path".
-  snakemake_env_path: "/abs/path/to/snakemake_env"  ### USER_INPUT ####
+  snakemake_env_path: "/mnt/isilon/projects/ecosystem_biology/local_tools/envs/snakemake_env"  ### USER_INPUT ####
 
 cdhit:
   url: "https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz"

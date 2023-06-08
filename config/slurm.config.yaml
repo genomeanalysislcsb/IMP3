@@ -12,6 +12,9 @@ __default__:
 reads_filtering:
   partition: "--partition bigmem"
 
+filter_rrna_pe:
+  partition: "--partition bigmem"
+
 bwa_index:
   partition: "--partition bigmem"
 

@@ -21,7 +21,7 @@ rule motus:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
     threads:
         # Ensure at least 30gb of mem
-        max(int(math.ceil(30 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        max(int(math.ceil(30 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     params:
         # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
         # -A: print all tax. levels together
@@ -31,7 +31,7 @@ rule motus:
         # database = os.path.join(DBPATH, 'motus')
     resources:
         runtime = "08:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_motus.yaml")
     log:

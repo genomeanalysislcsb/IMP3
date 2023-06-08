@@ -6,40 +6,37 @@ import math
 
 # Snakefile
 def open_output(filename):
-    return(open(OUTPUTDIR+'/'+filename, 'w+'))
+    return(open(f'{OUTPUTDIR}/{filename}', 'w+'))
 
 def workflow_ctrl(wildcards):
-    return([f"status/{s}.done" for s in IMP_STEPS if s != "summary"])
+    return([f'status/{s}.done' for s in IMP_STEPS if s != 'summary'])
 
-def getThreads(cores, bigmem=False):
-    if bigmem:
-        mem_core = int(config["mem"]["big_mem_per_core"])
-        mem_total = int(config["mem"]["big_mem_total"])
-        n_cores_from_mem = max(math.floor(mem_total / mem_core), 1)
-        n_cores = int(config["mem"]["big_mem_cores"])
-        assert n_cores_from_mem == n_cores, f"Number of big_mem cores specified differs from number calculated from " \
-                                            f"total memory available and memory per big_mem core: {n_cores} vs " \
-                                            f"{n_cores_from_mem}. Please check config.\n" \
-                                            f"mem_core: {mem_core}\n" \
-                                            f"n_cores: {n_cores}\n" \
-                                            f"mem_total: {mem_total}"
-        max_cores = int(config["mem"]["big_mem_cores_max"])
+def getThreads(cores, bigmem=False, high_mem_cluster=False):
+    if high_mem_cluster and USE_HIGH_MEM_CLUSTER:
+        cluster_specs = config['cluster_specs']['high_mem_cluster']
     else:
-        mem_core = int(config["mem"]["mem_per_core"])
-        mem_total = int(config["mem"]["mem_total"])
-        n_cores = max(math.floor(mem_total / mem_core), 1)
-        max_cores = int(config["mem"]["cores_max"])
+        cluster_specs = config['cluster_specs']['main_cluster']
 
-    # print(f"mem_core: {mem_core}")
-    # print(f"mem_total: {mem_total}")
-    # if bigmem:
-    #     print(f"n_cores_from_mem: {n_cores_from_mem}")
-    # print(f"n_cores: {n_cores}")
-    # print(f"max_cores: {max_cores}")
-    # print(f"bigmem: {bigmem}")
+    if bigmem:
+        mem_core = int(cluster_specs['big_mem_per_core'])
+        mem_total = int(cluster_specs['big_mem_total'])
+        n_cores_from_mem = max(math.floor(mem_total / mem_core), 1)
+        n_cores = int(cluster_specs['big_mem_cores'])
+        assert n_cores_from_mem == n_cores, f'Number of big_mem cores specified differs from number calculated from ' \
+                                            f'total memory available and memory per big_mem core: {n_cores} vs ' \
+                                            f'{n_cores_from_mem}. Please check config.\n' \
+                                            f'mem_core: {mem_core}\n' \
+                                            f'n_cores: {n_cores}\n' \
+                                            f'mem_total: {mem_total}'
+        max_cores = int(cluster_specs['big_mem_cores_max'])
+    else:
+        mem_core = int(cluster_specs['mem_per_core'])
+        mem_total = int(cluster_specs['mem_total'])
+        n_cores = max(math.floor(mem_total / mem_core), 1)
+        max_cores = int(cluster_specs['cores_max'])
 
     # Ensure the maximum number of cores to use per job is actually possible
-    assert max_cores <= n_cores, "Maximum number of cores allowed per rule is larger than node core count."
+    assert max_cores <= n_cores, 'Maximum number of cores allowed per rule is larger than node core count.'
 
     if workflow.cores:
         realThreads = min(cores, max_cores)
@@ -48,9 +45,7 @@ def getThreads(cores, bigmem=False):
         realThreads = min(cores, workflow.nodes)
     else:
         realThreads = max_cores
-
-    # print(f"realThreads: {realThreads}")
-    # print("##############################")
+    
     return realThreads
 
 # data input
@@ -61,15 +56,15 @@ def get_ori_files(wildcards):
         inputs.append(MG)
     if MT:
         inputs.append(MT)
-    if CONTIGS and not "assembly" in IMP_STEPS:
+    if CONTIGS and not 'assembly' in IMP_STEPS:
         inputs.append(CONTIGS)
         if MGaln:
             inputs.append(MGaln)
         if MTaln:
             inputs.append(MTaln)
-    if "assembly" in IMP_STEPS and LONG:
+    if 'assembly' in IMP_STEPS and LONG:
         inputs.append(LONG)
-    if ANN and not "analysis" in IMP_STEPS:
+    if ANN and not 'analysis' in IMP_STEPS:
         inputs.append(ANN)
     if any(isinstance(i, list) for i in inputs):
         out = []
@@ -117,7 +112,7 @@ def no_filtering_input_SE(wildcards):
             'Preprocessing/mg.se.trimmed.fq'
         ]
     }
-    if wildcards.type == "mg":
+    if wildcards.type == 'mg':
         return input_no_filtering[wildcards.type]
     return 'no_filtering_input_no_file_here'
 
@@ -156,9 +151,9 @@ def reads_input_files(wildcards):
                     base += rna_filtered_fq_mt_files
         else:
             if len(MG) == 3 and wildcards.type == 'mg':
-                base += ["Preprocessing/mg.se.fq"]
+                base += ['Preprocessing/mg.se.fq']
             if len(MT) == 3 and wildcards.type == 'mt':
-                base += ["Preprocessing/mt.se.fq"]
+                base += ['Preprocessing/mt.se.fq']
     elif MGaln or MTaln:
         base = bam_files
     return expand(base, type=wildcards.type)
@@ -175,7 +170,7 @@ def reads_input_files_SE(wildcards):
     trimmed_fq_files = [
         'Preprocessing/{type}.se.trimmed.fq'
     ]
-    if wildcards.type != "mg" :
+    if wildcards.type != 'mg' :
         return 'reads_input_files-no-file-here'
     else:
         base = raw_fq_files
@@ -185,15 +180,15 @@ def reads_input_files_SE(wildcards):
     return expand(base, type=wildcards.type)
 
 def filtering_reads_pe_input(wildcards):
-    """Input files for paired-end MG/MT reads filtering (excl. rRNA filtering)"""
+    '''Input files for paired-end MG/MT reads filtering (excl. rRNA filtering)'''
     return filtering_reads_input(wildcards, True)
 
 def filtering_reads_se_input(wildcards):
-    """Input files for single-end MG/MT reads filtering (excl. rRNA filtering)"""
+    '''Input files for single-end MG/MT reads filtering (excl. rRNA filtering)'''
     return filtering_reads_input(wildcards, False)
 
 def filtering_reads_input(wildcards, paired=True):
-    """
+    '''
     FASTQ input files for the paired-/single-end MG/MT reads filtering rule.
     Note, that rRNA filtering for MT reads has a separate rule.
 
@@ -203,16 +198,16 @@ def filtering_reads_input(wildcards, paired=True):
         wildcards from the rule, must contain keywords 'type', 'filterstep'
     paired : bool
         paired-end (R1, R2, SE) or single-end (SE) reads
-    """
+    '''
     import re
     # list of steps
-    filtersteps = wildcards.filterstep.split(".")
+    filtersteps = wildcards.filterstep.split('.')
     # checks
     assert wildcards.type in TYPES, 'invalid reads type: {} for {}'.format(wildcards.type, wildcards.filterstep)
     if wildcards.type == 'mg':
-        assert re.match(r"trimmed", wildcards.filterstep), 'no trimmed in {} for {}'.format(wildcards.filterstep, wildcards.type)
+        assert re.match(r'trimmed', wildcards.filterstep), 'no trimmed in {} for {}'.format(wildcards.filterstep, wildcards.type)
     elif wildcards.type == 'mt':
-        assert re.match(r"trimmed\.rna_filtered", wildcards.filterstep), 'no trimmed.rna_filtered in {} for {}'.format(wildcards.filterstep, wildcards.type)
+        assert re.match(r'trimmed\.rna_filtered', wildcards.filterstep), 'no trimmed.rna_filtered in {} for {}'.format(wildcards.filterstep, wildcards.type)
     # input files
     ifiles = expand(
         'Preprocessing/{type}.{read}.{filterstep}.fq',
@@ -220,15 +215,15 @@ def filtering_reads_input(wildcards, paired=True):
         read=['r1', 'r2', 'se'] if paired else ['se'],
         filterstep='.'.join(filtersteps[:-1])
     )
-    # print("{}: {}".format(filtersteps, ifiles))
+    # print('{}: {}'.format(filtersteps, ifiles))
     return ifiles
 
 def filtering_filter(wildcards):
-    """Reference input files for the paired-/single-end MG/MT reads filtering rule."""
+    '''Reference input files for the paired-/single-end MG/MT reads filtering rule.'''
     return ancient(expand(
-        "{dir}/filtering/{filter}.{ext}",
+        '{dir}/filtering/{filter}.{ext}',
         dir=DBPATH,
-        filter=wildcards.filterstep.split(".")[-1].split("_")[0],
+        filter=wildcards.filterstep.split('.')[-1].split('_')[0],
         ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa']
     ))
 
@@ -236,13 +231,13 @@ def filtering_filter(wildcards):
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_gziped.get(**wildcards).output[0]
     type=wildcards.type
-    pot_reads = expand("Preprocessing/{type}.{i}.fq",
+    pot_reads = expand('Preprocessing/{type}.{i}.fq',
            type=type,
-           i=glob_wildcards("Preprocessing/"+ type + ".{i}.fq").i)
-    last_reads = [os.readlink(l) for l in expand("Preprocessing/{type}.{read}.preprocessed.fq",
-                                                   type=type,read=["r1","r2","se"])]
-    valid_reads = [f for f in list(set(pot_reads).difference(["Preprocessing/" + s for s in last_reads])) if not os.path.islink(f)]
-    return([s + ".gz" for s in valid_reads])
+           i=glob_wildcards('Preprocessing/'+ type + '.{i}.fq').i)
+    last_reads = [os.readlink(l) for l in expand('Preprocessing/{type}.{read}.preprocessed.fq',
+                                                   type=type,read=['r1','r2','se'])]
+    valid_reads = [f for f in list(set(pot_reads).difference(['Preprocessing/' + s for s in last_reads])) if not os.path.islink(f)]
+    return([s + '.gz' for s in valid_reads])
 
 
 # BINNING:
@@ -251,16 +246,16 @@ def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
     # print('gather_bins checkpoint_output:', checkpoint_output)
     if MG or MGaln:
-        # print('gather_bins out:', expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i))
-        return expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i)  # +\
-               # expand("Binning/MetaWrap/bins/{i}/grid", i=glob_wildcards("Binning/MetaWrap/bins/{i}/reads.fastq.gz").i)
+        # print('gather_bins out:', expand('Binning/MetaWrap/bins/{i}/grid', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i))
+        return expand('Binning/MetaWrap/bins/{i}/grid', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i)  # +\
+               # expand('Binning/MetaWrap/bins/{i}/grid', i=glob_wildcards('Binning/MetaWrap/bins/{i}/reads.fastq.gz').i)
     else:
-        return ""
+        return ''
 
 
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    return expand("Binning/MetaWrap/bins/{i}/{tool}", i=glob_wildcards("Binning/MetaWrap/bins/{i}/contigs.fasta").i, tool=["GTDB","grid"] if MG else ["GTDB"])
+    return expand('Binning/MetaWrap/bins/{i}/{tool}', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i, tool=['GTDB','grid'] if MG else ['GTDB'])
 
 
 def check_bintabs(wildcards):
@@ -268,10 +263,10 @@ def check_bintabs(wildcards):
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
-        s2b_path = os.path.join(OUTPUTDIR, "Binning", binner, "contig2bin.tsv")
+        s2b_path = os.path.join(OUTPUTDIR, 'Binning', binner, 'contig2bin.tsv')
         if os.path.exists(s2b_path) and os.stat(s2b_path).st_size > 0:
             valid_binners.append(binner)
-    return expand("Binning/{binner}/contig2bin.tsv",binner=valid_binners)
+    return expand('Binning/{binner}/contig2bin.tsv',binner=valid_binners)
 
 
 def check_binner_bin_fastas(wildcards):
@@ -280,14 +275,14 @@ def check_binner_bin_fastas(wildcards):
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
-        bin_list = glob.glob(OUTPUTDIR + "/Binning/" + binner + "/bins/*.fasta")
+        bin_list = glob.glob(OUTPUTDIR + '/Binning/' + binner + '/bins/*.fasta')
         if bin_list:
             if any(os.stat(bin).st_size > 0 for bin in bin_list):
                 valid_binners.append(binner)
-    if glob.glob(OUTPUTDIR + "/Binning/DASTool/bins/*.fasta"):
-        valid_binners.append("DASTool")
+    if glob.glob(OUTPUTDIR + '/Binning/DASTool/bins/*.fasta'):
+        valid_binners.append('DASTool')
 
-    binner_out_paths = expand("Binning/{binner}/bins", binner=valid_binners)
+    binner_out_paths = expand('Binning/{binner}/bins', binner=valid_binners)
     # print('check_binner_bin_fastas out', binner_out_paths)
 
     return binner_out_paths
@@ -296,9 +291,9 @@ def check_binner_bin_fastas(wildcards):
 def check_binner_dirs(wildcards):
     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
 
-    binner_out_paths, = glob_wildcards(os.path.join("Binning", "{binner}"))
+    binner_out_paths, = glob_wildcards(os.path.join('Binning', '{binner}'))
 
-    return os.path.join("Binning", "{binner}")
+    return os.path.join('Binning', '{binner}')
 
 
 
@@ -316,9 +311,9 @@ def get_mw_binner_inputs(wildcards):
             if any(os.stat(bin).st_size > 0 for bin in bin_list):
                 valid_binners.append(binner)
     if glob.glob(f'{OUTPUTDIR}/Binning/DASTool/bins/*.fasta'):
-        valid_binners.append("DASTool")
+        valid_binners.append('DASTool')
 
-    binner_fasta_dirs = [f"Binning/{binner}/bins" for binner in valid_binners]
+    binner_fasta_dirs = [f'Binning/{binner}/bins' for binner in valid_binners]
 
     out_list = []
     prefixes = ['-A ', '-B ', '-C ']
@@ -345,15 +340,15 @@ def get_mw_binner_inputs(wildcards):
 
 
 def getBam(wildcards):
-    ori_sample = wildcards.clusterID.split(".")[0]
-    return expand("{raw_directory}/Assembly/mg.reads.sorted.bam", raw_directory=samples.path[ori_sample])
+    ori_sample = wildcards.clusterID.split('.')[0]
+    return expand('{raw_directory}/Assembly/mg.reads.sorted.bam', raw_directory=samples.path[ori_sample])
 
 
 def aggregate_mantis_fc(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
-    return expand("Analysis/annotation/{type}.mantis.{i}.counts.tsv", i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
+    return expand('Analysis/annotation/{type}.mantis.{i}.counts.tsv', i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,type=TYPES)
 
 
 def aggregate_mantis_fc_per_contig(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
-    return expand("Stats/{type}/annotation/{type}.mantis.{i}.counts.tsv", i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
+    return expand('Stats/{type}/annotation/{type}.mantis.{i}.counts.tsv', i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,type=TYPES)

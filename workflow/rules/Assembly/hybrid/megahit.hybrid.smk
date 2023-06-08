@@ -14,11 +14,11 @@ rule megahit_hybrid_assembly_1:
         out_dir = directory('Assembly/intermediary/mgmt.megahit_hybrid.1')
     resources:
         runtime = "24:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        getThreads(BIGCORENO, bigmem=True)
+        getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
-        max_mem = int(BIGMEMTOTAL * byte_dict[config["mem"]["mem_unit"]]),
+        max_mem = int(MAIN_BIGMEMTOTAL * byte_dict[config['cluster_specs']["mem_unit"]]),
         kmer_list = config["assembly"]["kmer_list"]
     conda:
         ENVDIR + "/IMP_assembly.yaml"
@@ -57,11 +57,11 @@ rule megahit_hybrid_assembly_2:
         out_dir = directory('Assembly/intermediary/mgmt.megahit_hybrid.2')
     resources:
         runtime = "01:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        getThreads(BIGCORENO, bigmem=True)
+        getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
-        max_mem = int(BIGMEMTOTAL * byte_dict[config["mem"]["mem_unit"]]),
+        max_mem = int(MAIN_BIGMEMTOTAL * byte_dict[config['cluster_specs']["mem_unit"]]),
         kmer_list = config["assembly"]["kmer_list"]
     conda:
         ENVDIR + "/IMP_assembly.yaml"

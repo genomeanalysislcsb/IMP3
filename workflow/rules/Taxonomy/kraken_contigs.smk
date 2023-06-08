@@ -1,24 +1,21 @@
 from os.path import getsize, join
 KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['kraken']['krakendb'] + "/hash.k2d" )) / 1000000000
-KRAKTHREADS = round((KRAKSIZE / (float(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]])) + 0.5)
+KRAKTHREADS = round((KRAKSIZE / (float(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]])) + 0.5)
 
 rule kraken_contigs:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS,
-        # # To facilitate multi part runs
-        # assembly_h1h2= os.path.join(OUTPUTDIR,"Assembly","intermediary","join_h1_with_h2/merged_h1_with_h2_rn.fasta"),
-        # assembly_h2h1=os.path.join(OUTPUTDIR,"Assembly","intermediary","join_h2_with_h1/merged_h2_with_h1_rn.fasta")
     output:
         "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS,
         "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS
     resources:
         runtime = "8:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = HIGH_MEM_BIGMEMCORE_MB
     params:
         confidence = config['kraken']['confidence'],
         database = os.path.join(DBPATH, config['kraken']['krakendb'])
     threads:
-        getThreads(KRAKTHREADS, bigmem=True)
+        getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
     conda:
         ENVDIR + "/IMP_taxonomy.yaml"
     log:
@@ -47,7 +44,7 @@ rule kraken_parse:
         1
     resources:
         runtime = "2:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:

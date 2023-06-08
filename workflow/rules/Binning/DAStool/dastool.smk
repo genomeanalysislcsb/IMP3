@@ -26,7 +26,7 @@ rule DAS_tool:
         out_name="Binning/DASTool/selected"
     resources:
         runtime = "02:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     conda:
         ENVDIR + "/IMP_annotation.yaml"
     log:
@@ -88,10 +88,10 @@ rule format_protein_names:
         "Binning/prokka.renamed.faa"
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        max(int(math.ceil(10 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     log:
         "logs/binning_format_protein_names.log"
     message:

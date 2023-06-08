@@ -40,12 +40,12 @@ else:
             directory('Assembly/intermediary/mgmt.metaspades_hybrid.1')
         params:
             contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa",
-            gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
+            gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
         resources:
             runtime = "48:00:00",
-            mem_mb = BIGMEMCORE_MB
+            mem_mb = MAIN_BIGMEMCORE_MB
         threads:
-            getThreads(BIGCORENO, bigmem=True)
+            getThreads(MAIN_BIGCORENO, bigmem=True)
         conda:
             ENVDIR + "/IMP_assembly.yaml"
         log:
@@ -74,12 +74,12 @@ rule metaspades_hybrid_assembly_2:
         directory('Assembly/intermediary/mgmt.metaspades_hybrid.2')
     params:
         contigs = "",
-        gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
+        gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
     resources:
         runtime = "48:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        getThreads(BIGCORENO, bigmem=True)
+        getThreads(MAIN_BIGCORENO, bigmem=True)
     conda:
         ENVDIR + "/IMP_assembly.yaml"
     log:
@@ -103,7 +103,7 @@ rule concatenate_mapped_unmapped:
         'Assembly/intermediary/mt.metaspades_preprocessed.1.final.contig.fa'
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     conda:

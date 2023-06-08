@@ -25,7 +25,7 @@ rule nonpareil:
         expand('Stats/mg/mg.{{read}}_nonpareil.{suffix}',suffix=["npa","npc","npl","npo"])
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         out1 = "Stats/mg/mg",
         out2 = "_nonpareil" 
@@ -48,7 +48,7 @@ rule nonpareil_curve:
         report('Stats/mg/mg.{read}_nonpareil.diversity.txt',category="Preprocessing")
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     conda:

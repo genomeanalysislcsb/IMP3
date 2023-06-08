@@ -6,7 +6,7 @@ rule assembly_contig_length:
         "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS),
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     conda:

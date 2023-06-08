@@ -126,7 +126,7 @@ rule prepare_input_data_copy:
         getThreads(5)
     resources:
         runtime = "01:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
@@ -217,7 +217,7 @@ rule check_bam_input:
     threads: 1
     resources:
         runtime = "4:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     message: "Checking {wildcards.type} alignment."
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
@@ -238,7 +238,7 @@ rule check_ann_input:
     threads: 1
     resources:
         runtime = "4:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     message: "Checking annotation."
     conda:
         os.path.join(ENVDIR, "IMP_bioperl.yaml")

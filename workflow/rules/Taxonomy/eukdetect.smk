@@ -107,7 +107,7 @@ rule ED_runaln:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_aln.{sample}.log"
     message: "runaln: Running mapping for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -128,7 +128,7 @@ rule ED_bam2fastq:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_bam2fastq.{sample}.log"
     message: "bam2fastq: Running bam2fastq for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -145,7 +145,7 @@ rule ED_find_low_complexity:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
 #    log: "logs/analysis_eukdetect_find_low_complexity.{sample}.log"
     message: "find_low_complexity: Finding low complexity for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -163,7 +163,7 @@ rule ED_remove_low_complexity:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_remove_low_complexity.{sample}.log"
     message: "remove_low_complexity: Removing low complexity for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -182,7 +182,7 @@ rule ED_fixmate:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_fixmate.{sample}.log"
     message: "fixmate: Running fixmate for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -199,7 +199,7 @@ rule ED_markdup:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_markdup.{sample}.log"
     message: "markdup: Running markdup for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -216,7 +216,7 @@ rule ED_rmsort:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_rmsort.{sample}.log"
     message: "rmsort: Running rmsort for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -234,7 +234,7 @@ if not 'assembly' in IMP_STEPS and not 'analysis' in IMP_STEPS:
         threads: 1
         resources:
             runtime = "12:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log: "logs/analysis_eukdetect_index.{sample}.log"
         message: "index: Indexing bam for eukdetect on {wildcards.sample} reads."
         conda: ENVDIR + "/eukdetect.yaml"
@@ -255,7 +255,7 @@ rule ED_countreads:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_countreads.{sample}.log"
     message: "countreads: Counting {wildcards.sample} reads for eukdetect."
     conda: ENVDIR + "/eukdetect.yaml"
@@ -279,7 +279,7 @@ rule ED_taxonomize:
     threads: 1
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_taxonomize.{sample}.log"
     message: "taxonomize: Taxonomy of {wildcards.sample} reads for eukdetect."
     conda: ENVDIR + "/eukdetect.yaml"

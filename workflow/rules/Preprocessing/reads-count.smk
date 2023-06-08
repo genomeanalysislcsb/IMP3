@@ -5,7 +5,7 @@ rule reads_count:
         report('Stats/{type}/{type}.read_counts.txt',category="Preprocessing")
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     # log:
@@ -24,7 +24,7 @@ rule reads_gzip:
         "status/preprocessing_{type}.reads.compressed"
     resources:
         runtime = "00:01:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     message:
@@ -44,7 +44,7 @@ rule gzip_ori_files:
         type="m."
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(5)
     conda:
@@ -66,7 +66,7 @@ rule gzip_files:
         "Preprocessing/{type}.{read}.{stage}.fq.gz"
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(5)
     conda:
@@ -87,7 +87,7 @@ checkpoint reads_gziped:
         "status/preprocessing_{type}.reads.detected"
     resources:
         runtime = "00:01:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     message:

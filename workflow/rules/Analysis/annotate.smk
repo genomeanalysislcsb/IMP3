@@ -15,7 +15,7 @@ rule hmmer:
         dbs = DBPATH + "/hmm/{db}"
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     threads: getThreads(12)
@@ -45,7 +45,7 @@ rule makegff:
         lambda wildcards: config["hmm_settings"][wildcards.db]["trim"]
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     conda:
@@ -78,10 +78,10 @@ rule mergegff:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
+        max(int(math.ceil(10 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     log:
         "logs/analysis_mergegff.log"
     message:
@@ -106,10 +106,10 @@ rule tar_annotation:
         "Analysis/annotation/intermediary.tar.gz"
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 8)
+        max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 8)
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         intermediary = "Analysis/annotation/intermediary/"
     log:

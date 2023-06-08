@@ -36,7 +36,7 @@ elif config["assembly"]["merge"] == "cap3":
             'Assembly/%s.assembly.merged.fa' % ASS,
         resources:
             runtime = "48:00:00",
-            mem_mb = BIGMEMCORE_MB
+            mem_mb = MAIN_BIGMEMCORE_MB
         params:
             sample = SAMPLE
         threads: 1
@@ -74,12 +74,12 @@ elif config["assembly"]["merge"] == "flye":
             final='Assembly/%s.assembly.merged.fa' % ASS,
         resources:
             runtime = "12:00:00",
-            mem_mb = BIGMEMCORE_MB
+            mem_mb = MAIN_BIGMEMCORE_MB
         params:
             sample = SAMPLE,
             iters = 0,
             minoverlap = 1000
-        threads: getThreads(BIGCORENO, bigmem=True)
+        threads: getThreads(MAIN_BIGCORENO, bigmem=True)
         conda:
             os.path.join(ENVDIR, "IMP_assembly.yaml")
         log:
@@ -114,7 +114,7 @@ elif config["assembly"]["merge"] == "quickmerge":
     #         os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install_benchmark.tsv")
     #     resources:
     #         runtime = "01:00:00",
-    #         mem_mb = MEMCORE_MB
+    #         mem_mb = MAIN_MEMCORE_MB
     #     threads:
     #         1
     #     conda:
@@ -144,7 +144,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             os.path.join(OUTPUTDIR,"logs","assembly_merge_hybrid_format_fastas_benchmark.tsv")
         resources:
             runtime = "02:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
             # assembly_nr = lambda wc: wc.get("assembly_nr")
@@ -182,7 +182,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1_with_h2_benchmark.tsv")
         resources:
             runtime = "12:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
             work_dir = OUTPUTDIR,
@@ -243,7 +243,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             os.path.join(OUTPUTDIR, "logs",  "assembly_join_h2_with_h1_benchmark.tsv")
         resources:
             runtime = "12:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
             work_dir = OUTPUTDIR,
@@ -305,7 +305,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1h2_with_h2h1_benchmark.tsv")
         resources:
             runtime = "24:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
             min_overlap=config["assembly"]["quickmerge"]["min_overlap"],
@@ -396,7 +396,7 @@ elif config["assembly"]["merge"] == "quickmerge":
     #         os.path.join(OUTPUTDIR, "logs",  "assembly_clean_up_assembly_merge_benchmark.tsv")
     #     resources:
     #         runtime = "06:00:00",
-    #         mem_mb = MEMCORE_MB
+    #         mem_mb = MAIN_MEMCORE_MB
     #     params:
     #         sample = SAMPLE,
     #         s_dir=os.path.join(OUTPUTDIR,"Assembly","intermediary")

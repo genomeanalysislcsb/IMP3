@@ -8,12 +8,12 @@ rule variant_calling:
         "Analysis/snps/{type}.variants.samtools.vcf.gz",
     resources:
         runtime = "24:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     threads:
         # Ensure at least 20gb of mem
-        max(int(math.ceil(20 / (int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
+        max(int(math.ceil(20 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     log:
         "logs/analysis_variant_calling.{type}.log"
     message:

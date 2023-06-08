@@ -12,7 +12,7 @@ rule metadecoder:
         getThreads(8)
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         ENVDIR + "/IMP_metadecoder.yaml"
     log:
@@ -67,7 +67,7 @@ rule metadecoder_contig2bin:
         metadecoder_s2b="Binning/MetaDecoder/contig2bin.tsv"
     resources:
         runtime = "00:10:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     message:

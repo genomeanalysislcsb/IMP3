@@ -33,7 +33,7 @@ rule visualize_read_stats:
                caption="../../report/stats/Reads.rst",category="Preprocessing")
     resources:
         runtime = "01:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/visualize_read_stats.log"
     message: "visualize_read_stats: Plotting reads figure."
     threads: 1
@@ -52,7 +52,7 @@ rule visualize_assembly_stats:
         report("Visualization/Assembly_cov_gc_scatter.png",caption="../../report/stats/Assembly_cov_gc.rst",category="Assembly")
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/visualize_assembly_stats.log"
     message:
@@ -74,7 +74,7 @@ rule visualize_analysis_stats:
         report("Visualization/Analysis_func_sets.png",caption="../../report/stats/Analysis_func.rst",category="Analysis")
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/visualize_analysis_stats.log"
     message:
@@ -96,7 +96,7 @@ if CONTIGS or "assembly" in IMP_STEPS:
             report("Visualization/Taxonomy_kraken_plot.png",caption="../../report/stats/Taxonomy_kraken_scatter_withAssembly.rst",category="Taxonomy")
         resources:
             runtime = "02:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/visualize_kraken_reads.log"
         message:
@@ -116,7 +116,7 @@ else:
             report("Visualization/Taxonomy_kraken_plot.png",caption="../../report/stats/Taxonomy_kraken_scatter.rst",category="Taxonomy")
         resources:
             runtime = "02:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/visualize_kraken_reads.log"
         message:
@@ -138,7 +138,7 @@ if "analysis" in IMP_STEPS:
             report("Visualization/Taxonomy_mOTU_plot.png",caption="../../report/stats/Taxonomy_mOTU_withAnalysis.rst",category="Taxonomy"),
         resources:
             runtime = "02:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/visualize_mOTU_reads.log"
         message:
@@ -158,7 +158,7 @@ else:
             report("Visualization/Taxonomy_mOTU_plot.png",caption="../../report/stats/Taxonomy_mOTU.rst",category="Taxonomy"),
         resources:
             runtime = "2:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log: "logs/visualize_mOTU_reads.log"
         message: "visualize_mOTU_reads: Plotting taxonomy results."
         threads: 1
@@ -180,7 +180,7 @@ else:
 #             report("Visualization/Binning_vizbin.png",caption="../../report/stats/Binning_vizbin.rst",category="Binning")
 #         resources:
 #             runtime = "2:00:00",
-#             mem_mb = MEMCORE_MB
+#             mem_mb = MAIN_MEMCORE_MB
 #         log: "logs/visualize_bins.log"
 #         message: "visualize_bins: Plotting binning results."
 #         threads: 1
@@ -199,7 +199,7 @@ rule visualize_bins:
         report(expand("Visualization/Binning_{type}_depth.png",type=TYPES),caption="../../report/stats/Binning_depth.rst",category="Binning")
     resources:
         runtime = "2:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/visualize_bins.log"
     message: "visualize_bins: Plotting binning results."
     threads: 1

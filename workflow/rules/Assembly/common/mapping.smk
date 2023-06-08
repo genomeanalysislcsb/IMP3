@@ -1,4 +1,4 @@
-SAMTOOLS_MEM = str(round(float(BIGMEMCORE[:-1]) * 0.75 - 0.5)) + config['mem']['mem_unit']
+SAMTOOLS_MEM = str(round(float(MAIN_BIGMEMCORE[:-1]) * 0.75 - 0.5)) + config['cluster_specs']['mem_unit']
 
 rule mapping_on_assembly:
     input:
@@ -15,9 +15,9 @@ rule mapping_on_assembly:
         'Assembly/{type}.reads.sorted.bam'
     resources:
         runtime = "12:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        getThreads(BIGCORENO, bigmem=True)
+        getThreads(MAIN_BIGCORENO, bigmem=True)
     conda:
         ENVDIR + "/IMP_mapping.yaml"
     log:
@@ -62,7 +62,7 @@ rule index_bam:
         '{sorted_bam}.bai'
     resources:
         runtime = "04:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         1
     conda:

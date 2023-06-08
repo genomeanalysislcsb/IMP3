@@ -12,7 +12,7 @@ rule metabat:
         getThreads(8)
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:

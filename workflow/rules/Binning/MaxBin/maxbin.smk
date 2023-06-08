@@ -9,7 +9,7 @@ rule maxbin:
         getThreads(14)
     resources:
         runtime = "24:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:

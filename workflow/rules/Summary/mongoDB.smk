@@ -13,7 +13,7 @@ rule mongo_server:
         port = config["mongo_port"]
     resources:
         runtime = "08:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/summary_mongo_server.log"
     message:
@@ -69,7 +69,7 @@ rule mongoDB_bins:
         port = config["mongo_port"]
     resources:
         runtime = "08:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/summary_mongoDB_bins.log"
     message:
@@ -96,7 +96,7 @@ rule mongoDB_contigs:
         port = config["mongo_port"],
     resources:
         runtime = "08:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/summary_mongoDB_contigs.log"
     message:

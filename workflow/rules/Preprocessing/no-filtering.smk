@@ -8,7 +8,7 @@ rule no_filtering:
         'Preprocessing/{type}.se.preprocessed.fq'
     resources:
         runtime = "01:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     # log:

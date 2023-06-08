@@ -25,12 +25,12 @@ rule MetaWrap_refine:
         prefix_1="metawrap_round_01",
         prefix_2="metawrap_round_02",
         prefix_3="metawrap_round_03",
-        total_mem=int(float(int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]) * getThreads(BIGCORENO, bigmem=True))
+        total_mem=int(float(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]) * getThreads(MAIN_BIGCORENO, bigmem=True))
     threads:
-        getThreads(BIGCORENO, bigmem=True)
+        getThreads(MAIN_BIGCORENO, bigmem=True)
     resources:
         runtime = "24:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:
@@ -181,10 +181,10 @@ rule compress_binner_out:
         "Binning/{binner}.tar.gz"
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 8)
+        max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 8)
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/compress_binner_{binner}.log"
     message:

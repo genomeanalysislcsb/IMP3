@@ -1,5 +1,6 @@
 import glob
 import math
+import os
 
 if MG and "taxonomy" not in IMP_STEPS:
 
@@ -24,14 +25,14 @@ if MG and "taxonomy" not in IMP_STEPS:
             out_file=report("Stats/%s/%s.bins.tsv" %(ASS,ASS), "Binning")
         resources:
             runtime = "00:10:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/binning_GRID_summarize.log"
         message:
             "GRID_summarize: Summarizing binning results."
         threads:
             # Ensure at least 5gb of mem
-            max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+            max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         run:
             # Check if MetaWrap output is empty
             if os.stat(input.mw_stats).st_size > 0:
@@ -47,23 +48,28 @@ if MG and "taxonomy" not in IMP_STEPS:
                         mw_stats_data[bin] = line
 
                 # Read GRiD out
-                got_grid_header = False
+                grid_header_part_list = ['GRiD', '95% CI', 'GRiD unrefined', 'Species heterogeneity', 'Coverage', 'dnaA/ori ratio', 'ter/dif ratio']
+                grid_header_part = '\t'.join(grid_header_part_list)
 
                 print("Reading GRiD results.")
                 with open(output.out_file, 'w') as of:
                     # Get all GRiD stat files
-                    grid_out = glob.glob("Binning/MetaWrap/bins/*/grid/reads.GRiD.txt")
+                    grid_out = glob.glob("Binning/MetaWrap/bins/*/grid")
                     if grid_out:
+                        header = f'{header}\t{grid_header_part}\n'
+                        of.write(header)
                         for bin_grid_data in grid_out:
                             bin = bin_grid_data.split('/')[-3]
-                            with open(bin_grid_data, 'r') as f:
-                                if not got_grid_header:
-                                    header = header + '\t' + '\t'.join(next(f).strip(' \t').split('\t')[1:])
-                                    of.write(header)
-                                    got_grid_header = True
-                                else:
+                            grid_file = f'{grid_out}/reads.GRiD.txt'
+                            if os.path.exists(grid_file) and not os.stat(grid_file).st_size == 0:
+                                with open(grid_file, 'r') as f:
+                                    # Skip header
                                     next(f)
-                                of.write('\t'.join(mw_stats_data[bin] + next(f).split('\t')[1:]))
+                                    # Add and write single bin stat line
+                                    of.write('\t'.join(mw_stats_data[bin] + next(f).split('\t')[1:]))
+                            else:
+                                # If no grid out for bin, write n tabs, depending on number of grid fields
+                                of.write('\t'.join(mw_stats_data[bin] + ['\t'] * len(grid_header_part_list)))
                     else:
                         of.write(header)
                         for bin in mw_stats_data.keys():
@@ -83,7 +89,7 @@ if MG and "taxonomy" not in IMP_STEPS:
             1
         resources:
             runtime = "02:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/binning_bins_tar.log"
         message:
@@ -104,7 +110,7 @@ checkpoint getBins:
         "status/binning_GRiD.prepped"
     resources:
         runtime = "8:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     # log:
@@ -131,10 +137,10 @@ if MG:
             clusterInput="Binning/MetaWrap/bins"
         resources:
             runtime = "02:00:00",
-            mem_mb = BIGMEMCORE_MB
+            mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             # Ensure at least 5gb of mem
-            max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+            max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         conda:
             ENVDIR + "/IMP_annotation.yaml"
         log:
@@ -156,10 +162,10 @@ if MG:
             "Binning/MetaWrap/bins/{clusterID}/contigs.bed"
         resources:
             runtime = "01:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         threads:
             # Ensure at least 5gb of mem
-            max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+            max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         log:
             "logs/binning_prepare_gridBed.{clusterID}.log"
         message:
@@ -177,10 +183,10 @@ if MG:
             reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
         resources:
             runtime = "02:00:00",
-            mem_mb = BIGMEMCORE_MB
+            mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             # Ensure at least 5gb of mem
-            max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+            max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         log:
             "logs/binning_prepare_gridReads.{clusterID}.log"
         message:

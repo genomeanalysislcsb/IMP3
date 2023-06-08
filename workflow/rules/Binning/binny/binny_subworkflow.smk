@@ -2,8 +2,8 @@ from snakemake.utils import min_version
 min_version("6.0")
 
 # Copy some params since Snakemake yaml doesn't allow param mapping
-config["binning"]["binny"]["mem"] = {"big_mem_per_core_gb": int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]],
-                                     "normal_mem_per_core_gb": int(MEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]],
+config["binning"]["binny"]['cluster_specs'] = {"big_mem_per_core_gb": int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]],
+                                     "normal_mem_per_core_gb": int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]],
                                      "big_mem_avail": True}
 config["binning"]["binny"]["tmp_dir"] = config["tmp_dir"]
 config["binning"]["binny"]["sample"] = config["sample"]
@@ -45,7 +45,7 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
         getThreads(64)
     resources:
         runtime="24:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/binning_binny_mantis_checkm.log"
     message:
@@ -94,7 +94,7 @@ use rule binny from binny_workflow as binny_binny with:
         getThreads(64)
     resources:
         runtime = "48:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/binning_binny.log"
 
@@ -105,7 +105,7 @@ rule binny_contig2bin:
         binny_s2b
     resources:
         runtime = "01:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     message:

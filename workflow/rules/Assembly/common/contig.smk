@@ -9,7 +9,7 @@ rule tar_intermediary:
         1
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         intermediary = "Assembly/intermediary/"
     log:
@@ -28,7 +28,7 @@ rule contig_fasta_indexing:
         "Assembly/%s.assembly.merged.fa.fai" % ASS
     resources:
         runtime = "04:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     conda:
@@ -50,7 +50,7 @@ rule contig_fasta2bed_conversion:
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
     resources:
         runtime = "02:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         1
     # log:

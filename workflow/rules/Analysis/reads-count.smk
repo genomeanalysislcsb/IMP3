@@ -46,7 +46,7 @@ if MG or MT:
             'Stats/{type}/{type}.read_counts.txt'
         resources:
             runtime = "02:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         threads:
             1
         # log:
@@ -65,7 +65,7 @@ elif MGaln or MTaln:
             'Stats/{type}/{type}.read_counts.txt'
         resources:
             runtime = "02:00:00",
-            mem_mb = MEMCORE_MB
+            mem_mb = MAIN_MEMCORE_MB
         threads:
             1
         conda:

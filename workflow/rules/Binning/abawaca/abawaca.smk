@@ -14,7 +14,7 @@ rule abawaca:
         getThreads(32)
     resources:
         runtime = "24:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         ENVDIR + "/IMP_binning.yaml"
     log:

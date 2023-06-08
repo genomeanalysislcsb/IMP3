@@ -32,11 +32,11 @@ if LONG:
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
         resources:
             runtime = "24:00:00",
-            mem_mb = BIGMEMCORE_MB
+            mem_mb = MAIN_BIGMEMCORE_MB
         threads:
-            getThreads(BIGCORENO, bigmem=True)
+            getThreads(MAIN_BIGCORENO, bigmem=True)
         params:
-            gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
+            gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
         conda:
             ENVDIR + "/IMP_assembly.yaml"
         log:
@@ -57,11 +57,11 @@ else:
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
         resources:
             runtime = "24:00:00",
-            mem_mb = BIGMEMCORE_MB
+            mem_mb = MAIN_BIGMEMCORE_MB
         threads:
-            getThreads(BIGCORENO, bigmem=True)
+            getThreads(MAIN_BIGCORENO, bigmem=True)
         params:
-            gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
+            gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
         conda:
             ENVDIR + "/IMP_assembly.yaml"
         log:
@@ -82,11 +82,11 @@ rule metaspades_assembly_from_unmapped:
         'Assembly/intermediary/{type}.metaspades_unmapped.2.fa'
     resources:
         runtime = "48:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        getThreads(BIGCORENO, bigmem=True)
+        getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
-        gb_mem_total = int(BIGMEMTOTAL * to_gb_dict[config["mem"]["mem_unit"]])
+        gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
     conda:
         ENVDIR + "/IMP_assembly.yaml"
     log:

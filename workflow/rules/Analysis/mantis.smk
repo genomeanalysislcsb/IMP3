@@ -26,7 +26,7 @@ rule mantis_annot:
         getThreads(128)
     resources:
         runtime="12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     message:
         "Mantis: annotate {input}"
     conda:
@@ -51,7 +51,7 @@ rule mantis_reformat_consensus:
         contab="Analysis/annotation/intermediary/mantis/consensus_annotation.reformatted.tsv"  # Used to be temp()
     resources:
         runtime="01:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     message:
         "Mantis: reformat {input}"
     shell:
@@ -70,10 +70,10 @@ checkpoint makegff_mantis:
         prefix="Analysis/annotation/intermediary/mantis/consensus_annotation.mantis"
     resources:
         runtime="12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))), 1)
+        max(int(math.ceil(10 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     message:
         "Mantis: Create GFF from {input}"
     log:

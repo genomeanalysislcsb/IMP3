@@ -17,7 +17,7 @@ def smk_get_sortmerna_params(wildcards, input):
     # --aligned/--other: output (non)-aligned reads
     params = "{refs} --fastx -m {mem} --aligned --other".format(
         refs=" ".join(["--ref %s" % ref for ref in input.refs]),
-        mem=int(MEMCORE[:-1]) * 1000
+        mem=int(MAIN_MEMCORE[:-1]) * 1000
     )
     # additional parameters for PE reads
     if hasattr(input, "r1"):
@@ -49,10 +49,10 @@ rule filter_rrna_pe:
         "logs/preprocessing_filter_rrna_pe.log"
     threads:
         # Ensure at least 50gb of mem
-        max(int(math.ceil(50 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        max(int(math.ceil(50 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     resources:
         runtime = "24:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         params=smk_get_sortmerna_params,
     conda:
@@ -98,7 +98,7 @@ rule filter_rrna_se:
         getThreads(8)
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     params:
         params=smk_get_sortmerna_params,
     conda:

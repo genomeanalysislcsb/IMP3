@@ -11,10 +11,10 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.gene.len"
     resources:
         runtime = "12:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         # Ensure at least 20gb of mem
-        max(int(math.ceil(20 / (int(BIGMEMCORE[:-1]) * to_gb_dict[config["mem"]["mem_unit"]]))),1)
+        max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:

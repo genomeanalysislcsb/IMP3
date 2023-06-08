@@ -11,9 +11,9 @@ rule reads_filtering:
         filterstep = "|".join(["trimmed(\.rna_filtered)?\." + "\.".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
         runtime = "08:00:00",
-        mem_mb = BIGMEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        getThreads(BIGCORENO, bigmem=True)
+        getThreads(MAIN_BIGCORENO, bigmem=True)
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:

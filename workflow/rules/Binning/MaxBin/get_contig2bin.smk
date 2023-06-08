@@ -8,7 +8,7 @@ rule maxbin_contig2bin:
     threads: 1
     resources:
         runtime = "01:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     log: "logs/binning_maxbin_contig2bin.log"
     message: "maxbin_contig2bin: Getting contig to bin mapping."
     shell:

@@ -15,7 +15,7 @@ rule semibin:
         getThreads(128)
     resources:
         runtime = "12:00:00",
-        mem_mb = MEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         ENVDIR + "/IMP_semibin.yaml"
     log:
