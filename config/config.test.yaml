@@ -19,13 +19,13 @@ cluster_specs:  ### USER_INPUT ####
   high_mem_cluster:
     mem_total: 126000
     mem_per_core: 4500
-    big_mem_total: 3072000
+    big_mem_total: 2950000
     big_mem_cores: 112
-    big_mem_per_core: 27400
+    big_mem_per_core: 26339
     # Set maximum n cores to use for jobs
     cores_max: 28
-    big_mem_cores_max: 16
-tmp_dir: '/mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/tmp'  ### USER_INPUT ####
+    big_mem_cores_max: 32
+tmp_dir: '/mnt/lscratch/users/ohickl/test_imp3_ul_hybrid/tmp'  ### USER_INPUT ####
 raws:
   Metagenomics: "/mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/test.mg.1.fastq /mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/test.mg.2.fastq"  ### USER_INPUT ####
   Metatranscriptomics: "/mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/test.mt.1.fastq /mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/test.mt.2.fastq"  ### USER_INPUT ####
@@ -61,7 +61,7 @@ trimmomatic:
   target_length: 40
 nextseq: false
 filtering:
-  filter: "PhiX GRCm39 GRCm39rna GRCh38"
+  filter: "PhiX GRCh38_p14_genomic GRCh38_p14_rna"
 sortmerna:
   files:
     - rfam-5.8s-database-id98

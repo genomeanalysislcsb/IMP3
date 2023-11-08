@@ -14,7 +14,7 @@ will also have the trimmed reads processed with `trimmomatic <http://www.usadell
 
 **MetaT** reads are always filtered to remove rRNA reads using `SortMeRNA <https://github.com/biocore/sortmerna>`_ . The remaining reads from this filtering step 
 are named ``mt.<r1|r2|se>.trimmed.rna.fq.gz``. If reads were mapped against one or more reference genomes, the filtered reads are named 
-``mt.<r1|r2|se>.trimmed.rna_filtered.<reference>_filtered.fq.gz`` and/or ``mg.<r1|r2|se>.trimmed.<reference>_filtered.fq.gz``.
+``mt.<r1|r2|se>.trimmed__rna_filtered__<reference>_filtered.fq.gz`` and/or ``mg.<r1|r2|se>.trimmed.<reference>_filtered.fq.gz``.
 
 **Note**: *Why is there a Preprocessing directory if you did not choose to do preprocessing?* If already preprocessed reads were given as :ref:`input <input_options>`,
 these reads will be placed in the ``Preprocessing`` directory following the exact same naming conventions as described above, to ensure that the downstream 

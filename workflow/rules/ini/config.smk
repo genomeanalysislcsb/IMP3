@@ -164,6 +164,7 @@ MAIN_MEMCORE_MB = int(float(MAIN_MEMCORE[:-1]) * to_mb_dict[config['cluster_spec
 MAIN_BIGMEMCORE_MB = int(float(MAIN_BIGMEMCORE[:-1]) * to_mb_dict[config['cluster_specs']['mem_unit']])
 
 if config['cluster_specs'].get('high_mem_cluster'):
+    print('#' * 10, 'HIGH MEM ON', '#' * 10)
     USE_HIGH_MEM_CLUSTER = True
     HIGH_MEM_BIGCORENO = config['cluster_specs']['high_mem_cluster']['big_mem_cores']
     HIGH_MEM_BIGMEMTOTAL = config['cluster_specs']['high_mem_cluster']['big_mem_total']

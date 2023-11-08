@@ -9,6 +9,8 @@ rule assembly_contig_length:
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
+    params:
+        tmp_dir=TMPDIR
     conda:
         ENVDIR + "/IMP_annotation.yaml"
     log:
@@ -22,8 +24,8 @@ rule assembly_contig_length:
         perl {SRCDIR}/fastaNamesSizes.pl {input} > {output[0]} 2>> {log}
 
         echo "Obtaining GC content" >> {log}
-        # AHB TMP_GC=$(mktemp --tmpdir={TMPDIR} -t "gc_out_XXXXXX.txt")
-        TMP_GC=$(mktemp --tmpdir=Analysis -t "gc_out_XXXXXX.txt")
+        export TMPDIR="{params.tmp_dir}"
+        TMP_GC=$(mktemp "gc_out_XXXXXX.txt")
         perl {SRCDIR}/get_GC_content.pl {input} $TMP_GC >> {log} 2>&1
 
         # The program above provides a file gc_out.txt. This command cleans the output

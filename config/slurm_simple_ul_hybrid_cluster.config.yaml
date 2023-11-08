@@ -17,3 +17,8 @@ kraken_contigs:
 kraken_reads:
   clusters: "--clusters 'iris'"
   partition: "--partition bigmem"
+
+# Only if aion oom
+# mantis_annot:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"

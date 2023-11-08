@@ -16,6 +16,8 @@ rule call_contig_depth:
     threads:
         # Ensure at least 20gb of mem
         max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+    params:
+        tmp_dir=TMPDIR
     conda:
         ENVDIR + "/IMP_mapping.yaml"
     log:
@@ -27,7 +29,8 @@ rule call_contig_depth:
         coverageBed -b {input[0]} -a {input[3]} -sorted > {output[0]} 2>> {log}
         echo "Coverage calculation done" >> {log}
         echo "Running BEDTools for average depth in each position" >> {log}
-        TMP_DEPTH=$(mktemp --tmpdir={TMPDIR} -t "depth_file_XXXXXX.txt")
+        export TMPDIR="{params.tmp_dir}"
+        TMP_DEPTH=$(mktemp "depth_file_XXXXXX.txt")
         genomeCoverageBed -ibam {input[0]} | grep -v "genome" > $TMP_DEPTH
         echo "Depth calculation done" >> {log}
 

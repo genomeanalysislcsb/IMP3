@@ -18,7 +18,7 @@ rule tar_intermediary:
         "tar_intermediary: Compressing intermediary steps of assembly."
     shell:
        """
-       tar czf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1
+       tar czf {output} {params.intermediary} && rm -rf {params.intermediary} >> {log} 2>&1
        """
 
 rule contig_fasta_indexing:

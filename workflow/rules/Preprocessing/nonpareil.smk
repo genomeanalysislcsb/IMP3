@@ -7,7 +7,8 @@ if "preprocessing" in IMP_STEPS and int(config['trimmomatic']['minlen'])>=24:
                     """
 else:
    nonpareil_cmd = """
-                   TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "no_short_XXXXXX.fq")
+                   export TMPDIR="{params.tmp_dir}"
+                   TMP_FILE=$(mktemp "no_short_XXXXXX.fq")
                    seqkit seq {input} \
                               -j {threads} \
                               -m 24 >> $TMP_FILE
@@ -27,6 +28,7 @@ rule nonpareil:
         runtime = "04:00:00",
         mem_mb = MAIN_MEMCORE_MB
     params:
+        tmp_dir=TMPDIR,
         out1 = "Stats/mg/mg",
         out2 = "_nonpareil" 
     threads:

@@ -14,6 +14,8 @@ rule variant_calling:
     threads:
         # Ensure at least 20gb of mem
         max(int(math.ceil(20 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+    params:
+        tmp_dir=TMPDIR
     log:
         "logs/analysis_variant_calling.{type}.log"
     message:
@@ -21,8 +23,9 @@ rule variant_calling:
     shell:
         """
         #temporary directory and files
-        VCF_MPU=$(mktemp --tmpdir={TMPDIR} -t "XXXXXX.mpu.vcf")
-        VCF_PLT=$(mktemp --tmpdir={TMPDIR} -t "XXXXXX.plt.vcf")
+        export TMPDIR="{params.tmp_dir}"
+        VCF_MPU=$(mktemp "XXXXXX.mpu.vcf")
+        VCF_PLT=$(mktemp "XXXXXX.plt.vcf")
         echo "$VCF_MPU" > {log}
         echo "$VCF_PLT" >> {log}
 

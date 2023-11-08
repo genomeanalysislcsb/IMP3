@@ -15,6 +15,8 @@ rule call_gene_depth:
     threads:
         # Ensure at least 20gb of mem
         max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+    params:
+        tmp_dir=TMPDIR
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:
@@ -23,7 +25,8 @@ rule call_gene_depth:
         "call_gene_depth: Getting data on gene coverage with {wildcards.type} reads."
     shell:
         """
-        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "annotation_cov_XXXXXX.bed")
+        export TMPDIR="{params.tmp_dir}"
+        TMP_FILE=$(mktemp "annotation_cov_XXXXXX.bed")
         sortBed -g {input[2]} -i  {input[0]} | awk '$4 < $5' | coverageBed -hist -sorted -g {input[2]} -b {input[1]} -a "stdin" | grep -v "^all" > $TMP_FILE
 
         paste <(cat $TMP_FILE | cut -f9 | cut -f1 -d \";\" | sed -e \"s/ID=//g\") \

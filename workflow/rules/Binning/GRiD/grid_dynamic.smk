@@ -129,6 +129,7 @@ checkpoint getBins:
 if MG:
     rule grid:
         input:
+           checkp = "status/binning_GRiD.prepped",
            contigs="Binning/MetaWrap/bins/{clusterID}/contigs.fasta",
            reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
         output:

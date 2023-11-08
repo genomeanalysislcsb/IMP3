@@ -90,7 +90,7 @@ checkpoint reads_gziped:
     output:
         "status/preprocessing_{type}.reads.detected"
     resources:
-        runtime = "00:01:00",
+        runtime = "00:05:00",
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1

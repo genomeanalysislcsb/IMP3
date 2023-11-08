@@ -23,10 +23,12 @@ rule mantis_annot:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
         params="-gff -km -da heuristic",
     threads:
-        getThreads(128)
+        # getThreads(128)
+        getThreads(128, bigmem=True, high_mem_cluster=False)
     resources:
-        runtime="12:00:00",
+        runtime="48:00:00",
         mem_mb = MAIN_MEMCORE_MB
+        # mem_mb = HIGH_MEM_BIGMEMCORE_MB
     message:
         "Mantis: annotate {input}"
     conda:
@@ -50,7 +52,7 @@ rule mantis_reformat_consensus:
     output:
         contab="Analysis/annotation/intermediary/mantis/consensus_annotation.reformatted.tsv"  # Used to be temp()
     resources:
-        runtime="01:00:00",
+        runtime="05:00:00",
         mem_mb = MAIN_MEMCORE_MB
     message:
         "Mantis: reformat {input}"
@@ -69,7 +71,7 @@ checkpoint makegff_mantis:
         sep="|", # separator used in mantis_reformat_consensus
         prefix="Analysis/annotation/intermediary/mantis/consensus_annotation.mantis"
     resources:
-        runtime="12:00:00",
+        runtime="16:00:00",
         mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem

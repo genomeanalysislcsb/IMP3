@@ -46,6 +46,9 @@ def getThreads(cores, bigmem=False, high_mem_cluster=False):
     else:
         realThreads = max_cores
     
+    if high_mem_cluster:
+        print('#' * 10, f'mem_core: {mem_core} mem_total: {mem_total} n_cores: {n_cores} max_cores: {max_cores} realThreads: {realThreads}', '#' * 10)
+
     return realThreads
 
 # data input
@@ -97,9 +100,9 @@ def no_filtering_input(wildcards):
             'Preprocessing/mg.se.trimmed.fq'
         ],
         'mt': [
-            'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-            'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-            'Preprocessing/mt.se.trimmed.rna_filtered.fq'
+            'Preprocessing/mt.r1.trimmed__rna_filtered.fq',
+            'Preprocessing/mt.r2.trimmed__rna_filtered.fq',
+            'Preprocessing/mt.se.trimmed__rna_filtered.fq'
         ]
     }
     if wildcards.type in TYPES:
@@ -132,9 +135,9 @@ def reads_input_files(wildcards):
         'Preprocessing/{type}.se.trimmed.fq'
     ]
     rna_filtered_fq_mt_files = [
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq',
+        'Preprocessing/mt.r1.trimmed__rna_filtered.fq',
+        'Preprocessing/mt.r2.trimmed__rna_filtered.fq',
+        'Preprocessing/mt.se.trimmed__rna_filtered.fq',
     ]
     bam_files = [
         'Assembly/{type}.reads.sorted.bam'
@@ -201,30 +204,31 @@ def filtering_reads_input(wildcards, paired=True):
     '''
     import re
     # list of steps
-    filtersteps = wildcards.filterstep.split('.')
+    # Terrible solution, would need to rework the whole preprocessing filtering at some point
+    filtersteps = wildcards.filterstep.split('__')
+
     # checks
     assert wildcards.type in TYPES, 'invalid reads type: {} for {}'.format(wildcards.type, wildcards.filterstep)
     if wildcards.type == 'mg':
         assert re.match(r'trimmed', wildcards.filterstep), 'no trimmed in {} for {}'.format(wildcards.filterstep, wildcards.type)
     elif wildcards.type == 'mt':
-        assert re.match(r'trimmed\.rna_filtered', wildcards.filterstep), 'no trimmed.rna_filtered in {} for {}'.format(wildcards.filterstep, wildcards.type)
+        assert re.match(r'trimmed__rna_filtered', wildcards.filterstep), 'no trimmed__rna_filtered in {} for {}'.format(wildcards.filterstep, wildcards.type)
+    
     # input files
     ifiles = expand(
         'Preprocessing/{type}.{read}.{filterstep}.fq',
         type=wildcards.type,
         read=['r1', 'r2', 'se'] if paired else ['se'],
-        filterstep='.'.join(filtersteps[:-1])
+        filterstep=f"{'__'.join(filtersteps[:-1])}"
     )
-    # print('{}: {}'.format(filtersteps, ifiles))
     return ifiles
 
 def filtering_filter(wildcards):
     '''Reference input files for the paired-/single-end MG/MT reads filtering rule.'''
-    return ancient(expand(
-        '{dir}/filtering/{filter}.{ext}',
-        dir=DBPATH,
-        filter=wildcards.filterstep.split('.')[-1].split('_')[0],
-        ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa']
+    return ancient(expand('{dir}/filtering/{filter}.{ext}',
+                          dir=DBPATH,
+                          filter=[ref.replace('_filtered', '') for ref in wildcards.filterstep.split('__') if ref not in ['trimmed', 'rna_filtered']],
+                          ext=['fa', 'fa.0123', 'fa.bwt.2bit.64']
     ))
 
 # for archiving checkpoint:
@@ -255,6 +259,9 @@ def gather_bins(wildcards):
 
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
+    # print(checkpoints.getBins.get(**wildcards))
+    # print(checkpoint_output)
+    # print(expand('Binning/MetaWrap/bins/{i}/{tool}', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i, tool=['GTDB','grid'] if MG else ['GTDB']))
     return expand('Binning/MetaWrap/bins/{i}/{tool}', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i, tool=['GTDB','grid'] if MG else ['GTDB'])
 
 
@@ -352,3 +359,7 @@ def aggregate_mantis_fc(wildcards):
 def aggregate_mantis_fc_per_contig(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
     return expand('Stats/{type}/annotation/{type}.mantis.{i}.counts.tsv', i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,type=TYPES)
+
+
+def get_extra_cores(wildcards, attempt):
+    return attempt * 2

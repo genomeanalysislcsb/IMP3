@@ -7,7 +7,8 @@ rule fastqc_raw:
         'Stats/{type}/{type}.r2_fastqc.html',
         'Stats/{type}/{type}.r1_fastqc.zip',
         'Stats/{type}/{type}.r2_fastqc.zip',
-    threads: getThreads(2)
+    threads:
+        getThreads(2)
     resources:
         runtime = "01:00:00",
         mem_mb = MAIN_MEMCORE_MB
@@ -15,8 +16,10 @@ rule fastqc_raw:
         outputdir = 'Stats/{type}'
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-    log: "logs/preprocessing_fastqc_raw.{type}.log"
-    message: "fastqc_raw: Running fastQC on raw {wildcards.type} reads."
+    log:
+        "logs/preprocessing_fastqc_raw.{type}.log"
+    message:
+        "fastqc_raw: Running fastQC on raw {wildcards.type} reads."
     shell:
         """
         mkdir -p {params.outputdir}
@@ -36,14 +39,17 @@ rule fastqc_preprocessed:
         'Stats/{type}/{type}.r1.preprocessed_fastqc.zip',
         'Stats/{type}/{type}.r2.preprocessed_fastqc.zip',
         'Stats/{type}/{type}.se.preprocessed_fastqc.zip'
-    threads: getThreads(3)
+    threads:
+        getThreads(3)
     resources:
         runtime = "01:00:00",
         mem_mb = MAIN_MEMCORE_MB
     params:
         outputdir = 'Stats/{type}'
-    log: "logs/preprocessing_fastqc_preprocessed.{type}.log"
-    message: "fastqc_preprocessed: Running fastqc on preprocessed {wildcards.type} reads."
+    log:
+        "logs/preprocessing_fastqc_preprocessed.{type}.log"
+    message:
+        "fastqc_preprocessed: Running fastqc on preprocessed {wildcards.type} reads."
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     shell:

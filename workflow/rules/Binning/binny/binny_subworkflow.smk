@@ -2,7 +2,7 @@ from snakemake.utils import min_version
 min_version("6.0")
 
 # Copy some params since Snakemake yaml doesn't allow param mapping
-config["binning"]["binny"]['cluster_specs'] = {"big_mem_per_core_gb": int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]],
+config["binning"]["binny"]['mem'] = {"big_mem_per_core_gb": int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]],
                                      "normal_mem_per_core_gb": int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]],
                                      "big_mem_avail": True}
 config["binning"]["binny"]["tmp_dir"] = config["tmp_dir"]

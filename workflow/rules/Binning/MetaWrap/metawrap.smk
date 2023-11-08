@@ -75,10 +75,12 @@ rule MetaWrap_refine:
                                 -x {params.mw_max_cont} >> {log} 2>&1
                 
         # Rename bin fastas back to .fasta
+        shopt -s nullglob
         for bin in {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*.fa; do
           bin_id=$(basename -s .fa ${{bin}})
           mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
         done
+        shopt -u nullglob
         rm -rf {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*/
         
         echo "############################################### After Round 1 ##############################################################" >> {log}.check_int_out 2>&1
@@ -96,11 +98,13 @@ rule MetaWrap_refine:
                                     -x {params.mw_max_cont} >> {log} 2>&1
             
             # Rename bin fastas back to .fasta
+            shopt -s nullglob
             for bin in {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*.fa; do
               bin_id=$(basename -s .fa ${{bin}})
               mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
             done
-            
+            shopt -u nullglob
+
             echo "############################################### While Round 2 ##############################################################" >> {log}.check_int_out 2>&1
             tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
             
@@ -149,10 +153,14 @@ rule MetaWrap_refine:
         if [[ ! -d Visualization ]]; then
           mkdir Visualization
         fi
+
+        if test -n "$(find {output.out_dir}/figures -maxdepth 1 -name '*' -print -quit)"; then
+          mv {output.out_dir}/figures/* Visualization/
+        fi
         
-        mv {output.out_dir}/figures/* Visualization/
         rm -rf {output.out_dir}/figures {output.out_dir}/bins{{A,B,C}}*
         
+
         echo "############################################### After Clean-up ##############################################################" >> {log}.check_int_out 2>&1
         tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
         

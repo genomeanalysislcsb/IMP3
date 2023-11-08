@@ -7,6 +7,7 @@ rule metabat:
         out_dir=directory("Binning/MetaBAT"),
         out_bin_dir=directory("Binning/MetaBAT/bins")
     params:
+        tmp_dir=TMPDIR,
         res="Binning/MetaBAT/metabat_res",
         min_cont_size=config["binning"]["MetaBAT"]["cutoff"]
     threads:
@@ -24,9 +25,12 @@ rule metabat:
         """
         ## Create MetaBat dir
         mkdir -p {output.out_bin_dir}
-        TMP_FILE=$(mktemp --tmpdir={TMPDIR} -t "metabat_depth_XXXXXX.tsv")
+
+        export TMPDIR="{params.tmp_dir}"
+        TMP_FILE=$(mktemp "metabat_depth_XXXXXX.tsv")
         echo "# fakeheader" > $TMP_FILE
         cat {input.depth}  >> $TMP_FILE
+
         ## Run MetaBat
         metabat2 -i {input.assembly} \
                  -a $TMP_FILE \
@@ -38,6 +42,7 @@ rule metabat:
                  -m {params.min_cont_size} >> {log} 2>&1
         mv {params.res} {output.s2b}
         rm $TMP_FILE
+        
         # Move bin fastas and rename.
         shopt -s nullglob
         for i in {output.out_dir}/*.fa; do

@@ -13,18 +13,21 @@ rule trimmomatic_adapters:
 rule sortmerna_databases:
     output:
         expand("sortmerna/{files}.fasta", files=config["sortmerna"]["files"])
+    params:
+        tmp_dir=TMPDIR,
+        pkg_url=config["sortmerna"]["pkg_url"],
     shell:
         """
-        TMPD=$(mktemp -d -t --tmpdir={tmp} "XXXXXX")
-        wget {pkg_url} --no-check-certificate -O $TMPD/sortmerna.tgz
+        export TMPDIR="{params.tmp_dir}"
+        TMPD=$(mktemp -d -t "XXXXXX")
+
+        wget {params.pkg_url} --no-check-certificate -O $TMPD/sortmerna.tgz
         tar -xzf  $TMPD/sortmerna.tgz --strip-components=1 -C $TMPD
+
         mkdir -p sortmerna
         mv $TMPD/rRNA_databases/*.fasta sortmerna/.
         rm -rf $TMPD
-        """.format(
-            pkg_url=config["sortmerna"]["pkg_url"],
-            tmp=TMPDIR
-        )
+        """
 
 
 rule sortmerna_databases_index:
@@ -49,10 +52,12 @@ if 'url' in config['filtering'] and config['filtering']['url']:
             'filtering/{filter}.fa'.format(filter=FILTER)
             #expand("filtering/{filter}.{ext}", filter=FILTER, ext=['fa'])
         params:
+            tmp_dir=TMPDIR,
             filter = FILTER
         shell:
             """
-            TMPD=$(mktemp -d -t --tmpdir={TMPDIR} "XXXXXX")
+            export TMPDIR="{params.tmp_dir}"
+            TMPD=$(mktemp -d -t "XXXXXX")
             wget {config[filtering][url]} --no-check-certificate -O $TMPD/{params.filter}.fa.gz
             gunzip $TMPD/{params.filter}.fa.gz
             mkdir -p filtering
@@ -81,7 +86,7 @@ rule filtrering_database_index:
         "{fasta}.bwt.2bit.64"
     shell:
         """
-        bwa index {wildcards.fasta}
+        bwa-mem2 index {wildcards.fasta}
         """
 
 
@@ -102,6 +107,8 @@ rule prokka_databases:
     output:
         expand("{db}", db=config["prokka"]["databases"]),
         "hmm/essentials_genes.hmm"
+    params:
+        tmp_dir=TMPDIR
     shell:
         """
         ### prokka by default will look databases where is located the binary.
@@ -114,7 +121,9 @@ rule prokka_databases:
             PP=$PWD/{DBPATH};
         fi
         cd $(dirname $(which prokka))/.. && ln -fs $PP db
+
         echo "Softlinking $(dirname $(which prokka))/../db to $PP"
+        export TMPDIR="{params.tmp_dir}"
         TMPDIR=$(mktemp -d -t "XXXXXX")
         wget {config[prokka][pkg_url]} --no-check-certificate -O $TMPDIR/prokka.tgz
         tar -xzf $TMPDIR/prokka.tgz --strip-components=1 -C $TMPDIR

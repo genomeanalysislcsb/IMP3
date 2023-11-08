@@ -125,7 +125,7 @@ rule GTDBtk_summarize:
                     of.write('\t'.join(stats_data[bin]) + '\n')
         else:
             print("No output from MetaWrap!")
-            os.mknod(output)
+            os.mknod(output.out_file)
 
 if MG:
     rule bins_tar:

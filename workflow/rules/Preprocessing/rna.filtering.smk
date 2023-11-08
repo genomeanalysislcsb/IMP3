@@ -37,8 +37,8 @@ rule filter_rrna_pe:
             dbpath=DBPATH, fasta=config["sortmerna"]["files"]
         ),
     output:
-        filt_r1="Preprocessing/mt.r1.trimmed.rna_filtered.fq",
-        filt_r2="Preprocessing/mt.r2.trimmed.rna_filtered.fq",
+        filt_r1="Preprocessing/mt.r1.trimmed__rna_filtered.fq",
+        filt_r2="Preprocessing/mt.r2.trimmed__rna_filtered.fq",
         rrna_r1="Preprocessing/mt.r1.trimmed.rna.fq",
         rrna_r2="Preprocessing/mt.r2.trimmed.rna.fq",
         otu="Preprocessing/otu_map.txt",
@@ -48,11 +48,11 @@ rule filter_rrna_pe:
     log:
         "logs/preprocessing_filter_rrna_pe.log"
     threads:
-        # Ensure at least 50gb of mem
-        max(int(math.ceil(50 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        # Ensure at least 100gb of mem
+        max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     resources:
         runtime = "24:00:00",
-        mem_mb = MAIN_MEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     params:
         params=smk_get_sortmerna_params,
     conda:
@@ -88,17 +88,18 @@ rule filter_rrna_se:
         ),
         idx=rules.filter_rrna_pe.output.idx, # to avoid additional overhead
     output:
-        filt_se="Preprocessing/mt.se.trimmed.rna_filtered.fq",
+        filt_se="Preprocessing/mt.se.trimmed__rna_filtered.fq",
         rrna_se="Preprocessing/mt.se.trimmed.rna.fq",
         # temp: working directory
         wdir=temp(directory("Preprocessing/sortmerna_se")),
     log:
         "logs/preprocessing_filter_rrna_se.log"
     threads:
-        getThreads(8)
+        # Ensure at least 100gb of mem
+        max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     resources:
         runtime = "12:00:00",
-        mem_mb = MAIN_MEMCORE_MB
+        mem_mb = MAIN_BIGMEMCORE_MB
     params:
         params=smk_get_sortmerna_params,
     conda:
