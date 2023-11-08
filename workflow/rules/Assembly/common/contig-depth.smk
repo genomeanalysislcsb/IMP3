@@ -14,8 +14,8 @@ rule call_contig_depth:
         runtime = "12:00:00",
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        # Ensure at least 20gb of mem
-        max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        # Ensure at least 50gb of mem
+        max(int(math.ceil(50 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     params:
         tmp_dir=TMPDIR
     conda:
