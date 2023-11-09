@@ -1,4 +1,4 @@
-rule feature_count_hmmer:
+rule feature_count:
     input:
         "Assembly/{type}.reads.sorted.bam",
         "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
@@ -17,27 +17,6 @@ rule feature_count_hmmer:
         """
 	    featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params[0]} -a {input[1]} -T {threads} {input[0]} > {log} 2>&1 || touch {output} status/analysis_featureCounts.{wildcards.type}.{wildcards.db}.impossible
 	    """
-
-rule feature_count_mantis:
-    input:
-        "Assembly/{type}.reads.sorted.bam",
-        "Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{db}.gff"
-    output:
-        "Analysis/annotation/{type}.mantis.{db}.counts.tsv"
-    params:
-        lambda wildcards: config["featureCountsStranding"][wildcards.type]
-    resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: getThreads(8)
-    conda: ENVDIR + "/IMP_annotation.yaml"
-    log: "logs/analysis_feature_count.{type}.mantis.{db}.log"
-    message: "feature_count: Quantifying {wildcards.db} with {wildcards.type} reads."
-    shell:
-        """
-            featureCounts -p -O -t CDS -g {wildcards.db} -o {output} -s {params[0]} -a {input[1]} -T {threads} {input[0]} > {log} 2>&1 || touch {output} status/analysis_featureCounts.{wildcards.type}.{wildcards.db}.impossible
-            """
-
 
 rule feature_count_gene:
     input:
@@ -58,3 +37,26 @@ rule feature_count_gene:
         """
         featureCounts -p -O -t {wildcards.feature} -g ID -o {output} -s {params[0]}  -a {input[1]} -T {threads} {input[0]} > {log} 2>&1 || touch {output} status/analysis_featureCounts.{wildcards.type}.{wildcards.feature}.impossible
         """
+
+
+rule feature_count_antismash:
+    input:
+        "Assembly/{type}.reads.sorted.bam",
+        "Analysis/antiSMASH/antismash.{gene_type}.gff"
+    output:
+        "Analysis/antiSMASH/{type}.{gene_type}.counts.tsv"
+    params:
+        lambda wildcards: config["featureCountsStranding"][wildcards.type]
+    resources:
+        runtime = "8:00:00",
+        mem = MEMCORE
+    threads: getThreads(8)
+    conda: ENVDIR + "/IMP_annotation.yaml"
+    log: "logs/antismash_feature_count.{type}.{gene_type}.log"
+    message: "feature_count: Quantifying antismash {wildcards.gene_type} with {wildcards.type} reads."
+    shell:
+        """
+            featureCounts -p -O -t CDS -g {wildcards.gene_type} -o {output} -s {params[0]} -a {input[1]} -T {threads} {input[0]} > {log} 2>&1 || touch {output} status/antismash_featureCounts.{wildcards.type}.{wildcards.gene_type}.impossible
+            """
+
+
