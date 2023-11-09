@@ -8,7 +8,7 @@ if config['nextseq']:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: getThreads(10)
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
@@ -33,7 +33,7 @@ if config['nextseq']:
             'Preprocessing/{type}.{read}.trimmoed.fq.gz'
         threads: getThreads(10)
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
@@ -55,7 +55,7 @@ else:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: getThreads(10)
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")

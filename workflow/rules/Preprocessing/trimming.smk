@@ -11,7 +11,7 @@ if config['nextseq']:
         threads:
             getThreads(10)
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB,
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
@@ -40,7 +40,7 @@ if config['nextseq']:
             read="se[1|2]"
         threads: getThreads(10)
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
@@ -68,7 +68,7 @@ if config['nextseq']:
             'Preprocessing/{type}.r2.trimmoed.fq.gz'
         threads: getThreads(10)
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
@@ -100,7 +100,7 @@ if config['nextseq']:
             'Preprocessing/{type}.se.trimmed.fq',
         threads: getThreads(2)
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
@@ -123,7 +123,7 @@ else:
         threads:
             getThreads(10)
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB,
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
@@ -150,7 +150,7 @@ else:
             'Preprocessing/{type}.se.trimmed.fq'
         threads: 1
         resources:
-            runtime="12:00:00",
+            runtime = "12:00:00",
             mem_mb = MAIN_MEMCORE_MB
         message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
         shell:

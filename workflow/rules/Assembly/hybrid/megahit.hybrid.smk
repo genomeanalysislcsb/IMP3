@@ -19,7 +19,9 @@ rule megahit_hybrid_assembly_1:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
         max_mem = int(MAIN_BIGMEMTOTAL * byte_dict[config['cluster_specs']["mem_unit"]]),
-        kmer_list = config["assembly"]["kmer_list"]
+        kmer_list = config["assembly"]["kmer_list"],
+        # Wrap se inputs as a parameter for use in the shell command.
+        single = lambda wildcards, input: ','.join([input.mg_se, input.mt_se, input.mt_ass_pre, input.mt_unmapped]),
     conda:
         ENVDIR + "/IMP_assembly.yaml"
     log:
@@ -34,7 +36,7 @@ rule megahit_hybrid_assembly_1:
 
         megahit -1 {input.mg_r1},{input.mt_r1} \
                 -2 {input.mg_r2},{input.mt_r2} \
-                -r {input.mg_se},{input.mt_se},{input.mt_ass_pre},{input.mt_unmapped} \
+                -r {params.single(wildcards, input)} \
                 --out-dir {output.out_dir} \
                 --k-list {params.kmer_list} \
                 --num-cpu-threads {threads} \
@@ -43,7 +45,7 @@ rule megahit_hybrid_assembly_1:
         ln -fs $(echo {output.contigs_final} | cut -f 3,4 -d /) {output.contigs_hyb} && touch -h {output.contigs_hyb}
         """
 
-rule megahit_hybrid_assembly_2:
+use rule megahit_hybrid_assembly_1 as megahit_hybrid_assembly_2 with:
     input:
         mg_r1 = 'Assembly/intermediary/mgmt.r1.megahit_hybrid.mt.unmapped.fq',
         mg_r2 = 'Assembly/intermediary/mgmt.r2.megahit_hybrid.mt.unmapped.fq',
@@ -62,27 +64,11 @@ rule megahit_hybrid_assembly_2:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
         max_mem = int(MAIN_BIGMEMTOTAL * byte_dict[config['cluster_specs']["mem_unit"]]),
-        kmer_list = config["assembly"]["kmer_list"]
+        kmer_list = config["assembly"]["kmer_list"],
+        single = lambda wildcards, input: ','.join([input.mg_se, input.mt_se]),
     conda:
         ENVDIR + "/IMP_assembly.yaml"
     log:
         "logs/assembly_megahit_hybrid_assembly_2.log"
     message:
         "megahit_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using MEGAHIT"
-    shell:
-        """
-        if [ -d "{output.out_dir}" ]; then
-            rm -rf {output.out_dir}
-        fi
-
-        echo "Performing second hyrbid assembly step using MEGAHIT"
-        megahit -1 {input.mg_r1},{input.mt_r1} \
-                -2 {input.mg_r2},{input.mt_r2} \
-                -r {input.mg_se},{input.mt_se} \
-                --out-dir {output.out_dir} \
-                --k-list {params.kmer_list} \
-                --num-cpu-threads {threads} \
-                --memory {params.max_mem} \
-                --mem-flag 1 > {log} 2>&1
-        ln -fs $(echo {output.contigs_final} | cut -f 3,4 -d /) {output.contigs_hyb} && touch -h {output.contigs_hyb}
-        """
