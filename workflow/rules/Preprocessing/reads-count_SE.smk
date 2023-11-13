@@ -4,7 +4,7 @@ rule reads_count:
     output:
         report('Stats/{type}/{type}.read_counts.txt',category="Preprocessing")
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
@@ -25,7 +25,7 @@ rule reads_gzip:
     output:
         "status/preprocessing_{type}.reads.compressed"
     resources:
-        runtime = "00:01:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
@@ -47,7 +47,7 @@ rule gzip_ori_files:
         read="se",
         type="mg"
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(5)
@@ -69,7 +69,7 @@ rule gzip_files:
     output:
         "Preprocessing/{type}.{read}.{stage}.fq.gz"
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(5)
@@ -90,7 +90,7 @@ checkpoint reads_gziped:
     output:
         "status/preprocessing_{type}.reads.detected"
     resources:
-        runtime = "00:05:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1

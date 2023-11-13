@@ -9,7 +9,7 @@ rule feature_count_hmmer:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
         flags = '-p -O --fraction -M --fraction'
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(8)
@@ -28,7 +28,7 @@ rule feature_count_hmmer:
                       -s {params.stranding},0 \
                       -a {input.gff} \
                       -T {threads} \
-                      {input.map_pair} {input.map_single} > {log} 2>&1 \
+                      {input.map_pair} {input.map_se} > {log} 2>&1 \
                       || touch {output} \
                                status/analysis_featureCounts.{wildcards.type}.{wildcards.db}.impossible
         """
@@ -44,7 +44,7 @@ rule feature_count_mantis:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
         flags = '-p -O --fraction -M --fraction'
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(8)
@@ -63,7 +63,7 @@ rule feature_count_mantis:
                       -s {params.stranding},0 \
                       -a {input.gff} \
                       -T {threads} \
-                      {input.map_pair} {input.map_single} > {log} 2>&1 \
+                      {input.map_pair} {input.map_se} > {log} 2>&1 \
                       || touch {output} \
                                status/analysis_featureCounts.{wildcards.type}.{wildcards.db}.impossible
             """
@@ -80,7 +80,7 @@ rule feature_count_gene:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
         flags = '-p -O --fraction -M --fraction'
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         getThreads(8)
@@ -99,7 +99,7 @@ rule feature_count_gene:
                       -s {params.stranding},0 \
                       -a {input.gff} \
                       -T {threads} \
-                      {input.map_pair} {input.map_single} > {log} 2>&1 \
+                      {input.map_pair} {input.map_se} > {log} 2>&1 \
                       || touch {output} \
                                status/analysis_featureCounts.{wildcards.type}.{wildcards.feature}.impossible
         """

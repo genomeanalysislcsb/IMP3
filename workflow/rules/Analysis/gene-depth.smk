@@ -10,7 +10,7 @@ rule call_gene_depth:
         "Stats/{type}/annotation/{type}.gene_depth.avg",
         "Stats/{type}/annotation/{type}.gene.len"
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         # Ensure at least 20gb of mem

@@ -5,7 +5,7 @@ rule get_proteins_DAStool:
     output:
         "Binning/prokka.renamed.faa"
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1

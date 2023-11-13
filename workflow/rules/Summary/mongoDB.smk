@@ -12,7 +12,7 @@ rule mongo_server:
     params:
         port = config["mongo_port"]
     resources:
-        runtime = "08:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/summary_mongo_server.log"
@@ -68,7 +68,7 @@ rule mongoDB_bins:
         password = config["mongo_password"],
         port = config["mongo_port"]
     resources:
-        runtime = "08:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/summary_mongoDB_bins.log"
@@ -95,7 +95,7 @@ rule mongoDB_contigs:
         password = config["mongo_password"],
         port = config["mongo_port"],
     resources:
-        runtime = "08:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/summary_mongoDB_contigs.log"

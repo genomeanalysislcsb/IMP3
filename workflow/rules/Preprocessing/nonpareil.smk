@@ -25,7 +25,7 @@ rule nonpareil:
     output:
         expand('Stats/mg/mg.{{read}}_nonpareil.{suffix}',suffix=["npa","npc","npl","npo"])
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         tmp_dir=TMPDIR,
@@ -49,7 +49,7 @@ rule nonpareil_curve:
         report('Visualization/mg.{read}_nonpareil.curve.png',category="Preprocessing"),
         report('Stats/mg/mg.{read}_nonpareil.diversity.txt',category="Preprocessing")
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1

@@ -8,7 +8,7 @@ rule tar_intermediary:
     threads:
         1
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         intermediary = "Assembly/intermediary/"
@@ -27,7 +27,7 @@ rule contig_fasta_indexing:
     output:
         "Assembly/%s.assembly.merged.fa.fai" % ASS
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
@@ -49,7 +49,7 @@ rule contig_fasta2bed_conversion:
     output:
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1

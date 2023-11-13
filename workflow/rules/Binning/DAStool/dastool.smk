@@ -25,7 +25,7 @@ rule DAS_tool:
         score_thresh=config["binning"]["DAS_Tool"]["score_threshhold"],
         out_name="Binning/DASTool/selected"
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     conda:
         ENVDIR + "/IMP_annotation.yaml"
@@ -87,7 +87,7 @@ rule format_protein_names:
         "Analysis/annotation/annotation.filt.contig2ID.tsv",
         "Binning/prokka.renamed.faa"
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem

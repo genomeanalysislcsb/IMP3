@@ -10,7 +10,7 @@ rule reads_filtering:
         type = "|".join(TYPES),
         filterstep = "|".join(["trimmed(\.rna_filtered)?\." + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
-        runtime = "08:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
@@ -24,13 +24,11 @@ rule reads_filtering:
                      -t {threads} \
                      {input.ref[0]} \
                      {input.reads} 2> {log} | \
-          samtools view --threads {threads} \
-                        --bam \
-                        --uncompressed \
-                        --require-flags 4 \
-                        - 2>> {log} | \
-          bamToFastq -i stdin \
-                     -fq {output} >> {log} 2>&1
+        samtools fastq -0 {output} \
+                       -f 4 \
+                       --threads 32 \
+                       -n \
+                       - 2>> {log}
         """
 
 localrules: symlink_preprocessed_reads_files

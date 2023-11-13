@@ -4,9 +4,9 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - snakemake=7.19.1
-  - pigz=2.6
-  - filetype=1.2.0
-  - python=3.8
-  - conda=23.5.0
-  - mamba=1.4.9 
+  - snakemake=7.32.4
+  - pigz
+  - filetype
+  - python<3.12
+  - conda
+  - mamba 

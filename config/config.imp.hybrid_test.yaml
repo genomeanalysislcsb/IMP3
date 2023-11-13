@@ -14,8 +14,8 @@ cluster_specs:  ### USER_INPUT ####
     big_mem_cores: 128
     big_mem_per_core: 1750
     # Set maximum n cores to use for jobs
-    cores_max: 128
-    big_mem_cores_max: 128
+    cores_max: 32
+    big_mem_cores_max: 32
   high_mem_cluster:
     mem_total: 126000
     mem_per_core: 4500
@@ -25,10 +25,12 @@ cluster_specs:  ### USER_INPUT ####
     # Set maximum n cores to use for jobs
     cores_max: 28
     big_mem_cores_max: 32
-tmp_dir: "/mnt/lscratch/users/ohickl/test_imp3_tmp"  ### USER_INPUT ####
+tmp_dir: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_tmp"  ### USER_INPUT ####
 raws:
-  Metagenomics: "/mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/test.mg.1.fastq /mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/test.mg.2.fastq"  ### USER_INPUT ####
-  Metatranscriptomics: "/mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/test.mt.1.fastq /mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/test.mt.2.fastq"  ### USER_INPUT ####
+  # Metagenomics: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mg.r1.fq /mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mg.r2.fq"  ### USER_INPUT ####
+  # Metatranscriptomics: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mt.r1.fq /mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mt.r2.fq"  ### USER_INPUT ####
+  Metagenomics: ""  ### USER_INPUT ####
+  Metatranscriptomics: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/must_bloodrna_m1_1_v1_subsample/mt.r1.fq.gz /mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/must_bloodrna_m1_1_v1_subsample/mt.r2.fq.gz"  ### USER_INPUT ####
   LongReads: ""
   LongReadTech: ""
   Contigs: ""
@@ -36,7 +38,7 @@ raws:
   Alignment_metatranscriptomics: ""
   Gff: ""
 sample: imp3_test  ### USER_INPUT ####
-outputdir: "/mnt/lscratch/users/ohickl/test_imp3"  ### USER_INPUT ####
+outputdir: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3"  ### USER_INPUT ####
 summarydir: ""
 # Options stats, vis
 summary_steps: "stats"
@@ -61,7 +63,7 @@ trimmomatic:
   target_length: 40
 nextseq: false
 filtering:
-  filter: "PhiX T2T-CHM13v2.0_genomic T2T-CHM13v2.0_transcripts"
+  filter: "PhiX T2TCHM13v2genomic T2TCHM13v2transcripts"
 sortmerna:
   files:
     - rfam-5.8s-database-id98
@@ -164,7 +166,7 @@ proteomics:
 binning:
   # Options: abawaca CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
   # NOTE: IMP supports a maximum of six binners only atm.
-  binners: "CONCOCT binny MetaBAT MetaDecoder SemiBin"
+  binners: "MetaDecoder"
   abawaca:
     esom_min: 2500
     esom_max: 5000
@@ -215,7 +217,7 @@ binning:
     max_contamination: 10
 kraken:
   confidence: 0.501
-  krakendb: 20230502_kraken_nt  ### USER_INPUT ####
+  krakendb: 20230502_kraken_nt  ### USER_INPUT #### minikraken2_v2_8GB_201904_UPDATE
 eukdetect:
   run_eukdetect: false
   eukdetect_dir: ../EukDetect

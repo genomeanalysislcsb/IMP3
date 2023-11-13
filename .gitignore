@@ -79,3 +79,4 @@ workflow/envs/logs/*.log
 cluster_profile*/
 config.imp.GEM*
 config/mantis.config
+star_map_tests.sh

@@ -225,9 +225,10 @@ def filtering_reads_input(wildcards, paired=True):
 
 def filtering_filter(wildcards):
     '''Reference input files for the paired-/single-end MG/MT reads filtering rule.'''
+
     return ancient(expand('{dir}/filtering/{filter}.{ext}',
                           dir=DBPATH,
-                          filter=[ref.replace('_filtered', '') for ref in wildcards.filterstep.split('__') if ref not in ['trimmed', 'rna_filtered']],
+                          filter=[ref.replace('_filtered', '') for ref in wildcards.filterstep.split('__') if ref not in ['trimmed', 'rna_filtered']][-1],
                           ext=['fa', 'fa.0123', 'fa.bwt.2bit.64']
     ))
 

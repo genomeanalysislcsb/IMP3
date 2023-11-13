@@ -125,7 +125,7 @@ rule prepare_input_data_copy:
     threads:
         getThreads(5)
     resources:
-        runtime = "01:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
@@ -216,7 +216,7 @@ rule check_bam_input:
     priority: 10
     threads: 1
     resources:
-        runtime = "4:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     message: "Checking {wildcards.type} alignment."
     conda:
@@ -237,7 +237,7 @@ rule check_ann_input:
     priority: 10
     threads: 1
     resources:
-        runtime = "4:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     message: "Checking annotation."
     conda:

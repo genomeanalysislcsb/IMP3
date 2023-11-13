@@ -10,7 +10,7 @@ rule bwa_index:
         "{fasta}.bwt.2bit.64",
         "{fasta}.pac"
     resources:
-        runtime = "24:00:00",
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         # Ensure at least 100gb of mem
@@ -30,6 +30,6 @@ rule bwa_index:
         mkdir -p {params.workdir}/logs
 
         echo "[$(date)] Start indexing {params.fasta_file} for bwa." >> $log
-        bwa index {wildcards.fasta} >> $log 2>&1
+        bwa-mem2 index {wildcards.fasta} >> $log 2>&1
         echo "[$(date)] Finished indexing {params.fasta_file} for bwa." >> $log
         """

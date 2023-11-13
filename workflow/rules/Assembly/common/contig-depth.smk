@@ -11,7 +11,7 @@ rule call_contig_depth:
         "Stats/{type}/%s.assembly.contig_depth.txt" % ASS,
         report("Stats/{type}/%s.assembly.contig_flagstat.txt" % ASS,category="Assembly")
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         # Ensure at least 50gb of mem

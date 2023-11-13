@@ -31,7 +31,7 @@ if LONG:
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
         resources:
-            runtime = "24:00:00",
+            runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             getThreads(MAIN_BIGCORENO, bigmem=True)
@@ -56,7 +56,7 @@ else:
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
         resources:
-            runtime = "24:00:00",
+            runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             getThreads(MAIN_BIGCORENO, bigmem=True)
@@ -81,7 +81,7 @@ rule metaspades_assembly_from_unmapped:
         'Assembly/intermediary/{type}.metaspades_unmapped.2/contigs.fasta',
         'Assembly/intermediary/{type}.metaspades_unmapped.2.fa'
     resources:
-        runtime = "48:00:00",
+        runtime = LONG_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)

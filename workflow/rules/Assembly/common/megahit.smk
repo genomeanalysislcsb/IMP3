@@ -8,7 +8,7 @@ rule megahit_assembly_from_preprocessing:
         contigs_final = 'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
         contigs = 'Assembly/intermediary/{type}.megahit_preprocessed.1.fa'
     resources:
-        runtime = "24:00:00",
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)

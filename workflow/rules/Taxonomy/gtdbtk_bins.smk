@@ -8,7 +8,7 @@ rule GTDBtk_bins_single:
         # summary_bac = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.bac120.markers_summary.tsv",
         # summary_arc = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.ar53.markers_summary.tsv",
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     params:
         pplacer_cpus=getThreads(min(MAIN_BIGCORENO, max(1, int(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]] * MAIN_BIGCORENO / 45))), bigmem=True),
@@ -56,7 +56,7 @@ rule GTDBtk_summarize:
         out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy"),
         grid="status/binning_GRiD.done" if MG else []
     resources:
-        runtime = "00:15:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/taxonomy_GTDBtk_summarize.log"
@@ -137,7 +137,7 @@ if MG:
         threads:
             1
         resources:
-            runtime = "8:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/taxonomy_bins_tar.log"
@@ -161,7 +161,7 @@ else:
         threads:
             1
         resources:
-            runtime = "8:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/taxonomy_bins_tar.log"

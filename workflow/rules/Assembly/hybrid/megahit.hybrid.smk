@@ -13,7 +13,7 @@ rule megahit_hybrid_assembly_1:
         contigs_hyb = 'Assembly/intermediary/mgmt.megahit_hybrid.1.fa',
         out_dir = directory('Assembly/intermediary/mgmt.megahit_hybrid.1')
     resources:
-        runtime = "24:00:00",
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
@@ -36,7 +36,7 @@ rule megahit_hybrid_assembly_1:
 
         megahit -1 {input.mg_r1},{input.mt_r1} \
                 -2 {input.mg_r2},{input.mt_r2} \
-                -r {params.single(wildcards, input)} \
+                -r {params.single} \
                 --out-dir {output.out_dir} \
                 --k-list {params.kmer_list} \
                 --num-cpu-threads {threads} \
@@ -58,7 +58,7 @@ use rule megahit_hybrid_assembly_1 as megahit_hybrid_assembly_2 with:
         contigs_hyb = 'Assembly/intermediary/mgmt.megahit_hybrid.2.fa',
         out_dir = directory('Assembly/intermediary/mgmt.megahit_hybrid.2')
     resources:
-        runtime = "01:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)

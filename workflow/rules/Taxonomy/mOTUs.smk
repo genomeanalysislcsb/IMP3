@@ -30,7 +30,7 @@ rule motus:
         sample = config["sample"]
         # database = os.path.join(DBPATH, 'motus')
     resources:
-        runtime = "08:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_motus.yaml")

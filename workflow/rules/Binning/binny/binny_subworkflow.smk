@@ -44,7 +44,7 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
     threads:
         getThreads(64)
     resources:
-        runtime = "24:00:00",
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/binning_binny_mantis_checkm.log"
@@ -93,7 +93,7 @@ use rule binny from binny_workflow as binny_binny with:
     threads:
         getThreads(64)
     resources:
-        runtime = "48:00:00",
+        runtime = LONG_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/binning_binny.log"
@@ -104,7 +104,7 @@ rule binny_contig2bin:
     output:
         binny_s2b
     resources:
-        runtime = "01:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1

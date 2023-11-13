@@ -14,7 +14,7 @@ rule hmmer:
         lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
         dbs = DBPATH + "/hmm/{db}"
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
@@ -44,7 +44,7 @@ rule makegff:
         "{db}",
         lambda wildcards: config["hmm_settings"][wildcards.db]["trim"]
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
@@ -77,7 +77,7 @@ rule mergegff:
     output:
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem
@@ -108,7 +108,7 @@ rule tar_annotation:
         # Ensure at least 10gb of mem
         max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 8)
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         intermediary = "Analysis/annotation/intermediary/"

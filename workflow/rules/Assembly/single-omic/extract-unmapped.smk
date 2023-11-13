@@ -4,6 +4,8 @@ EXTRACT_UNMAPPED_SHELL = """
                          export TMPDIR="{params.tmp_dir}"
                          TMP_FILE=$(mktemp "alignment_XXXXXX.bam")
 
+                         echo "Mapping PE reads." >> {log} 2>&1
+
                          bwa-mem2 mem -v 1 \
                                       -t {threads} \
                                       {input[3]} \
@@ -38,23 +40,26 @@ EXTRACT_UNMAPPED_SHELL = """
                                          -m {SAMTOOLS_MEM} \
                                          -n \
                                          - 2>> {log} | \
-                           bamToFastq -i stdin \
-                                      -fq {output[0]} \
-                                      -fq2 {output[1]} >> {log} 2>&1
+                           samtools fastq -1 {output[0]} \
+                                          -2 {output[1]} \
+                                          -0 /dev/null \
+                                          -s /dev/null \
+                                          -f 4 \
+                                          --threads {threads} \
+                                          -n \
+                                          - >> {log} 2>&1
                          
                          if [[ -s {input[2]} ]]; then
+                           echo "Mapping SE reads." >> {log} 2>&1
                            bwa-mem2 mem -v 1 \
                                         -t {threads} \
                                         {input[3]} \
                                         {input[2]} 2>> {log} | \
-                             samtools view --threads {threads} \
-                                           -bS \
-                                           - 2>> {log} | \
-                             samtools view --threads {threads} \
-                                           -uf 4 \
-                                           - 2>> {log} | \
-                             bamToFastq -i stdin \
-                                        -fq {output[2]} >> {log} 2>&1
+                           samtools fastq -0 {output[2]} \
+                                          -f 4 \
+                                          --threads 32 \
+                                          -n \
+                                          - 2>> {log}
                          else
                            echo "There are no singletons reads. {input[2]} is empty. Generating empty {output[2]}" >> {log} 
                            touch {output[2]}
@@ -79,7 +84,7 @@ rule extract_unmapped:
         'Assembly/intermediary/{type}.r2.unmapped.fq',
         'Assembly/intermediary/{type}.se.unmapped.fq'
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)

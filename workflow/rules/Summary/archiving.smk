@@ -20,7 +20,7 @@ rule sync_final:
     threads:
         1
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     message:
         "Synching {OUTPUTDIR} to {SUMDIR}"
@@ -72,7 +72,7 @@ if MG or MT:
         threads:
             1
         resources:
-            runtime = "04:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         message:
             "gzip: gzipping {wildcards.file}."
@@ -88,7 +88,7 @@ rule tar_gzip_directory:
     threads:
         1
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     message:
         "tar_gzip: tarring and gzipping {wildcards.directory}."

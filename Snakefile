@@ -17,7 +17,7 @@ workdir:
 
 yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
-yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True,default_flow_style=False)
+yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True, default_flow_style=False)
 
 Path("status").mkdir(exist_ok=True)
 

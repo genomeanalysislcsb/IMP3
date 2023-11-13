@@ -1,6 +1,6 @@
 from os.path import getsize, join
 KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['kraken']['krakendb'] + "/hash.k2d" )) / 1000000000
-KRAKTHREADS = round((KRAKSIZE / (float(HIGH_MEM_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]])) * 1.15)
+KRAKTHREADS = max(1, round((KRAKSIZE / (float(HIGH_MEM_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]])) * 1.15))
 
 print('#' * 10, f'KRAKTHREADS: {KRAKTHREADS} KRAKSIZE: {KRAKSIZE} HIGH_MEM_BIGMEMCORE_MB: {HIGH_MEM_BIGMEMCORE_MB}', '#' * 10)
 
@@ -11,7 +11,7 @@ rule kraken_contigs:
         "Analysis/taxonomy/kraken/%s.kraken.contig.output" % ASS,
         "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS
     resources:
-        runtime = "8:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = HIGH_MEM_BIGMEMCORE_MB
     params:
         confidence = config['kraken']['confidence'],
@@ -45,7 +45,7 @@ rule kraken_parse:
     threads:
         1
     resources:
-        runtime = "2:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")

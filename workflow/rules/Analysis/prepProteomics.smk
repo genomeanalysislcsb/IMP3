@@ -9,7 +9,7 @@ if config['proteomics']['insert_variants']:
             peptideTab="Analysis/annotation/proteomics.pos.tsv",
             addInfo="Analysis/annotation/proteomics.info"
         resources: 
-            runtime = "24:00:00",
+            runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             minPep = config['proteomics']['filter_N_peptides'],
@@ -42,7 +42,7 @@ elif config['proteomics']['filter_N_peptides']:
         output:
             "Analysis/annotation/proteomics.proteins.faa"
         resources: 
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             minPep = config['proteomics']['filter_N_peptides']
@@ -69,7 +69,7 @@ else:
         output:
             "Analysis/annotation/proteomics.proteins.faa"
         resources: 
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_bioperl.yaml")
@@ -93,7 +93,7 @@ if config['proteomics']['host_proteome'].split():
         output:
             "Analysis/annotation/proteomics.final.faa"
         resources: 
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             host = config['proteomics']['host_proteome'].split()
@@ -116,7 +116,7 @@ else:
         output:
             "Analysis/annotation/proteomics.final.faa"
         resources: 
-            runtime = "4:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         threads:
             1

@@ -10,7 +10,7 @@ rule reads_filtering:
         type = "|".join(TYPES),
         filterstep = "|".join(["trimmed(__rna_filtered)?__" + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
@@ -26,9 +26,8 @@ rule reads_filtering:
         export TMPDIR="{params.tmp_dir}"
         TMP_FILE=$(mktemp "alignment_XXXXXX.bam")
         
-        echo "Mapping reads." >> {log} 2>&1
+        echo "Mapping PE reads." >> {log} 2>&1
 
-        tree {params.tmp_dir} >> {log}
         bwa-mem2 mem -v 1 \
                      -t {threads} \
                      {input.ref[0]} \
@@ -59,17 +58,22 @@ rule reads_filtering:
                                       --require-flags 12 \
                                       --exclude-flags 256 \
                                       ${{TMP_FILE}} 2>> {log}) 2>> {log} | \
-         samtools view --threads {threads} \
-                       --bam \
-                       --exclude-flags 2048 \
-                       - 2>> {log} | \
-         samtools sort --threads {threads} \
-                       -m {params.mem} \
+        samtools view --threads {threads} \
+                    --bam \
+                    --exclude-flags 2048 \
+                    - 2>> {log} | \
+        samtools sort --threads {threads} \
+                    -m {params.mem} \
+                    -n \
+                    - 2>> {log} | \
+        samtools fastq -1 {output[0]} \
+                       -2 {output[1]} \
+                       -0 /dev/null \
+                       -s /dev/null \
+                       -f 4 \
+                       --threads {threads} \
                        -n \
-                       - 2>> {log} | \
-         bamToFastq -i stdin \
-                    -fq {output[0]} \
-                    -fq2 {output[1]} &>> {log}
+                       - >> {log} 2>&1
         rm ${{TMP_FILE}}
 
         echo "#####################################################################################" >> {log}
@@ -77,25 +81,15 @@ rule reads_filtering:
         if [[ -s {input.reads[2]} ]]; then
             echo "Mapping SE reads." >> {log} 2>&1
 
-            # atm piping directly from bwa --> samtools view --> bamToFastq fails for this part specifically??
-            TMP_FILE_SE=$(mktemp "al_se_XXXXX.sam")
-            TMP_FILE_SE2=$(mktemp "al_se_XXXXX.bam")
-            
             bwa-mem2 mem -v 1 \
-                         -t {threads} \
-                         {input.ref[0]} \
-                         {input.reads[2]} > ${{TMP_FILE_SE}} 2>> {log}
-            
-            samtools view --threads {threads} \
-                          --bam \
-                          --uncompressed \
-                          --require-flags 4 \
-                          ${{TMP_FILE_SE}} > ${{TMP_FILE_SE2}} 2>> {log}
-            
-            bamToFastq -i ${{TMP_FILE_SE2}} \
-                       -fq {output[2]} &>> {log}
-
-            rm ${{TMP_FILE_SE}} ${{TMP_FILE_SE2}}
+                        -t {threads} \
+                        {input.ref[0]} \
+                        {input.reads[2]} 2>> {log} | \
+            samtools fastq -0 {output[2]} \
+                           -f 4 \
+                           --threads 32 \
+                           -n \
+                           - 2>> {log}
         else
             echo "There are no singletons reads. {input.reads[2]} is empty. Generating empty {output[2]}" >> {log}
             touch {output[2]}

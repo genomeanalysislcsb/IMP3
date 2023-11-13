@@ -6,7 +6,7 @@ rule fastqc_raw:
         'Stats/{type}/{type}.se_fastqc.zip'
     threads: getThreads(2)
     resources:
-        runtime = "01:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         outputdir = 'Stats/{type}'
@@ -29,7 +29,7 @@ rule fastqc_preprocessed:
         'Stats/{type}/{type}.se.preprocessed_fastqc.zip'
     threads: getThreads(3)
     resources:
-        runtime = "01:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         outputdir = 'Stats/{type}'

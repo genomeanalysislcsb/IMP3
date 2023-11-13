@@ -40,33 +40,27 @@ EXTRACT_UNMAPPED_SHELL = """
                                          -m {SAMTOOLS_MEM} \
                                          -n \
                                          - 2>> {log} | \
-                           bamToFastq -i stdin \
-                                      -fq {output[0]} \
-                                      -fq2 {output[1]} >> {log} 2>&1
+                           samtools fastq -1 {output[0]} \
+                                          -2 {output[1]} \
+                                          -0 /dev/null \
+                                          -s /dev/null \
+                                          --threads {threads} \
+                                          -n \
+                                          - >> {log} 2>&1
                          rm -f ${{TMP_FILE}}
 
                          if [[ -s {input[2]} ]]; then
                            echo "Getting unmapped SE reads." >> {log} 2>&1
-
-                           # atm piping directly from bwa --> samtools view --> bamToFastq fails for this part specifically ??
-                           TMP_FILE_SE=$(mktemp "ex_unm_se_XXXXX.sam")
-                           TMP_FILE_SE2=$(mktemp "ex_unm_se_XXXXX.bam")
                             
                            bwa-mem2 mem -v 1 \
                                         -t {threads} \
                                         {input[3]} \
-                                        {input[2]} > ${{TMP_FILE_SE}} 2>> {log}
-                            
-                           samtools view --threads {threads} \
-                                         --bam \
-                                         --uncompressed \
-                                         --require-flags 4 \
-                                         ${{TMP_FILE_SE}} > ${{TMP_FILE_SE2}} 2>> {log}
-                           
-                           bamToFastq -i ${{TMP_FILE_SE2}} \
-                                      -fq {output[2]} &>> {log}
-
-                            rm -f ${{TMP_FILE_SE}} ${{TMP_FILE_SE2}}
+                                        {input[2]} 2>> {log} | \
+                           samtools fastq -0 {output[2]} \
+                                          -f 4 \
+                                          --threads 32 \
+                                          -n \
+                                          - 2>> {log}
                          else
                            echo "There are no singletons reads. {input[2]} is empty. Generating empty {output[2]}" >> {log}
                            touch {output[2]}
@@ -89,7 +83,7 @@ rule extract_unmapped_from_megahit:
         'Assembly/intermediary/{type}.r2.unmapped.fq',
         'Assembly/intermediary/{type}.se.unmapped.fq'
     resources:
-        runtime = "08:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
@@ -120,7 +114,7 @@ rule extract_unmapped_from_hybrid_assembly:
         'Assembly/intermediary/mgmt.r2.{assembler}_hybrid.{type}.unmapped.fq',
         'Assembly/intermediary/mgmt.se.{assembler}_hybrid.{type}.unmapped.fq'
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)

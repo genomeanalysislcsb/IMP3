@@ -1,0 +1,4 @@
+Sample	MG_R1	MG_R2	MG_SE	MT_R1	MT_R2	MT_SE
+sample_full_id	/path/to/mg_1.fq	/path/to/mg_2.fq	/path/to/mg_se.fq	/path/to/mt_1.fq	/path/to/mt_2.fq	/path/to/mt_se.fq
+sample_no_se_id	/path/to/mg_1.fq	/path/to/mg_2.fq		/path/to/mt_1.fq	/path/to/mt_2.fq		
+sample_no_mg_no_se_id				/path/to/mt_1.fq	/path/to/mt_2.fq		

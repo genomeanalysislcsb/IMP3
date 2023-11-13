@@ -11,7 +11,7 @@ rule annotate:
     threads:
         getThreads(14)
     resources:
-        runtime = "08:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/analysis_annotate.log"

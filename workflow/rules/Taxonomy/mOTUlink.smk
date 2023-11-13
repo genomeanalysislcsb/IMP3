@@ -8,7 +8,7 @@ rule allmotulinks:
     threads:
         1
     resources:
-        runtime = "02:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     # log:
     #     "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
@@ -28,7 +28,7 @@ rule fetchmg:
     threads:
         getThreads(6)
     resources:
-        runtime = "08:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary/marker_genes"
@@ -56,7 +56,7 @@ rule get_present_mOTUs:
     threads:
         1
     resources:
-        runtime = "01:00:00",
+        runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     # log:
     #     "logs/analysis_get_present_mOTUs.log"
@@ -75,7 +75,7 @@ rule extract_mOTU_db_genes:
     threads:
         1
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary",
@@ -111,7 +111,7 @@ rule blast_mOTU_db_genes:
     threads:
         1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
@@ -143,7 +143,7 @@ rule parse_blast_mOTU:
     threads:
         1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         # metaphy = "/lib/python3.9/site-packages/motus/db_mOTU/db_mOTU_taxonomy_meta-mOTUs.tsv",
@@ -169,7 +169,7 @@ rule tar_intermediary_mOTU:
     threads:
         1
     resources:
-        runtime = "8:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     params:
         intermediary = "Analysis/taxonomy/mOTU_links/intermediary/"

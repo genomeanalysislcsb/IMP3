@@ -24,7 +24,7 @@ if MG and "taxonomy" not in IMP_STEPS:
         output:
             out_file=report("Stats/%s/%s.bins.tsv" %(ASS,ASS), "Binning")
         resources:
-            runtime = "00:10:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/binning_GRID_summarize.log"
@@ -88,7 +88,7 @@ if MG and "taxonomy" not in IMP_STEPS:
         threads:
             1
         resources:
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
             "logs/binning_bins_tar.log"
@@ -109,7 +109,7 @@ checkpoint getBins:
     output:
         "status/binning_GRiD.prepped"
     resources:
-        runtime = "8:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
@@ -137,7 +137,7 @@ if MG:
         params:
             clusterInput="Binning/MetaWrap/bins"
         resources:
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             # Ensure at least 5gb of mem
@@ -162,7 +162,7 @@ if MG:
         output:
             "Binning/MetaWrap/bins/{clusterID}/contigs.bed"
         resources:
-            runtime = "01:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         threads:
             # Ensure at least 5gb of mem
@@ -183,7 +183,7 @@ if MG:
         output:
             reads="Binning/MetaWrap/bins/{clusterID}/reads.fastq.gz"
         resources:
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             # Ensure at least 5gb of mem

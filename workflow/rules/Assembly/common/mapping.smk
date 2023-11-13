@@ -19,12 +19,13 @@ if 'mg' in TYPES:
             map_se = 'Assembly/mg.reads.single.sorted.bam',
             map_merge = 'Assembly/mg.reads.sorted.bam'
         resources:
-            runtime = "12:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             getThreads(MAIN_BIGCORENO, bigmem=True)
         params:
-            sam_header = f'@RG\\tID:{SAMPLE}\\tSM:mg'
+            # sam_header = f'@RG\tID:{SAMPLE}\tSM:mg\tPL:platform\tLB:library'
+            sample = SAMPLE
         conda:
             ENVDIR + "/IMP_mapping.yaml"
         log:
@@ -38,7 +39,7 @@ if 'mg' in TYPES:
             bwa-mem2 mem -v 1 \
                          -t {threads} \
                          -M \
-                         -R {params.sam_header} \
+                         -R '@RG\tID:{params.sample}\tSM:mg\tPL:platform\tLB:library' \
                          {input.assembly} \
                          {input.r_1} \
                          {input.r_2} 2>> {log} \
@@ -46,21 +47,21 @@ if 'mg' in TYPES:
                               -m {SAMTOOLS_MEM} \
                               - > {output.map_pair} 2>> {log}
 
-            echo "#####################################################################################" >> {log}
+            echo "#####################################################################################" >> {log} 2>&1
 
             # map se and sort
-            echo "Mapping SE reads and sorting them." >> {log} 2>&
+            echo "Mapping SE reads and sorting them." >> {log} 2>&1
             bwa-mem2 mem -v 1 \
                          -t {threads} \
                          -M \
-                         -R {params.sam_header} \
+                         -R '@RG\tID:{params.sample}\tSM:mg\tPL:platform\tLB:library' \
                          {input.assembly} \
                          {input.r_se} 2>> {log} \
               | samtools sort --threads {threads} \
                               -m {SAMTOOLS_MEM} \
                               - > {output.map_se} 2>> {log}
             
-            echo "#####################################################################################" >> {log}
+            echo "#####################################################################################" >> {log} 2>&1
 
             # merge paired and se and sort
             echo "Merging mapping PE and SE reads and sorting them." >> {log} 2>&1
@@ -79,14 +80,14 @@ if 'mt' in TYPES:
             r_1='Preprocessing/mt.r1.preprocessed.fq',
             assembly='Assembly/%s.assembly.merged.fa' % ASS
         output:
-            directory("Assembly/Genome"),
+            "Assembly/Genome",
             "Assembly/genomeParameters.txt",
             "Assembly/chrStart.txt",
             "Assembly/chrName.txt",
             "Assembly/chrNameLength.txt",
             "Assembly/chrLength.txt"
         resources:
-            runtime = "24:00:00",
+            runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             # Ensure at least 20gb of mem
@@ -139,15 +140,20 @@ if 'mt' in TYPES:
             assembly='Assembly/%s.assembly.merged.fa' % ASS
         output:
             map_pair = 'Assembly/mt.reads.paired.sorted.bam',
+            unmap_pair_1 = 'Assembly/mt.reads.paired.sorted.unmapped_1.bam',
+            unmap_pair_2 = 'Assembly/mt.reads.paired.sorted.unmapped_2.bam',
             map_se = 'Assembly/mt.reads.single.sorted.bam',
+            unmap_se = 'Assembly/mt.reads.single.sorted.unmapped.bam',
             map_merge = 'Assembly/mt.reads.sorted.bam'
         resources:
-            runtime = "12:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             getThreads(MAIN_BIGCORENO, bigmem=True)
         params:
-            sam_header = f'@RG\\tID:{SAMPLE}\\tSM:mt'
+            # sam_header = f'@RG\tID:{SAMPLE}\tSM:mt'
+            sample = SAMPLE,
+            out_dir = 'Assembly'
         conda:
             ENVDIR + "/IMP_mapping.yaml"
         log:
@@ -156,6 +162,9 @@ if 'mt' in TYPES:
             "mapping_on_assembly: Mapping mt reads on merged assembly."
         shell:
             """
+            # Increase max number of open file descriptors for STAR
+            ulimit -n 10000
+
             # Map paired
             STAR --runThreadN {threads} \
                  --runMode alignReads \
@@ -163,32 +172,49 @@ if 'mt' in TYPES:
                  --outFilterMultimapNmax 100 \
                  --winAnchorMultimapNmax 150 \
                  --alignIntronMax 1 \
-                 --outFileNamePrefix {output.map_pair} \
+                 --outFileNamePrefix {params.out_dir}/ \
                  --outSAMtype BAM SortedByCoordinate \
-                 --outSAMheaderHD {params.sam_header} \
+                 --outSAMheaderHD '@RG\tID:{params.sample}\tSM:mt\tPL:platform\tLB:library' \
                  --outBAMcompression -1 \
                  --outReadsUnmapped Fastx \
                  --outFilterScoreMinOverLread 0.33 \
                  --outFilterMatchNminOverLread 0.33 \
                  --readFilesIn {input.r_1} {input.r_2} > {log} 2>&1
 
+            # Move files to output
+            mv {params.out_dir}/Aligned.sortedByCoord.out.bam {output.map_pair} >> {log} 2>&1
+            mv {params.out_dir}/Unmapped.out.mate1 {output.unmap_pair_1} >> {log} 2>&1
+            mv {params.out_dir}/Unmapped.out.mate2 {output.unmap_pair_2} >> {log} 2>&1
+
+            # Remove tmp files
+            rm -rf {params.out_dir}/_STARtmp {params.out_dir}/Log.out {params.out_dir}/Log.progress.out  \
+                   {params.out_dir}/Log.final.out {params.out_dir}/SJ.out.tab >> {log} 2>&1
+
             # Map single
             STAR --runThreadN {threads} \
                  --runMode alignReads \
-                 --genomeDir ${out_dir} \
+                 --genomeDir Assembly \
                  --outFilterMultimapNmax 100 \
                  --winAnchorMultimapNmax 150 \
                  --alignIntronMax 1 \
-                 --outFileNamePrefix {output.map_se} \ \
+                 --outFileNamePrefix {params.out_dir}/ \
                  --outSAMtype BAM SortedByCoordinate \
-                 --outSAMheaderHD ${{SAMHEADER}} \
+                 --outSAMheaderHD '@RG\tID:{params.sample}\tSM:mt\tPL:platform\tLB:library' \
                  --outBAMcompression -1 \
                  --outReadsUnmapped Fastx \
                  --outFilterScoreMinOverLread 0.33 \
                  --outFilterMatchNminOverLread 0.33 \
                  --readFilesIn {input.r_se} >> {log} 2>&1
 
-            # merge paired and se and sort
+            # Move files to output
+            mv {params.out_dir}/Aligned.sortedByCoord.out.bam {output.map_se} >> {log} 2>&1
+            mv {params.out_dir}/Unmapped.out.mate1 {output.unmap_se} >> {log} 2>&1
+
+            # Remove tmp files
+            rm -rf {params.out_dir}/_STARtmp {params.out_dir}/Log.out {params.out_dir}/Log.progress.out  \
+                   {params.out_dir}/Log.final.out {params.out_dir}/SJ.out.tab >> {log} 2>&1
+
+            # Merge paired and se and sort
             samtools merge --threads {threads} \
                            -o - \
                           {output.map_pair} \
@@ -204,17 +230,19 @@ rule index_bam:
     output:
         '{sorted_bam}.bai'
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         1
+    params:
+        out_file_name = lambda wc: wc.get("sorted_bam").split("/")[-1].replace(".bam", "")
     conda:
         ENVDIR + "/IMP_mapping.yaml"
-    log:
-        "logs/assembly_index.{sorted_bam}.log"
+    # log:
+    #     f"logs/assembly_index.{params.out_file_name}.log"
     message:
         "index_bam: Indexing {wildcards.sorted_bam}."
     shell:
         """
-        samtools index {input} > {log} 2>&1
+        samtools index {input} > 'logs/assembly_index.{params.out_file_name}.log' 2>&1
         """

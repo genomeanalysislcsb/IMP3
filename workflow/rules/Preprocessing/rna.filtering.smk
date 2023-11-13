@@ -51,7 +51,7 @@ rule filter_rrna_pe:
         # Ensure at least 100gb of mem
         max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     resources:
-        runtime = "24:00:00",
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     params:
         params=smk_get_sortmerna_params,
@@ -98,7 +98,7 @@ rule filter_rrna_se:
         # Ensure at least 100gb of mem
         max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     params:
         params=smk_get_sortmerna_params,

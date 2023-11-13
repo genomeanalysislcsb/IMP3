@@ -106,7 +106,7 @@ rule ED_runaln:
         db = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna"
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_aln.{sample}.log"
     message: "runaln: Running mapping for eukdetect on {wildcards.sample} reads."
@@ -127,7 +127,7 @@ rule ED_bam2fastq:
         temp("Analysis/taxonomy/EukDetect/aln/{sample}_aln_q30_lenfilter.fq")
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_bam2fastq.{sample}.log"
     message: "bam2fastq: Running bam2fastq for eukdetect on {wildcards.sample} reads."
@@ -144,7 +144,7 @@ rule ED_find_low_complexity:
         temp("Analysis/taxonomy/EukDetect/aln/{sample}_low_complexity.txt")
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
 #    log: "logs/analysis_eukdetect_find_low_complexity.{sample}.log"
     message: "find_low_complexity: Finding low complexity for eukdetect on {wildcards.sample} reads."
@@ -162,7 +162,7 @@ rule ED_remove_low_complexity:
         temp("Analysis/taxonomy/EukDetect/aln/{sample}_aln_q30_lenfilter_complexity.sorted.bam")
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_remove_low_complexity.{sample}.log"
     message: "remove_low_complexity: Removing low complexity for eukdetect on {wildcards.sample} reads."
@@ -181,7 +181,7 @@ rule ED_fixmate:
         temp("Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexity_fixmate.bam")
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_fixmate.{sample}.log"
     message: "fixmate: Running fixmate for eukdetect on {wildcards.sample} reads."
@@ -198,7 +198,7 @@ rule ED_markdup:
         temp("Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexity_rmdup.bam")
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_markdup.{sample}.log"
     message: "markdup: Running markdup for eukdetect on {wildcards.sample} reads."
@@ -215,7 +215,7 @@ rule ED_rmsort:
         "Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexityfilter_dupfilter.sorted.bam"
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_rmsort.{sample}.log"
     message: "rmsort: Running rmsort for eukdetect on {wildcards.sample} reads."
@@ -233,7 +233,7 @@ if not 'assembly' in IMP_STEPS and not 'analysis' in IMP_STEPS:
             bai = "Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexityfilter_dupfilter.sorted.bam.bai"
         threads: 1
         resources:
-            runtime = "12:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log: "logs/analysis_eukdetect_index.{sample}.log"
         message: "index: Indexing bam for eukdetect on {wildcards.sample} reads."
@@ -254,7 +254,7 @@ rule ED_countreads:
         ref = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna"
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_countreads.{sample}.log"
     message: "countreads: Counting {wildcards.sample} reads for eukdetect."
@@ -278,7 +278,7 @@ rule ED_taxonomize:
         taxdb = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/taxa.sqlite"
     threads: 1
     resources:
-        runtime = "12:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log: "logs/analysis_eukdetect_taxonomize.{sample}.log"
     message: "taxonomize: Taxonomy of {wildcards.sample} reads for eukdetect."

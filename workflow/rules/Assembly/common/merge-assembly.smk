@@ -35,7 +35,7 @@ elif config["assembly"]["merge"] == "cap3":
         output:
             'Assembly/%s.assembly.merged.fa' % ASS,
         resources:
-            runtime = "48:00:00",
+            runtime = LONG_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         params:
             sample = SAMPLE
@@ -73,7 +73,7 @@ elif config["assembly"]["merge"] == "flye":
             # final files
             final='Assembly/%s.assembly.merged.fa' % ASS,
         resources:
-            runtime = "12:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         params:
             sample = SAMPLE,
@@ -113,7 +113,7 @@ elif config["assembly"]["merge"] == "quickmerge":
     #     benchmark:
     #         os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install_benchmark.tsv")
     #     resources:
-    #         runtime = "01:00:00",
+    #         runtime = VERY_SHORT_RUNTIME,
     #         mem_mb = MAIN_MEMCORE_MB
     #     threads:
     #         1
@@ -143,7 +143,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             # os.path.join(OUTPUTDIR, "logs",  "assembly_merge_hybrid_{assembler}_assembly_{assembly_nr}_quickmerge_benchmark.tsv")
             os.path.join(OUTPUTDIR,"logs","assembly_merge_hybrid_format_fastas_benchmark.tsv")
         resources:
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
@@ -181,7 +181,7 @@ elif config["assembly"]["merge"] == "quickmerge":
         benchmark:
             os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1_with_h2_benchmark.tsv")
         resources:
-            runtime = "12:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
@@ -242,7 +242,7 @@ elif config["assembly"]["merge"] == "quickmerge":
         benchmark:
             os.path.join(OUTPUTDIR, "logs",  "assembly_join_h2_with_h1_benchmark.tsv")
         resources:
-            runtime = "12:00:00",
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
@@ -296,15 +296,15 @@ elif config["assembly"]["merge"] == "quickmerge":
             assembly_h1h2=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta"),
             assembly_h2h1=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
         output:
-            out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1h2_with_h2h1")),
-            # merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
+            out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "h1h2_with_h2h1")),
+            # merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
             merged_assembly = 'Assembly/%s.assembly.merged.fa' % ASS
         log:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1h2_with_h2h1.log")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_h1h2_with_h2h1.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1h2_with_h2h1_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  "assembly_h1h2_with_h2h1_benchmark.tsv")
         resources:
-            runtime = "24:00:00",
+            runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
@@ -387,7 +387,7 @@ elif config["assembly"]["merge"] == "quickmerge":
     #     input:
     #         ass1_form = "Assembly/intermediary/%s.%s_preprocessed.1_formatted.fa" % (ASS,IMP_ASSEMBLER),
     #         ass2_form = "Assembly/intermediary/%s.%s_unmapped.2_formatted.fa" % (ASS,IMP_ASSEMBLER),
-    #         merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary","join_h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
+    #         merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary","h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
     #     output:
     #         final = 'Assembly/%s.assembly.merged.fa' % ASS
     #     log:
@@ -395,7 +395,7 @@ elif config["assembly"]["merge"] == "quickmerge":
     #     benchmark:
     #         os.path.join(OUTPUTDIR, "logs",  "assembly_clean_up_assembly_merge_benchmark.tsv")
     #     resources:
-    #         runtime = "06:00:00",
+    #         runtime = SHORT_RUNTIME,
     #         mem_mb = MAIN_MEMCORE_MB
     #     params:
     #         sample = SAMPLE,

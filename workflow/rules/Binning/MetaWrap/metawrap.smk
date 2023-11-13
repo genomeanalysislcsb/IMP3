@@ -29,7 +29,7 @@ rule MetaWrap_refine:
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     resources:
-        runtime = "24:00:00",
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
@@ -191,7 +191,7 @@ rule compress_binner_out:
         # Ensure at least 10gb of mem
         max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 8)
     resources:
-        runtime = "04:00:00",
+        runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/compress_binner_{binner}.log"

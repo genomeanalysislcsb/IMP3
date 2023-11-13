@@ -45,7 +45,7 @@ if MG or MT:
         output:
             'Stats/{type}/{type}.read_counts.txt'
         resources:
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         threads:
             1
@@ -64,7 +64,7 @@ elif MGaln or MTaln:
         output:
             'Stats/{type}/{type}.read_counts.txt'
         resources:
-            runtime = "02:00:00",
+            runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         threads:
             1

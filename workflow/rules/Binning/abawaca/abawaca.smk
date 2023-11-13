@@ -13,7 +13,7 @@ rule abawaca:
     threads:
         getThreads(32)
     resources:
-        runtime = "24:00:00",
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
         ENVDIR + "/IMP_binning.yaml"
