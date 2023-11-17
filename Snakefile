@@ -1,8 +1,8 @@
+import pandas as pd
+import numpy as np
+
 # include global functions
 ROOTDIR = srcdir(".")
-
-# print(f'workflow.cores, workflow.nodes: {workflow.cores}, {workflow.nodes}')
-# print(f'workflow.conda_prefix: {workflow.conda_prefix}')
 
 include:
     "workflow/rules/function.definitions.smk"
@@ -21,178 +21,86 @@ yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True, default
 
 Path("status").mkdir(exist_ok=True)
 
-# include rules for the workflow based on the input parameters
-include:
-    "workflow/rules/data.input.smk"
+sample_input_tsv = config['sample_input_tsv']
 
-# include workflows for preprocessing, assembly, analysis, binning and taxonomy steps
-# INTEGRATIVE MG-MT workflow
-if MG and MT:
-    if 'preprocessing' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/integrative/Preprocessing.smk"
+# Samples
+SAMPLES = pd.read_csv(sample_input_tsv, sep="\t", header=0, index_col="SampleID").replace({pd.NA: None, 'NA': None, np.nan: None})
 
-    if 'assembly' in IMP_STEPS:
-        if config['assembly']['hybrid']:
-            include:
-                "workflow/rules/modules/integrative/Assembly.smk"
-        else:
-            include:
-                "workflow/rules/modules/single_omics/mg/Assembly.smk"
+# List of all sample IDs
+sample_ids = list(SAMPLES.index)
 
-    if 'analysis' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/integrative/Analysis.smk"
+# List of all file types
+file_types = list(SAMPLES.columns)
 
-    if 'taxonomy' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/integrative/Taxonomy.smk"
+# List of all file names
+input_read_file_names = ["mg.r1.fq", "mg.r2.fq", "mg.se.fq", "mt.r1.fq", "mt.r2.fq", "mt.se.fq"]
 
-    if 'binning' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/integrative/Binning.smk"
+# Dict linking file types to input file names
+# (we use this in get_ori_files() to get the correct file name for each file type)
+input_read_file_names_dict = {name: type for name, type in zip(input_read_file_names, file_types)}
 
-# Already in line 167 ??
-#     if 'summary' in IMP_STEPS:
-#         include:
-#             "workflow/rules/modules/common/Summary.smk"
+# Reverse dict to get file type from file name
+input_read_file_names_dict_rev = {type: name for name, type in input_read_file_names_dict.items()}
 
+### TEST FUNCTIONS ###
+def get_files_to_copy(samples_df):
+    # Stack the DataFrame and reset index to get easy access to rows and columns
+    stacked_df = samples_df.stack().reset_index()
 
-# Single omics MG workflow
-elif MG:
-    if 'preprocessing' in IMP_STEPS:
-        if len(MG) == 2:
-            include:
-                "workflow/rules/modules/single_omics/mg/Preprocessing.smk"
-        if len(MG) == 1:
-            include:
-                "workflow/rules/modules/single_omics/mg/PreprocessingSE.smk"
+    # Extract sample(rows) and file types columns, excluding rows with 'None' values
+    filtered_samples, filtered_file_types = zip(*[(row, input_read_file_names_dict_rev.get(col)) 
+                                                   for row, col, val in stacked_df.values if val])
 
-    if 'assembly' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Assembly.smk"
+    # Build expected file copy output paths
+    # (notice the `zip` to not create all combinations of sample IDs and file types)
+    valid_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "Preprocessing", "{file}"), zip,
+                              sid=filtered_samples, file=filtered_file_types)
 
-    if 'analysis' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Analysis.smk"
+    return valid_file_paths
 
-    if 'taxonomy' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Taxonomy.smk"
+def get_ori_files(wildcards):
+    # Get sample ID based on what is defined in rule All based on whats in the sample_input_tsv (SAMPLES)
+    sample_id = wildcards.sid
 
-    if 'binning' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Binning.smk"
-# MT-only workflow
-elif MT:
-    if 'preprocessing' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Preprocessing.smk"
+    # Get file type in the same manner
+    file_type = input_read_file_names_dict.get(wildcards.file)
 
-    if 'assembly' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Assembly.smk"
+    # Get file path based on sample ID and file type
+    sample_id_file = SAMPLES.loc[sample_id, file_type]
 
-    if 'analysis' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Analysis.smk"
+    return sample_id_file
 
-    if 'taxonomy' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Taxonomy.smk"
+###########################
 
-    if 'binning' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Binning.smk"
-#starting from aligned reads:
-elif MGaln and MTaln:
-    if 'analysis' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/integrative/Analysis.smk"
+### RULES ####
+localrules: ALL
 
-    if 'taxonomy' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/integrative/Taxonomy.smk"
+####
 
-    if 'binning' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/integrative/Binning.smk"
-
-elif MGaln:
-    if 'analysis' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Analysis.smk"
-
-    if 'taxonomy' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Taxonomy.smk"
-
-    if 'binning' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mg/Binning.smk"
-
-elif MTaln:
-    if 'analysis' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Analysis.smk"
-
-    if 'taxonomy' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Taxonomy.smk"
-
-    if 'binning' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Binning.smk"
-else:
-    raise Exception('No input data.')
-
-# clean up at the end
-if EMAIL == "":
-    onsuccess:
-        shell("mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *stdout job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log")
-else:
-    onsuccess:
-        shell('mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; (  mv *stdout job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; echo "$(date) {config[sessionName]}" | mail -s "IMP3 finished" {EMAIL} ')
-    onerror:
-        shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 exited with error" {EMAIL} ')
-    onstart:
-        shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 started" {EMAIL} ')
-
-
-
-# master command summary and archiving
-inputs_all = ['status/inputs.done','status/workflow.done']
-
-if 'preprocessing' in IMP_STEPS:
-    inputs_all.append(expand('status/preprocessing_{type}.reads.compressed', type=TYPES))
-
-if 'assembly' in IMP_STEPS:
-    inputs_all.append("Assembly/intermediary.tar.gz")
-
-if 'analysis' in IMP_STEPS:
-    inputs_all.append('Analysis/annotation/intermediary.tar.gz')
-
-if 'binning' in IMP_STEPS:
-    inputs_all.extend([f'Binning/{binner}.tar.gz' for binner in BIN_STEPS + ['DASTool']])
-
-if "summary" in IMP_STEPS:
-    inputs_all.append('status/summary.done')
-    include:
-        "workflow/rules/modules/common/Summary.smk"
-
-localrules: workflow, ALL
-
-# master command
 rule ALL:
     input:
-        inputs_all
-    output:
-        touch('status/all.done')
+        get_files_to_copy(SAMPLES)
 
+####
 
-# master command workflow
-rule workflow:
+rule prepare_input_data_copy:
     input:
-        workflow_ctrl
+        get_ori_files # --> ['mg1.fq', 'mg2.fq', 'mt1.fq', 'mt2.fq']
     output:
-        touch('status/workflow.done')
+        os.path.join(OUTPUTDIR, "{sid}", "Preprocessing", "{file}")
+    threads:
+        getThreads(5)
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    wildcard_constraints:
+        sid = "|".join(sample_ids)
+
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    message:
+        "Prepare input: decompress/copy"
+    script:
+        os.path.join(SRCDIR, "prepare_input_files.py")
+
+###########################

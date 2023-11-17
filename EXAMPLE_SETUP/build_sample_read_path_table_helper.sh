@@ -22,22 +22,22 @@ get_read_affix() {
 
 
 # Define output sample list tsv path
-out_sample_tsv="/mnt/lscratch/users/ohickl/imp_guide_test/samples.tsv"
+out_sample_tsv="/mnt/isilon/projects/ecosystem_biology/local_tools/multi_imp_tests/samples.tsv"
 
 # Directory containing read files. Ensure that this points to your directory
 # of read files and that files within are structured uniformly.
 # In this case they need to be structured as follows:
 #   ../samples_dir/sample_name/<ome>.<read_type>
 # e.g. ../my_samples/ERR1234567/mg.r1.preprocessed.fq
-samples_dir="/mnt/isilon/projects/ecosystem_biology/local_tools/20230330_IMP3/test"
+samples_dir="/mnt/isilon/projects/ecosystem_biology/local_tools/multi_imp_tests/test_imp3_data"
 
 # Define the naming structure for your read files. Modify these variables
 # to match your naming convention if different from below.
 # The general structure is: <affix><ome><suffix>
 # Ensure to include the separator e.g "." in the variable
 # You can leave se_file_name empty if you do not have single-end reads
-r1_file_suffix=".R1.fq"
-r2_file_suffix=".R2.fq"
+r1_file_suffix=".r1.fq"
+r2_file_suffix=".r2.fq"
 se_file_suffix=""
 
 # Leave empty if no affix is used
