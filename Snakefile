@@ -69,23 +69,18 @@ def get_ori_files(wildcards):
     sample_id_file = SAMPLES.loc[sample_id, file_type]
 
     return sample_id_file
-
 ###########################
 
-### RULES ####
+### RULES #################
 localrules: ALL
-
 ####
-
 rule ALL:
     input:
         get_files_to_copy(SAMPLES)
-
 ####
-
 rule prepare_input_data_copy:
     input:
-        get_ori_files # --> ['mg1.fq', 'mg2.fq', 'mt1.fq', 'mt2.fq']
+        get_ori_files # --> ['/path/to/mg1.fq', '/path/to/mg2.fq', ...]
     output:
         os.path.join(OUTPUTDIR, "{sid}", "Preprocessing", "{file}")
     threads:
@@ -95,7 +90,6 @@ rule prepare_input_data_copy:
         mem_mb = MAIN_MEMCORE_MB
     wildcard_constraints:
         sid = "|".join(sample_ids)
-
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
