@@ -33,7 +33,7 @@ sample_ids = list(SAMPLES.index)
 file_types = list(SAMPLES.columns)
 
 # List of all file names
-input_read_file_names = ["mg.r1.fq", "mg.r2.fq", "mg.se.fq", "mt.r1.fq", "mt.r2.fq", "mt.se.fq"]
+input_read_file_names = ["mg.r1.fq", "mg.r2.fq", "mg.se.fq", "mt.r1.fq", "mt.r2.fq", "mt.se.fq", "assembly.fna"]
 
 # Dict linking file types to input file names
 # (we use this in get_ori_files() to get the correct file name for each file type)
@@ -43,6 +43,35 @@ input_read_file_names_dict = {name: type for name, type in zip(input_read_file_n
 input_read_file_names_dict_rev = {type: name for name, type in input_read_file_names_dict.items()}
 
 ### TEST FUNCTIONS ###
+
+def get_read_out_paths_and_wc(filt_samples, filt_types):
+    filtered_file_reads, filtered_file_omes = zip(*[file_type.split(".")[:-1] for file_type in filtered_file_types if file_type.endswith(".fq")])
+
+    # print('filtered_samples:', filtered_samples)
+    # print('filtered_file_reads:', filtered_file_reads)
+    # print('filtered_file_omes:', filtered_file_omes)
+
+    # Build expected file copy output paths
+    # (notice the `zip` to not create all combinations of sample IDs and file types)
+    valid_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "Preprocessing", "{ome}.{read}.fq"), zip,
+                              sid=filtered_samples, ome=filtered_file_reads, read=filtered_file_omes)
+
+    checked_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "status", "{ome}.{read}.fq.checked"), zip,
+                            sid=filtered_samples, ome=filtered_file_reads, read=filtered_file_omes)
+    return valid_file_paths, checked_file_paths
+
+# TODO: Finish assembly output paths function
+def get_assembly_out_paths_and_wc(filt_samples, filt_types):
+    filtered_file_reads, filtered_file_omes = zip(*[file_type.split(".")[:-1] for file_type in filtered_file_types if file_type == "assembly.fna"])
+
+    valid_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "Preprocessing", "{ass}.fq"), zip,
+                              sid=filtered_samples, ome=filtered_file_reads, read=filtered_file_omes)
+
+    checked_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "status", "{ass}.fq.checked"), zip,
+                            sid=filtered_samples, ome=filtered_file_reads, read=filtered_file_omes)
+
+    return valid_file_paths, checked_file_paths
+
 def get_files_to_copy(samples_df):
     # Stack the DataFrame and reset index to get easy access to rows and columns
     stacked_df = samples_df.stack().reset_index()
@@ -51,12 +80,13 @@ def get_files_to_copy(samples_df):
     filtered_samples, filtered_file_types = zip(*[(row, input_read_file_names_dict_rev.get(col)) 
                                                    for row, col, val in stacked_df.values if val])
 
-    # Build expected file copy output paths
-    # (notice the `zip` to not create all combinations of sample IDs and file types)
-    valid_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "Preprocessing", "{file}"), zip,
-                              sid=filtered_samples, file=filtered_file_types)
+    valid_read_file_paths, checked_read_file_paths = get_read_out_paths_and_wc(filtered_samples, filtered_file_types)
 
-    return valid_file_paths
+    valid_assembly_file_paths, checked_assembly_file_paths = get_assembly_out_paths_and_wc(filtered_samples, filtered_file_types)
+
+    combined_checked_paths = checked_read_file_paths + checked_assembly_file_paths
+
+    return combined_checked_paths
 
 def get_ori_files(wildcards):
     # Get sample ID based on what is defined in rule All based on whats in the sample_input_tsv (SAMPLES)
@@ -96,5 +126,60 @@ rule prepare_input_data_copy:
         "Prepare input: decompress/copy"
     script:
         os.path.join(SRCDIR, "prepare_input_files.py")
+
+rule check_read_r_input:
+    input:
+        expand(os.path.join(OUTPUTDIR, "{{sid}}", "Preprocessing", "{{ome}}.{read}.fq"), read=["r1","r2"])
+    output:
+        expand(os.path.join(OUTPUTDIR, "{{sid}}", "status", "{{ome}}.{read}.fq.checked"), read=["r1","r2"])
+    priority:
+        10
+    message:
+        "Checking {wildcards.ome} read input."
+    shell:
+        """
+        if [ "$(wc -l < {input[0]})" -eq "$(wc -l < {input[1]})" ]; then
+          touch {output}
+        else
+          echo "ERROR: Paired read files don't have the same number of reads." && exit 1
+        fi
+        """
+
+rule check_read_se_input:
+    input:
+        expand(os.path.join(OUTPUTDIR, "{{sid}}", "Preprocessing", "{{ome}}.{read}.fq"), read=["se"])
+    output:
+        expand(os.path.join(OUTPUTDIR, "{{sid}}", "status", "{{ome}}.{read}.fq.checked"), read=["se"])
+    message:
+        "Checking single end {wildcards.ome} read input."
+    priority:
+        10
+    shell:
+        """
+        if [ -s {input} ]; then
+          touch {output}
+        else
+          echo "ERROR: {input} is empty." && exit 1
+        fi
+        """
+
+# TODO: Add check for empty assembly files
+rule check_assembly_input:
+    input:
+        "Assembly/{ass}.assembly.merged.fa"
+    output:
+        "status/{ass}.assembly.merged.fa.checked"
+    priority:
+        10
+    message:
+        "Checking assembly."
+    shell:
+        """
+        if [ -s {input} ]; then
+          touch {output}
+        else
+          echo "ERROR: Assembly is empty." && exit 1
+        fi
+        """
 
 ###########################
