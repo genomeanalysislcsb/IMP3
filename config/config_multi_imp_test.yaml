@@ -1,5 +1,5 @@
 steps: "preprocessing"
-sample_input_tsv: '/mnt/isilon/projects/ecosystem_biology/local_tools/multi_imp_tests/samples.tsv' ### USER_INPUT ####
+sample_input_tsv: '/mnt/isilon/projects/ecosystem_biology/local_tools/multi_imp_tests/samples_v2.tsv' ### USER_INPUT ####
 email: ""
 sessionName: ""
 sessionKind: ""

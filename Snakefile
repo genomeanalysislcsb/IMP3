@@ -45,30 +45,30 @@ input_read_file_names_dict_rev = {type: name for name, type in input_read_file_n
 ### TEST FUNCTIONS ###
 
 def get_read_out_paths_and_wc(filt_samples, filt_types):
-    filtered_file_reads, filtered_file_omes = zip(*[file_type.split(".")[:-1] for file_type in filtered_file_types if file_type.endswith(".fq")])
-
-    # print('filtered_samples:', filtered_samples)
-    # print('filtered_file_reads:', filtered_file_reads)
-    # print('filtered_file_omes:', filtered_file_omes)
+    filtered_file_reads, filtered_file_omes = zip(*[file_type.split(".")[:-1] for file_type in filt_types if file_type.endswith(".fq")])
 
     # Build expected file copy output paths
     # (notice the `zip` to not create all combinations of sample IDs and file types)
     valid_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "Preprocessing", "{ome}.{read}.fq"), zip,
-                              sid=filtered_samples, ome=filtered_file_reads, read=filtered_file_omes)
+                              sid=filt_samples, ome=filtered_file_reads, read=filtered_file_omes)
 
     checked_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "status", "{ome}.{read}.fq.checked"), zip,
-                            sid=filtered_samples, ome=filtered_file_reads, read=filtered_file_omes)
+                            sid=filt_samples, ome=filtered_file_reads, read=filtered_file_omes)
     return valid_file_paths, checked_file_paths
 
 # TODO: Finish assembly output paths function
 def get_assembly_out_paths_and_wc(filt_samples, filt_types):
-    filtered_file_reads, filtered_file_omes = zip(*[file_type.split(".")[:-1] for file_type in filtered_file_types if file_type == "assembly.fna"])
 
-    valid_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "Preprocessing", "{ass}.fq"), zip,
-                              sid=filtered_samples, ome=filtered_file_reads, read=filtered_file_omes)
+    print(['.'.join(file_type.split(".")[:-1]) for file_type in filt_types if file_type == "assembly.fna"])
 
-    checked_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "status", "{ass}.fq.checked"), zip,
-                            sid=filtered_samples, ome=filtered_file_reads, read=filtered_file_omes)
+    # Build expected file copy output paths, matching the sample ID and exisitng assembly file name
+    filt_samples, filtered_file_assemblies = zip(*[(sample, file_type.split(".")[0]) for sample, file_type in zip(filt_samples, filt_types) if file_type == "assembly.fna"])
+
+    valid_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "Assembly", "{ass}.fna"), zip,
+                              sid=filt_samples, ass=filtered_file_assemblies)
+
+    checked_file_paths = expand(os.path.join(OUTPUTDIR, "{sid}", "status", "{ass}.fna.checked"), zip,
+                            sid=filt_samples, ass=filtered_file_assemblies)
 
     return valid_file_paths, checked_file_paths
 
@@ -81,8 +81,13 @@ def get_files_to_copy(samples_df):
                                                    for row, col, val in stacked_df.values if val])
 
     valid_read_file_paths, checked_read_file_paths = get_read_out_paths_and_wc(filtered_samples, filtered_file_types)
-
     valid_assembly_file_paths, checked_assembly_file_paths = get_assembly_out_paths_and_wc(filtered_samples, filtered_file_types)
+
+    print('filtered_samples:', filtered_samples)
+    print('valid_read_file_paths:', valid_read_file_paths)
+    print('checked_read_file_paths:', checked_read_file_paths)
+    print('valid_assembly_file_paths', valid_assembly_file_paths)
+    print('checked_assembly_file_paths', checked_assembly_file_paths)
 
     combined_checked_paths = checked_read_file_paths + checked_assembly_file_paths
 
@@ -99,6 +104,7 @@ def get_ori_files(wildcards):
     sample_id_file = SAMPLES.loc[sample_id, file_type]
 
     return sample_id_file
+    
 ###########################
 
 ### RULES #################

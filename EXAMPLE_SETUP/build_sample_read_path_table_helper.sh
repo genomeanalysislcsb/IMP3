@@ -22,7 +22,7 @@ get_read_affix() {
 
 
 # Define output sample list tsv path
-out_sample_tsv="/mnt/isilon/projects/ecosystem_biology/local_tools/multi_imp_tests/samples.tsv"
+out_sample_tsv="/mnt/isilon/projects/ecosystem_biology/local_tools/multi_imp_tests/samples_v2.tsv"
 
 # Directory containing read files. Ensure that this points to your directory
 # of read files and that files within are structured uniformly.
@@ -46,8 +46,11 @@ r1_file_affix=""
 r2_file_affix=""
 se_file_affix=""
 
+# Assembly suffix
+assembly_suffix=".assembly.merged.fa"
+
 # Write header to output TSV file
-printf "SampleID\tMG_R1\tMG_R2\tMG_SE\tMT_R1\tMT_R2\tMT_SE\n" > ${out_sample_tsv}
+printf "SampleID\tMG_R1\tMG_R2\tMG_SE\tMT_R1\tMT_R2\tMT_SE\tAssembly\n" > ${out_sample_tsv}
 
 # Iterate over each sample directory in the read files directory
 for sample_path in ${samples_dir}/*; do
@@ -78,6 +81,27 @@ for sample_path in ${samples_dir}/*; do
       fi
     done
   done
+
+  # Append assembly path to sample line, and allow archive extensions
+  assembly_path=$(ls "${sample_path}"/*"${assembly_suffix}" 2>/dev/null)
+
+  if [[ -z "${assembly_path}" ]]; then
+    allowed_archive_extensions=(gz bz2 zip tar tgz tbz tbz2 txz xz Z rar 7z lzma lz)
+    for ext in "${allowed_archive_extensions[@]}"; do
+        assembly_path=$(ls "${sample_path}"/*"${assembly_suffix}".${ext} 2>/dev/null)
+        if [[ -f "${assembly_path}" ]]; then
+            break
+        fi
+    done
+  fi
+
+  echo "Assembly path: ${assembly_path}"
+
+  if [[ -f ${assembly_path} ]]; then
+      sample_line+=$'\t'"${assembly_path}"
+  else
+      sample_line+=$'\tNA'
+  fi
 
   # If sample_line is just sample_id with tabs, then no read files were found and we skip
   if [[ "${sample_line}" == "${sample_id}"$'\tNA\tNA\tNA\tNA\tNA\tNA' ]]; then
