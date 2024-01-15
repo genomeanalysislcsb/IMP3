@@ -1,0 +1,9 @@
+# IMP3 logs and status files
+
+## Logs
+
+## Status files
+
+## The configuration file
+
+## The .snakemake
