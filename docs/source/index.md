@@ -29,9 +29,19 @@ installation/quickstart
 :maxdepth: 1
 :name: IMP3
 
+installation/installation
 running/run_idx
 steps/Overview
 output/Overview
+```
+
+```{toctree}
+:caption: Multi-IMP
+:hidden: true
+:maxdepth: 1
+:name: MultiIMP
+
+multiImp/multiimp
 ```
 
 ```{toctree}
@@ -42,6 +52,7 @@ output/Overview
 
 FAQ
 ```
+
 
 % * :ref:`genindex`
 

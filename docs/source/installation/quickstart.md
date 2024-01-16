@@ -1,9 +1,7 @@
 # Quickstart Installation
 
 ## Quickstart
-A quick guide on the installation of IMP3 with a test run. Please check out the longer description 
-[here](https://imp3.readthedocs.io/en/latest/):
-
+A quick guide on the installation of IMP3 with a test run. Please check out the longer description under {doc}`installation`
 Note: All commands below are meant to be executed from within the imp3 directory after cloning. Cluster execution using 
 profiles supports slurm only at the moment.
 
@@ -14,12 +12,14 @@ profiles supports slurm only at the moment.
     ```
 
 ### Create a Snakemake environment or update your existing one
+
     ```shell
     # Create new one
     my_package_manager='conda'  # conda mamba micromamba
     ${my_package_manager} env create -n snakemake_env -f requirements.yaml
     ```
-    or
+or
+
     ```shell
     # Add to existing
     my_package_manager='conda'  # conda mamba micromamba
@@ -47,13 +47,12 @@ profiles supports slurm only at the moment.
 
 ### Install databases and prepare some tools:
 
-    You need to choose a path to place the conda environments using Snakemakes `--conda-prefix` parameter, in the example it
-    will be put in `conda` in the IMP3 dir.
+You need to choose a path to place the conda environments using Snakemakes `--conda-prefix` parameter, in the example it will be put in `conda` in the IMP3 dir.
 
-    You might need to set your conda channel priority to flexible to be able to install some of the environments. To do
-    so you can run `conda config --set channel_priority flexible` or do it manually in the file `~/.condarc`. It is
-    also recommended to have either no or a basic default channel setup  in `~/.condarc` with only bioconda and conda-forge,
-    e.g. like this:
+You might need to set your conda channel priority to flexible to be able to install some of the environments. To do so you can run `conda config --set channel_priority flexible` or do it manually in the file `~/.condarc`. 
+
+It is also recommended to have either no or a basic default channel setup  in `~/.condarc` with only bioconda and conda-forge, e.g. like this:
+
     ```yaml
     channel_priority: flexible
     channels:
@@ -61,8 +60,8 @@ profiles supports slurm only at the moment.
       - bioconda
       - anaconda
     ```
+Note that the installation might take a long time, if you selected large databases.
 
-    Note that the installation might take a long time, if you selected large databases.
     ```shell
     # Activate environment (replace name with the one you chose)
     ${my_package_manager} activate snakemake_env
@@ -71,6 +70,8 @@ profiles supports slurm only at the moment.
     my_conda_dir="./conda"
     cores=14
     
+You can then perform a dry run to check if your installation is working properly quickly
+
     # Dry-run
     snakemake --snakefile install/Snakefile \
               --configfile config/config.install.yaml \
@@ -80,8 +81,10 @@ profiles supports slurm only at the moment.
               --reason \
               --printshellcmds \
               --verbose \
-              --dry-run
-              
+              --dry-run           
+
+After confirming everything is correct, you can run the installation of IMP
+
     # Run install
     snakemake --snakefile install/Snakefile \
               --configfile config/config.install.yaml \
@@ -92,23 +95,28 @@ profiles supports slurm only at the moment.
               --printshellcmds
     ```
 
+```{hint}
+The installation can take a long time so make sure your session doesn't close while you're running the install script!
+```
+
+
+
 ### Install remaining conda environments and run a test:
     
-    You can use Snakemakes profile feature, to have it submit different jobs to the cluster or run it locally.
-    
-    First you will have to set up the test config file at `config/config.test.yaml`:
-    1) Set up the specifications of your cluster nodes/whatever kind of machine you have under `mem`. If you don't have a separate
+You can use Snakemakes profile feature, to have it submit different jobs to the cluster or run it locally.
+First you will have to set up the test config file at `config/config.test.yaml`:
+1) Set up the specifications of your cluster nodes/whatever kind of machine you have under `mem`. If you don't have a separate
        large memory system you can set all `big_mem` parameter to be identical to the normal ones.
 
-    2) Set up all paths for `tmp_dir`, `outputdir`, `krakendb`, the paths at `mantis`, and `Metagenomics` 
+2) Set up all paths for `tmp_dir`, `outputdir`, `krakendb`, the paths at `mantis`, and `Metagenomics` 
     (test files are in the IMP3 dir at `test/Reads`), matching what was done during the installation.
 
     Optional:
     
-    3) Set up `cluster_profile/config.yaml` paths for `configfile`, `default-resources`, `conda-prefix`, and
+3) Set up `cluster_profile/config.yaml` paths for `configfile`, `default-resources`, `conda-prefix`, and
        `cluster-config`, as well as max numbers of cores to use and jobs to run in parallel.
 
-    4) Dry-run:
+4) Dry-run:
         ```shell
         # Activate environment
         conda activate my_snakemake_env
@@ -126,7 +134,8 @@ profiles supports slurm only at the moment.
                   --dry-run
         ```
    
-    5) Regular (Ensure enough memory is available, e.g. for the large kraken db you will need ~450gb:
+5) Regular (Ensure enough memory is available, e.g. for the large kraken db you will need ~450gb:
+
         ```shell
         # Set conda dir and run install
         my_conda_dir="./conda"
@@ -141,7 +150,8 @@ profiles supports slurm only at the moment.
                  --reason \
                  --printshellcmds
         ```
-        or profile:
+or profile:
+
         ```shell
         # Set conda dir and run install
         my_conda_dir="./conda"
@@ -150,8 +160,8 @@ profiles supports slurm only at the moment.
         ```
 
 ### Set up your own project:
-    1) Set up your config using `config/config.imp.yaml` as template the same way it was described before.
+1) Set up your config using `config/config.imp.yaml` as template the same way it was described before.
    
-    Optional:
+Optional:
     
-    2) Set up your profile using `cluster_profile/config.yaml` as template the same way it was described before.
+2) Set up your profile using `cluster_profile/config.yaml` as template the same way it was described before.

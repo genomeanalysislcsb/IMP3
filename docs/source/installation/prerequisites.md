@@ -6,8 +6,9 @@ Conda is the recommended way of installing Snakemake, as it enables Snakemake to
 
 The recommended choice is Mambaforge which not only provides the required Python and Conda commands, but also includes Mamba an extremely fast and robust replacement for the Conda package manager which is highly recommended. The default conda solver is a bit slow and sometimes has issues with selecting the latest package releases. Therefore, we recommend to in any case use Mamba.
 
-In case you don’t use Mambaforge you can always install Mamba into any other Conda-based Python distribution with
+We use micromamba as it has all the packages necessary to run the IMP pipeline
 
 ```console
-$ conda install -n base -c conda-forge mamba
+$ conda install -n base -c conda-forge micromamba
 ```
+
