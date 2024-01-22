@@ -88,8 +88,7 @@ def get_files_to_copy(samples_df):
 
     combined_checked_paths = checked_read_file_paths + checked_assembly_file_paths
 
-    print('combined_checked_paths', combined_checked_paths)
-    print(all([isinstance(path, str) for path in combined_checked_paths]))
+    print(checked_assembly_file_paths)
 
     return combined_checked_paths
 
@@ -172,9 +171,9 @@ rule check_read_se_input:
 # TODO: Add check for empty assembly files
 rule check_assembly_input:
     input:
-        "Assembly/{ass}.assembly.merged.fa"
+        os.path.join(OUTPUTDIR, "{sid}", "Assembly", "{ass}.fna")
     output:
-        "status/{ass}.assembly.merged.fa.checked"
+        os.path.join(OUTPUTDIR, "{sid}", "status", "{ass}.fna.checked")
     priority:
         10
     message:
