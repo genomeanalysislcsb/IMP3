@@ -140,6 +140,8 @@ elif CONTIGS and MT:
 IMP_STEPS = sorted(config['steps'].split())
 # Importing preprocessing_filtering from the configuration file
 PREPROCESSING_FILTERING = config['preprocessing_filtering']
+# Importing rrna_filtering from the configuration file
+KEEP_RRNAs = config['keep_rrnas']
 # Importing filter from the configuration file and splitting it
 FILTER = config['filtering']['filter'].split()
 # Importing assembler from the configuration file

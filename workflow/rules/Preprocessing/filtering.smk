@@ -8,7 +8,7 @@ rule reads_filtering:
         "logs/preprocessing_{type}_filtering.{filterstep}.log"
     wildcard_constraints:
         type = "|".join(TYPES),
-        filterstep = "|".join(["trimmed(__rna_filtered)?__" + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
+        filterstep = "|".join(["trimmed(__sortmerna)?__" + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
@@ -101,7 +101,7 @@ rule symlink_preprocessed_reads_files:
     input:
         lambda wildcards: expand(
             "Preprocessing/{{type}}.{read}.{filtered}.fq",
-            filtered=('trimmed__' if wildcards.type == 'mg' else 'trimmed__rna_filtered__') + \
+            filtered=('trimmed__' if wildcards.type == 'mg' else 'trimmed__sortmerna__') + \
                 "__".join([s + "_filtered" for s in FILTER]),
             read=['r1', 'r2', 'se']
         )

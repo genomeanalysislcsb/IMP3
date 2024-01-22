@@ -132,6 +132,8 @@ properties:
       filter:
         type: string
         pattern: "^.+$"  # TODO: Needs proper adjustment or change of system to work properly with different inputs
+  keep_rrnas:
+    type: boolean
   sortmerna:
     type: object
     properties:

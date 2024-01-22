@@ -166,7 +166,8 @@ the :ref:`databases directory <ext_DBs>` in FASTA format.
 
   filtering:
     filter: hg38
-  sortmerna:
+  rrna_filtering: true
+sortmerna:
     files:
       - rfam-5.8s-database-id98
       - silva-arc-16s-id95

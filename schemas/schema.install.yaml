@@ -7,7 +7,9 @@ properties:
     $ref: "#/definitions/path_dir"
   trimmomatic:
     $ref: "#/definitions/git"
-  sortmerna:
+  # Keep rRNA reads in preprocessed reads
+keep_rrnas: false
+sortmerna:
     $ref: "#/definitions/git"
   genomes:
     type: object

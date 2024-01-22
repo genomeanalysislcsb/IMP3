@@ -4,10 +4,10 @@ if config['nextseq']:
             'Preprocessing/{type}.r1.fq',
             'Preprocessing/{type}.r2.fq'
         output:
-            'Preprocessing/{type}.r1.trimmoed.fq',
-            'Preprocessing/{type}.se1.trimmoed.fq',
-            'Preprocessing/{type}.r2.trimmoed.fq',
-            'Preprocessing/{type}.se2.trimmoed.fq'
+            'Preprocessing/{type}.r1.trimmed.fq',
+            'Preprocessing/{type}.se1.trimmed.fq',
+            'Preprocessing/{type}.r2.trimmed.fq',
+            'Preprocessing/{type}.se2.trimmed.fq'
         threads:
             getThreads(10)
         resources:
@@ -32,10 +32,10 @@ if config['nextseq']:
 
     rule nextseq_trimming_se:
         input:
-            'Preprocessing/{type}.{read}.trimmoed.fq'
+            'Preprocessing/{type}.{read}.trimmed.fq'
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
-            'Preprocessing/{type}.{read}.trimmoed.fq.gz'
+            'Preprocessing/{type}.{read}.trimmed.fq.gz'
         wildcard_constraints:
             read="se[1|2]"
         threads: getThreads(10)
@@ -55,8 +55,8 @@ if config['nextseq']:
 
     rule nextseq_trimming_pe:
         input:
-            'Preprocessing/{type}.r1.trimmoed.fq',
-            'Preprocessing/{type}.r2.trimmoed.fq'
+            'Preprocessing/{type}.r1.trimmed.fq',
+            'Preprocessing/{type}.r2.trimmed.fq'
         output:
             'Preprocessing/{type}.r1.trimmed.fq',
             'Preprocessing/{type}.r2.trimmed.fq',
@@ -64,8 +64,8 @@ if config['nextseq']:
             'Preprocessing/{type}.r2Cut.trimmed.fq',
             'Preprocessing/{type}.se1Cut.trimmed.fq',
             'Preprocessing/{type}.se2Cut.trimmed.fq',
-            'Preprocessing/{type}.r1.trimmoed.fq.gz',
-            'Preprocessing/{type}.r2.trimmoed.fq.gz'
+            'Preprocessing/{type}.r1.trimmed.fq.gz',
+            'Preprocessing/{type}.r2.trimmed.fq.gz'
         threads: getThreads(10)
         resources:
             runtime = SHORT_RUNTIME,

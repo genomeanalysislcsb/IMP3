@@ -37,7 +37,7 @@ rule symlink_preprocessed_reads_files:
         expand("Preprocessing/mg.{read}.fq", read=['r1', 'r2']),
         lambda wildcards: expand(
             "Preprocessing/{{type}}.{read}.{filtered}.fq",
-            filtered=('trimmed.' if wildcards.type == 'mg' else 'trimmed__rna_filtered__') + \
+            filtered=('trimmed.' if wildcards.type == 'mg' else 'trimmed__sortmerna__') + \
                 ".".join([s + "_filtered" for s in FILTER]),
             read=['se']
         )

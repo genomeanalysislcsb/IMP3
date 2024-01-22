@@ -65,6 +65,8 @@ trimmomatic:
 nextseq: false
 filtering:
   filter: "PhiX T2TCHM13v2genomic T2TCHM13v2transcripts"
+# Keep rRNA reads in preprocessed reads
+keep_rrnas: false
 sortmerna:
   files:
     - rfam-5.8s-database-id98

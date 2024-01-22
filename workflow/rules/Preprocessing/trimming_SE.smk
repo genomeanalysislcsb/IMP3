@@ -3,17 +3,20 @@ if config['nextseq']:
         input:
             'Preprocessing/{type}.se.fq'
         output:
-            'Preprocessing/{type}.se.trimmoed.fq'
+            'Preprocessing/{type}.se.trimmed.fq'
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
-        threads: getThreads(10)
+        threads:
+            getThreads(10)
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log: "logs/preprocessing_trimming.{type}.log"
-        message: "trimming: Trimmming {wildcards.type} reads."
+        log:
+            "logs/preprocessing_trimming.{type}.log"
+        message:
+            "trimming: Trimmming {wildcards.type} reads."
         shell:
             """
             trimmomatic SE -threads {threads} {input[0]} {output} \
@@ -27,18 +30,21 @@ if config['nextseq']:
 
     rule nextseq_trimming:
         input:
-            'Preprocessing/{type}.{read}.trimmoed.fq'
+            'Preprocessing/{type}.{read}.trimmed.fq'
         output:
             'Preprocessing/{type}.{read}.trimmed.fq',
-            'Preprocessing/{type}.{read}.trimmoed.fq.gz'
-        threads: getThreads(10)
+            'Preprocessing/{type}.{read}.trimmed.fq.gz'
+        threads:
+            getThreads(10)
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log: "logs/preprocessing_nextseq_trimming.{type}.{read}.log"
-        message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
+        log:
+            "logs/preprocessing_nextseq_trimming.{type}.{read}.log"
+        message:
+            "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
         shell:
             """
             cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \

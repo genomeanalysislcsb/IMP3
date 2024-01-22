@@ -20,6 +20,8 @@ trimmomatic:
 ##################################################
 
 # rRNA genes from SortMeRNA
+# Keep rRNA reads in preprocessed reads
+keep_rrnas: false
 sortmerna:
   url: "https://github.com/biocore/sortmerna.git"
   commit: "90cdf6ce459e9477c5d0de9a5daab025f49f3cc6" # tag v4.3.4 (2021.11.15)

@@ -117,3 +117,40 @@ rule filter_rrna_se:
         mv {output.wdir}/out/other.fq {output.filt_se}
         mv {output.wdir}/out/aligned.fq {output.rrna_se}
         """
+
+# If KEEP_RRNAs is set to True, then the rRNA-filtered reads are concatenated with rRNA reads
+if KEEP_RRNAs:
+    rule copy_rrna:
+        input:
+            r1_filt=rules.filter_rrna_pe.output.filt_r1,
+            r2_filt=rules.filter_rrna_pe.output.filt_r2,
+            se_filt=rules.filter_rrna_se.output.filt_se,
+            r1_rrna=rules.filter_rrna_pe.output.rrna_r1,
+            r2_rrna=rules.filter_rrna_pe.output.rrna_r2,
+            se_rrna=rules.filter_rrna_se.output.rrna_se,
+        output:
+            r1="Preprocessing/mt.r1.trimmed__sortmerna.fq",
+            r2="Preprocessing/mt.r2.trimmed__sortmerna.fq",
+            se="Preprocessing/mt.se.trimmed__sortmerna.fq",
+        shell:
+            """
+            cat {input.r1_filt} {input.r1_rrna} > {output.r1}
+            cat {input.r2_filt} {input.r2_rrna} > {output.r2}
+            cat {input.se_filt} {input.se_rrna} > {output.se}
+            """
+else:
+    rule copy_rrna:
+        input:
+            r1=rules.filter_rrna_pe.output.rrna_r1,
+            r2=rules.filter_rrna_pe.output.rrna_r2,
+            se=rules.filter_rrna_se.output.rrna_se,
+        output:
+            r1="Preprocessing/mt.r1.trimmed__sortmerna.fq",
+            r2="Preprocessing/mt.r2.trimmed__sortmerna.fq",
+            se="Preprocessing/mt.se.trimmed__sortmerna.fq",
+        shell:
+            """
+            cp {input.r1} {output.r1}
+            cp {input.r2} {output.r2}
+            cp {input.se} {output.se}
+            """
