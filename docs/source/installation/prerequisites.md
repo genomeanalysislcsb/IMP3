@@ -12,3 +12,6 @@ We use micromamba as it has all the packages necessary to run the IMP pipeline
 $ conda install -n base -c conda-forge micromamba
 ```
 
+The databases used will take up a large amount of space so at least 1TB should be free for those databases. 
+
+As the pipeline is quite resource-intensive, it is recommended to run it on an hpc if you have access to one. 

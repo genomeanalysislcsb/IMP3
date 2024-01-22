@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 # Include the parent directory of the docs into the path so that we can import functions
 
-project = 'IMP3_Docs'
+project = 'IMP3_Docs3'
 copyright = '2024, Ricardo Parise'
 author = 'Ricardo Parise'
 release = '2024'

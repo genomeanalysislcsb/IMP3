@@ -14,6 +14,15 @@ IMP3 is being developed at the [Luxembourg Centre for Systems Biomedicine](https
 [Swammerdam Institute for Life Sciences at the University of Amsterdam](https://www.uva.nl/en/profile/h/e/a.u.s.heintzbuschart/a.u.s.heintz-buschart.html).
 
 ```{toctree}
+:caption: For Uni.lu users
+:hidden: true
+:maxdepth: 1
+:name: unilu
+
+unilu/unilu
+```
+
+```{toctree}
 :caption: Installation
 :hidden: true
 :maxdepth: 1
