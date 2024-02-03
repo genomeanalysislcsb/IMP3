@@ -220,6 +220,10 @@ binning:
 kraken:
   confidence: 0.501
   krakendb: 20230502_kraken_nt  ### USER_INPUT #### minikraken2_v2_8GB_201904_UPDATE
+motus:
+  min_read_len_mg: 60
+  min_read_len_mt: 60
+  report_minimizer: True
 eukdetect:
   run_eukdetect: false
   eukdetect_dir: ../EukDetect

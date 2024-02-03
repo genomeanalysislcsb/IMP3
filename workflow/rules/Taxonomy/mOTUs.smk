@@ -20,14 +20,15 @@ rule motus:
     output:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
     threads:
-        # Ensure at least 30gb of mem
-        max(int(math.ceil(30 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        # Ensure at least 80gb of mem
+        max(int(math.ceil(80 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     params:
         # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
         # -A: print all tax. levels together
         # -c: return counts
         params = "-A -c",
-        sample = config["sample"]
+        sample = config["sample"],
+        min_size = lambda wildcards: config["motus"]["min_read_len_{wildcards.type}"]
         # database = os.path.join(DBPATH, 'motus')
     resources:
         runtime = SHORT_RUNTIME,
@@ -63,3 +64,15 @@ rule motus:
                           -t {threads} >& {log}
         fi 
         """
+
+use rule motus as motus_rel_ab with:
+    output:
+        report("Analysis/taxonomy/mOTUs/{type}.mOTU.rel_abun.tsv",category="Taxonomy")
+    params:
+        params = "",
+        sample = config["sample"],
+        min_size = lambda wildcards: config["motus"]["min_read_len_{wildcards.type}"]
+    log:
+        "logs/stats_feature_count_per_contig.{type}.{db}.log"
+    message:
+        "feature_count: Quantifying {wildcards.db} per contig with {wildcards.type} reads."

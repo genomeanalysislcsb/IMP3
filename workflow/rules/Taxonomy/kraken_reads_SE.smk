@@ -15,7 +15,8 @@ rule kraken_reads:
     params:
         tmp_out= lambda wildcards: "Analysis/taxonomy/kraken/" + wildcards.type + ".kraken.output",
         confidence=config['kraken']['confidence'],
-        database = os.path.join(DBPATH, config['kraken']['krakendb'])
+        database = os.path.join(DBPATH, config['kraken']['krakendb']),
+        report_minimizer = '--report-minimizer-data' if config['kraken']['report_minimizer'] else ''
     threads:
         getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
     conda:
@@ -31,6 +32,7 @@ rule kraken_reads:
                 --confidence {params.confidence} \
                 --threads {threads} \
                 --use-names \
+                {params.report_minimizer} \
                 --output {params.tmp_out} \
                 --report {output[1]} {input} > {log} 2>&1
         gzip {params.tmp_out}

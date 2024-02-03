@@ -14,10 +14,10 @@ rule call_contig_depth:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        # Ensure at least 50gb of mem
-        max(int(math.ceil(50 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+        # Ensure at least 100gb of mem
+        max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     params:
-        tmp_dir=TMPDIR
+        tmp_dir=
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:

@@ -15,7 +15,8 @@ rule kraken_contigs:
         mem_mb = HIGH_MEM_BIGMEMCORE_MB
     params:
         confidence = config['kraken']['confidence'],
-        database = os.path.join(DBPATH, config['kraken']['krakendb'])
+        database = os.path.join(DBPATH, config['kraken']['krakendb']),
+        report_minimizer = '--report-minimizer-data' if config['kraken']['report_minimizer'] else ''
     threads:
         getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
     conda:
@@ -30,6 +31,7 @@ rule kraken_contigs:
                 --confidence {params.confidence} \
                 --threads {threads} \
                 --use-names \
+                {params.report_minimizer} \
                 --report-zero-counts \
                 --output {output[0]} \
                 --report {output[1]} \

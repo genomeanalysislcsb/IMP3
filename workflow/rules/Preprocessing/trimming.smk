@@ -1,3 +1,5 @@
+import math
+
 if config['nextseq']:
     rule trimming:
         input:
@@ -17,8 +19,10 @@ if config['nextseq']:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log: "logs/preprocessing_trimming.{type}.log"
-        message: "trimming: Trimmming {wildcards.type} reads."
+        log:
+            "logs/preprocessing_trimming.{type}.log"
+        message:
+            "trimming: Trimmming {wildcards.type} reads."
         shell:
             """
             trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
@@ -38,14 +42,17 @@ if config['nextseq']:
             'Preprocessing/{type}.{read}.trimmed.fq.gz'
         wildcard_constraints:
             read="se[1|2]"
-        threads: getThreads(10)
+        threads:
+            getThreads(10)
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log: "logs/preprocessing_nextseq_trimming_se.{type}.{read}.log"
-        message: "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
+        log:
+            "logs/preprocessing_nextseq_trimming_se.{type}.{read}.log"
+        message:
+            "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
         shell:
             """
             cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \
@@ -66,14 +73,17 @@ if config['nextseq']:
             'Preprocessing/{type}.se2Cut.trimmed.fq',
             'Preprocessing/{type}.r1.trimmed.fq.gz',
             'Preprocessing/{type}.r2.trimmed.fq.gz'
-        threads: getThreads(10)
+        threads:
+            getThreads(10)
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log: "logs/preprocessing_nextseq_trimming_pe.{type}.pe.log"
-        message: "trimming: Trimmming poly-G's off {wildcards.type} pe reads."
+        log:
+            "logs/preprocessing_nextseq_trimming_pe.{type}.pe.log"
+        message:
+            "trimming: Trimmming poly-G's off {wildcards.type} pe reads."
         shell:
             """
             cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} \
@@ -98,17 +108,22 @@ if config['nextseq']:
             'Preprocessing/{type}.r2Cut.trimmed.fq'
         output:
             'Preprocessing/{type}.se.trimmed.fq',
-        threads: getThreads(2)
+        threads:
+            # Ensure at least 10gb of mem
+            max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
+        log:
+            "logs/preprocessing_cat_se_trimmed.{type}.log"
+        message:
+            "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
         shell:
             """
-            cat {input[0]} {input[1]} {input[2]} {input[3]} > {output}
-            pigz -p {threads} {input}
+            cat {input[0]} {input[1]} {input[2]} {input[3]} > {output} 2>> {log}
+            pigz -p {threads} {input} >> {log} 2>&1
             """
 else:
     rule trimming:
@@ -129,8 +144,10 @@ else:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log: "logs/preprocessing_trimming.{type}.log"
-        message: "trimming: Trimmming {wildcards.type} reads."
+        log:
+            "logs/preprocessing_trimming.{type}.log"
+        message:
+            "trimming: Trimmming {wildcards.type} reads."
         shell:
             """
             trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
@@ -148,12 +165,17 @@ else:
             'Preprocessing/{type}.se2.trimmed.fq'
         output:
             'Preprocessing/{type}.se.trimmed.fq'
-        threads: 1
+        threads:
+            # Ensure at least 10gb of mem
+            max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
-        message: "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
+        log:
+            "logs/preprocessing_cat_se_trimmed.{type}.log"
+        message:
+            "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
         shell:
             """
-            cat {input[0]} {input[1]} > {output}
+            cat {input[0]} {input[1]} > {output} 2>> {log}
             """

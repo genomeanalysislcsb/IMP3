@@ -15,6 +15,10 @@ include:
 workdir:
     OUTPUTDIR
 
+# # ensure tmpdir specified in config file exists
+# shell:
+#     'mkdir -p {config[tmp_dir]}'
+
 yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
 yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True, default_flow_style=False)
@@ -149,10 +153,25 @@ else:
 # clean up at the end
 if EMAIL == "":
     onsuccess:
-        shell("mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *stdout job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log")
+        shell("""
+            mkdir -p job.errs.outs &>> logs/cleanup.log;
+            ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
+            ( mv *stdout job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
+            ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
+            ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
+            rm -rf {config[tmp_dir]} &>> logs/cleanup.log
+            """)
 else:
     onsuccess:
-        shell('mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; (  mv *stdout job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; echo "$(date) {config[sessionName]}" | mail -s "IMP3 finished" {EMAIL} ')
+        shell("""
+            mkdir -p job.errs.outs &>> logs/cleanup.log;
+            ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
+            (  mv *stdout job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
+            ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
+            ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
+            echo "$(date) {config[sessionName]}" | mail -s "IMP3 finished" {EMAIL} ');
+            rm -rf {config[tmp_dir]} &>> logs/cleanup.log
+            """)
     onerror:
         shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 exited with error" {EMAIL} ')
     onstart:

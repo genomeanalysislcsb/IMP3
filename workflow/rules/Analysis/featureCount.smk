@@ -9,10 +9,10 @@ rule feature_count_hmmer:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
         flags = '-p -O --fraction -M --fraction'
     resources:
-        runtime = SHORT_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
-        getThreads(8)
+        getThreads(12)
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     log:
@@ -44,10 +44,10 @@ rule feature_count_mantis:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
         flags = '-p -O --fraction -M --fraction'
     resources:
-        runtime = SHORT_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
-        getThreads(8)
+        getThreads(12)
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     log:
@@ -80,10 +80,10 @@ rule feature_count_gene:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
         flags = '-p -O --fraction -M --fraction'
     resources:
-        runtime = SHORT_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
-        getThreads(8)
+        getThreads(12)
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     log:

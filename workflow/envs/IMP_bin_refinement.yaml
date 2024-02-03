@@ -1,0 +1,13 @@
+name: IMP_bin_refinement
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python
+  - pip
+  - biopython
+  - seaborn
+  - umap-learn
+  - checkm2=1.0.1
+  - pip:
+    - git+https://github.com/collinleiber/ClustPy.git@v0.0.2-beta

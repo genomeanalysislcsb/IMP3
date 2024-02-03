@@ -62,17 +62,17 @@ rule filter_rrna_pe:
     shell:
         """
         if [ -d "{output.wdir}" ] && [ "$(ls -A {output.wdir})" ]; then
-            echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline."
+            echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline." >> {log} 2>&1
             exit 1
         fi
-        sortmerna {params.params} --threads {threads} --reads {input.r1} --reads {input.r2} --workdir {output.wdir}/ --idx-dir {output.idx}/ &> {log}
+        sortmerna {params.params} --threads {threads} --reads {input.r1} --reads {input.r2} --workdir {output.wdir}/ --idx-dir {output.idx}/ >> {log} 2>&1
         cat {output.wdir}/out/aligned.log >> {log}
-        mv {output.wdir}/out/other_fwd.fq {output.filt_r1}
-        mv {output.wdir}/out/other_rev.fq {output.filt_r2}
-        mv {output.wdir}/out/aligned_fwd.fq {output.rrna_r1}
-        mv {output.wdir}/out/aligned_rev.fq {output.rrna_r2}
+        mv {output.wdir}/out/other_fwd.fq {output.filt_r1} >> {log} 2>&1
+        mv {output.wdir}/out/other_rev.fq {output.filt_r2} >> {log} 2>&1
+        mv {output.wdir}/out/aligned_fwd.fq {output.rrna_r1} >> {log} 2>&1
+        mv {output.wdir}/out/aligned_rev.fq {output.rrna_r2} >> {log} 2>&1
         if [ -f {output.wdir}/out/otu_map.txt ]; then
-            mv {output.wdir}/out/otu_map.txt {output.otu}
+            mv {output.wdir}/out/otu_map.txt {output.otu} >> {log} 2>&1
         else
             touch {output.otu}
             echo "# WARNING: SortMeRNA OTUs file does not exist" > status/sortmerna.warning
@@ -109,48 +109,70 @@ rule filter_rrna_se:
     shell:
         """
         if [ -d "{output.wdir}" ] && [ "$(ls -A {output.wdir})" ]; then
-            echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline."
+            echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline." >> {log} 2>&1
             exit 1
         fi
-        sortmerna {params.params} --threads {threads} --reads {input.se} --workdir {output.wdir}/ --idx-dir {input.idx}/ &>> {log}
+        sortmerna {params.params} --threads {threads} --reads {input.se} --workdir {output.wdir}/ --idx-dir {input.idx}/ >> {log} 2>&1
         cat {output.wdir}/out/aligned.log >> {log}
-        mv {output.wdir}/out/other.fq {output.filt_se}
-        mv {output.wdir}/out/aligned.fq {output.rrna_se}
+        mv {output.wdir}/out/other.fq {output.filt_se} >> {log} 2>&1
+        mv {output.wdir}/out/aligned.fq {output.rrna_se} >> {log} 2>&1
         """
 
 # If KEEP_RRNAs is set to True, then the rRNA-filtered reads are concatenated with rRNA reads
 if KEEP_RRNAs:
-    rule copy_rrna:
+    rule copy_sortmerna_out:
         input:
-            r1_filt=rules.filter_rrna_pe.output.filt_r1,
-            r2_filt=rules.filter_rrna_pe.output.filt_r2,
-            se_filt=rules.filter_rrna_se.output.filt_se,
-            r1_rrna=rules.filter_rrna_pe.output.rrna_r1,
-            r2_rrna=rules.filter_rrna_pe.output.rrna_r2,
-            se_rrna=rules.filter_rrna_se.output.rrna_se,
+            r1_filt = rules.filter_rrna_pe.output.filt_r1,
+            r2_filt = rules.filter_rrna_pe.output.filt_r2,
+            se_filt = rules.filter_rrna_se.output.filt_se,
+            r1_rrna = rules.filter_rrna_pe.output.rrna_r1,
+            r2_rrna = rules.filter_rrna_pe.output.rrna_r2,
+            se_rrna = rules.filter_rrna_se.output.rrna_se
         output:
             r1="Preprocessing/mt.r1.trimmed__sortmerna.fq",
             r2="Preprocessing/mt.r2.trimmed__sortmerna.fq",
-            se="Preprocessing/mt.se.trimmed__sortmerna.fq",
+            se="Preprocessing/mt.se.trimmed__sortmerna.fq"
+        log:
+            "logs/preprocessing_copy_sortmerna_out.log"
+        threads:
+            getThreads(4)
+        resources:
+            runtime = VERY_SHORT_RUNTIME,
+            mem_mb = MAIN_MEMCORE_MB
+        message:
+            "filter_rna: concatenating rRNA reads with other reads."
         shell:
             """
-            cat {input.r1_filt} {input.r1_rrna} > {output.r1}
-            cat {input.r2_filt} {input.r2_rrna} > {output.r2}
-            cat {input.se_filt} {input.se_rrna} > {output.se}
+            echo "Concatenating rRNA-filtered reads with rRNA reads ..." > {log}
+            cat {input.r1_filt} {input.r1_rrna} > {output.r1} 2>> {log}
+            cat {input.r2_filt} {input.r2_rrna} > {output.r2} 2>> {log}
+            cat {input.se_filt} {input.se_rrna} > {output.se} 2>> {log}
+            echo "Done." >> {log}
             """
 else:
-    rule copy_rrna:
+    rule copy_sortmerna_out:
         input:
-            r1=rules.filter_rrna_pe.output.rrna_r1,
-            r2=rules.filter_rrna_pe.output.rrna_r2,
-            se=rules.filter_rrna_se.output.rrna_se,
+            r1=rules.filter_rrna_pe.output.filt_r1,
+            r2=rules.filter_rrna_pe.output.filt_r2,
+            se=rules.filter_rrna_se.output.filt_se
         output:
             r1="Preprocessing/mt.r1.trimmed__sortmerna.fq",
             r2="Preprocessing/mt.r2.trimmed__sortmerna.fq",
-            se="Preprocessing/mt.se.trimmed__sortmerna.fq",
+            se="Preprocessing/mt.se.trimmed__sortmerna.fq"
+        log:
+            "logs/preprocessing_copy_sortmerna_out.log"
+        threads:
+            getThreads(4)
+        resources:
+            runtime = VERY_SHORT_RUNTIME,
+            mem_mb = MAIN_MEMCORE_MB
+        message:
+            "filter_rna: copying rRNA-filtered reads."
         shell:
             """
-            cp {input.r1} {output.r1}
-            cp {input.r2} {output.r2}
-            cp {input.se} {output.se}
+            echo "Only copying rRNA-filtered reads ..." > {log}
+            cp {input.r1} {output.r1} 2>> {log}
+            cp {input.r2} {output.r2} 2>> {log}
+            cp {input.se} {output.se} 2>> {log}
+            echo "Done." >> {log}
             """
