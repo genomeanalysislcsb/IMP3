@@ -2,7 +2,7 @@ name: IMP_assembly_merge
 channels:
   - bioconda
   - conda-forge
-  - defaults
+  - nodefaults
 dependencies:
   - quickmerge=0.3
   - mummer4=4.0.0

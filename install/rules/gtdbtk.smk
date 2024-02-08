@@ -5,7 +5,7 @@
 rule gtdbtk_download:
     output:
         db_dir = directory("gtdbtk"),
-        final_output = directory("gtdbtk/release207_v2")
+        final_output = directory("gtdbtk/release214")
     log:
         os.path.join(INSTALL_DIR, "logs/gtdbtk_download.log")
     params:

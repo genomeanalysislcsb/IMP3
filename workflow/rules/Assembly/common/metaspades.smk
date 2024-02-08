@@ -40,7 +40,7 @@ if LONG:
         conda:
             ENVDIR + "/IMP_assembly.yaml"
         log:
-            "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
+            "logs/assembly/metaspades_assembly_from_preprocessing.{type}.log"
         message:
             "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
         shell:
@@ -65,7 +65,7 @@ else:
         conda:
             ENVDIR + "/IMP_assembly.yaml"
         log:
-            "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
+            "logs/assembly/metaspades_assembly_from_preprocessing.{type}.log"
         message:
             "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
         shell:
@@ -90,7 +90,7 @@ rule metaspades_assembly_from_unmapped:
     conda:
         ENVDIR + "/IMP_assembly.yaml"
     log:
-        "logs/assembly_metaspades_assembly_from_unmapped.{type}.log"
+        "logs/assembly/metaspades_assembly_from_unmapped.{type}.log"
     message:
         "metaspades_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using METASPADES"
     shell:

@@ -13,7 +13,7 @@ rule tar_intermediary:
     params:
         intermediary = "Assembly/intermediary/"
     log:
-        "logs/assembly_tar_intermediary.log"
+        "logs/assembly/tar_intermediary.log"
     message:
         "tar_intermediary: Compressing intermediary steps of assembly."
     shell:
@@ -34,7 +34,7 @@ rule contig_fasta_indexing:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:
-        "logs/assembly_contig_fasta_indexing.log"
+        "logs/assembly/contig_fasta_indexing.log"
     message:
         "contig_fasta_indexing: Indexing assembly."
     shell:
@@ -53,11 +53,11 @@ rule contig_fasta2bed_conversion:
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
-    # log:
-    #     "logs/assembly_fastabed.log"
+    log:
+        "logs/assembly/fasta2bed.log"
     message:
         "contig_fasta2bed_conversion: Writing bed file for assembly."
     shell:
         """
-        cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output}
+        cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output} 2> {log}
         """

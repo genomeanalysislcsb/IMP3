@@ -15,7 +15,7 @@ rule mongo_server:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/summary_mongo_server.log"
+        "logs/misc/summary_mongo_server.log"
     message:
         "mongoDB_server: Running mongo."
     threads:
@@ -71,7 +71,7 @@ rule mongoDB_bins:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/summary_mongoDB_bins.log"
+        "logs/misc/summary_mongoDB_bins.log"
     message:
         "mongoDB_bins: Filling bin documents."
     conda:
@@ -98,7 +98,7 @@ rule mongoDB_contigs:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/summary_mongoDB_contigs.log"
+        "logs/misc/summary_mongoDB_contigs.log"
     message:
         "mongoDB_bins: Filling contig documents."
     conda:

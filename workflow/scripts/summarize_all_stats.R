@@ -188,28 +188,34 @@ if(file.exists(paste0("Stats/",types[1],"/",ass,".assembly.contig_flagstat.txt")
     }
   }
 }
+
 ###################################################################################################
 ## Reads mapping to Annotations
 ###################################################################################################
-if(any(sapply(unlist(fc_sum_files),function(x) file.exists(pattern=x)))){
-  
+if (any(sapply(unlist(fc_sum_files), function(x) file.exists(pattern = x)))) {
   print("Reading map stats for features.")
-  for(type in types){
-    mapTemp <- data.frame("type"=type,
-                          "step"=paste("mapping to", dbs),
-                          "number"=sapply(dbs,function(x){
-   	                      if(file.exists(fc_sum_files[[type]][[x]])){
-                                mapTab <- read.delim(fc_sum_files[[type]][[x]],
-                                            stringsAsFactors=F,header = T)
-                                mapTab[1,2]
-			      }else{0}
-                            }),
-                          stringsAsFactors=F)
-    if(!"statsTab" %in% ls()){
+  for (type in types) {
+    print(paste("Reading", type, "feature mapping stats."))
+    mapTemp <- data.frame(
+      "type" = type,
+      "step" = paste("mapping to", dbs),
+      "number" = sapply(dbs, function(x) {
+        if (file.exists(fc_sum_files[[type]][[x]])) {
+          mapTab <- read.delim(fc_sum_files[[type]][[x]],
+                               stringsAsFactors = FALSE, header = TRUE)
+          combinedSum <- sum(mapTab[1, 2] + mapTab[1, 3], na.rm = TRUE)
+          combinedSum
+          print(paste("Reads mapping to", x, ":", combinedSum))
+        } else {
+          0
+        }
+      }),
+      stringsAsFactors = FALSE
+    )
+    if (!"statsTab" %in% ls()) {
       statsTab <- mapTemp
-    }else{
-      statsTab <- rbind(statsTab,
-                        mapTemp)
+    } else {
+      statsTab <- rbind(statsTab, mapTemp)
     }
   }
 }

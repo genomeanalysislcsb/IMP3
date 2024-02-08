@@ -1,14 +1,14 @@
 rule metabat:
     input:
-        assembly="Assembly/%s.assembly.merged.fa" % ASS
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS
     output:
-        s2b="Binning/MetaBAT/contig2bin.tsv",
-        out_dir=directory("Binning/MetaBAT"),
-        out_bin_dir=directory("Binning/MetaBAT/bins")
+        s2b = "Binning/MetaBAT/contig2bin.tsv",
+        out_dir = directory("Binning/MetaBAT"),
+        out_bin_dir = directory("Binning/MetaBAT/bins")
     params:
-        tmp_dir=TMPDIR,
-        res="Binning/MetaBAT/metabat_res",
-        min_cont_size=config["binning"]["MetaBAT"]["cutoff"]
+        tmp_dir = TMPDIR,
+        res = "Binning/MetaBAT/metabat_res",
+        min_cont_size = config["binning"]["MetaBAT"]["cutoff"]
     threads:
         getThreads(8)
     resources:
@@ -17,7 +17,7 @@ rule metabat:
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:
-        "logs/binning_metabat.log"
+        "logs/binning/metabat.log"
     message:
         "metabat: Running MetaBAT."
     shell:

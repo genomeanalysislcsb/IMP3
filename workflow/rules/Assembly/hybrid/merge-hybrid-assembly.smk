@@ -36,9 +36,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             if1= f"Assembly/intermediary/mgmt.{IMP_ASSEMBLER}_hybrid.1_formatted.fa",
             if2= f"Assembly/intermediary/mgmt.{IMP_ASSEMBLER}_hybrid.2_formatted.fa"
         log:
-            os.path.join(OUTPUTDIR,"logs","assembly_merge_hybrid_format_fastas.log")
+            os.path.join(OUTPUTDIR,"logs","assembly", "merge_hybrid_format_fastas.log")
         benchmark:
-            os.path.join(OUTPUTDIR,"logs","assembly_merge_hybrid_format_fastas_benchmark.tsv")
+            os.path.join(OUTPUTDIR,"logs","assembly", "merge_hybrid_format_fastas_benchmark.tsv")
         resources:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
@@ -78,9 +78,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_1}")),
             merged_assembly = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_1}/merged_{QM_MERGE_PREFIX_1}_rn.fasta")
         log:
-            os.path.join(OUTPUTDIR, "logs",  f"assembly_{QM_MERGE_PREFIX_1}.log")
+            os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_1}.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  f"assembly_{QM_MERGE_PREFIX_1}_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_1}_benchmark.tsv")
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
@@ -139,9 +139,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_2}")),
             merged_assembly = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_2}/merged_{QM_MERGE_PREFIX_2}_rn.fasta")
         log:
-            os.path.join(OUTPUTDIR, "logs",  f"assembly_{QM_MERGE_PREFIX_2}.log")
+            os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_2}.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  f"assembly_{QM_MERGE_PREFIX_2}_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_2}_benchmark.tsv")
         params:
             sample = SAMPLE,
             work_dir = OUTPUTDIR,
@@ -161,9 +161,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_FINAL}")),
             merged_assembly = f"Assembly/{ASS}.assembly.merged.fa"
         log:
-            os.path.join(OUTPUTDIR, "logs",  f"assembly_{QM_MERGE_PREFIX_FINAL}.log")
+            os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_FINAL}.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  f"assembly_{QM_MERGE_PREFIX_FINAL}_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_FINAL}_benchmark.tsv")
         resources:
             runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB

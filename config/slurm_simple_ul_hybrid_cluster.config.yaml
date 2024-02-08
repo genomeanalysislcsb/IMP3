@@ -8,13 +8,17 @@ __default__:
   mem_per_cpu: "--mem-per-cpu "
   runtime: "--time "
   threads: "--cpus-per-task "
-  stdout: "--output IMP3.{rule}.%j.stdout"
+  stdout: "--output logs_cluster_jobs/IMP3.{rule}.%j.stdout"
 
 kraken_contigs:
   clusters: "--clusters 'iris'"
   partition: "--partition bigmem"
 
 kraken_reads:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+
+kraken_reads_SE:
   clusters: "--clusters 'iris'"
   partition: "--partition bigmem"
 

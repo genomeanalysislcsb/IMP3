@@ -1,8 +1,7 @@
 name: IMP_gtdbtk
 channels:
-  - bioconda
   - conda-forge
-  - defaults
+  - bioconda
+  - nodefaults
 dependencies:
-  - gtdbtk=2.1.1
-  - numpy=1.23.1
+  - gtdbtk=2.3.2

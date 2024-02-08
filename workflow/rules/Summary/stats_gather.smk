@@ -26,7 +26,7 @@ rule gather_stats:
         mantis_dir = "Analysis/annotation/" if config["annotation"] == "mantis" else [],
         mantis_pattern = ".mantis.+tsv.summary" if config["annotation"] == "mantis" else []
     log:
-        "logs/stats_gather_stats.log"
+        "logs/misc/stats_gather_stats.log"
     message:
         "gather_stats: Summarizing stats."
     threads:

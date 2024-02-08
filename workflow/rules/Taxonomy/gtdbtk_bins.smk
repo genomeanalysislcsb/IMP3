@@ -12,24 +12,23 @@ rule GTDBtk_bins_single:
         mem_mb = MAIN_BIGMEMCORE_MB
     params:
         pplacer_cpus=getThreads(min(MAIN_BIGCORENO, max(1, int(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]] * MAIN_BIGCORENO / 45))), bigmem=True),
-        t1 = int(MAIN_BIGMEMCORE[:-1]),
-        t2 = to_gb_dict[config['cluster_specs']["mem_unit"]],
-        t3 = MAIN_BIGCORENO,
-        t4 = int(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]] * MAIN_BIGCORENO / 45),
+        db_path = os.path.join(DBPATH, "gtdbtk/release214")
     conda:
         os.path.join(ENVDIR, "IMP_gtdbtk.yaml")
     log:
-        "logs/taxonomy_GTDBtk_bins_single.{clusterID}.log"
+        "logs/analysis/GTDBtk_bins_single.{clusterID}.log"
     message:
         "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
     threads:
         getThreads(32, bigmem=True)
     shell:
         """
-        export GTDBTK_DATA_PATH="{DBPATH}/gtdbtk/release207_v2"
-        export PYTHONPATH=${{CONDA_PREFIX}}/lib/python3.7/site-packages
+        export GTDBTK_DATA_PATH="{params.db_path}"
+        export PYTHONPATH=${{CONDA_PREFIX}}/lib/python3.8/site-packages
         gtdbtk classify_wf --genome_dir {input.bin}/ \
                            --extension fasta \
+                           --mash_db {params.db_path}/mash \
+                           --mash_s 100000 \
                            --out_dir {output.gtdbtk_out} \
                            --cpus {threads} \
                            --pplacer_cpus {params.pplacer_cpus} >> {log} 2>&1 \
@@ -59,7 +58,7 @@ rule GTDBtk_summarize:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/taxonomy_GTDBtk_summarize.log"
+        "logs/analysis/GTDBtk_summarize.log"
     message:
         "GTDBtk_summarize: Summarizing binning results."
     threads:
@@ -140,7 +139,7 @@ if MG:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
-            "logs/taxonomy_bins_tar.log"
+            "logs/misc/bins_tar.log"
         message:
             "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
         shell:
@@ -164,7 +163,7 @@ else:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
-            "logs/taxonomy_bins_tar.log"
+            "logs/misc/bins_tar.log"
         message:
             "bins_tar: Compressing per-bin results of GTDBtk."
         shell:

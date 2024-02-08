@@ -29,7 +29,7 @@ if 'mg' in TYPES:
         conda:
             ENVDIR + "/IMP_mapping.yaml"
         log:
-            "logs/assembly_mapping_on_assembly.mg.log"
+            "logs/assembly/mapping_on_assembly.mg.log"
         message:
             "mapping_on_assembly: Mapping mg reads on merged assembly."
         shell:
@@ -93,12 +93,12 @@ if 'mt' in TYPES:
             # Ensure at least 20gb of mem
             max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
         params:
-            fasta_file = lambda wc: "_".join(f'Assembly/{wc.get("ASS")}.assembly.merged.fa'.split("/")[-2:]),
+            fasta_file = lambda wildcards: "_".join(f'Assembly/{wildcards.get("ASS")}.assembly.merged.fa'.split("/")[-2:]),
             max_mem_bytes = int(20e9)
         conda:
             os.path.join(ENVDIR, "IMP_mapping.yaml")
         log:
-            "logs/assembly_index_assembly_STAR.log"
+            "logs/assembly/index_assembly_STAR.log"
         message:
             "STAR_index: Indexing {params.fasta_file} for STAR."
         shell:
@@ -157,7 +157,7 @@ if 'mt' in TYPES:
         conda:
             ENVDIR + "/IMP_mapping.yaml"
         log:
-            "logs/assembly_mapping_on_assembly.mt.log"
+            "logs/assembly/mapping_on_assembly.mt.log"
         message:
             "mapping_on_assembly: Mapping mt reads on merged assembly."
         shell:
@@ -235,14 +235,19 @@ rule index_bam:
     threads:
         1
     params:
-        out_file_name = lambda wc: wc.get("sorted_bam").split("/")[-1].replace(".bam", "")
+        out_file_name = lambda wildcards: wildcards.get("sorted_bam").split("/")[-1].replace(".bam", "")
     conda:
         ENVDIR + "/IMP_mapping.yaml"
     # log:
-    #     f"logs/assembly_index.{params.out_file_name}.log"
+    #     f"logs/assembly/index.{params.out_file_name}.log"
     message:
         "index_bam: Indexing {wildcards.sorted_bam}."
     shell:
         """
-        samtools index {input} > 'logs/assembly_index.{params.out_file_name}.log' 2>&1
+        log="logs/assembly/index.{params.out_file_name}.log"
+
+        # Ensure log dir exists
+        mkdir -p logs/assembly
+
+        samtools index {input} > ${{log}} 2>&1
         """

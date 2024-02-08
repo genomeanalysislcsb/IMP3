@@ -1,12 +1,12 @@
 rule metadecoder:
     input:
-        assembly="Assembly/%s.assembly.merged.fa" % ASS,
-        bam="Assembly/mg.reads.sorted.bam"
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS,
+        bam = "Assembly/mg.reads.sorted.bam"
     output:
-        out_dir=directory("Binning/MetaDecoder"),
-        out_bin_dir=directory("Binning/MetaDecoder/bins")
+        out_dir = temp(directory("Binning/MetaDecoder")),
+        out_bin_dir = directory("Binning/MetaDecoder/bins")
     params:
-        min_cont_size=config["binning"]["MetaDecoder"]["cutoff"],
+        min_cont_size = config["binning"]["MetaDecoder"]["cutoff"],
         work_dir = OUTPUTDIR
     threads:
         getThreads(8)
@@ -16,7 +16,7 @@ rule metadecoder:
     conda:
         ENVDIR + "/IMP_metadecoder.yaml"
     log:
-        os.path.join(OUTPUTDIR, "logs/binning_MetaDecoder.log")
+        os.path.join(OUTPUTDIR, "logs/binning/MetaDecoder.log")
     message:
         "Running MetaDecoder."
     shell:
@@ -26,34 +26,39 @@ rule metadecoder:
         
         # Create sam files
         echo "Creating sam files." >> {log} 2>&1
-        set -x
+
+        printf "MetaDecoder version: " >> {log} 2>&1
         metadecoder --version >> {log} 2>&1
         
-        # parallel -j $THREADS "samtools view -@ 1 -h {{}} -o {params.work_dir}/{output.out_dir}/sam_files/{{/.}}.sam" ::: ${{ASSEMBLY_MAP[*]}}
-        # SAM_FILES=({output.out_dir}/sam_files/*.sam)
-        
-        samtools view -@ {threads} -h {params.work_dir}/{input.bam} -o {params.work_dir}/{output.out_dir}/mg.reads.sorted.sam
+        samtools view -@ {threads} -h {params.work_dir}/{input.bam} -o {params.work_dir}/{output.out_dir}/mg.reads.sorted.sam >> {log} 2>&1
         
         # Run MetaDecoder
         metadecoder coverage --sam {params.work_dir}/{output.out_dir}/mg.reads.sorted.sam \
                              --threads {threads} \
-                             --output {params.work_dir}/{output.out_dir}/METADECODER.COVERAGE >> {log} 2>&1 \
-        && \
+                             --output {params.work_dir}/{output.out_dir}/METADECODER.COVERAGE >> {log} 2>&1
+        
         rm -rf {params.work_dir}/{output.out_dir}/mg.reads.sorted.sam \
-        && \
+        
         metadecoder seed --fasta {params.work_dir}/{input.assembly} \
                          --threads {threads} \
-                         --output {params.work_dir}/{output.out_dir}/METADECODER.SEED >> {log} 2>&1 \
-        && \
+                         --output {params.work_dir}/{output.out_dir}/METADECODER.SEED >> {log} 2>&1
+
         metadecoder cluster --fasta {params.work_dir}/{input.assembly} \
                             --min_sequence_length {params.min_cont_size} \
                             --coverage {params.work_dir}/{output.out_dir}/METADECODER.COVERAGE \
                             --seed {params.work_dir}/{output.out_dir}/METADECODER.SEED \
                             --output {params.work_dir}/{output.out_dir}/METADECODER >> {log} 2>&1
-        set +x
         
         # Move bin fastas and rename.
-        mkdir {params.work_dir}/{output.out_dir}/bins
+        mkdir -p {params.work_dir}/{output.out_bin_dir}
+        shopt -s nullglob
+        for i in {output.out_dir}/*.{{fa,fna,fasta}}; do
+          bin_file=${{i##*/}}
+          bin_name=${{i%.*}}
+          mv ${{i}} {output.out_bin_dir}/${{bin_name}}.fasta
+        done
+        shopt -u nullglob
+
         mv {params.work_dir}/{output.out_dir}/*.fasta {params.work_dir}/{output.out_dir}/bins
         """
 
@@ -62,9 +67,9 @@ metadecoder_s2b = "Binning/MetaDecoder/contig2bin.tsv"
 
 rule metadecoder_contig2bin:
     input:
-        out_bin_dir="Binning/MetaDecoder/bins"
+        out_bin_dir = "Binning/MetaDecoder/bins"
     output:
-        metadecoder_s2b="Binning/MetaDecoder/contig2bin.tsv"
+        metadecoder_s2b = "Binning/MetaDecoder/contig2bin.tsv"
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB

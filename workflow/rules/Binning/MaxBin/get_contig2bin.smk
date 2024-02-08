@@ -9,7 +9,7 @@ rule maxbin_contig2bin:
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
-    log: "logs/binning_maxbin_contig2bin.log"
+    log: "logs/binning/maxbin_contig2bin.log"
     message: "maxbin_contig2bin: Getting contig to bin mapping."
     shell:
         """

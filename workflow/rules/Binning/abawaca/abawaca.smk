@@ -1,11 +1,11 @@
 rule abawaca:
     input:
-       assembly="Assembly/%s.assembly.merged.fa" % ASS,
-       depth="Stats/mg/%s.assembly.contig_depth.txt" % ASS
+       assembly = "Assembly/%s.assembly.merged.fa" % ASS,
+       depth = "Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
-        s2b="Binning/abawaca/contig2bin.tsv",
-        out_dir=directory("Binning/abawaca"),
-        out_bin_dir=directory("Binning/abawaca/bins")
+        s2b = "Binning/abawaca/contig2bin.tsv",
+        out_dir = temp(directory("Binning/abawaca")),
+        out_bin_dir = directory("Binning/abawaca/bins")
     params:
         esom_source=os.path.join(ROOTDIR, "submodules/ESOM"),
         esom_min=config['binning']['abawaca']['esom_min'],
@@ -18,7 +18,7 @@ rule abawaca:
     conda:
         ENVDIR + "/IMP_binning.yaml"
     log:
-        "logs/binning_abawaca.log"
+        "logs/binning/abawaca.log"
     message:
         "abawaca: Running abawaca."
     shell:

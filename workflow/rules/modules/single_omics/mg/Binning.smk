@@ -61,6 +61,12 @@ if "SemiBin" in BIN_STEPS:
     # inputs_binning.append("Binning/SemiBin.tar.gz")
     include:
         '../../../Binning/SemiBin/semibin.smk'
+## COMEBin
+if "COMEBin" in BIN_STEPS:
+    inputs_binning.append("Binning/COMEBin/contig2bin.tsv")
+    # inputs_binning.append("Binning/COMEBin.tar.gz")
+    include:
+        '../../../Binning/COMEBin/comebin.smk'
 
 ## GRiD
 include:

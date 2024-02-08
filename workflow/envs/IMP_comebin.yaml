@@ -1,0 +1,7 @@
+name: IMP_comebin
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+ - comebin=1.0.4

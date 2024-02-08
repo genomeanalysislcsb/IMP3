@@ -166,7 +166,7 @@ proteomics:
   host_proteome: ""
   insert_variants: false
 binning:
-  # Options: abawaca CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
+  # Options: abawaca COMEBin CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
   # NOTE: IMP supports a maximum of six binners only atm.
   binners: "MetaDecoder"
   abawaca:
@@ -224,6 +224,7 @@ motus:
   min_read_len_mg: 60
   min_read_len_mt: 60
   report_minimizer: True
+  min_hit_groups: 3
 eukdetect:
   run_eukdetect: false
   eukdetect_dir: ../EukDetect

@@ -1,7 +1,8 @@
 name: IMP_mapping
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
+  - nodefaults
 dependencies:
   - bcftools=1.17
   - bedtools=2.31.0

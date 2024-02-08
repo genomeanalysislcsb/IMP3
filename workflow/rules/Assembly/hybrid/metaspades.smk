@@ -49,7 +49,7 @@ else:
         conda:
             ENVDIR + "/IMP_assembly.yaml"
         log:
-            "logs/assembly_metaspades_hybrid_assembly_1.log"
+            "logs/assembly/metaspades_hybrid_assembly_1.log"
         message:
             "metaspades_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using METASPADES"
         shell:
@@ -83,7 +83,7 @@ rule metaspades_hybrid_assembly_2:
     conda:
         ENVDIR + "/IMP_assembly.yaml"
     log:
-        "logs/assembly_metaspades_hybrid_assembly_2.log"
+        "logs/assembly/metaspades_hybrid_assembly_2.log"
     message:
         "metaspades_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using metaspades"
     shell:

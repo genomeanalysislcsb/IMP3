@@ -18,7 +18,7 @@ rule mantis_annot:
         keggmodules="Analysis/annotation/intermediary/mantis/kegg_modules.tsv",
         kosample="Analysis/annotation/intermediary/mantis/sample_kos.tsv",
     log:
-        "logs/analysis_mantis.log"
+        "logs/analysis/mantis.log"
     params:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
         params="-gff -km -da heuristic",
@@ -79,6 +79,6 @@ checkpoint makegff_mantis:
     message:
         "Mantis: Create GFF from {input}"
     log:
-        "logs/analysis_mantis_make_gff.log"
+        "logs/analysis/mantis_make_gff.log"
     script:
         os.path.join(SRCDIR, "Analysis", "mantis_gff.py")

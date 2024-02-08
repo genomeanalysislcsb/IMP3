@@ -41,7 +41,7 @@ elif config["assembly"]["merge"] == "cap3":
             sample = SAMPLE
         threads: 1
         conda: os.path.join(ENVDIR, "IMP_assembly.yaml")
-        log: "logs/assembly_merge_assembly_cap3.log"
+        log: "logs/assembly/merge_assembly_cap3.log"
         message: "merge_assembly_cap3: Merging assemblies."
         shell:
             """
@@ -83,7 +83,7 @@ elif config["assembly"]["merge"] == "flye":
         conda:
             os.path.join(ENVDIR, "IMP_assembly.yaml")
         log:
-            "logs/assembly_merge_assembly_flye.log"
+            "logs/assembly/merge_assembly_flye.log"
         message:
             "merge_assembly_flye: Merging assemblies."
         shell:
@@ -137,17 +137,15 @@ elif config["assembly"]["merge"] == "quickmerge":
             if1 = "Assembly/intermediary/%s.%s_preprocessed.1_formatted.fa" % (ASS, IMP_ASSEMBLER),
             if2 = "Assembly/intermediary/%s.%s_unmapped.2_formatted.fa" % (ASS, IMP_ASSEMBLER)
         log:
-            # os.path.join(OUTPUTDIR, "logs",  "assembly_merge_hybrid_{assembler}_assembly_{assembly_nr}_quickmerge.log")
-            os.path.join(OUTPUTDIR,"logs","assembly_merge_hybrid_format_fastas.log")
+            os.path.join(OUTPUTDIR,"logs","assembly", "merge_hybrid_format_fastas.log")
         benchmark:
-            # os.path.join(OUTPUTDIR, "logs",  "assembly_merge_hybrid_{assembler}_assembly_{assembly_nr}_quickmerge_benchmark.tsv")
-            os.path.join(OUTPUTDIR,"logs","assembly_merge_hybrid_format_fastas_benchmark.tsv")
+            os.path.join(OUTPUTDIR,"logs","assembly", "merge_hybrid_format_fastas_benchmark.tsv")
         resources:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             sample = SAMPLE,
-            # assembly_nr = lambda wc: wc.get("assembly_nr")
+            # assembly_nr = lambda wildcards: wildcards.get("assembly_nr")
         threads:
             4
         conda:
@@ -177,9 +175,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2")),
             merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta")
         log:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1_with_h2.log")
+            os.path.join(OUTPUTDIR, "logs",  "assembly", "join_h1_with_h2.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h1_with_h2_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  "assembly", "join_h1_with_h2_benchmark.tsv")
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
@@ -238,9 +236,9 @@ elif config["assembly"]["merge"] == "quickmerge":
             out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1")),
             merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
         log:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h2_with_h1.log")
+            os.path.join(OUTPUTDIR, "logs",  "assembly", "join_h2_with_h1.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_join_h2_with_h1_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  "assembly", "join_h2_with_h1_benchmark.tsv")
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
@@ -293,16 +291,16 @@ elif config["assembly"]["merge"] == "quickmerge":
     rule quickmerge_join_h1h2_with_h2h1:
         input:
             os.path.join(ENVDIR, "qm.ready"),
-            assembly_h1h2=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta"),
-            assembly_h2h1=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
+            assembly_h1h2 = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta"),
+            assembly_h2h1 = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
         output:
             out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "h1h2_with_h2h1")),
             # merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
             merged_assembly = 'Assembly/%s.assembly.merged.fa' % ASS
         log:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_h1h2_with_h2h1.log")
+            os.path.join(OUTPUTDIR, "logs",  "assembly", "h1h2_with_h2h1.log")
         benchmark:
-            os.path.join(OUTPUTDIR, "logs",  "assembly_h1h2_with_h2h1_benchmark.tsv")
+            os.path.join(OUTPUTDIR, "logs",  "assembly", "h1h2_with_h2h1_benchmark.tsv")
         resources:
             runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB

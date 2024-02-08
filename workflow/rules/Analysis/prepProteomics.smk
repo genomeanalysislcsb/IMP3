@@ -19,7 +19,7 @@ if config['proteomics']['insert_variants']:
         threads:
             1
         log:
-            "logs/analysis_insertVariants.log"
+            "logs/analysis/insertVariants.log"
         message:
             "insertVariants: inserting variants in protein predictions."
         shell:
@@ -51,7 +51,7 @@ elif config['proteomics']['filter_N_peptides']:
         threads:
             1
         log:
-            "logs/analysis_cutends.log"
+            "logs/analysis/cutends.log"
         message:
             "cutends: removing non-tryptic peptides from protein predictions."
         shell:
@@ -76,7 +76,7 @@ else:
         threads:
             1
         log:
-            "logs/analysis_renameProteomics.log"
+            "logs/analysis/renameProteomics.log"
         message:
             "renameProteomics: renaming protein predictions."
         shell:
@@ -102,7 +102,7 @@ if config['proteomics']['host_proteome'].split():
         conda:
             os.path.join(ENVDIR, "IMP_fasta.yaml")
         log:
-            "logs/analysis_mergeProteomicsHost.log"
+            "logs/analysis/mergeProteomicsHost.log"
         message:
             "mergeProteomicsHost: merging metaomics and host protein predictions."
         shell:
@@ -123,7 +123,7 @@ else:
         conda:
             os.path.join(ENVDIR, "IMP_fasta.yaml")
         log:
-            "logs/analysis_formatProteomics.log"
+            "logs/analysis/formatProteomics.log"
         message:
             "formatProteomics."
         shell:

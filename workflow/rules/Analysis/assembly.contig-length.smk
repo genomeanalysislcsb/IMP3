@@ -14,7 +14,7 @@ rule assembly_contig_length:
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     log:
-        "logs/analysis_assembly_contig_length.log"
+        "logs/analysis/assembly_contig_length.log"
     message:
         "assembly_contig_length: Getting data on assembly length and GC content."
     shell:

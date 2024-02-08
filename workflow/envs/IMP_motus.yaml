@@ -2,7 +2,7 @@ name: IMP_motus
 channels:
   - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
-  - motus=3.0.3
+  - motus=3.1.0
   - perl-bioperl=1.7.8

@@ -16,7 +16,7 @@ rule bwa_index:
         # Ensure at least 100gb of mem
         max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     params:
-        fasta_file = lambda wc: "_".join(wc.get("fasta").split("/")[-2:]),
+        fasta_file = lambda wildcards: "_".join(wildcards.get("fasta").split("/")[-2:]),
         workdir = OUTPUTDIR
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
@@ -24,10 +24,10 @@ rule bwa_index:
         "bwa_index: Indexing {params.fasta_file} for bwa."
     shell:
         """
-        log="{params.workdir}/logs/preprocessing_index_{params.fasta_file}.log"
+        log="{params.workdir}/logs/preprocessing/index_{params.fasta_file}.log"
 
         # Ensure log dir exists
-        mkdir -p {params.workdir}/logs
+        mkdir -p {params.workdir}/logs/preprocessing
 
         echo "[$(date)] Start indexing {params.fasta_file} for bwa." >> $log
         bwa-mem2 index {wildcards.fasta} >> $log 2>&1

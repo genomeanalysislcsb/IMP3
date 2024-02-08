@@ -4,10 +4,11 @@ localrules: allmotu
 
 rule allmotu:
     input:
-        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv", type=TYPES)
+        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{out_type}.tsv", type=TYPES, out_type=["counts", "rel_abun"])
     output:
         touch("status/taxonomy_mOTUs.done")
-    threads: 1
+    threads:
+        1
     message:
         "allmotu: mOTUs done?"
 
@@ -18,7 +19,7 @@ rule motus:
         r2="Preprocessing/{type}.r2.preprocessed.fq",
         se="Preprocessing/{type}.se.preprocessed.fq"
     output:
-        report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
+        report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv", category="Taxonomy")
     threads:
         # Ensure at least 80gb of mem
         max(int(math.ceil(80 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
@@ -28,7 +29,7 @@ rule motus:
         # -c: return counts
         params = "-A -c",
         sample = config["sample"],
-        min_size = lambda wildcards: config["motus"]["min_read_len_{wildcards.type}"]
+        min_size = lambda wildcards: config["motus"][f"min_read_len_{wildcards.type}"]
         # database = os.path.join(DBPATH, 'motus')
     resources:
         runtime = SHORT_RUNTIME,
@@ -36,9 +37,9 @@ rule motus:
     conda:
         os.path.join(ENVDIR, "IMP_motus.yaml")
     log:
-        "logs/analysis_motus.{type}.log"
+        "logs/analysis/taxonomy/motus.{type}.counts.log"
     message:
-        "motus: Running mOTUs on {wildcards.type} reads."
+        "motus: Running mOTUs (counts) on {wildcards.type} reads."
     shell:
         """
         if [ -s {input.se} ] && [ -s {input.r1} ] && [ -s {input.r2} ]; then
@@ -69,10 +70,10 @@ use rule motus as motus_rel_ab with:
     output:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.rel_abun.tsv",category="Taxonomy")
     params:
-        params = "",
+        params = "-p -A",
         sample = config["sample"],
-        min_size = lambda wildcards: config["motus"]["min_read_len_{wildcards.type}"]
+        min_size = lambda wildcards: config["motus"][f"min_read_len_{wildcards.type}"]
     log:
-        "logs/stats_feature_count_per_contig.{type}.{db}.log"
+        "logs/analysis/taxonomy/motus.{type}.rel_abun.log"
     message:
-        "feature_count: Quantifying {wildcards.db} per contig with {wildcards.type} reads."
+        "motus: Running mOTUs (relative abundance) on {wildcards.type} reads."

@@ -12,7 +12,7 @@ rule no_filtering:
     threads:
         1
     # log:
-    #     "logs/preprocessing_no_filtering.{type}.log"
+    #     "logs/preprocessing/no_filtering.{type}.log"
     message:
         "no_filtering: not filtering {wildcards.type} reads."
     shell:

@@ -29,16 +29,12 @@ module binny_workflow:
     config:
         config["binning"]["binny"]
 
-# use rule * from binny_workflow as binny_*
-
-# localrules: prepare_input_data, binny_prepare_input_data
-
 use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_marker_sets with:
     input:
         proteins="Analysis/annotation/prokka.faa"
     output:
-        "Binning/binny/intermediary/mantis_out/consensus_annotation.tsv",
-        out_dir=directory("Binning/binny/intermediary/mantis_out")
+        "Binning/tmp/consensus_annotation.tsv",
+        out_dir = temp(directory("Binning/tmp"))
     params:
         binny_cfg=os.path.join(ROOTDIR, "submodules/binny/config/binny_mantis.cfg")
     threads:
@@ -47,28 +43,30 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
         runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/binning_binny_mantis_checkm.log"
+        "logs/binning/binny_mantis_checkm.log"
     message:
         "Mantis: Annotate {input} with CheckM markers"
 
 
 use rule binny from binny_workflow as binny_binny with:
     input:
-        mgdepth='Stats/mg/%s.assembly.contig_depth.txt' % ASS,
-        raw_gff="Analysis/annotation/annotation.filt.gff",
-        assembly="Assembly/%s.assembly.merged.fa" % ASS,
-        hmm_markers="Binning/binny/intermediary/mantis_out/consensus_annotation.tsv"
+        mgdepth = 'Stats/mg/%s.assembly.contig_depth.txt' % ASS,
+        raw_gff = "Analysis/annotation/annotation.filt.gff",
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS,
+        hmm_markers = "Binning/tmp/consensus_annotation.tsv",
+        tmp_dir = "Binning/tmp"
     output:
         directory('Binning/binny/bins'),
         os.path.join("Binning/binny/contig_data.tsv.gz"),
-        os.path.join("Binning/binny/binny.done")
+        os.path.join("Binning/binny/binny.done"),
+        temp(directory('Binning/binny'))
     params:
         binny_out=config["binning"]["binny"]["outputdir"],
         sample=config['sample'],
         py_functions=ROOTDIR + "/submodules/binny/workflow/scripts/binny_functions.py",
         t2p=ROOTDIR + "/submodules/binny/database/pfam/tigrfam2pfam.tsv",
         marker_sets=ROOTDIR + "/submodules/binny/database/taxon_marker_sets_lineage_sorted.tsv",
-        gff=os.path.join(config["binning"]["binny"]["outputdir"], "intermediary/annotation_CDS_RNA_hmms_checkm.gff"),
+        gff = "Binning/tmp/annotation_CDS_RNA_hmms_checkm.gff",
         min_completeness=config["binning"]["binny"]["bin_quality"]["min_completeness"],
         start_completeness=config["binning"]["binny"]["bin_quality"]["start_completeness"],
         purity=config["binning"]["binny"]["bin_quality"]["purity"],
@@ -96,7 +94,7 @@ use rule binny from binny_workflow as binny_binny with:
         runtime = LONG_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/binning_binny.log"
+        "logs/binning/binny.log"
 
 rule binny_contig2bin:
     input:

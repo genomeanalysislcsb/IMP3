@@ -46,8 +46,8 @@ def entry_gz:
 def ctrl_readgz(wildcards):
     checkpoint_output = checkpoints.workflow.get(**wildcards).output[0]
     pot_reads = expand("Preprocessing/{i}.fq.gz", i=glob_wildcards("Preprocessing/{i}.fq").i)
-    real_reads = list(set(pot_reads).difference([expand("Preprocessing/{type}.{part}.{stage}.fq.gz",
-                  type=TYPES,part=["r1","r2","se"],stage=["preprocessed","filtered"]),
+    real_reads = list(set(pot_reads).difference([expand("Preprocessing/{type}.{part}.preprocessed.fq.gz",
+                  type=TYPES,part=["r1","r2","se"]),
                                                  expand("Preprocessing/{type}.{part}.fq.gz",
                   type=TYPES,part=["r1","r2"])]))
     return real_reads

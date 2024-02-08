@@ -27,7 +27,7 @@ if MG and "taxonomy" not in IMP_STEPS:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
-            "logs/binning_GRID_summarize.log"
+            "logs/binning/GRID_summarize.log"
         message:
             "GRID_summarize: Summarizing binning results."
         threads:
@@ -91,7 +91,7 @@ if MG and "taxonomy" not in IMP_STEPS:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
-            "logs/binning_bins_tar.log"
+            "logs/binning/bins_tar.log"
         message:
             "bins_tar: Compressing per-bin results of GRiD."
         shell:
@@ -114,7 +114,7 @@ checkpoint getBins:
     threads:
         1
     # log:
-    #     "logs/binning_prepareGRiD.log"
+    #     "logs/binning/prepareGRiD.log"
     message:
         "getBins: Copying MetaWrap bins to single directories."
     run:
@@ -145,7 +145,7 @@ if MG:
         conda:
             ENVDIR + "/IMP_annotation.yaml"
         log:
-            "logs/binning_grid.{clusterID}.log"
+            "logs/binning/grid.{clusterID}.log"
         message:
             "grid: Running GRiD on {wildcards.clusterID}."
         shell:
@@ -168,7 +168,7 @@ if MG:
             # Ensure at least 5gb of mem
             max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         log:
-            "logs/binning_prepare_gridBed.{clusterID}.log"
+            "logs/binning/prepare_gridBed.{clusterID}.log"
         message:
             "prepare_gridBed: Preparing .bed file for GRiD - {wildcards.clusterID}."
         shell:
@@ -189,7 +189,7 @@ if MG:
             # Ensure at least 5gb of mem
             max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         log:
-            "logs/binning_prepare_gridReads.{clusterID}.log"
+            "logs/binning/prepare_gridReads.{clusterID}.log"
         message:
             "prepare_gridReads: Preparing fastq file for GRiD - {wildcards.clusterID}."
         conda:

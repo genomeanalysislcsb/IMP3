@@ -95,6 +95,8 @@ if "mantis" in config:
         "rules/mantis.smk"
     TARGETS.append("mantis/setup.done")
 
+# TODO: Grab KrakenTools
+
 ##################################################
 # RULES
 

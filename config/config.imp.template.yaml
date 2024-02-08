@@ -164,7 +164,7 @@ proteomics:
   host_proteome: ""
   insert_variants: false
 binning:
-  # Options: abawaca CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
+  # Options: abawaca COMEBin CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
   # NOTE: IMP supports a maximum of six binners only atm.
   binners: "CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin"
   abawaca:

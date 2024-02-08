@@ -3,9 +3,9 @@ rule concoct:
        assembly="Assembly/%s.assembly.merged.fa" % ASS,
        depth="Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
-        out_dir=directory("Binning/CONCOCT"),
-        s2b="Binning/CONCOCT/contig2bin.tsv",
-        out_bin_dir=directory("Binning/CONCOCT/bins")
+        out_dir = temp(directory("Binning/CONCOCT")),
+        s2b = "Binning/CONCOCT/contig2bin.tsv",
+        out_bin_dir = directory("Binning/CONCOCT/bins")
     params:
         min_cont_size=config['binning']['CONCOCT']['cutoff']
     threads:
@@ -16,7 +16,7 @@ rule concoct:
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:
-        "logs/binning_concoct.log"
+        "logs/binning/concoct.log"
     message:
         "concoct: Running CONCOCT."
     shell:

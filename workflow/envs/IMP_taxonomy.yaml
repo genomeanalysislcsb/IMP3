@@ -2,7 +2,7 @@ name: IMP_taxonomy
 channels:
   - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
   - kraken2=2.1.2
   - popt=1.16

@@ -92,7 +92,7 @@ rule extract_unmapped_from_megahit:
     conda:
         ENVDIR + "/IMP_mapping.yaml"
     log:
-        "logs/assembly_extract_unmapped_from_megahit.{type}.log"
+        "logs/assembly/extract_unmapped_from_megahit.{type}.log"
     message:
         "extract_unmapped_from_megahit: Extracting unmapped {wildcards.type} reads from megahit assembly."
     shell:
@@ -123,7 +123,7 @@ rule extract_unmapped_from_hybrid_assembly:
     conda:
         ENVDIR + "/IMP_mapping.yaml"
     log:
-        "logs/assembly_extract_unmapped_from_hybrid_assembly.{assembler}.{type}.log"
+        "logs/assembly/extract_unmapped_from_hybrid_assembly.{assembler}.{type}.log"
     message:
         "extract_unmapped_from_hybrid_assembly: Extracting unmapped {wildcards.type} reads from hybrid {wildcards.assembler} assembly."
     shell:

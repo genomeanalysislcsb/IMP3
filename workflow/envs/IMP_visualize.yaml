@@ -3,8 +3,8 @@ channels:
   - bioconda
   - conda-forge/label/cf201901
   - bioconda/label/cf201901
-  - defaults
   - r
+  - nodefaults
 dependencies:
   - ghostscript=9.18=1
   - r-phangorn=2.4.0=r351h9d2a408_0

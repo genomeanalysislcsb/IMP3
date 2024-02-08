@@ -1,11 +1,11 @@
 rule reads_filtering:
     input:
-        reads=filtering_reads_pe_input,
-        ref=filtering_filter
+        reads = filtering_reads_pe_input,
+        ref = filtering_filter
     output:
-        expand('Preprocessing/{{type}}.{read}.{{filterstep}}.fq', read=['r1', 'r2', 'se'])
+        temp(expand('Preprocessing/{{type}}.{read}.{{filterstep}}.fq', read=['r1', 'r2', 'se']))
     log:
-        "logs/preprocessing_{type}_filtering.{filterstep}.log"
+        "logs/preprocessing/{type}_filtering.{filterstep}.log"
     wildcard_constraints:
         type = "|".join(TYPES),
         filterstep = "|".join(["trimmed(__sortmerna)?__" + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
@@ -96,23 +96,26 @@ rule reads_filtering:
         fi
         """
 
-localrules: symlink_preprocessed_reads_files
-rule symlink_preprocessed_reads_files:
+localrules: make_preprocessed_reads_files
+
+rule make_preprocessed_reads_files:
     input:
-        lambda wildcards: expand(
-            "Preprocessing/{{type}}.{read}.{filtered}.fq",
-            filtered=('trimmed__' if wildcards.type == 'mg' else 'trimmed__sortmerna__') + \
-                "__".join([s + "_filtered" for s in FILTER]),
-            read=['r1', 'r2', 'se']
-        )
+        lambda wildcards: expand("Preprocessing/{{type}}.{read}.{filtered}.fq",
+                                 filtered=('trimmed__' if wildcards.type == 'mg' \
+                                           else 'trimmed__sortmerna__') \
+                                           + "__".join([s + "_filtered" for s in FILTER]),
+                                 read=['r1', 'r2', 'se'])
     output:
         expand('Preprocessing/{{type}}.{read}.preprocessed.fq', read=['r1', 'r2', 'se'])
     wildcard_constraints:
         type = "|".join(TYPES),
-    threads: 1
+    threads:
+        1
+    log:
+        "logs/preprocessing/{type}_make_preprocessed_reads_files.log"
     message:
-        "symlink_preprocessed_reads_files: link to preprocessed {wildcards.type} reads"
+        "make_preprocessed_reads_files: Create final preprocessed {wildcards.type} reads file"
     run:
-        for i,o in zip(input,output):
-            shell("ln -fs $(echo {i} | cut -f 2 -d /) {o} && touch -h {o}")
+        for i, o in zip(input,output):
+            shell("cp {i} {o} > {log} 2>&1")
 

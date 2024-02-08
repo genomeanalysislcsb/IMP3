@@ -50,7 +50,7 @@ if MG or MT:
         threads:
             1
         # log:
-        #     "logs/analysis_read_numbers.{type}.log"
+        #     "logs/analysis/read_numbers.{type}.log"
         message:
             "reads_count: Getting length of {wildcards.type} fastq files."
         run:
@@ -71,7 +71,7 @@ elif MGaln or MTaln:
         conda:
             os.path.join(ENVDIR, "IMP_mapping.yaml")
         # log:
-        #     "logs/analysis_read_numbers.{type}.log"
+        #     "logs/analysis/read_numbers.{type}.log"
         message:
             "reads_count: Getting number of reads from {wildcards.type} bam file."
         shell:

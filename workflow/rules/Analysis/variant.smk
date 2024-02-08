@@ -2,10 +2,10 @@ import math
 
 rule variant_calling:
     input:
-        "Assembly/%s.assembly.merged.fa" % ASS,
-        "Assembly/{type}.reads.sorted.bam"
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS,
+        map = "Assembly/{type}.reads.sorted.bam"
     output:
-        "Analysis/snps/{type}.variants.samtools.vcf.gz",
+        snps = "Analysis/snps/{type}.variants.samtools.vcf.gz",
     resources:
         runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
@@ -17,22 +17,32 @@ rule variant_calling:
     params:
         tmp_dir=TMPDIR
     log:
-        "logs/analysis_variant_calling.{type}.log"
+        "logs/analysis/variant_calling.{type}.log"
     message:
         "variant_calling: Calling variants using bcftools for {wildcards.type} reads."
     shell:
         """
-        #temporary directory and files
+        # Set the temporary directory
         export TMPDIR="{params.tmp_dir}"
-        VCF_MPU=$(mktemp "XXXXXX.mpu.vcf")
-        VCF_PLT=$(mktemp "XXXXXX.plt.vcf")
+
+        # Create temporary files in the specified temporary directory
+        VCF_MPU=$(mktemp "${{TMPDIR}}/XXXXXX.mpu.vcf")
+        VCF_PLT=$(mktemp "${{TMPDIR}}/XXXXXX.plt.vcf")
+
+        # Log the names of the temporary files
         echo "$VCF_MPU" > {log}
         echo "$VCF_PLT" >> {log}
 
-        ### run_mpileup {input[0]} {input[1]} {output[0]}
+        ### run_mpileup
         echo "Running samtools mpileup" >> {log} 
-        bcftools mpileup -A -Ou -f {input[0]} {input[1]} 2>> {log}|\
-         bcftools call -vm -Ov >$VCF_MPU 2>> {log}
-        bgzip -c $VCF_MPU > {output[0]} 2>> {log}
-        tabix -f -p vcf {output[0]} >> {log} 2>&1
+
+        # Run bcftools mpileup and call, outputting to the temporary VCF file
+        bcftools mpileup -A -Ou -f {input.assembly} {input.map} 2>> {log} |\
+        bcftools call -vm -Ov > "$VCF_MPU" 2>> {log}
+
+        # Compress the VCF file and move it to the final output
+        bgzip -c "$VCF_MPU" > {output.snps} 2>> {log}
+
+        # Index the compressed VCF file
+        tabix -f -p vcf {output.snps} >> {log} 2>&1
         """

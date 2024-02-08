@@ -2,10 +2,10 @@ name: IMP_metadecoder
 channels:
   - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
   - pip
   - python=3.8.6
   - samtools=1.15.1
   - pip:
-    - https://github.com/liu-congcong/MetaDecoder/releases/download/v1.0.16/metadecoder-1.0.16-py3-none-any.whl
+    - https://github.com/liu-congcong/MetaDecoder/releases/download/v1.0.19/metadecoder-1.0.19-py3-none-any.whl

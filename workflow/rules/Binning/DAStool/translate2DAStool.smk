@@ -12,7 +12,7 @@ rule get_proteins_DAStool:
     conda:
         ENVDIR + "/IMP_bioperl.yaml"
     log:
-        "logs/binning_translateProteins.log"
+        "logs/binning/translateProteins.log"
     message:
         "get_proteins_DAStool: Translating sequences based on GFF - code 11."
     shell:

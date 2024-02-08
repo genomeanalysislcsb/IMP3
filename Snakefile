@@ -15,19 +15,19 @@ include:
 workdir:
     OUTPUTDIR
 
-# # ensure tmpdir specified in config file exists
-# shell:
-#     'mkdir -p {config[tmp_dir]}'
-
 yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
 yaml.dump(config, open_output('sample.config.yaml'), allow_unicode=True, default_flow_style=False)
 
+# Ensure some directories exist
 Path("status").mkdir(exist_ok=True)
+Path("logs_cluster_jobs").mkdir(exist_ok=True)
 
 # include rules for the workflow based on the input parameters
 include:
     "workflow/rules/data.input.smk"
+
+# TODO: Add user param to specify interleaved read input and add a rule to check for it and deiniterleave it if necessary
 
 # include workflows for preprocessing, assembly, analysis, binning and taxonomy steps
 # INTEGRATIVE MG-MT workflow
@@ -192,7 +192,8 @@ if 'analysis' in IMP_STEPS:
     inputs_all.append('Analysis/annotation/intermediary.tar.gz')
 
 if 'binning' in IMP_STEPS:
-    inputs_all.extend([f'Binning/{binner}.tar.gz' for binner in BIN_STEPS + ['DASTool']])
+    # inputs_all.extend([f'Binning/{binner}.tar.gz' for binner in BIN_STEPS + ['DASTool']])
+    inputs_all.append("Binning/MetaWrap/bins.stats")
 
 if "summary" in IMP_STEPS:
     inputs_all.append('status/summary.done')

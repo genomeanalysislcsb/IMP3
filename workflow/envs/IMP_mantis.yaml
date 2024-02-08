@@ -1,6 +1,7 @@
 name: IMP_mantis
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
+  - nodefaults
 dependencies:
   - mantis_pfa=1.5.5

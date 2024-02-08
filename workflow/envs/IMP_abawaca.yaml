@@ -1,7 +1,7 @@
 name: IMP_abawaca
 channels:
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
   - abawaca=1.0
   - perl-bioperl-core

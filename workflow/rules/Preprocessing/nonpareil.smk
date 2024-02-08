@@ -34,7 +34,7 @@ rule nonpareil:
     threads:
         1
     log:
-        "logs/preprocessing_nonpareil.{read}.log"
+        "logs/preprocessing/nonpareil.{read}.log"
     message:
         "nonpareil: processed {wildcards.read} fastq file."
     conda:
@@ -56,7 +56,7 @@ rule nonpareil_curve:
     conda:
         os.path.join(ENVDIR, "IMP_nonpareil.yaml")
     log:
-        "logs/preprocessing_nonpareil_curve.{read}.log"
+        "logs/preprocessing/nonpareil_curve.{read}.log"
     message:
         "nonpareil_curve: processed {wildcards.read} data."
     script:

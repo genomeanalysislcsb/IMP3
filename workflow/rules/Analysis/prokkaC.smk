@@ -14,7 +14,7 @@ rule annotate:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/analysis_annotate.log"
+        "logs/analysis/annotate.log"
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:

@@ -21,7 +21,7 @@ rule call_contig_depth:
     conda:
         ENVDIR + "/IMP_mapping.yaml"
     log:
-        "logs/analysis_call_contig_depth.{type}.log"
+        "logs/analysis/call_contig_depth.{type}.log"
     message:
         "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
     shell:

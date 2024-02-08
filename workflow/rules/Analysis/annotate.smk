@@ -19,7 +19,7 @@ rule hmmer:
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     threads: getThreads(12)
-    log: "logs/analysis_hmmer.{db}.log"
+    log: "logs/analysis/hmmer.{db}.log"
     message: "hmmer: Running HMMER for {wildcards.db}."
     shell:
         """
@@ -51,7 +51,7 @@ rule makegff:
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     log:
-        "logs/analysis_makegff.{db}.log"
+        "logs/analysis/makegff.{db}.log"
     message:
         "makegff: Adding hmmer results of {wildcards.db} to gff."
     shell:
@@ -83,7 +83,7 @@ rule mergegff:
         # Ensure at least 10gb of mem
         max(int(math.ceil(10 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     log:
-        "logs/analysis_mergegff.log"
+        "logs/analysis/mergegff.log"
     message:
         "mergegff: Merging gffs with hmmer results."
     shell:
@@ -113,7 +113,7 @@ rule tar_annotation:
     params:
         intermediary = "Analysis/annotation/intermediary/"
     log:
-        "logs/annotation_tar_annotation.log"
+        "logs/misc/tar_annotation.log"
     message:
         "tar_annotation: Compressing intermediary steps of annotation."
     conda:

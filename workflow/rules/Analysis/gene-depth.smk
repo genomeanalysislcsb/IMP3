@@ -20,7 +20,7 @@ rule call_gene_depth:
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:
-        "logs/analysis_call_gene_depth.{type}.log"
+        "logs/analysis/call_gene_depth.{type}.log"
     message:
         "call_gene_depth: Getting data on gene coverage with {wildcards.type} reads."
     shell:

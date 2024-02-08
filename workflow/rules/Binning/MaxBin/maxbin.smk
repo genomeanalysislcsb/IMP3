@@ -1,10 +1,11 @@
 rule maxbin:
     input:
-       assembly="Assembly/%s.assembly.merged.fa" % ASS,
-       depth="Stats/mg/%s.assembly.contig_depth.txt" % ASS
+       assembly = "Assembly/%s.assembly.merged.fa" % ASS,
+       depth = "Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
        "Binning/MaxBin/maxbin_res.log",
-       "Binning/MaxBin/maxbin_res.summary"
+       "Binning/MaxBin/maxbin_res.summary",
+       temp(directory("Binning/MaxBin"))
     threads:
         getThreads(14)
     resources:
@@ -13,7 +14,7 @@ rule maxbin:
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:
-        "logs/binning_maxbin.log"
+        "logs/binning/maxbin.log"
     message:
         "maxbin: Running MaxBin2."
     shell:

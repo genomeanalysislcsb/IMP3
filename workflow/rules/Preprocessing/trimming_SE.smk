@@ -3,7 +3,7 @@ if config['nextseq']:
         input:
             'Preprocessing/{type}.se.fq'
         output:
-            'Preprocessing/{type}.se.trimmed.fq'
+            temp('Preprocessing/{type}.se.trimmed.fq')
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads:
@@ -14,7 +14,7 @@ if config['nextseq']:
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log:
-            "logs/preprocessing_trimming.{type}.log"
+            "logs/preprocessing/trimming.{type}.log"
         message:
             "trimming: Trimmming {wildcards.type} reads."
         shell:
@@ -32,8 +32,8 @@ if config['nextseq']:
         input:
             'Preprocessing/{type}.{read}.trimmed.fq'
         output:
-            'Preprocessing/{type}.{read}.trimmed.fq',
-            'Preprocessing/{type}.{read}.trimmed.fq.gz'
+            temp('Preprocessing/{type}.{read}.trimmed.fq'),
+            temp('Preprocessing/{type}.{read}.trimmed.fq.gz')
         threads:
             getThreads(10)
         resources:
@@ -42,13 +42,16 @@ if config['nextseq']:
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log:
-            "logs/preprocessing_nextseq_trimming.{type}.{read}.log"
+            "logs/preprocessing/nextseq_trimming.{type}.{read}.log"
         message:
             "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
         shell:
             """
-            cutadapt -j {threads} --nextseq-trim={config[trimmomatic][trailing]} -o {output[0]} \
-             --minimum-length {config[trimmomatic][minlen]} {input} >> {log} 2>&1
+            cutadapt -j {threads} \
+                     --nextseq-trim={config[trimmomatic][trailing]} \
+                     -o {output[0]} \
+                     --minimum-length {config[trimmomatic][minlen]} \
+                     {input} >> {log} 2>&1
             pigz -p {threads} -q {input} >> {log} 2>&1
             """
 else:
@@ -56,7 +59,7 @@ else:
         input:
             'Preprocessing/{type}.se.fq'
         output:
-            'Preprocessing/{type}.se.trimmed.fq'
+            temp('Preprocessing/{type}.se.trimmed.fq')
         params:
             adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
         threads: getThreads(10)
@@ -65,16 +68,18 @@ else:
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log: "logs/preprocessing_trimming.{type}.log"
+        log: "logs/preprocessing/trimming.{type}.log"
         message: "trimming: Trimmming {wildcards.type} reads."
         shell:
             """
-            trimmomatic SE -threads {threads} {input[0]} {output} \
-             ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
-             LEADING:{config[trimmomatic][leading]} \
-             TRAILING:{config[trimmomatic][trailing]} \
-             SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
-             MINLEN:{config[trimmomatic][minlen]} \
-             MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]} > {log} 2>&1
+            trimmomatic SE -threads {threads} \
+                           {input[0]} \
+                           {output} \
+                           ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
+                           LEADING:{config[trimmomatic][leading]} \
+                           TRAILING:{config[trimmomatic][trailing]} \
+                           SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
+                           MINLEN:{config[trimmomatic][minlen]} \
+                           MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]} > {log} 2>&1
             """
 

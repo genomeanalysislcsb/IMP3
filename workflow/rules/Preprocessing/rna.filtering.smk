@@ -37,16 +37,16 @@ rule filter_rrna_pe:
             dbpath=DBPATH, fasta=config["sortmerna"]["files"]
         ),
     output:
-        filt_r1="Preprocessing/mt.r1.trimmed__rna_filtered.fq",
-        filt_r2="Preprocessing/mt.r2.trimmed__rna_filtered.fq",
-        rrna_r1="Preprocessing/mt.r1.trimmed.rna.fq",
-        rrna_r2="Preprocessing/mt.r2.trimmed.rna.fq",
-        otu="Preprocessing/otu_map.txt",
+        filt_r1 = temp("Preprocessing/mt.r1.trimmed__rna_filtered.fq"),
+        filt_r2 = temp("Preprocessing/mt.r2.trimmed__rna_filtered.fq"),
+        rrna_r1 = temp("Preprocessing/mt.r1.trimmed.rrna.fq"),
+        rrna_r2 = temp("Preprocessing/mt.r2.trimmed.rrna.fq"),
+        otu = "Preprocessing/otu_map.txt",
         # temp: working and index directories
-        wdir=temp(directory("Preprocessing/sortmerna_pe")),
-        idx=temp(directory("Preprocessing/sortmerna_idx")), # store index files separately so they can be re-used in filter_rrna_se
+        wdir = temp(directory("Preprocessing/sortmerna_pe")),
+        idx = temp(directory("Preprocessing/sortmerna_idx")), # store index files separately so they can be re-used in filter_rrna_se
     log:
-        "logs/preprocessing_filter_rrna_pe.log"
+        "logs/preprocessing/filter_rrna_pe.log"
     threads:
         # Ensure at least 100gb of mem
         max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
@@ -54,7 +54,7 @@ rule filter_rrna_pe:
         runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     params:
-        params=smk_get_sortmerna_params,
+        params = smk_get_sortmerna_params
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
@@ -65,12 +65,18 @@ rule filter_rrna_pe:
             echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline." >> {log} 2>&1
             exit 1
         fi
-        sortmerna {params.params} --threads {threads} --reads {input.r1} --reads {input.r2} --workdir {output.wdir}/ --idx-dir {output.idx}/ >> {log} 2>&1
+        sortmerna {params.params} \
+                  --threads {threads} \
+                  --reads {input.r1} \
+                  --reads {input.r2} \
+                  --workdir {output.wdir}/ \
+                  --idx-dir {output.idx}/ >> {log} 2>&1
         cat {output.wdir}/out/aligned.log >> {log}
         mv {output.wdir}/out/other_fwd.fq {output.filt_r1} >> {log} 2>&1
         mv {output.wdir}/out/other_rev.fq {output.filt_r2} >> {log} 2>&1
         mv {output.wdir}/out/aligned_fwd.fq {output.rrna_r1} >> {log} 2>&1
         mv {output.wdir}/out/aligned_rev.fq {output.rrna_r2} >> {log} 2>&1
+
         if [ -f {output.wdir}/out/otu_map.txt ]; then
             mv {output.wdir}/out/otu_map.txt {output.otu} >> {log} 2>&1
         else
@@ -88,12 +94,12 @@ rule filter_rrna_se:
         ),
         idx=rules.filter_rrna_pe.output.idx, # to avoid additional overhead
     output:
-        filt_se="Preprocessing/mt.se.trimmed__rna_filtered.fq",
-        rrna_se="Preprocessing/mt.se.trimmed.rna.fq",
+        filt_se = temp("Preprocessing/mt.se.trimmed__rna_filtered.fq"),
+        rrna_se = temp("Preprocessing/mt.se.trimmed.rrna.fq"),
         # temp: working directory
-        wdir=temp(directory("Preprocessing/sortmerna_se")),
+        wdir = temp(directory("Preprocessing/sortmerna_se")),
     log:
-        "logs/preprocessing_filter_rrna_se.log"
+        "logs/preprocessing/filter_rrna_se.log"
     threads:
         # Ensure at least 100gb of mem
         max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
@@ -101,7 +107,7 @@ rule filter_rrna_se:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     params:
-        params=smk_get_sortmerna_params,
+        params=smk_get_sortmerna_params
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
@@ -112,7 +118,11 @@ rule filter_rrna_se:
             echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline." >> {log} 2>&1
             exit 1
         fi
-        sortmerna {params.params} --threads {threads} --reads {input.se} --workdir {output.wdir}/ --idx-dir {input.idx}/ >> {log} 2>&1
+        sortmerna {params.params} \
+                  --threads {threads} \
+                  --reads {input.se} \
+                  --workdir {output.wdir}/ \
+                  --idx-dir {input.idx}/ >> {log} 2>&1
         cat {output.wdir}/out/aligned.log >> {log}
         mv {output.wdir}/out/other.fq {output.filt_se} >> {log} 2>&1
         mv {output.wdir}/out/aligned.fq {output.rrna_se} >> {log} 2>&1
@@ -129,11 +139,14 @@ if KEEP_RRNAs:
             r2_rrna = rules.filter_rrna_pe.output.rrna_r2,
             se_rrna = rules.filter_rrna_se.output.rrna_se
         output:
-            r1="Preprocessing/mt.r1.trimmed__sortmerna.fq",
-            r2="Preprocessing/mt.r2.trimmed__sortmerna.fq",
-            se="Preprocessing/mt.se.trimmed__sortmerna.fq"
+            r1 = temp("Preprocessing/mt.r1.trimmed__sortmerna.fq"),
+            r2 = temp("Preprocessing/mt.r2.trimmed__sortmerna.fq"),
+            se = temp("Preprocessing/mt.se.trimmed__sortmerna.fq"),
+            rrna_r1_gz = "Preprocessing/mt.r1.trimmed.rrna.fq.gz",
+            rrna_r2_gz = "Preprocessing/mt.r2.trimmed.rrna.fq.gz",
+            rrna_se_gz = "Preprocessing/mt.se.trimmed.rrna.fq.gz"
         log:
-            "logs/preprocessing_copy_sortmerna_out.log"
+            "logs/preprocessing/copy_sortmerna_out.log"
         threads:
             getThreads(4)
         resources:
@@ -147,20 +160,30 @@ if KEEP_RRNAs:
             cat {input.r1_filt} {input.r1_rrna} > {output.r1} 2>> {log}
             cat {input.r2_filt} {input.r2_rrna} > {output.r2} 2>> {log}
             cat {input.se_filt} {input.se_rrna} > {output.se} 2>> {log}
+
+            # Compress rRNA reads
+            echo "Compressing rRNA reads ..." >> {log}
+            pigz -p {threads} -c {input.r1_rrna} > {output.rrna_r1_gz} >> {log} 2>&1
+            pigz -p {threads} -c {input.r2_rrna} > {output.rrna_r2_gz} >> {log} 2>&1
+            pigz -p {threads} -c {input.se_rrna} > {output.rrna_se_gz} >> {log} 2>&1
+
             echo "Done." >> {log}
             """
 else:
     rule copy_sortmerna_out:
         input:
-            r1=rules.filter_rrna_pe.output.filt_r1,
-            r2=rules.filter_rrna_pe.output.filt_r2,
-            se=rules.filter_rrna_se.output.filt_se
+            r1 = rules.filter_rrna_pe.output.filt_r1,
+            r2 = rules.filter_rrna_pe.output.filt_r2,
+            se = rules.filter_rrna_se.output.filt_se
         output:
-            r1="Preprocessing/mt.r1.trimmed__sortmerna.fq",
-            r2="Preprocessing/mt.r2.trimmed__sortmerna.fq",
-            se="Preprocessing/mt.se.trimmed__sortmerna.fq"
+            r1 = temp("Preprocessing/mt.r1.trimmed__sortmerna.fq"),
+            r2 = temp("Preprocessing/mt.r2.trimmed__sortmerna.fq"),
+            se = temp("Preprocessing/mt.se.trimmed__sortmerna.fq"),
+            rrna_r1_gz = "Preprocessing/mt.r1.trimmed.rrna.fq.gz",
+            rrna_r2_gz = "Preprocessing/mt.r2.trimmed.rrna.fq.gz",
+            rrna_se_gz = "Preprocessing/mt.se.trimmed.rrna.fq.gz"
         log:
-            "logs/preprocessing_copy_sortmerna_out.log"
+            "logs/preprocessing/copy_sortmerna_out.log"
         threads:
             getThreads(4)
         resources:
@@ -174,5 +197,12 @@ else:
             cp {input.r1} {output.r1} 2>> {log}
             cp {input.r2} {output.r2} 2>> {log}
             cp {input.se} {output.se} 2>> {log}
+
+            # Compress rRNA reads
+            echo "Compressing rRNA reads ..." >> {log}
+            pigz -p {threads} -c {input.r1_rrna} > {output.rrna_r1_gz} >> {log} 2>&1
+            pigz -p {threads} -c {input.r2_rrna} > {output.rrna_r2_gz} >> {log} 2>&1
+            pigz -p {threads} -c {input.se_rrna} > {output.rrna_se_gz} >> {log} 2>&1
+
             echo "Done." >> {log}
             """

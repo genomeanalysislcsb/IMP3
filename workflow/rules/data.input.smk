@@ -18,13 +18,7 @@ if (not 'assembly' in IMP_STEPS) and ('analysis' in IMP_STEPS or 'taxonomy' in I
         # issue #28: required for new FASTAs to be used for filtering
         include:
             'Assembly/common/bwa.index.smk'
-
-# if (not 'analysis' in IMP_STEPS) and 'binning' in IMP_STEPS:
-#     if ANN:
-#         include:
-#             'Binning/DAStool/translate2DAStool.smk'
     
-
 localrules: check_inputs, check_read_se_input, check_assembly_input, check_read_r_input, check_longread_input
 
 # outputs (input for workflow) to be generated (in rule)
@@ -121,7 +115,7 @@ rule prepare_input_data_copy:
     input:
         get_ori_files
     output:
-        input_files_list
+        temp(input_files_list)
     threads:
         getThreads(5)
     resources:

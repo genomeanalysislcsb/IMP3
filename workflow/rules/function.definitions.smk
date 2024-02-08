@@ -236,12 +236,16 @@ def filtering_filter(wildcards):
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_gziped.get(**wildcards).output[0]
     type=wildcards.type
+
     pot_reads = expand('Preprocessing/{type}.{i}.fq',
-           type=type,
-           i=glob_wildcards('Preprocessing/'+ type + '.{i}.fq').i)
-    last_reads = [os.readlink(l) for l in expand('Preprocessing/{type}.{read}.preprocessed.fq',
-                                                   type=type,read=['r1','r2','se'])]
+                        type=type,
+                        i=glob_wildcards('Preprocessing/'+ type + '.{i}.fq').i)
+                        
+    paths_to_check = expand('Preprocessing/{type}.{read}.preprocessed.fq', type=type, read=['r1', 'r2', 'se'])
+    last_reads = [path for path in paths_to_check if os.path.exists(path) and os.path.getsize(path) > 0]
+
     valid_reads = [f for f in list(set(pot_reads).difference(['Preprocessing/' + s for s in last_reads])) if not os.path.islink(f)]
+
     return([s + '.gz' for s in valid_reads])
 
 
@@ -283,10 +287,14 @@ def check_binner_bin_fastas(wildcards):
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
-        bin_list = glob.glob(OUTPUTDIR + '/Binning/' + binner + '/bins/*.fasta')
-        if bin_list:
-            if any(os.stat(bin).st_size > 0 for bin in bin_list):
-                valid_binners.append(binner)
+        # Glob over possible extensions: `fasta`, `fa`, `fna`
+        # Break if any bin file is found with correct extension and non-zero size
+        for ext in ['fasta', 'fa', 'fna']:
+            bin_list = glob.glob(f"{OUTPUTDIR}/Binning/{binner}/bins/*.{ext}")
+            if bin_list:
+                if any(os.stat(bin).st_size > 0 for bin in bin_list):
+                    valid_binners.append(binner)
+                    break
     if glob.glob(OUTPUTDIR + '/Binning/DASTool/bins/*.fasta'):
         valid_binners.append('DASTool')
 
@@ -359,7 +367,7 @@ def aggregate_mantis_fc(wildcards):
 
 def aggregate_mantis_fc_per_contig(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
-    return expand('Stats/{type}/annotation/{type}.mantis.{i}.counts.tsv', i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,type=TYPES)
+    return expand('Analysis/annotation/per_contig_counts/{type}.mantis.{i}.per_contig.counts.tsv', i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,type=TYPES)
 
 
 def get_extra_cores(wildcards, attempt):

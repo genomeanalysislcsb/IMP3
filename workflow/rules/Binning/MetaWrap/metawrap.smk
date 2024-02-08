@@ -4,7 +4,8 @@ localrules: MetaWrap_refine_check
 
 checkpoint MetaWrap_refine_check:
     input:
-        expand("Binning/{binner}/bins",binner=BIN_STEPS + ['DASTool'])
+        expand("Binning/{binner}/bins",binner=BIN_STEPS + ['DASTool']),
+        expand("Binning/{binner}",binner=BIN_STEPS + ['DASTool'])
     output:
         "status/MetaWrap_refine.ready"
     shell:
@@ -12,8 +13,8 @@ checkpoint MetaWrap_refine_check:
 
 rule MetaWrap_refine:
     input:
-        binner_fasta_dirs=check_binner_bin_fastas,
-        setup_check=f"{DBPATH}/checkm/checkm_db.ready"
+        binner_fasta_dirs = check_binner_bin_fastas,
+        setup_check = f"{DBPATH}/checkm/checkm_db.ready"
     output:
         "Binning/MetaWrap/bins.stats",
         directory("Binning/MetaWrap/bins"),
@@ -25,7 +26,9 @@ rule MetaWrap_refine:
         prefix_1="metawrap_round_01",
         prefix_2="metawrap_round_02",
         prefix_3="metawrap_round_03",
-        total_mem=int(float(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]) * getThreads(MAIN_BIGCORENO, bigmem=True))
+        total_mem=int(float(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]) * getThreads(MAIN_BIGCORENO, bigmem=True)),
+        script_path = os.path.join(SRCDIR, "MW_scripts"),
+        checkm_db = os.path.join(DBPATH, "checkm")
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     resources:
@@ -34,7 +37,7 @@ rule MetaWrap_refine:
     conda:
         ENVDIR + "/IMP_metawrap.yaml"
     log:
-        "logs/binning_MetaWrap.log"
+        "logs/binning/MetaWrap.log"
     message:
         "MetaWrap: Running MetaWrap."
     shell:
@@ -45,7 +48,7 @@ rule MetaWrap_refine:
         final_out={params.prefix_1}
         bin_folder="metawrap_{params.mw_min_comp}_{params.mw_max_cont}_bins"
         binner_input_array=({input.binner_fasta_dirs})
-        
+
         # Ensure no special chars in bin names, which lead to MetaWrap CheckM crash
         for i in ${{binner_input_array[@]}}; do
           for bin in ${{i}}/*.fasta; do
@@ -61,18 +64,16 @@ rule MetaWrap_refine:
           touch {output.out_dir}/bins.stats {output.out_dir}/bins.contigs
           exit 0
         fi
-
-        echo "############################################### Before Round 1 ##############################################################" > {log}.check_int_out 2>&1
-        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
         
         # Round 1
-        metawrap bin_refinement -o {output.out_dir}/{params.prefix_1} \
-                                --quick \
-                                -t {threads} \
-                                -m {params.total_mem} \
-                                {params.binner_inputs_list[0]} \
-                                -c {params.mw_min_comp} \
-                                -x {params.mw_max_cont} >> {log} 2>&1
+        CHECKM_DATA_PATH={params.checkm_db} SOFT={params.script_path} \
+        {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_1} \
+                                               --quick \
+                                               -t {threads} \
+                                               -m {params.total_mem} \
+                                               {params.binner_inputs_list[0]} \
+                                               -c {params.mw_min_comp} \
+                                               -x {params.mw_max_cont} >> {log} 2>&1
                 
         # Rename bin fastas back to .fasta
         shopt -s nullglob
@@ -83,19 +84,17 @@ rule MetaWrap_refine:
         shopt -u nullglob
         rm -rf {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*/
         
-        echo "############################################### After Round 1 ##############################################################" >> {log}.check_int_out 2>&1
-        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
-        
         # Round 2
         if [[ ${{#binner_input_array[*]}} > 3 ]]; then
             mv {output.out_dir}/{params.prefix_1}/${{bin_folder}} {output.out_dir}/{params.prefix_1}/${{bin_folder}}_round_01
-            metawrap bin_refinement -o {output.out_dir}/{params.prefix_2} \
-                                    --quick \
-                                    -t {threads} \
-                                    -m {params.total_mem} \
-                                    {params.binner_inputs_list[1]} \
-                                    -c {params.mw_min_comp} \
-                                    -x {params.mw_max_cont} >> {log} 2>&1
+            CHECKM_DATA_PATH={params.checkm_db} SOFT={params.script_path} \
+            {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_2} \
+                                                   --quick \
+                                                   -t {threads} \
+                                                   -m {params.total_mem} \
+                                                   {params.binner_inputs_list[1]} \
+                                                   -c {params.mw_min_comp} \
+                                                   -x {params.mw_max_cont} >> {log} 2>&1
             
             # Rename bin fastas back to .fasta
             shopt -s nullglob
@@ -104,9 +103,6 @@ rule MetaWrap_refine:
               mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
             done
             shopt -u nullglob
-
-            echo "############################################### While Round 2 ##############################################################" >> {log}.check_int_out 2>&1
-            tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
             
             rm -rf {output.out_dir}/{params.prefix_1} \
                    {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*/ \
@@ -114,19 +110,17 @@ rule MetaWrap_refine:
             final_out={params.prefix_2}
         fi
         
-        echo "############################################### After Round 2 ##############################################################" >> {log}.check_int_out 2>&1
-        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
-        
         # Round 3
         if [[ ${{#binner_input_array[*]}} > 5 ]]; then
             mv {output.out_dir}/{params.prefix_2}/${{bin_folder}} {output.out_dir}/{params.prefix_2}/${{bin_folder}}_round_02
-            metawrap bin_refinement -o {output.out_dir}/{params.prefix_3} \
-                                    --quick \
-                                    -t {threads} \
-                                    -m {params.total_mem} \
-                                    {params.binner_inputs_list[2]} \
-                                    -c {params.mw_min_comp} \
-                                    -x {params.mw_max_cont} >> {log} 2>&1
+            CHECKM_DATA_PATH={params.checkm_db} SOFT={params.script_path} \
+            {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_3} \
+                                                   --quick \
+                                                   -t {threads} \
+                                                   -m {params.total_mem} \
+                                                   {params.binner_inputs_list[2]} \
+                                                   -c {params.mw_min_comp} \
+                                                   -x {params.mw_max_cont} >> {log} 2>&1
             
             # Rename bin fastas back to .fasta
             for bin in {output.out_dir}/{params.prefix_3}/${{bin_folder}}/*.fa; do
@@ -138,9 +132,6 @@ rule MetaWrap_refine:
                    {output.out_dir}/{params.prefix_3}/${{bin_folder}}_round_02*
             final_out={params.prefix_3}
         fi
-        
-        echo "############################################### After Round 3 ##############################################################" >> {log}.check_int_out 2>&1
-        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
         
         # Clean up
         rm -rf {output.out_dir}/${{final_out}}/bins \
@@ -160,10 +151,6 @@ rule MetaWrap_refine:
         
         rm -rf {output.out_dir}/figures {output.out_dir}/bins{{A,B,C}}*
         
-
-        echo "############################################### After Clean-up ##############################################################" >> {log}.check_int_out 2>&1
-        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
-        
         # Revert no special chars in bin names, which lead to MetaWrap CheckM crash
         for i in ${{binner_input_array[@]}}; do
           for bin in ${{i}}/*.fasta; do
@@ -173,40 +160,36 @@ rule MetaWrap_refine:
             fi
           done
         done
-        
-        echo "############################################### After special char change ##############################################################" >> {log}.check_int_out 2>&1
-        tree -L 2 {output.out_dir} >> {log}.check_int_out 2>&1
-        
         """
 
 # Compress single binner out
-rule compress_binner_out:
-    input:
-        # Make sure its done at the very end
-        check = "status/workflow.done",
-        binner_out = check_binner_dirs
-    output:
-        "Binning/{binner}.tar.gz"
-    threads:
-        # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 8)
-    resources:
-        runtime = SHORT_RUNTIME,
-        mem_mb = MAIN_MEMCORE_MB
-    log:
-        "logs/compress_binner_{binner}.log"
-    message:
-        "compress_binner_out: Compressing output of {wildcards.binner}."
-    conda:
-        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-    shell:
-       """
-       echo '.Compressing {wildcards.binner} output.'
-       tar -cv {input.binner_out} 2> {log} | pigz --stdout \
-                                                  --best \
-                                                  --processes {threads} \
-                                                  --rsyncable \
-                                                  --verbose > {output} 2>> {log} && \
-       rm -rf {input.binner_out} >> {log} 2>&1
-       """
+# rule compress_binner_out:
+#     input:
+#         # Make sure its done at the very end
+#         check = "status/workflow.done",
+#         binner_out = check_binner_dirs
+#     output:
+#         "Binning/{binner}.tar.gz"
+#     threads:
+#         # Ensure at least 10gb of mem
+#         max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 8)
+#     resources:
+#         runtime = SHORT_RUNTIME,
+#         mem_mb = MAIN_MEMCORE_MB
+#     log:
+#         "logs/misc/compress_binner_{binner}.log"
+#     message:
+#         "compress_binner_out: Compressing output of {wildcards.binner}."
+#     conda:
+#         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+#     shell:
+#        """
+#        echo '.Compressing {wildcards.binner} output.'
+#        tar -cv {input.binner_out} 2> {log} | pigz --stdout \
+#                                                   --best \
+#                                                   --processes {threads} \
+#                                                   --rsyncable \
+#                                                   --verbose > {output} 2>> {log} && \
+#        rm -rf {input.binner_out} >> {log} 2>&1
+#        """
 

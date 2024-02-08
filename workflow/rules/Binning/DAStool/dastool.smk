@@ -15,10 +15,10 @@ rule DAS_tool:
         tabs=check_bintabs
         # tabs=expand("Binning/{binner}/contig2bin.tsv",binner=BIN_STEPS)  # if used without DAS_tool_check
     output:
-        dt_summary="Binning/DASTool/selected_DASTool_summary.tsv",
-        s2b="Binning/DASTool/selected_DASTool_contig2bin.tsv",
-        bin_dir=directory("Binning/DASTool/bins"),
-        out_dir=directory("Binning/DASTool")
+        dt_summary = "Binning/DASTool/selected_DASTool_summary.tsv",
+        s2b = "Binning/DASTool/selected_DASTool_contig2bin.tsv",
+        bin_dir = directory("Binning/DASTool/bins"),
+        out_dir = temp(directory("Binning/DASTool"))
     threads:
         getThreads(4)
     params:
@@ -30,7 +30,7 @@ rule DAS_tool:
     conda:
         ENVDIR + "/IMP_annotation.yaml"
     log:
-        "logs/binning_DAS_tool.log"
+        "logs/binning/DAS_tool.log"
     message:
         "DAS_tool: Running DAS_Tool."
     shell:
@@ -95,13 +95,13 @@ rule format_protein_names:
     params:
         tmp_dir=TMPDIR
     log:
-        "logs/binning_format_protein_names.log"
+        "logs/binning/format_protein_names.log"
     message:
         "format_protein_names: Preparing protein sequences for DAS tool."
     shell:
         """
         export TMPDIR="{params.tmp_dir}"
-        TMP_PROT=$(mktemp "proteins_XXXXXX.faa")
+        TMP_PROT=$(mktemp "${{TMPDIR}}/proteins_XXXXXX.faa")
         cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
         sed 's/ .*//' {input[0]} >> $TMP_PROT
         {SRCDIR}/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} > {output[1]} 2> {log}

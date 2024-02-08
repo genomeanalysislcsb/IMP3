@@ -9,7 +9,7 @@ rule reads_count:
     threads:
         1
     # log:
-    #     "logs/analysis_read_numbers.{type}.log"
+    #     "logs/analysis/read_numbers.{type}.log"
     message:
         "reads_count: Getting length of {wildcards.type} fastq files."
     run:
@@ -65,9 +65,9 @@ rule gzip_files:
     input:
         # Make sure its done at the very end
         check = "status/workflow.done",
-        file = 'Preprocessing/{type}.{read}.{stage}.fq'
+        file = 'Preprocessing/{type}.{read}.preprocessed.fq'
     output:
-        "Preprocessing/{type}.{read}.{stage}.fq.gz"
+        "Preprocessing/{type}.{read}.preprocessed.fq.gz"
     resources:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB

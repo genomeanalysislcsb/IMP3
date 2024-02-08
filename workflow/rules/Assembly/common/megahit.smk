@@ -18,7 +18,7 @@ rule megahit_assembly_from_preprocessing:
     conda:
         ENVDIR + "/IMP_assembly.yaml"
     log:
-        "logs/assembly_megahit_assembly_from_preprocessing.{type}.log"
+        "logs/assembly/megahit_assembly_from_preprocessing.{type}.log"
     message:
         "megahit_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MEGAHIT"
     shell:
@@ -48,6 +48,6 @@ use rule megahit_assembly_from_preprocessing as megahit_assembly_from_unmapped w
         contigs_final = 'Assembly/intermediary/{type}.megahit_unmapped.2/final.contigs.fa',
         contigs = 'Assembly/intermediary/{type}.megahit_unmapped.2.fa'
     log:
-        "logs/assembly_megahit_assembly_from_unmapped.{type}.log"
+        "logs/assembly/megahit_assembly_from_unmapped.{type}.log"
     message:
         "megahit_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using MEGAHIT"

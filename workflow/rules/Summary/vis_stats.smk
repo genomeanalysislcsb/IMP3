@@ -34,7 +34,7 @@ rule visualize_read_stats:
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
-    log: "logs/visualize_read_stats.log"
+    log: "logs/visualize/read_stats.log"
     message: "visualize_read_stats: Plotting reads figure."
     threads: 1
     conda:
@@ -54,7 +54,7 @@ rule visualize_assembly_stats:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/visualize_assembly_stats.log"
+        "logs/visualize/assembly_stats.log"
     message:
         "visualize_assembly_stats: Plotting figures for contigs."
     threads:
@@ -76,7 +76,7 @@ rule visualize_analysis_stats:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
-        "logs/visualize_analysis_stats.log"
+        "logs/visualize/analysis_stats.log"
     message:
         "visualize_analysis_stats: Plotting gene figures."
     threads:
@@ -90,7 +90,7 @@ if CONTIGS or "assembly" in IMP_STEPS:
     rule visualize_kraken_reads:
         input:
             "Stats/all_stats.Rdata",
-            "Analysis/taxonomy/kraken/%s.kraken.parsed.tsv" %ASS
+            "Analysis/taxonomy/kraken/%s.kraken.contig.output.gz" % ASS
         output:
             report(expand("Visualization/Taxonomy_{type}_kraken_tree.png",type=TYPES),caption="../../report/stats/Taxonomy_kraken_withAssembly.rst",category="Taxonomy"),
             report("Visualization/Taxonomy_kraken_plot.png",caption="../../report/stats/Taxonomy_kraken_scatter_withAssembly.rst",category="Taxonomy")
@@ -98,7 +98,7 @@ if CONTIGS or "assembly" in IMP_STEPS:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
-            "logs/visualize_kraken_reads.log"
+            "logs/visualize/kraken_reads.log"
         message:
             "visualize_kraken_reads: Plotting taxonomy results."
         threads:
@@ -118,7 +118,7 @@ else:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
-            "logs/visualize_kraken_reads.log"
+            "logs/visualize/kraken_reads.log"
         message:
             "visualize_kraken_reads: Plotting taxonomy results."
         threads:
@@ -140,7 +140,7 @@ if "analysis" in IMP_STEPS:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         log:
-            "logs/visualize_mOTU_reads.log"
+            "logs/visualize/mOTU_reads.log"
         message:
             "visualize_mOTU_reads: Plotting taxonomy results."
         threads:
@@ -159,7 +159,7 @@ else:
         resources:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
-        log: "logs/visualize_mOTU_reads.log"
+        log: "logs/visualize/mOTU_reads.log"
         message: "visualize_mOTU_reads: Plotting taxonomy results."
         threads: 1
         conda:
@@ -178,7 +178,7 @@ rule visualize_bins:
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
-    log: "logs/visualize_bins.log"
+    log: "logs/visualize/bins.log"
     message: "visualize_bins: Plotting binning results."
     threads: 1
     conda:

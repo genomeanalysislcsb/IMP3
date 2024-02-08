@@ -11,7 +11,7 @@ rule allmotulinks:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     # log:
-    #     "logs/analysis_mOTU_bestPresentHitPhylogeny.log"
+    #     "logs/analysis/mOTU_bestPresentHitPhylogeny.log"
     message:
         "allmotulinks: Extracting phylogeny for best mOTU hits."
     shell:
@@ -33,7 +33,7 @@ rule fetchmg:
     params:
         outdir = "Analysis/taxonomy/mOTU_links/intermediary/marker_genes"
     log:
-        "logs/analysis_fetchmg.log"
+        "logs/analysis/fetchmg.log"
     conda:
         os.path.join(ENVDIR, "IMP_annotation.yaml")
     message:
@@ -50,7 +50,7 @@ rule fetchmg:
 
 rule get_present_mOTUs:
     input:
-        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",type=TYPES)
+        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{out_type}.tsv", type=TYPES, out_type=["counts", "rel_abun"])
     output:
         "Analysis/taxonomy/mOTU_links/intermediary/all.mOTUs.present"
     threads:
@@ -59,7 +59,7 @@ rule get_present_mOTUs:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     # log:
-    #     "logs/analysis_get_present_mOTUs.log"
+    #     "logs/analysis/get_present_mOTUs.log"
     message:
         "get_present_mOTUs: Extracting identity of present mOTUs."
     shell:
@@ -88,7 +88,7 @@ rule extract_mOTU_db_genes:
     conda:
         os.path.join(ENVDIR, "IMP_motus.yaml")
     log:
-        "logs/analysis_extract_mOTU_db_genes.log"
+        "logs/analysis/taxonomy/extract_mOTU_db_genes.log"
     message:
         "extract_mOTU_db_genes: Extracting genes for present mOTUs."
     shell:
@@ -116,7 +116,7 @@ rule blast_mOTU_db_genes:
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
-        "logs/analysis_blast_mOTU_db_genes.{COG}.log"
+        "logs/analysis/taxonomy/blast_mOTU_db_genes.{COG}.log"
     message:
         "blast_mOTU_db_genes: Blasting {wildcards.COG} genes to present mOTUs."
     shell:
@@ -153,7 +153,7 @@ rule parse_blast_mOTU:
     conda:
         ENVDIR + "/IMP_taxonomy.yaml"
     log:
-        "logs/analysis_parse_blast_mOTU.{COG}.log"
+        "logs/analysis/taxonomy/parse_blast_mOTU.{COG}.log"
     message:
         "parse_blast_mOTU: Parsing blast results of {wildcards.COG} genes."
     script:
@@ -174,7 +174,7 @@ rule tar_intermediary_mOTU:
     params:
         intermediary = "Analysis/taxonomy/mOTU_links/intermediary/"
     log:
-        "logs/mOTUlinks_tar_intermediary.log"
+        "logs/misc/mOTUlinks_tar_intermediary.log"
     message:
         "tar_intermediary_mOTU: Compressing intermediary steps of mOTU linking."
     shell:

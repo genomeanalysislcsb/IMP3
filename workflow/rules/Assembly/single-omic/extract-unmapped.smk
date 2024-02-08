@@ -93,7 +93,7 @@ rule extract_unmapped:
     conda:
         ENVDIR + "/IMP_mapping.yaml"
     log:
-        "logs/assembly_extract_unmapped.{type}.log"
+        "logs/assembly/extract_unmapped.{type}.log"
     message:
         "extract_unmapped: Extracting unmapped {wildcards.type} reads from megahit assembly."
     shell:
