@@ -1,21 +1,13 @@
-(step-analysis)=
-
 # IMP3 steps: Analysis
 
 In the Analysis step, IMP3 calls open reading frames, rRNA and tRNA genes, and annotate CRISPR repeats.
 Open reading frames are functionally annotated. The number of reads mapping to each gene and functional
 group of genes are calculated. The steps are described in more detail below.
 
-(prokkac)=
 
 ## Customized prokka
 
-IMP3 uses [prokka](http://www.vicbioinformatics.com/software.prokka.shtml) to call
-open reading frames (ORF), rRNA and tRNA genes, and annotate CRISPR repeats. Internally,
-[prokka](http://www.vicbioinformatics.com/software.prokka.shtml) calls [prodigal](https://github.com/hyattpd/Prodigal)
-for the ORF calling, [barrnap](https://github.com/tseemann/barrnap) for the rRNA regions,
-[ARAGORN](https://academic.oup.com/nar/article/32/1/11/1194008) for tRNA loci and
-[MinCED](https://github.com/ctSkennerton/minced) to detect CRISPR arrays.
+IMP3 uses [prokka](http://www.vicbioinformatics.com/software.prokka.shtml) to call open reading frames (ORF), rRNA and tRNA genes, and annotate CRISPR repeats. Internally, [prokka](http://www.vicbioinformatics.com/software.prokka.shtml) calls [prodigal](https://github.com/hyattpd/Prodigal) for the ORF calling, [barrnap](https://github.com/tseemann/barrnap) for the rRNA regions, [ARAGORN](https://academic.oup.com/nar/article/32/1/11/1194008) for tRNA loci and [MinCED](https://github.com/ctSkennerton/minced) to detect CRISPR arrays.
 
 Prokka forces prodigal to only call complete genes. Due to the fragmented nature of metagenomic contigs, it
 is preferable to also allow partial genes. IMP3's customized prokka allows prodigal to call incomplete
