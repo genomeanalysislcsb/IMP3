@@ -26,3 +26,38 @@ kraken_reads_SE:
 # mantis_annot:
 #   clusters: "--clusters 'iris'"
 #   partition: "--partition bigmem"
+
+call_gene_depth:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+
+call_contig_depth:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+
+filter_rrna_pe:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+  qos: "--qos long"
+
+filter_rrna_se:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+
+# COMEBin gpu configuration
+comebin:
+  clusters: "--clusters 'iris'"
+  partition: "--partition gpu"
+  threads: "--constraint volta --gpus 1 --cpus-per-task "
+
+# megahit_assembly_from_preprocessing:
+# qos: "--qos long"
+
+# megahit_assembly_from_unmapped:
+#   qos: "--qos long"
+
+# megahit_hybrid_assembly_1:
+#   qos: "--qos long"
+
+# megahit_hybrid_assembly_2:
+#   qos: "--qos long"

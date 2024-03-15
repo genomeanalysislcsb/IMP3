@@ -15,7 +15,7 @@ rule metabat:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
-        ENVDIR + "/IMP_metawrap.yaml"
+        ENVDIR + "/IMP_metabat.yaml"
     log:
         "logs/binning/metabat.log"
     message:
@@ -44,4 +44,10 @@ rule metabat:
           mv ${{i}} {output.out_bin_dir}/${{bin_name}}.fasta
         done
         shopt -u nullglob
+
+        # If there are lines in the contig2bin file, but no bins, replace contig2bin with empty file.
+        if [ -s {output.s2b} ] && [ ! -s {output.out_bin_dir}/*.fasta ]; then
+          rm {output.s2b}
+          touch {output.s2b}
+        fi
         """

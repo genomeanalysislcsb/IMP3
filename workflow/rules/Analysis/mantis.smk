@@ -3,6 +3,16 @@ import math
 include:
     "mantis_config.smk"
 
+def get_min_mem(wildcards, attempt):
+    return attempt * MAIN_MEMCORE_MB
+
+def get_max_cores(wildcards, attempt):
+    mem_per_core_gb_attempt = int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]] * attempt
+    max_cores = getThreads(128, bigmem=True, high_mem_cluster=False)
+    total_mem = max_cores * int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]
+    attempt_supported_cores = int(math.ceil(total_mem / mem_per_core_gb_attempt))
+    return max(min(max_cores, attempt_supported_cores), 1)
+
 # Mantis: protein annotation
 # NOTE: assumming that mantis has been setup
 rule mantis_annot:
@@ -23,12 +33,14 @@ rule mantis_annot:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
         params="-gff -km -da heuristic",
     threads:
-        # getThreads(128)
-        getThreads(128, bigmem=True, high_mem_cluster=False)
+        # getThreads(128, bigmem=True, high_mem_cluster=False)
+        get_max_cores
     resources:
         runtime = LONG_RUNTIME,
-        mem_mb = MAIN_MEMCORE_MB
-        # mem_mb = HIGH_MEM_BIGMEMCORE_MB
+        # mem_mb = MAIN_MEMCORE_MB
+        mem_mb = get_min_mem
+    retries:
+        3
     message:
         "Mantis: annotate {input}"
     conda:
@@ -71,11 +83,11 @@ checkpoint makegff_mantis:
         sep="|", # separator used in mantis_reformat_consensus
         prefix="Analysis/annotation/intermediary/mantis/consensus_annotation.mantis"
     resources:
-        runtime = SHORT_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+        max(int(math.ceil(50 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     message:
         "Mantis: Create GFF from {input}"
     log:

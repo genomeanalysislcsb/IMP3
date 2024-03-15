@@ -45,9 +45,6 @@ def getThreads(cores, bigmem=False, high_mem_cluster=False):
         realThreads = min(cores, workflow.nodes)
     else:
         realThreads = max_cores
-    
-    if high_mem_cluster:
-        print('#' * 10, f'mem_core: {mem_core} mem_total: {mem_total} n_cores: {n_cores} max_cores: {max_cores} realThreads: {realThreads}', '#' * 10)
 
     return realThreads
 
@@ -233,40 +230,31 @@ def filtering_filter(wildcards):
     ))
 
 # for archiving checkpoint:
+# TODO: Deal with this mess, we only want to keep the compresed preprocessed reads!
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_gziped.get(**wildcards).output[0]
     type=wildcards.type
-
-    pot_reads = expand('Preprocessing/{type}.{i}.fq',
-                        type=type,
-                        i=glob_wildcards('Preprocessing/'+ type + '.{i}.fq').i)
                         
     paths_to_check = expand('Preprocessing/{type}.{read}.preprocessed.fq', type=type, read=['r1', 'r2', 'se'])
     last_reads = [path for path in paths_to_check if os.path.exists(path) and os.path.getsize(path) > 0]
 
-    valid_reads = [f for f in list(set(pot_reads).difference(['Preprocessing/' + s for s in last_reads])) if not os.path.islink(f)]
-
-    return([s + '.gz' for s in valid_reads])
+    return([s + '.gz' for s in last_reads])
 
 
 # BINNING:
 # for checkpoints:
 def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    # print('gather_bins checkpoint_output:', checkpoint_output)
+    
     if MG or MGaln:
-        # print('gather_bins out:', expand('Binning/MetaWrap/bins/{i}/grid', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i))
-        return expand('Binning/MetaWrap/bins/{i}/grid', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i)  # +\
-               # expand('Binning/MetaWrap/bins/{i}/grid', i=glob_wildcards('Binning/MetaWrap/bins/{i}/reads.fastq.gz').i)
+        return expand('Binning/MetaWrap/bins/{i}/grid', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i)
     else:
         return ''
 
 
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    # print(checkpoints.getBins.get(**wildcards))
-    # print(checkpoint_output)
-    # print(expand('Binning/MetaWrap/bins/{i}/{tool}', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i, tool=['GTDB','grid'] if MG else ['GTDB']))
+
     return expand('Binning/MetaWrap/bins/{i}/{tool}', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i, tool=['GTDB','grid'] if MG else ['GTDB'])
 
 
@@ -283,7 +271,6 @@ def check_bintabs(wildcards):
 
 def check_binner_bin_fastas(wildcards):
     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
-    # print('check_binner_bin_fastas checkpoint_output:',checkpoint_output)
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
@@ -299,7 +286,6 @@ def check_binner_bin_fastas(wildcards):
         valid_binners.append('DASTool')
 
     binner_out_paths = expand('Binning/{binner}/bins', binner=valid_binners)
-    # print('check_binner_bin_fastas out', binner_out_paths)
 
     return binner_out_paths
 

@@ -81,3 +81,5 @@ config.imp.GEM*
 config/mantis.config
 star_map_tests.sh
 Untitled-*
+extra_scripts/run_kraken_bracken_combine_covalux_bigmem.sh
+extra_scripts/run_kraken_bracken_combine.sh

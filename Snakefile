@@ -153,31 +153,17 @@ else:
 # clean up at the end
 if EMAIL == "":
     onsuccess:
-        shell("""
-            mkdir -p job.errs.outs &>> logs/cleanup.log;
-            ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
-            ( mv *stdout job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
-            ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
-            ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
-            rm -rf {config[tmp_dir]} &>> logs/cleanup.log
-            """)
+        shell("rm -rf {config[tmp_dir]} &>> logs/cleanup.log")
 else:
     onsuccess:
         shell("""
-            mkdir -p job.errs.outs &>> logs/cleanup.log;
-            ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
-            (  mv *stdout job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
-            ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
-            ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log;
-            echo "$(date) {config[sessionName]}" | mail -s "IMP3 finished" {EMAIL} ');
-            rm -rf {config[tmp_dir]} &>> logs/cleanup.log
-            """)
+              echo "$(date) {config[sessionName]}" | mail -s "IMP3 finished" {EMAIL} ');
+              rm -rf {config[tmp_dir]} &>> logs/cleanup.log
+              """)
     onerror:
         shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 exited with error" {EMAIL} ')
     onstart:
         shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 started" {EMAIL} ')
-
-
 
 # master command summary and archiving
 inputs_all = ['status/inputs.done','status/workflow.done']
@@ -185,8 +171,8 @@ inputs_all = ['status/inputs.done','status/workflow.done']
 if 'preprocessing' in IMP_STEPS:
     inputs_all.append(expand('status/preprocessing_{type}.reads.compressed', type=TYPES))
 
-if 'assembly' in IMP_STEPS:
-    inputs_all.append("Assembly/intermediary.tar.gz")
+# if 'assembly' in IMP_STEPS:
+#     inputs_all.append("Assembly/intermediary.tar.gz")
 
 if 'analysis' in IMP_STEPS:
     inputs_all.append('Analysis/annotation/intermediary.tar.gz')

@@ -1,3 +1,5 @@
+import math
+
 rule annotate:
     input:
         'Assembly/%s.assembly.merged.fa' % ASS
@@ -9,9 +11,10 @@ rule annotate:
         "Analysis/annotation/prokka.fsa",
         "Analysis/annotation/prokka.gff.gz"
     threads:
-        getThreads(14)
+        # Ensure at least 50gb of mem
+        max(int(math.ceil(50 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     resources:
-        runtime = SHORT_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     log:
         "logs/analysis/annotate.log"

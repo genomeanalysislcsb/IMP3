@@ -10,7 +10,7 @@ include:
 
 mw_min_comp = config['binning']['MetaWrap']['min_completeness']
 mw_max_cont = config['binning']['MetaWrap']['max_contamination']
-# inputs_binning = ["status/binning_GRiD.done", "Binning/DASTool/selected_DASTool_summary.tsv", "Binning/DASTool"
+# inputs_binning = ["status/binning_GRiD.done", "Binning/DASTool/selected_DASTool_summary.txt", "Binning/DASTool"
 #                   "Binning/MetaWrap/bins.stats"]
 inputs_binning = ["status/binning_GRiD.done", "Binning/MetaWrap/bins.stats", "Binning/DASTool"]
 

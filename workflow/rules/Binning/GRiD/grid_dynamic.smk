@@ -32,7 +32,7 @@ if MG and "taxonomy" not in IMP_STEPS:
             "GRID_summarize: Summarizing binning results."
         threads:
             # Ensure at least 5gb of mem
-            max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+            max(int(math.ceil(20 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         run:
             # Check if MetaWrap output is empty
             if os.stat(input.mw_stats).st_size > 0:
@@ -86,21 +86,35 @@ if MG and "taxonomy" not in IMP_STEPS:
         output:
             "Binning/per_bin_results.tar.gz"
         threads:
-            1
+            getThreads(5)
         resources:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
+        conda:
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log:
-            "logs/binning/bins_tar.log"
+            "logs/misc/bins_tar.log"
         message:
             "bins_tar: Compressing per-bin results of GRiD."
         shell:
             """
-            if [ -z "$(ls -A {input.dir})" ]; then
-              tar cvzf {output} {input.dir}/*/grid >> {log} 2>&1 && rm -r {input.dir}/*/grid >> {log} 2>&1
+            echo "Starting the compression process." >> {log}
+            if find {input.dir} -type d -name grid -print -quit | grep -q .; then
+                echo "Found grid directories to compress." >> {log}
+                tar --use-compress-program=pigz -cvf {output} {input.dir}/*/grid >> {log} 2>&1
+                if [ $? -eq 0 ]; then
+                    echo "Compression successful. Now removing the original grid directories." >> {log}
+                    find {input.dir} -type d -name grid -exec rm -r {} + >> {log} 2>&1
+                    echo "Original grid directories removed successfully." >> {log}
+                else
+                    echo "Error during compression. Check the logs for details." >> {log}
+                fi
             else
-              touch {output}
+                echo "No grid directories found to compress. Creating an empty archive." >> {log}
+                touch {output}
+                echo "Empty archive created successfully." >> {log}
             fi
+            echo "Compression process completed." >> {log}
             """
 
 checkpoint getBins:
@@ -113,18 +127,28 @@ checkpoint getBins:
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
-    # log:
-    #     "logs/binning/prepareGRiD.log"
+    log:
+        "logs/binning/prepareGRiD.log"
     message:
         "getBins: Copying MetaWrap bins to single directories."
-    run:
-        if os.stat("Binning/MetaWrap/bins.stats").st_size > 0:
-            selected_bins=pd.read_table("Binning/MetaWrap/bins.stats")['bin']
-            for BIN in selected_bins:
-                shell("if [ -f Binning/MetaWrap/bins/{BIN}.fasta ]; then "
-                      "mkdir -p Binning/MetaWrap/bins/{BIN} && cp Binning/MetaWrap/bins/{BIN}.fasta "
-                      "Binning/MetaWrap/bins/{BIN}/contigs.fasta; fi")
-        shell("touch {output}")
+    shell:
+        """
+        # Check if bins.stats has a non-zero size
+        if [ -s {input} ]; then
+            # Read selected bins and perform actions on each
+            while read BIN; do
+                if [ -f Binning/MetaWrap/bins/${{BIN}}.fasta ]; then
+                    echo "Copying bin ${{BIN}} to single directory." >> {log} 2>&1
+                    mkdir -p Binning/MetaWrap/bins/${{BIN}} >> {log} 2>&1 && \
+                    cp Binning/MetaWrap/bins/${{BIN}}.fasta Binning/MetaWrap/bins/${{BIN}}/contigs.fasta >> {log} 2>&1
+                fi
+            done < <(tail -n +2 Binning/MetaWrap/bins.stats | cut -f1) >> {log} 2>&1
+        fi
+
+        # Touch the output file to signify completion
+        touch {output} >> {log} 2>&1
+        echo "Done." >> {log} 2>&1
+        """
 
 if MG:
     rule grid:
@@ -166,7 +190,7 @@ if MG:
             mem_mb = MAIN_MEMCORE_MB
         threads:
             # Ensure at least 5gb of mem
-            max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+            max(int(math.ceil(20 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         log:
             "logs/binning/prepare_gridBed.{clusterID}.log"
         message:

@@ -1,4 +1,4 @@
-if "preprocessing" in IMP_STEPS and int(config['trimmomatic']['minlen'])>=24:
+if "preprocessing" in IMP_STEPS and int(config['fastp']['length_filtering']['length_required'])>=24:
     nonpareil_cmd = """
                     nonpareil -s {input} \
                               -T kmer \

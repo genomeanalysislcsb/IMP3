@@ -16,7 +16,7 @@ rule metabat:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
-        ENVDIR + "/IMP_metawrap.yaml"
+        ENVDIR + "/IMP_metabat.yaml"
     log:
         "logs/binning/MetaBAT.log"
     message:

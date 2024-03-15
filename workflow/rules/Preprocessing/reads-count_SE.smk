@@ -19,11 +19,9 @@ rule reads_count:
 
 rule reads_gzip:
     input:
-        # Make sure its done at the very end
-        check = "status/workflow.done",
         togz = gather_reads
     output:
-        "status/preprocessing_{type}.reads.compressed"
+        touch("status/preprocessing_{type}.reads.compressed")
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
@@ -31,35 +29,6 @@ rule reads_gzip:
         1
     message:
         "reads_gzip: Gzipped fastq files {input}."
-    shell:
-        """
-        touch {output}
-        """
-
-rule gzip_ori_files:
-    input:
-        # Make sure its done at the very end
-        check = "status/workflow.done",
-        file = 'Preprocessing/{type}.{read}.fq'
-    output:
-        'Preprocessing/{type}.{read}.fq.gz'
-    wildcard_constraints:
-        read="se",
-        type="mg"
-    resources:
-        runtime = SHORT_RUNTIME,
-        mem_mb = MAIN_MEMCORE_MB
-    threads:
-        getThreads(5)
-    conda:
-        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-    message:
-        "gzip_ori_files: Gzipping fastq files {input}."
-    shell:
-        "pigz -p {threads} \
-              -q \
-              {input.file} || touch {input.file}"
-
 
 rule gzip_files:
     input:
@@ -75,17 +44,21 @@ rule gzip_files:
         getThreads(5)
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    log:
+        "logs/misc/compress.{type}.{read}.log" 
     message:
         "gzip_files: Gzipping fastq files {input}."
     shell:
-        "pigz -p {threads} \
-              -q \
-              {input.file}"
+        """
+        echo "Compressing {input.file} to {output}." > {log}
+        pigz -p {threads} \
+             -q \
+             {input.file} >> {log} 2>&1
+        echo "Done." >> {log}
+        """
 
 checkpoint reads_gziped:
     input:
-        # Make sure its done at the very end
-        check = "status/workflow.done",
         file = 'Stats/{type}/{type}.read_counts.txt'
     output:
         "status/preprocessing_{type}.reads.detected"

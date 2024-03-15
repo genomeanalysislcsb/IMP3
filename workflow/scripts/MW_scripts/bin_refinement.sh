@@ -28,39 +28,17 @@ help_message () {
 	echo "	-C STR		another folder with metagenomic bins" 
 	echo ""
 	echo "	--skip-refinement	dont use binning_refiner to come up with refined bins based on combinations of binner outputs"
-	echo "	--skip-checkm		dont run CheckM to assess bins"
+	echo "	--skip-checkm		dont run CheckM2 to assess bins"
 	echo "	--skip-consolidation	choose the best version of each bin from all bin refinement iteration"
 	echo "	--keep-ambiguous	for contigs that end up in more than one bin, keep them in all bins (default: keeps them only in the best bin)"
 	echo "	--remove-ambiguous	for contigs that end up in more than one bin, remove them in all bins (default: keeps them only in the best bin)"
-	echo "	--quick			adds --reduced_tree option to checkm, reducing runtime, especially with low memory"
+	echo "	--checkm2-db-path   path to CheckM2 database"
 	echo "";}
 
 comm () { ${SOFT}/print_comment.py "$1" "-"; }
 error () { ${SOFT}/print_comment.py "$1" "*"; exit 1; }
 warning () { ${SOFT}/print_comment.py "$1" "*"; }
 announcement () { ${SOFT}/print_comment.py "$1" "#"; }
-
-
-# runs CheckM mini-pipeline on a single folder of bins
-run_checkm () {
-	if [[ -d ${1}.checkm ]]; then rm -r ${1}.checkm; fi
-        comm "Running CheckM on $1 bins"
-        checkm lineage_wf -x fa $1 ${1}.checkm -t $threads --pplacer_threads $p_threads
-        if [[ ! -s ${1}.checkm/storage/bin_stats_ext.tsv ]]; then error "Something went wrong with running CheckM. Exiting..."; fi
-        comm "Finalizing CheckM stats and plots..."
-        ${SOFT}/summarize_checkm.py ${1}.checkm/storage/bin_stats_ext.tsv | (read -r; printf "%s\n" "$REPLY"; sort -rn -k2) > ${1}.stats
-	if [[ $? -ne 0 ]]; then error "Cannot make checkm summary file. Exiting."; fi
-}
-
-# makes checkm plot on a folder of bins if run_checkm has already been run
-plot_checkm () {
-	comm "Making CheckM plot of $1 bins"
-	checkm bin_qa_plot -x fa ${1}.checkm $1 ${1}.plot
-	if [[ ! -s ${1}.plot/bin_qa_plot.png ]]; then warning "Something went wrong with making the CheckM plot. Exiting."; fi
-	mv ${1}.plot/bin_qa_plot.png ${1}.png
-	rm -r ${1}.plot
-}
-
 
 ########################################################################################################
 ########################               LOADING IN THE PARAMETERS                ########################
@@ -73,7 +51,7 @@ bins1=None; bins2=None; bins3=None
 run_checkm=true; refine=true; cherry_pick=true; dereplicate=partial; quick=false
 
 # load in params
-OPTS=`getopt -o ht:m:o:x:c:A:B:C: --long help,skip-checkm,skip-refinement,skip-consolidation,keep-ambiguous,remove-ambiguous,quick -- "$@"`
+OPTS=`getopt -o ht:m:o:x:c:A:B:C: --long help,skip-checkm,skip-refinement,skip-consolidation,keep-ambiguous,remove-ambiguous,checkm2-db-path -- "$@"`
 # make sure the params are entered correctly
 if [ $? -ne 0 ]; then help_message; exit 1; fi
 
@@ -90,11 +68,11 @@ while true; do
 				-C) bins3=$2; shift 2;;
                 -h | --help) help_message; exit 0; shift 1;;
 				--skip-checkm) run_checkm=false; shift 1;;
+				--checkm2-db-path) checkm_db=$2; shift 2;;
 				--skip-refinement) refine=false; shift 1;;
 				--skip-consolidation) cherry_pick=false; shift 1;;
 				--keep-ambiguous) dereplicate=false; shift 1;;
 				--remove-ambiguous) dereplicate=complete; shift 1;;
-				--quick) quick=true; shift 1;;
                 --) help_message; exit 1; shift; break ;;
                 *) break;;
         esac
@@ -291,32 +269,28 @@ done
 if [ "$run_checkm" == "true" ] && [[ ! -s work_files/binsM.stats ]]; then
 	announcement "RUNNING CHECKM ON ALL SETS OF BINS"
 	for bin_set in $(ls | grep -v tmp | grep -v stats | grep bins); do 
-		comm "Running CheckM on $bin_set bins"
+		comm "Running CheckM2 on $bin_set bins"
 		if [[ -d ${bin_set}.checkm ]]; then rm -r ${bin_set}.checkm; fi
 		if [[ ! -d ${bin_set}.tmp ]]; then mkdir ${bin_set}.tmp; fi
-		if [ "$quick" == "true" ]; then
-			comm "Note: running with --reduced_tree option"
-			checkm lineage_wf -x fa $bin_set ${bin_set}.checkm -t $threads --tmpdir ${bin_set}.tmp --pplacer_threads $p_threads --reduced_tree
-		else
-			checkm lineage_wf -x fa $bin_set ${bin_set}.checkm -t $threads --tmpdir ${bin_set}.tmp --pplacer_threads $p_threads
-		fi
+		checkm2 predict --threads $threads --input $bin_set --output-directory ${bin_set}.checkm --extension fa --force --database_path $checkm_db --tmpdir ${bin_set}.tmp
 		
-		if [[ ! -s ${bin_set}.checkm/storage/bin_stats_ext.tsv ]]; then error "Something went wrong with running CheckM. Exiting..."; fi
-		${SOFT}/summarize_checkm.py ${bin_set}.checkm/storage/bin_stats_ext.tsv $bin_set | (read -r; printf "%s\n" "$REPLY"; sort) > ${bin_set}.stats
+		if [[ ! -s ${bin_set}.checkm/quality_report.tsv ]]; then error "Something went wrong with running CheckM2. Exiting..."; fi
+		comm "CheckM2 stats for $bin_set"
+		${SOFT}/summarize_checkm.py ${bin_set}.checkm/quality_report.tsv ${bin_set}.stats
 		if [[ $? -ne 0 ]]; then error "Cannot make checkm summary file. Exiting."; fi
 		rm -r ${bin_set}.checkm; rm -r ${bin_set}.tmp
 
-		num=$(cat ${bin_set}.stats | awk -v c="$comp" -v x="$cont" '{if ($2>=c && $2<=100 && $3>=0 && $3<=x) print $1 }' | wc -l)
+		num=$(awk -v c="$comp" -v x="$cont" 'NR>1 {if ($2 >= c && $3 >= 0 && $3 <= x) count++} END{print count}' ${bin_set}.stats)
 		comm "There are $num 'good' bins found in $bin_set! (>${comp}% completion and <${cont}% contamination)"
 	done
 elif [ "$run_checkm" == "true" ] && [[ -s work_files/binsM.stats ]]; then
-	comm "Previous bin refinement files found. If this was not intended, please re-run with a clear output directory. Skipping CheckM runs..."
+	comm "Previous bin refinement files found. If this was not intended, please re-run with a clear output directory. Skipping CheckM2 runs..."
 	rm -r bins*
 	cp -r work_files/binsA* ./
 	cp -r work_files/binsB* ./
 	cp -r work_files/binsC* ./
 else
-	comm "Skipping CheckM. Warning: bin consolidation will not be possible."
+	comm "Skipping CheckM2. Warning: bin consolidation will not be possible."
 fi
 
 ########################################################################################################
@@ -334,7 +308,9 @@ if [ "$cherry_pick" == "true" ]; then
 		for bins in $(ls | grep .stats | grep -v binsM); do
 			comm "merging $bins and binsM"
 			${SOFT}/consolidate_two_sets_of_bins.py binsM ${bins%.*} binsM.stats $bins binsM1 $comp $cont
-			if [[ $? -ne 0 ]]; then error "Something went wrong with merging two sets of bins"; fi
+			if [[ $? -ne 0 ]]; then
+				error "Something went wrong with merging two sets of bins"
+			fi
 			rm -rf binsM binsM.stats
 			mv binsM1 binsM; mv binsM1.stats binsM.stats
 		done
@@ -361,13 +337,13 @@ if [ "$cherry_pick" == "true" ]; then
 elif [ "$cherry_pick" == "false" ]; then
 	comm "Skipping bin consolidation. Will try to pick the best binning folder without mixing bins from different sources."
 	if [ $run_checkm = false ]; then 
-		comm "cannot decide on best bin set because CheckM was not run. Will assume its binsA (first bin set)"
+		comm "cannot decide on best bin set because CheckM2 was not run. Will assume its binsA (first bin set)"
 		best_bin_set=binsA
 	elif [ $run_checkm = true ]; then
 		max=0
 		best_bin_set=none
 		for bin_set in $(ls | grep .stats); do
-			num=$(cat $bin_set | awk -v c="$comp" -v x="$cont" '{if ($2>=c && $2<=100 && $3>=0 && $3<=x) print $1 }' | wc -l)
+			num=$(awk -v c="$comp" -v x="$cont" 'NR>1 {if ($2 >= c && $3 >= 0 && $3 <= x) count++} END{print count}' $bin_set)
 			comm "There are $num 'good' bins found in ${bin_set%.*}! (>${comp}% completion and <${cont}% contamination)"
 			if [ "$num" -gt "$max" ]; then
 				max=$num
@@ -393,37 +369,44 @@ announcement "FINALIZING THE REFINED BINS"
 
 
 if [ "$run_checkm" == "true" ] && [ $dereplicate != "false" ] && [ -n "$(ls -A binsO/*.fa 2>/dev/null)" ]; then  # ohickl ###
-	comm "Re-running CheckM on binsO bins"
+	comm "Re-running CheckM2 on binsO bins"
 	mkdir binsO.tmp
 
-	if [ "$quick" == "true" ]; then
-		checkm lineage_wf -x fa binsO binsO.checkm -t $threads --tmpdir binsO.tmp --pplacer_threads $p_threads --reduced_tree
-	else
-		checkm lineage_wf -x fa binsO binsO.checkm -t $threads --tmpdir binsO.tmp --pplacer_threads $p_threads
-	fi
+	checkm2 predict --threads $threads --input binsO --output-directory binsO.checkm --extension fa --force --database_path $checkm_db --tmpdir binsO.tmp
 
-	if [[ ! -s binsO.checkm/storage/bin_stats_ext.tsv ]]; then error "Something went wrong with running CheckM. Exiting..."; fi
+	if [[ ! -s binsO.checkm/quality_report.tsv ]]; then error "Something went wrong with running CheckM2. Exiting..."; fi
 	rm -r binsO.tmp
 
 	if [[ ( -f binsM.stats && -s binsM.stats  &&  $(stat -c%s binsM.stats) -gt 2 ) ]]; then  # ohickl ###
-		${SOFT}/summarize_checkm.py binsO.checkm/storage/bin_stats_ext.tsv manual binsM.stats | (read -r; printf "%s\n" "$REPLY"; sort -rn -k2) > binsO.stats
+		comm "CheckM2 stats for binsO"
+		${SOFT}/summarize_checkm.py binsO.checkm/quality_report.tsv binsO.stats binsM.stats
 	fi  # ohickl ###
 
 	if [[ $? -ne 0 ]]; then error "Cannot make checkm summary file. Exiting."; fi
 	rm -r binsO.checkm
-	num=$(cat binsO.stats | awk -v c="$comp" -v x="$cont" '{if ($2>=c && $2<=100 && $3>=0 && $3<=x) print $1 }' | wc -l)
+	num=$(awk -v c="$comp" -v x="$cont" 'NR>1 {if ($2 >= c && $3 >= 0 && $3 <= x) count++} END{print count}' binsO.stats)
 	comm "There are $num 'good' bins found in binsO.checkm! (>${comp}% completion and <${cont}% contamination)"
 	
 	comm "Removing bins that are inadequate quality..."
-	for bin_name in $(cat binsO.stats | grep -v compl | awk -v c="$comp" -v x="$cont" '{if ($2<c || $2>100 || $3<0 || $3>x) print $1 }' | cut -f1); do
-		echo "${bin_name} will be removed because it fell below the quality threshhold after de-replication of contigs..."
-		rm binsO/${bin_name}.fa
+	for bin_name in $(awk -v c="$comp" -v x="$cont" 'NR>2 && ($2 < c || $2 > 100 || $3 < 0 || $3 > x) {print $1}' binsO.stats | cut -d' ' -f1); do
+		echo "${bin_name} will be removed because it fell below the quality threshold after de-replication of contigs..."
+		rm "binsO/${bin_name}.fa"
 	done
+
+	# Extract the header line and create a temporary file
 	head -n 1 binsO.stats > binsO.stats.tmp
-	cat binsO.stats | awk -v c="$comp" -v x="$cont" '$2>=c && $2<=100 && $3>=0 && $3<=x' >> binsO.stats.tmp
+
+	# Filter the records based on completeness and contamination, then append to the temp file
+	awk -v c="$comp" -v x="$cont" 'NR>1 && $2>=c && $2<=100 && $3>=0 && $3<=x' binsO.stats >> binsO.stats.tmp
+
+	# Replace the original file with the filtered temporary file
 	mv binsO.stats.tmp binsO.stats
-	n=$(cat binsO.stats | grep -v comp | wc -l)
-	comm "Re-evaluating bin quality after contig de-replication is complete! There are still $n high quality bins."
+
+	# Count the number of high-quality bins, excluding the header line
+	n=$(awk 'NR>1' binsO.stats | wc -l)
+
+	# Output the result
+	echo "Re-evaluating bin quality after contig de-replication is complete! There are still $n high-quality bins."
 fi
 
 
@@ -433,7 +416,6 @@ if [[ ( "$run_checkm" == "true" ) && ( -f "${stats_file[0]}" && -s "${stats_file
 	comm "Making completion and contamination ranking plots for all refinement iterations."
 	${SOFT}/plot_binning_results.py $comp $cont $(ls | grep ".stats")
 	mkdir figures
-	mv binning_results.eps figures/intermediate_binning_results.eps
 	mv binning_results.png figures/intermediate_binning_results.png
 fi
 
@@ -461,7 +443,13 @@ fi
 shopt -u nullglob  # ohickl ###
 
 cp -r work_files/binsO metawrap_${comp}_${cont}_bins 2>/dev/null || :  # ohickl ###
-cp work_files/binsO.stats metawrap_${comp}_${cont}_bins.stats 2>/dev/null || :  # ohickl ###
+
+# Here we need to make the final table machine readable (multiple spaces separated) and remove the last column
+awk 'BEGIN{OFS="\t"} 
+    NR==1 || (NR>1 && $2>=0) { 
+        print $1, $2, $3, $4, $5, $6
+    }' work_files/binsO.stats > metawrap_${comp}_${cont}_bins.stats
+
 
 cp -r work_files/binsA ${bins1##*/} 2>/dev/null || :  # ohickl ###
 cp work_files/binsA.stats ${bins1##*/}.stats 2>/dev/null || :  # ohickl ###
@@ -480,7 +468,6 @@ stats_file=( $(ls *.stats) )   # ohickl ###
 if [[ ( "$run_checkm" == "true" ) && ( -f "${stats_file[0]}" && -s "${stats_file[0]}"  &&  $(stat -c%s "${stats_file[0]}") -gt 2  &&  $(wc -l "${stats_file[0]}" | cut -d ' ' -f 1) -gt 1 ) ]] ; then  # ohickl ###
 	comm "Making completion and contamination ranking plots of final outputs."
 	${SOFT}/plot_binning_results.py $comp $cont $(ls | grep ".stats")
-	mv binning_results.eps figures/binning_results.eps
 	mv binning_results.png figures/binning_results.png
 	
 	comm "Making contig membership files (for Anvio and other applications)."

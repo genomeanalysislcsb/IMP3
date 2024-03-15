@@ -1,4 +1,14 @@
 #!/bin/R
+
+# This script is used to summarize various statistics from different analysis steps in the IMP3 workflow.
+# It loads required packages, defines functions, reads files from the file system, and processes the data to generate summary statistics.
+# The script reads preprocessing stats, reads analyzed by Kraken and mOTUs, reads mapping to the assembly, and reads mapping to annotations.
+# It then generates output files containing the summarized statistics.
+
+###################################################################################################
+## Load required packages
+###################################################################################################
+
 log <- file(snakemake@log[[1]], open="wt")
 sink(log)
 sink(log, type="message")
@@ -204,8 +214,8 @@ if (any(sapply(unlist(fc_sum_files), function(x) file.exists(pattern = x)))) {
           mapTab <- read.delim(fc_sum_files[[type]][[x]],
                                stringsAsFactors = FALSE, header = TRUE)
           combinedSum <- sum(mapTab[1, 2] + mapTab[1, 3], na.rm = TRUE)
-          combinedSum
-          print(paste("Reads mapping to", x, ":", combinedSum))
+          paste(combinedSum)
+          # print(paste("Reads mapping to", x, ":", combinedSum))
         } else {
           0
         }
@@ -370,145 +380,185 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
 ###################################################################################################
 ## Binning stats
 ###################################################################################################
+# This part reads binning statistics from a file and adds various stats like:
+# RNA-related stats, mean coverage depth, number of genes, number of essential genes, and taxonomic information.
+# It generates a summary table of statistics for each bin.
+
 bin_in_file <- paste0("Stats/",ass,"/",ass,".bins.tsv")
+
+# Check if the binning statistics file exists
 if(file.exists(bin_in_file)){
+  
+  # Check if the binning statistics file is empty
   if(file.info(bin_in_file)$size==0){
-	  system(paste0("touch ",out_file_bins))
-	}else{
-  print("Reading binning stats.")
-  binTab <- read.delim(bin_in_file,
-                       stringsAsFactors=F,header = T)
-  binTab <- binTab[binTab$bin!=""&!is.na(binTab$bin)&binTab$bin!="bin",]
-
-  rnas_bin_tab <- as.data.frame(matrix(0,nrow=nrow(binTab),
-                         ncol=14,
-                         dimnames=list(binTab$bin,
-                                       c("complete_16S","partial_16S","complete_23S","partial_23S",
-                                         "any_5S","tRNAs","mean_coverage_depth","genes",
-                                         "expressed_genes","essential_genes","unique_essential_genes",
-                                         "mOTU_phyla","mOTU_genera","mOTUs"))),
-                          stringsAsFactors=F)
-  for(bin in binTab$bin){
-    if(file.exists(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"))){
-      contigs_temp <- read.delim(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"),
-                               stringsAsFactors=F,header = F)[,1]
-    }else{
-     contigs_temp <- read.delim("Binning/MetaWrap/bins.contigs", header=F, stringsAsFactors=F)
-     contigs_temp <- contigs_temp[contigs_temp$V2 == bin,1]
-   }
-    products_bin <- gsub(".+;product=","",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature != "CDS",9])
-    if(length(products_bin)>0){
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,1] <- length(which(grepl("16S ribosomal RNA",products_bin) &
-                                                                    !grepl("partial",products_bin)))
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,2] <- length(which(grepl("16S ribosomal RNA",products_bin) &
-                                                                    grepl("partial",products_bin)))
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,3] <- length(which(grepl("23S ribosomal RNA",products_bin) &
-                                                                    !grepl("partial",products_bin)))
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,4] <- length(which(grepl("23S ribosomal RNA",products_bin) &
-                                                                    grepl("partial",products_bin)))
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,5] <- length(which(grepl("5S ribosomal RNA",products_bin)))
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,6] <- length(unique(grep("tRNA",products_bin,value = T)))
-    }
-    rm(products_bin)
-    if("mg" %in% types){
-      bin_depth <- merge(contigs_temp,depthAssStat[["mg"]],by=1,all.x=T)
-      bin_depth$depth[is.na(bin_depth$depth)] <- 0
-      bin_depth <- weighted.mean(bin_depth$depth,sapply(bin_depth$x,function(x)contig_length$length[contig_length$contig==x]))
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,7] <- bin_depth
-      rm(bin_depth)
-    }
-    cds_bin <- gsub("ID=([^;]+);.+","\\1",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9])
-    rnas_bin_tab[rownames(rnas_bin_tab)==bin,8] <- length(cds_bin)
-    if("mt" %in% types){
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,9] <- length(which(depthGeneStat[["mt"]]$depth[depthGeneStat[["mt"]]$gene %in% cds_bin]>0))
-    }
-    if("essential" %in% dbs){
-      ess_bin <- gsub(".+;essential=([^;]+);*","\\1",
-                      grep("essential=",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9],value=T))
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(ess_bin)
-      rnas_bin_tab[rownames(rnas_bin_tab)==bin,11] <- length(unique(ess_bin))
-      rm(ess_bin)
-    }else{
-       if("is_essential_gene" %in% dbs){
-        rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(grep("is_essential_gene=",
-                                                    gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9]))
-    }}
-    if(file.exists("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")){
-      if(!grepl("^=",scan("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",what=character(),n=1))){
-      mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F)
-      }else if(as.numeric(gsub(" .+","",system2("wc", c("-l", "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"),T)))>1){
-       mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F,comment.char="=",header=F)
-       colnames(mgenes) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
-      }else{
-      mgenes <- read.table(text="",col.names=c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU"),stringsAsFactors=F)
-      }
-      mgenes <- mgenes[mgenes$queryID %in% cds_bin,]
-      if(nrow(mgenes)>0){
-        taxtp <- sort(table(sub("[0-9NA]+ ","",mgenes$phylum)),decreasing=T)
-        if(length(taxtp)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,12] <- paste(paste0(names(taxtp),
-                                                                                         "(",taxtp,")"),
-                                                                                  sep=";",collapse=";")
-        taxtg <- sort(table(sub("[0-9NA]+ ","",mgenes$genus)),decreasing=T)
-        if(length(taxtg)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,13] <- paste(paste0(names(taxtg),
-                                                                                         "(",taxtg,")"),
-                                                                                  sep=";",collapse=";")
-        taxtm <- sort(table(sub("[0-9NA]+ ","",mgenes$mOTU)),decreasing=T)
-        if(length(taxtm)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,14] <- paste(paste0(names(taxtm),
-                                                                                         "(",taxtm,")"),
-                                                                                  sep=";",collapse=";")
-        rm(taxtm,taxtg,taxtp,cds_bin,mgenes)
-      }
-    }
-    rm(contigs_temp)
-  }
-
-  binTab <- merge(binTab,rnas_bin_tab,by.x="bin",by.y=0,all.x=T)
-
-  binTemp <- data.frame("type"=ass,
-                        "step"=c("total_bins",
-                                 "HQ_drafts",
-                                 "HQ_drafts_partial_RNAs",
-                                 "HQ_drafts_minus_RNAs",
-                                 "MQ_drafts",
-                                 "LQ_drafts",
-                                 "binned_length"),
-                        "number"=c(nrow(binTab),
-                                   length(which(as.numeric(binTab$completeness)>90 &
-                                                  as.numeric(binTab$contamination)<5 &
-                                                  binTab$complete_16S>0 &
-                                                  binTab$complete_23S>0 &
-                                                  binTab$any_5S>0 &
-                                                  binTab$tRNAs >= 18)),
-                                   length(which(as.numeric(binTab$completeness)>90 &
-                                                  as.numeric(binTab$contamination)<5 &
-                                                  (binTab$complete_16S+binTab$partial_16S)>0 &
-                                                  (binTab$complete_23S+binTab$partial_23S)>0 &
-                                                  !(binTab$complete_16S>0 &
-                                                      binTab$complete_23S>0) &
-                                                  binTab$any_5S>0 &
-                                                  binTab$tRNAs >= 18)),
-                                   length(which(as.numeric(binTab$completeness)>90 &
-                                                  as.numeric(binTab$contamination)<5 &
-                                                  !((binTab$complete_16S+binTab$partial_16S)>0 &
-                                                      (binTab$complete_23S+binTab$partial_23S)>0 &
-                                                      binTab$any_5S>0 &
-                                                      binTab$tRNAs >= 18))),
-                                   length(which(as.numeric(binTab$completeness)>=50 &
-                                                  as.numeric(binTab$contamination)<10 &
-                                                  !(as.numeric(binTab$completeness)>90 &
-                                                      as.numeric(binTab$contamination)<5))),
-                                   length(which(as.numeric(binTab$completeness)<50 &
-                                                  as.numeric(binTab$contamination)<10 )),
-                                   sum(as.numeric(binTab$size))),
-                        stringsAsFactors=F)
-
-  if(!"statsTab" %in% ls()){
-    statsTab <- binTemp
+    system(paste0("touch ",out_file_bins))
   }else{
-    statsTab <- rbind(statsTab,
-                      binTemp)
+    print("Reading binning stats.")
+
+    # Read the binning statistics file into a data frame
+    binTab <- read.delim(bin_in_file, stringsAsFactors=F, header = T)
+
+    # Filter out rows with empty or invalid bin names
+    binTab <- binTab[binTab$Bin!="" & !is.na(binTab$Bin) & binTab$Bin!="Bin",]
+
+    # Create an empty data frame to store RNA-related statistics for each bin
+    rnas_bin_tab <- as.data.frame(matrix(0, nrow=nrow(binTab), ncol=14,
+                                         dimnames=list(binTab$Bin,
+                                                       c("complete_16S","partial_16S","complete_23S","partial_23S",
+                                                         "any_5S","tRNAs","mean_coverage_depth","genes",
+                                                         "expressed_genes","essential_genes","unique_essential_genes",
+                                                         "mOTU_phyla","mOTU_genera","mOTUs"))),
+                                  stringsAsFactors=F)
+    
+    # Iterate over each bin
+    for(bin in binTab$Bin){
+      
+      # Check if the contigs.bed file exists for the current bin
+      if(file.exists(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"))){
+        contigs_temp <- read.delim(paste0("Binning/MetaWrap/bins/",bin,"/contigs.bed"),
+                                   stringsAsFactors=F, header = F)[,1]
+      }else{
+        contigs_temp <- read.delim("Binning/MetaWrap/bins.contigs", header=F, stringsAsFactors=F)
+        contigs_temp <- contigs_temp[contigs_temp$V2 == bin,1]
+      }
+      
+      # Extract information for non-CDS features from the gene_gff data frame
+      products_bin <- gsub(".+;product=","",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature != "CDS",9])
+      
+      # Calculate RNA-related statistics for the current bin
+      if(length(products_bin)>0){
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,1] <- length(which(grepl("16S ribosomal RNA",products_bin) &
+                                                                    !grepl("partial",products_bin)))
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,2] <- length(which(grepl("16S ribosomal RNA",products_bin) &
+                                                                    grepl("partial",products_bin)))
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,3] <- length(which(grepl("23S ribosomal RNA",products_bin) &
+                                                                    !grepl("partial",products_bin)))
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,4] <- length(which(grepl("23S ribosomal RNA",products_bin) &
+                                                                    grepl("partial",products_bin)))
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,5] <- length(which(grepl("5S ribosomal RNA",products_bin)))
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,6] <- length(unique(grep("tRNA",products_bin,value = T)))
+      }
+      
+      # Clean up variables
+      rm(products_bin)
+      
+      # Calculate mean coverage depth for the current bin
+      if("mg" %in% types){
+        bin_depth <- merge(contigs_temp,depthAssStat[["mg"]],by=1,all.x=T)
+        bin_depth$depth[is.na(bin_depth$depth)] <- 0
+        bin_depth <- weighted.mean(bin_depth$depth,sapply(bin_depth$x,function(x)contig_length$length[contig_length$contig==x]))
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,7] <- bin_depth
+        rm(bin_depth)
+      }
+      
+      # Calculate the number of genes for the current bin
+      cds_bin <- gsub("ID=([^;]+);.+","\\1",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9])
+      rnas_bin_tab[rownames(rnas_bin_tab)==bin,8] <- length(cds_bin)
+      
+      # Calculate the number of essential genes for the current bin
+      if("mt" %in% types){
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,9] <- length(which(depthGeneStat[["mt"]]$depth[depthGeneStat[["mt"]]$gene %in% cds_bin]>0))
+      }
+      
+      # Calculate the number of essential genes and unique essential genes for the current bin
+      if("essential" %in% dbs){
+        ess_bin <- gsub(".+;essential=([^;]+);*","\\1",
+                        grep("essential=",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9],value=T))
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(ess_bin)
+        rnas_bin_tab[rownames(rnas_bin_tab)==bin,11] <- length(unique(ess_bin))
+        rm(ess_bin)
+      }else{
+        if("is_essential_gene" %in% dbs){
+          rnas_bin_tab[rownames(rnas_bin_tab)==bin,10] <- length(grep("is_essential_gene=",
+                                                                      gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature == "CDS",9]))
+        }
+      }
+      
+      # Check if the mOTU_links file exists
+      if(file.exists("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")){
+        if(!grepl("^=",scan("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",what=character(),n=1))){
+          mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F)
+        }else if(as.numeric(gsub(" .+","",system2("wc", c("-l", "Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv"),T)))>1){
+          mgenes <- read.delim("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv",stringsAsFactors = F,comment.char="=",header=F)
+          colnames(mgenes) <- c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU")
+        }else{
+          mgenes <- read.table(text="",col.names=c("subjectID","queryID","percIdentity","alignmentLength","mismatches","gapOpens","q.start","q.end","s.start","s.end","evalue","bitScore","kingdom","phylum","class","order","family","genus","mOTU"),stringsAsFactors=F)
+        }
+        
+        # Filter mgenes data frame based on the current bin's CDS genes
+        mgenes <- mgenes[mgenes$queryID %in% cds_bin,]
+        
+        # Calculate taxonomic information for the current bin
+        if(nrow(mgenes)>0){
+          taxtp <- sort(table(sub("[0-9NA]+ ","",mgenes$phylum)),decreasing=T)
+          if(length(taxtp)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,12] <- paste(paste0(names(taxtp),
+                                                                                           "(",taxtp,")"),
+                                                                                    sep=";",collapse=";")
+          taxtg <- sort(table(sub("[0-9NA]+ ","",mgenes$genus)),decreasing=T)
+          if(length(taxtg)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,13] <- paste(paste0(names(taxtg),
+                                                                                           "(",taxtg,")"),
+                                                                                    sep=";",collapse=";")
+          taxtm <- sort(table(sub("[0-9NA]+ ","",mgenes$mOTU)),decreasing=T)
+          if(length(taxtm)>0) rnas_bin_tab[rownames(rnas_bin_tab)==bin,14] <- paste(paste0(names(taxtm),
+                                                                                           "(",taxtm,")"),
+                                                                                    sep=";",collapse=";")
+          rm(taxtm,taxtg,taxtp,cds_bin,mgenes)
+        }
+      }
+      
+      # Clean up variables
+      rm(contigs_temp)
+    }
+    
+    # Merge the binning statistics data frame with the RNA-related statistics data frame
+    binTab <- merge(binTab, rnas_bin_tab, by.x="Bin", by.y=0, all.x=T)
+    
+    # Create a temporary data frame to store the summary statistics for the current bin
+    binTemp <- data.frame("type"=ass,
+                          "step"=c("total_bins",
+                                   "HQ_drafts",
+                                   "HQ_drafts_partial_RNAs",
+                                   "HQ_drafts_minus_RNAs",
+                                   "MQ_drafts",
+                                   "LQ_drafts",
+                                   "binned_length"),
+                          "number"=c(nrow(binTab),
+                                     length(which(as.numeric(binTab$completeness)>90 &
+                                                    as.numeric(binTab$contamination)<5 &
+                                                    binTab$complete_16S>0 &
+                                                    binTab$complete_23S>0 &
+                                                    binTab$any_5S>0 &
+                                                    binTab$tRNAs >= 18)),
+                                     length(which(as.numeric(binTab$completeness)>90 &
+                                                    as.numeric(binTab$contamination)<5 &
+                                                    (binTab$complete_16S+binTab$partial_16S)>0 &
+                                                    (binTab$complete_23S+binTab$partial_23S)>0 &
+                                                    !(binTab$complete_16S>0 &
+                                                        binTab$complete_23S>0) &
+                                                    binTab$any_5S>0 &
+                                                    binTab$tRNAs >= 18)),
+                                     length(which(as.numeric(binTab$completeness)>90 &
+                                                    as.numeric(binTab$contamination)<5 &
+                                                    !((binTab$complete_16S+binTab$partial_16S)>0 &
+                                                        (binTab$complete_23S+binTab$partial_23S)>0 &
+                                                        binTab$any_5S>0 &
+                                                        binTab$tRNAs >= 18))),
+                                     length(which(as.numeric(binTab$completeness)>=50 &
+                                                    as.numeric(binTab$contamination)<10 &
+                                                    !(as.numeric(binTab$completeness)>90 &
+                                                        as.numeric(binTab$contamination)<5))),
+                                     length(which(as.numeric(binTab$completeness)<50 &
+                                                    as.numeric(binTab$contamination)<10 )),
+                                     sum(as.numeric(binTab$size))),
+                          stringsAsFactors=F)
+    
+    # Append the summary statistics for the current bin to the overall statistics table
+    if(!"statsTab" %in% ls()){
+      statsTab <- binTemp
+    }else{
+      statsTab <- rbind(statsTab, binTemp)
+    }
   }
-}
 }
 ###################################################################################################
 ## Save concatenated output

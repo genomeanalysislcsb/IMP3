@@ -25,10 +25,10 @@ rule GTDBtk_bins_single:
         """
         export GTDBTK_DATA_PATH="{params.db_path}"
         export PYTHONPATH=${{CONDA_PREFIX}}/lib/python3.8/site-packages
-        gtdbtk classify_wf --genome_dir {input.bin}/ \
+        gtdbtk classify_wf --genome_dir {input.bin} \
                            --extension fasta \
                            --mash_db {params.db_path}/mash \
-                           --mash_s 100000 \
+                           --mash_s 10000 \
                            --out_dir {output.gtdbtk_out} \
                            --cpus {threads} \
                            --pplacer_cpus {params.pplacer_cpus} >> {log} 2>&1 \
@@ -63,7 +63,7 @@ rule GTDBtk_summarize:
         "GTDBtk_summarize: Summarizing binning results."
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+        max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     run:
         # Check if MetaWrap output is empty
         if os.stat(input.mw_stats).st_size > 0:
@@ -134,44 +134,74 @@ if MG:
         output:
             "Binning/per_bin_results.tar.gz"
         threads:
-            1
+            getThreads(12)
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
+        conda:
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log:
             "logs/misc/bins_tar.log"
         message:
-            "bins_tar: Compressing per-bin results of GRiD and GTDBtk."
+            "bins_tar: Compressing MG per-bin results of GRiD and GTDBtk."
         shell:
             """
-            if [ -z "$(ls -A {input.dir})" ]; then
-              tar czf {output} {input.dir}/*/grid {input.dir}/*/GTDB && rm -r {input.dir}/*/grid {input.dir}/*/GTDB >> {log} 2>&1
+            echo "Starting the compression process for GRiD and GTDBtk results." >> {log}
+            if find {input.dir} -type d \( -name grid -o -name GTDB \) -print -quit | grep -q .; then
+                echo "Found grid and GTDB directories to compress." >> {log}
+                # Use find to list directories and tar them safely, handling spaces and special characters
+                find {input.dir} -type d \( -name grid -o -name GTDB \) -print0 | tar --use-compress-program=pigz -cvf {output} --null -T - >> {log} 2>&1
+                if [ $? -eq 0 ]; then
+                    echo "Compression successful. Now removing the original grid and GTDB directories." >> {log}
+                    find {input.dir} -type d \( -name grid -o -name GTDB \) -exec rm -r "{{}}" + >> {log} 2>&1
+                    echo "Original directories removed successfully." >> {log}
+                else
+                    echo "Error during compression. Check the logs for details." >> {log}
+                fi
             else
-              touch {output}
+                echo "No grid or GTDB directories found to compress. Creating an empty archive." >> {log}
+                touch {output}
+                echo "Empty archive created successfully." >> {log}
             fi
+            echo "Compression process for GRiD and GTDBtk results completed." >> {log}
             """
 else:
     rule bins_tar:
         input:
-            dir="Binning/MetaWrap/bins",
-            ctrl="Stats/%s/%s.bins.tsv" % (ASS,ASS)
+            bins_dir = "Binning/MetaWrap/bins",
+            ctrl = "Stats/%s/%s.bins.tsv" % (ASS,ASS)
+            # ctrl="Stats/mt/mt.bins.tsv"
         output:
-            "Binning/per_bin_results.tar.gz"
+            bin_res_arc = "Binning/per_bin_results.tar.gz"
         threads:
-            1
+            getThreads(12)
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
+        conda:
+            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
         log:
             "logs/misc/bins_tar.log"
         message:
-            "bins_tar: Compressing per-bin results of GTDBtk."
+            "bins_tar: Compressing MT per-bin results of GTDBtk."
         shell:
             """
-            if [ -z "$(ls -A {input.dir})" ]; then
-              tar czf {output} {input.dir}/*/GTDB && rm -r {input.dir}/*/GTDB >> {log} 2>&1
+            echo "Starting the compression process for GTDBtk results." >> {log}
+            if find {input.bins_dir} -type d -name GTDB -print -quit | grep -q .; then
+                echo "Found GTDB directories to compress." >> {log}
+                tar --use-compress-program=pigz -cvf {output.bin_res_arc} {input.bins_dir}/*/GTDB >> {log} 2>&1
+                if [ $? -eq 0 ]; then
+                    echo "Compression successful. Now removing the original GTDB directories." >> {log}
+                    find {input.bins_dir} -type d -name GTDB -exec rm -r {{}} + >> {log} 2>&1
+                    echo "Original GTDB directories removed successfully." >> {log}
+                else
+                    echo "Error during compression. Check the logs for details." >> {log}
+                fi
             else
-              touch {output}
+                echo "No GTDB directories found to compress. Creating an empty archive." >> {log}
+                touch {output.bin_res_arc}
+                echo "Empty archive created successfully." >> {log}
             fi
+            echo "Compression process for GTDBtk results completed." >> {log}
             """
 

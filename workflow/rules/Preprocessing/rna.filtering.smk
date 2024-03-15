@@ -15,10 +15,12 @@ def smk_get_sortmerna_params(wildcards, input):
     # --fastx: output aligned reads
     # -m: memory requirements for indexing
     # --aligned/--other: output (non)-aligned reads
-    params = "{refs} --fastx -m {mem} --aligned --other".format(
-        refs=" ".join(["--ref %s" % ref for ref in input.refs]),
-        mem=int(MAIN_MEMCORE[:-1]) * 1000
-    )
+    # TODO: Check how much mem we need for the index
+    refs = " ".join(["--ref %s" % ref for ref in input.refs])
+    mem = int(getThreads(112, bigmem=True, high_mem_cluster=True) * (int(HIGH_MEM_BIGMEMCORE[:-1]) * to_mb_dict[config['cluster_specs']["mem_unit"]]))
+
+    params = f"{refs} --fastx -m {mem} --aligned --other"
+
     # additional parameters for PE reads
     if hasattr(input, "r1"):
         assert hasattr(input, "r2"), f"Found R1 but not R2 in {input}"
@@ -27,6 +29,15 @@ def smk_get_sortmerna_params(wildcards, input):
         # --out2: output paired reads into separate files
         params = f"{params} --otu_map --paired_in --out2"
     return params
+
+def get_min_mem(wildcards, attempt):
+    return attempt * MAIN_BIGMEMCORE_MB
+
+def get_max_cores(wildcards, attempt):
+    mem_per_core_attempt = attempt * MAIN_BIGMEMCORE_MB
+    max_cores = getThreads(128, bigmem=True, high_mem_cluster=False)
+    attempt_supported_cores = int(math.ceil(MAIN_BIGMEMTOTAL / mem_per_core_gb_attempt))
+    return max(min(max_cores, attempt_supported_cores), 1)
 
 rule filter_rrna_pe:
     input:
@@ -49,10 +60,17 @@ rule filter_rrna_pe:
         "logs/preprocessing/filter_rrna_pe.log"
     threads:
         # Ensure at least 100gb of mem
-        max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        # max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        # getThreads(128)
+        # get_max_cores
+        getThreads(112, bigmem=True, high_mem_cluster=True)
     resources:
-        runtime = MEDIUM_RUNTIME,
-        mem_mb = MAIN_BIGMEMCORE_MB
+        runtime = VERY_LONG_RUNTIME,
+        # mem_mb = MAIN_BIGMEMCORE_MB
+        # mem_mb = get_min_mem
+        mem_mb = HIGH_MEM_BIGMEMCORE_MB
+    # retries:
+    #     4
     params:
         params = smk_get_sortmerna_params
     conda:
@@ -65,13 +83,24 @@ rule filter_rrna_pe:
             echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline." >> {log} 2>&1
             exit 1
         fi
+
+        # Ensure none of the outfiles are already present
+        echo "Removing any existing output files ..." >> {log}
+        rm -rf {output.filt_r1} {output.filt_r2} {output.rrna_r1} {output.rrna_r2} {output.otu} >> {log} 2>&1
+
         sortmerna {params.params} \
                   --threads {threads} \
                   --reads {input.r1} \
                   --reads {input.r2} \
                   --workdir {output.wdir}/ \
                   --idx-dir {output.idx}/ >> {log} 2>&1
+
+        echo "SortmeRNA done." >> {log}
+        echo "### Begin of log file ###" >> {log}
         cat {output.wdir}/out/aligned.log >> {log}
+        echo "### End of log file ###" >> {log}
+
+        echo "Moving output files ..." >> {log}
         mv {output.wdir}/out/other_fwd.fq {output.filt_r1} >> {log} 2>&1
         mv {output.wdir}/out/other_rev.fq {output.filt_r2} >> {log} 2>&1
         mv {output.wdir}/out/aligned_fwd.fq {output.rrna_r1} >> {log} 2>&1
@@ -83,6 +112,8 @@ rule filter_rrna_pe:
             touch {output.otu}
             echo "# WARNING: SortMeRNA OTUs file does not exist" > status/sortmerna.warning
         fi
+
+        echo "Done." >> {log}
         """
 
 rule filter_rrna_se:
@@ -102,10 +133,17 @@ rule filter_rrna_se:
         "logs/preprocessing/filter_rrna_se.log"
     threads:
         # Ensure at least 100gb of mem
-        max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        # max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        # getThreads(128)
+        # get_max_cores
+        getThreads(112, bigmem=True, high_mem_cluster=True)
     resources:
         runtime = SHORT_RUNTIME,
-        mem_mb = MAIN_BIGMEMCORE_MB
+        # mem_mb = MAIN_BIGMEMCORE_MB
+        # mem_mb = get_min_mem
+        mem_mb = HIGH_MEM_BIGMEMCORE_MB
+    # retries:
+    #     4
     params:
         params=smk_get_sortmerna_params
     conda:
@@ -118,14 +156,26 @@ rule filter_rrna_se:
             echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline." >> {log} 2>&1
             exit 1
         fi
+
+        # Ensure none of the outfiles are already present
+        echo "Removing any existing output files ..." >> {log}
+        rm -rf {output.filt_se} {output.rrna_se} >> {log} 2>&1
+
         sortmerna {params.params} \
                   --threads {threads} \
                   --reads {input.se} \
                   --workdir {output.wdir}/ \
                   --idx-dir {input.idx}/ >> {log} 2>&1
+        
+        echo "SortmeRNA done." >> {log}
+        echo "### Begin of log file ###" >> {log}
         cat {output.wdir}/out/aligned.log >> {log}
+        echo "### End of log file ###" >> {log}
+
+        echo "Moving output files ..." >> {log}
         mv {output.wdir}/out/other.fq {output.filt_se} >> {log} 2>&1
         mv {output.wdir}/out/aligned.fq {output.rrna_se} >> {log} 2>&1
+        echo "Done." >> {log}
         """
 
 # If KEEP_RRNAs is set to True, then the rRNA-filtered reads are concatenated with rRNA reads
@@ -163,9 +213,9 @@ if KEEP_RRNAs:
 
             # Compress rRNA reads
             echo "Compressing rRNA reads ..." >> {log}
-            pigz -p {threads} -c {input.r1_rrna} > {output.rrna_r1_gz} >> {log} 2>&1
-            pigz -p {threads} -c {input.r2_rrna} > {output.rrna_r2_gz} >> {log} 2>&1
-            pigz -p {threads} -c {input.se_rrna} > {output.rrna_se_gz} >> {log} 2>&1
+            pigz -p {threads} -c {input.r1_rrna} > {output.rrna_r1_gz} 2>> {log}
+            pigz -p {threads} -c {input.r2_rrna} > {output.rrna_r2_gz} 2>> {log}
+            pigz -p {threads} -c {input.se_rrna} > {output.rrna_se_gz} 2>> {log}
 
             echo "Done." >> {log}
             """

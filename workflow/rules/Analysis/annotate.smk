@@ -81,7 +81,7 @@ rule mergegff:
         mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+        max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     log:
         "logs/analysis/mergegff.log"
     message:

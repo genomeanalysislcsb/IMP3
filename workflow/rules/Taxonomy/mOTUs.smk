@@ -22,7 +22,7 @@ rule motus:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv", category="Taxonomy")
     threads:
         # Ensure at least 80gb of mem
-        max(int(math.ceil(80 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        max(int(math.ceil(80 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     params:
         # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
         # -A: print all tax. levels together
@@ -49,12 +49,14 @@ rule motus:
                           -o {output} \
                           -n {params.sample} \
                           {params.params} \
+                          -l {params.min_size} \
                           -t {threads} >& {log}
         elif [ -s {input.se} ]; then
             motus profile -s {input.se} \
                           -o {output} \
                           -n {params.sample} \
                           {params.params} \
+                          -l {params.min_size} \
                           -t {threads} >& {log}
         else
             motus profile -f {input.r1} \
@@ -62,6 +64,7 @@ rule motus:
                           -o {output} \
                           -n {params.sample} \
                           {params.params} \
+                          -l {params.min_size} \
                           -t {threads} >& {log}
         fi 
         """

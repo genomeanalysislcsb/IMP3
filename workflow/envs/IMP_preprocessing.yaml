@@ -5,8 +5,7 @@ channels:
   - nodefaults
 dependencies:
   - python
-  - cutadapt=4.6
   - fastqc=0.12.1
   - pigz=2.8
   - sortmerna=4.3.6
-  - trimmomatic=0.39
+  - fastp=0.23.4

@@ -1,20 +1,28 @@
 import math
 
+def get_cores4min_mem(wildcards, attempt):
+    min_mem = attempt * 50
+    return max(int(math.ceil(min_mem / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+
 rule call_gene_depth:
     input:
-        "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-        "Assembly/{type}.reads.sorted.bam",
-        "Stats/%s/%s.assembly.length.txt" % (ASS,ASS)
+        gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
+        bam = "Assembly/{type}.reads.sorted.bam",
+        assembly_bed = "Assembly/%s.assembly.merged.fa.bed3" % ASS
     output:
-        "Stats/{type}/annotation/{type}.gene_depth.hist",
-        "Stats/{type}/annotation/{type}.gene_depth.avg",
-        "Stats/{type}/annotation/{type}.gene.len"
+        bed_hist = "Stats/{type}/annotation/{type}.gene_depth.hist",
+        gene_depth = "Stats/{type}/annotation/{type}.gene_depth.avg",
+        gene_len = "Stats/{type}/annotation/{type}.gene.len"
     resources:
         runtime = SHORT_RUNTIME,
-        mem_mb = MAIN_BIGMEMCORE_MB
+        # mem_mb = MAIN_BIGMEMCORE_MB
+        mem_mb = HIGH_MEM_BIGMEMCORE_MB
+    # threads:
+    #     get_cores4min_mem
+    # retries:
+    #     6
     threads:
-        # Ensure at least 80gb of mem
-        max(int(math.ceil(80 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
+        getThreads(128, bigmem=True, high_mem_cluster=True)
     params:
         tmp_dir=TMPDIR
     conda:
@@ -27,15 +35,25 @@ rule call_gene_depth:
         """
         export TMPDIR="{params.tmp_dir}"
         TMP_FILE=$(mktemp "annotation_cov_XXXXXX.bed")
-        sortBed -g {input[2]} -i  {input[0]} | awk '$4 < $5' | coverageBed -hist -sorted -g {input[2]} -b {input[1]} -a "stdin" | grep -v "^all" > $TMP_FILE
 
-        paste <(cat $TMP_FILE | cut -f9 | cut -f1 -d \";\" | sed -e \"s/ID=//g\") \
-         <(cut -f10,11,12,13 $TMP_FILE) > {output[0]}
+        echo "Calculating gene coverage ..." >> {log}
+        bedtools sort -g {input.assembly_bed} \
+                      -i {input.gff} 2>> {log} \
+          | awk '$4 < $5' 2>> {log} \
+          | bedtools coverage -a "stdin" \
+                              -b {input.bam} \
+                              -g <(cut -f 1,3 {input.assembly_bed}) \
+                              -sorted \
+                              -hist 2>> {log} \
+          | grep -v "^all" > $TMP_FILE
+
+        paste <(cut -f9 $TMP_FILE | cut -f1 -d \";\" | sed -e \"s/ID=//g\") \
+              <(cut -f10,11,12,13 $TMP_FILE) > {output.bed_hist}
         rm $TMP_FILE
 
         # Record average gene coverage
-        {SRCDIR}/calcAvgCoverage.pl {output[0]} > {output[1]}
+        {SRCDIR}/calcAvgCoverage.pl {output.bed_hist} > {output.gene_depth} 2>> {log}
 
         # Record gene length file
-        cut -f 1,4 {output[0]} | uniq > {output[2]}
+        cut -f 1,4 {output.bed_hist} | uniq > {output.gene_len}
         """

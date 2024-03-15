@@ -14,7 +14,7 @@ rule concoct:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
-        ENVDIR + "/IMP_metawrap.yaml"
+        ENVDIR + "/IMP_concoct.yaml"
     log:
         "logs/binning/concoct.log"
     message:

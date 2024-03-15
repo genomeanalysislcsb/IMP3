@@ -28,7 +28,7 @@ rule MetaWrap_refine:
         prefix_3="metawrap_round_03",
         total_mem=int(float(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]) * getThreads(MAIN_BIGCORENO, bigmem=True)),
         script_path = os.path.join(SRCDIR, "MW_scripts"),
-        checkm_db = os.path.join(DBPATH, "checkm")
+        checkm_db = os.path.join(DBPATH, "checkm2/uniref100.KO.1.dmnd")
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     resources:
@@ -65,10 +65,14 @@ rule MetaWrap_refine:
           exit 0
         fi
         
+
+        # Ensure Visualization folder exists
+        mkdir -p Visualization
+
         # Round 1
-        CHECKM_DATA_PATH={params.checkm_db} SOFT={params.script_path} \
+        SOFT={params.script_path} \
         {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_1} \
-                                               --quick \
+                                               --checkm2-db-path {params.checkm_db} \
                                                -t {threads} \
                                                -m {params.total_mem} \
                                                {params.binner_inputs_list[0]} \
@@ -82,14 +86,19 @@ rule MetaWrap_refine:
           mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
         done
         shopt -u nullglob
+
+        # Move plot to Visualization
+        if [[ -f {output.out_dir}/{params.prefix_1}/figures/binning_results.png ]]; then
+          mv {output.out_dir}/{params.prefix_1}/figures/binning_results.png Visualization/metawrap_round_02_binning_results.png
+        fi
         rm -rf {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*/
         
         # Round 2
         if [[ ${{#binner_input_array[*]}} > 3 ]]; then
             mv {output.out_dir}/{params.prefix_1}/${{bin_folder}} {output.out_dir}/{params.prefix_1}/${{bin_folder}}_round_01
-            CHECKM_DATA_PATH={params.checkm_db} SOFT={params.script_path} \
+            SOFT={params.script_path} \
             {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_2} \
-                                                   --quick \
+                                                   --checkm2-db-path {params.checkm_db} \
                                                    -t {threads} \
                                                    -m {params.total_mem} \
                                                    {params.binner_inputs_list[1]} \
@@ -104,6 +113,11 @@ rule MetaWrap_refine:
             done
             shopt -u nullglob
             
+            # Move plot to Visualization
+            if [[ -f {output.out_dir}/{params.prefix_2}/figures/binning_results.png ]]; then
+              mv {output.out_dir}/{params.prefix_2}/figures/binning_results.png Visualization/metawrap_round_02_binning_results.png
+            fi
+
             rm -rf {output.out_dir}/{params.prefix_1} \
                    {output.out_dir}/{params.prefix_2}/${{bin_folder}}/*/ \
                    {output.out_dir}/{params.prefix_2}/${{bin_folder}}_round_01*
@@ -113,9 +127,9 @@ rule MetaWrap_refine:
         # Round 3
         if [[ ${{#binner_input_array[*]}} > 5 ]]; then
             mv {output.out_dir}/{params.prefix_2}/${{bin_folder}} {output.out_dir}/{params.prefix_2}/${{bin_folder}}_round_02
-            CHECKM_DATA_PATH={params.checkm_db} SOFT={params.script_path} \
+            SOFT={params.script_path} \
             {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_3} \
-                                                   --quick \
+                                                   --checkm2-db-path {params.checkm_db} \
                                                    -t {threads} \
                                                    -m {params.total_mem} \
                                                    {params.binner_inputs_list[2]} \
@@ -127,6 +141,12 @@ rule MetaWrap_refine:
               bin_id=$(basename -s .fa ${{bin}})
               mv ${{bin}} ${{bin%/*}}/${{bin_id}}.fasta
             done
+
+            # Move plot to Visualization
+            if [[ -f {output.out_dir}/{params.prefix_3}/figures/binning_results.png ]]; then
+              mv {output.out_dir}/{params.prefix_3}/figures/binning_results.png Visualization/metawrap_round_03_binning_results.png
+            fi
+
             rm -rf {output.out_dir}/{params.prefix_2} \
                    {output.out_dir}/{params.prefix_3}/${{bin_folder}}/*/ \
                    {output.out_dir}/{params.prefix_3}/${{bin_folder}}_round_02*
@@ -140,14 +160,6 @@ rule MetaWrap_refine:
         for i in {output.out_dir}/metawrap_{params.mw_min_comp}_{params.mw_max_cont}*; do
           mv ${{i}} ${{i/metawrap_{params.mw_min_comp}_{params.mw_max_cont}_/}}
         done
-        
-        if [[ ! -d Visualization ]]; then
-          mkdir Visualization
-        fi
-
-        if test -n "$(find {output.out_dir}/figures -maxdepth 1 -name '*' -print -quit)"; then
-          mv {output.out_dir}/figures/* Visualization/
-        fi
         
         rm -rf {output.out_dir}/figures {output.out_dir}/bins{{A,B,C}}*
         

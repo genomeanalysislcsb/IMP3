@@ -21,9 +21,7 @@ if config['eukdetect']['run_eukdetect']:
 if MG or MT:
     # Since we now combine both reports we need to track only the report here
     tax_ctrl = expand("Analysis/taxonomy/kraken/{type}.kraken.{outfile}",type=TYPES,outfile="report")
-    # tax_ctrl = expand("Analysis/taxonomy/kraken/{type}.kraken.{outfile}",type=TYPES,outfile=["output.gz","report"])
-    # # Add se read analysis for now
-    # tax_ctrl.append(expand("Analysis/taxonomy/kraken/{type}.se.kraken.{outfile}",type=TYPES,outfile=["output.gz","report"]))
+    tax_ctrl.append(expand("status/{type}.bracken.done",type=TYPES)),
     tax_ctrl.append(expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{out_type}.tsv", type=TYPES, out_type=["counts", "rel_abun"]))
     if config['eukdetect']['run_eukdetect']:
         tax_ctrl.append("status/eukdetect.done")

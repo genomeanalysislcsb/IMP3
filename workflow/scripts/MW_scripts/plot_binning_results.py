@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 # USAGE:
-# ./script file1.stats file2.stats file3.stats
+# ./script min_comp max_con infile1.stats [file2.stats file3.stats]
 
 import sys
+import os
 import matplotlib.pyplot as plt
+
 plt.switch_backend('agg')
 
-max_contamination = int(sys.argv[2])
 min_completion = int(sys.argv[1])
+max_contamination = int(sys.argv[2])
+
+file_list = sys.argv[3:]
+
 
 ####################################################################################################################################
 ############################################         MAKE THE COMPLETION PLOT           ############################################
@@ -16,21 +21,32 @@ print("Loading completion info....")
 data = {}
 max_x = 0
 # loop over all bin .stats files
-for file_name in sys.argv[3:]:
-    print(file_name)
+for file_name in file_list:
     bin_set = ".".join(file_name.split("/")[-1].split(".")[:-1])
     data[bin_set] = []
     with open(file_name) as f:
+        header = next(f)
+        seperator_line = next(f)
         for line in f:
-            # skip header
-            if "compl" in line: continue
-
+            bin_data = line.strip().split()
+            try:
+                bin_comp = float(bin_data[1])
+                bin_cont = float(bin_data[2])
+            except IndexError:
+                print(f"Error: {line}, file: {file_name}")
+                raise IndexError
             # skip bins that are too contaminated or very incomplete
-            if float(line.split("\t")[2]) > max_contamination: continue
-            if float(line.split("\t")[1]) < min_completion: continue
+            try:
+                if bin_comp > max_contamination:
+                    continue
+                if bin_cont < min_completion:
+                    continue
+            except IndexError:
+                print(f"Error: {line}, file: {file_name}")
+                raise IndexError
 
             # save the completion value of each bin into a list
-            data[bin_set].append(float(line.split("\t")[1]))
+            data[bin_set].append(bin_comp)
     if len(data[bin_set]) > max_x: max_x = len(data[bin_set])
 
 # sort the completion data sets
@@ -48,7 +64,7 @@ tableau20 = [(214, 39, 40), (31, 119, 180), (255, 127, 14),
 
 tableau20 = [(r / 255., g / 255., b / 255.) for r, g, b in tableau20]
 plot_colors = {}
-for i, label in enumerate(sys.argv[3:]):
+for i, label in enumerate(file_list):
     bin_set = ".".join(label.split("/")[-1].split(".")[:-1])
     plot_colors[bin_set] = tableau20[i % len(tableau20)]
 
@@ -125,20 +141,32 @@ print("Loading contamination info...")
 
 data = {}
 # loop over all bin .stats files
-for file_name in sys.argv[3:]:
+for file_name in file_list:
     bin_set = ".".join(file_name.split("/")[-1].split(".")[:-1])
-    data[bin_set] = []
+    data[bin_set] = []#plt.show()
     with open(file_name) as f:
+        header = next(f)
+        seperator_line = next(f)
         for line in f:
-            # skip header
-            if "compl" in line: continue
-
+            bin_data = line.strip().split()
+            try:
+                bin_comp = float(bin_data[1])
+                bin_cont = float(bin_data[2])
+            except IndexError:
+                print(f"Error: {line}, file: {file_name}")
+                raise IndexError
             # skip bins that are too incomplete or way too contaminated
-            if float(line.split("\t")[1]) < min_completion: continue
-            if float(line.split("\t")[2]) > max_contamination: continue
+            try:
+                if bin_comp < min_completion:
+                    continue
+                if bin_cont > max_contamination:
+                    continue
+            except IndexError:
+                print(f"Error: {line}, file: {file_name}")
+                raise IndexError
 
             # save the contamination value of each bin into a list
-            data[bin_set].append(float(line.split("\t")[2]))
+            data[bin_set].append(bin_cont)
 
 # sort the contamination data sets
 for bin_set in data:
@@ -163,7 +191,11 @@ ax.get_yaxis().tick_left()
 plt.ylim(0, max_contamination + 1)
 max_x = 0
 for k in data:
-    if len(data[k]) > max_x: max_x = len(data[k])
+    if len(data[k]) > max_x:
+        max_x = len(data[k])
+if max_x == 0:
+    print(f"data: {data}")
+    max_x = 1
 plt.xlim(0, max_x)
 
 # Make sure your axis ticks are large enough to be easily read.
@@ -200,8 +232,8 @@ for rank, bin_set in enumerate(labels):
     for x_pos, y in enumerate(data[bin_set]):
         if y > y_pos:
             break
-    plt.text(x_pos, y_pos, bin_set, fontsize=18, color=c)
-    y_pos += y_increment
+        plt.text(x_pos, y_pos, bin_set, fontsize=18, color=c)
+        y_pos += y_increment
 
 # add plot and axis titles and adjust the edges
 plt.title("Bin contamination ranking", fontsize=26)
@@ -210,8 +242,7 @@ plt.ylabel("Estimated bin contamination (log scale)", fontsize=16)
 plt.gcf().subplots_adjust(right=0.9)
 
 # save figure
-print("Saving figures binning_results.eps and binning_results.png ...")
+print("Saving figure binning_results.png ...")
 plt.tight_layout(w_pad=10)
 plt.subplots_adjust(top=0.92, right=0.90, left=0.08)
 plt.savefig("binning_results.png", format='png', dpi=600)
-#plt.show()

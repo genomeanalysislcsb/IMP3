@@ -80,12 +80,12 @@ if 'mt' in TYPES:
             r_1='Preprocessing/mt.r1.preprocessed.fq',
             assembly='Assembly/%s.assembly.merged.fa' % ASS
         output:
-            "Assembly/Genome",
-            "Assembly/genomeParameters.txt",
-            "Assembly/chrStart.txt",
-            "Assembly/chrName.txt",
-            "Assembly/chrNameLength.txt",
-            "Assembly/chrLength.txt"
+            temp("Assembly/Genome"),
+            temp("Assembly/genomeParameters.txt"),
+            temp("Assembly/chrStart.txt"),
+            temp("Assembly/chrName.txt"),
+            temp("Assembly/chrNameLength.txt"),
+            temp("Assembly/chrLength.txt")
         resources:
             runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
@@ -146,14 +146,16 @@ if 'mt' in TYPES:
             unmap_se = 'Assembly/mt.reads.single.sorted.unmapped.bam',
             map_merge = 'Assembly/mt.reads.sorted.bam'
         resources:
-            runtime = SHORT_RUNTIME,
+            runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             getThreads(MAIN_BIGCORENO, bigmem=True)
         params:
             # sam_header = f'@RG\tID:{SAMPLE}\tSM:mt'
             sample = SAMPLE,
-            out_dir = 'Assembly'
+            out_dir = 'Assembly',
+            # Calc max amount of mem availbale (in bytes)
+            max_mem = int(round(MAIN_BIGMEMCORE_MB * getThreads(MAIN_BIGCORENO, bigmem=True)) * 1e6)
         conda:
             ENVDIR + "/IMP_mapping.yaml"
         log:
@@ -166,6 +168,7 @@ if 'mt' in TYPES:
             ulimit -n 10000
 
             # Map paired
+            echo "Mapping PE reads and sorting them ..." > {log} 2>&1
             STAR --runThreadN {threads} \
                  --runMode alignReads \
                  --genomeDir Assembly \
@@ -174,12 +177,13 @@ if 'mt' in TYPES:
                  --alignIntronMax 1 \
                  --outFileNamePrefix {params.out_dir}/ \
                  --outSAMtype BAM SortedByCoordinate \
+                 --limitBAMsortRAM {params.max_mem} \
                  --outSAMheaderHD '@RG\tID:{params.sample}\tSM:mt\tPL:platform\tLB:library' \
                  --outBAMcompression -1 \
                  --outReadsUnmapped Fastx \
                  --outFilterScoreMinOverLread 0.33 \
                  --outFilterMatchNminOverLread 0.33 \
-                 --readFilesIn {input.r_1} {input.r_2} > {log} 2>&1
+                 --readFilesIn {input.r_1} {input.r_2} >> {log} 2>&1
 
             # Move files to output
             mv {params.out_dir}/Aligned.sortedByCoord.out.bam {output.map_pair} >> {log} 2>&1
@@ -191,6 +195,7 @@ if 'mt' in TYPES:
                    {params.out_dir}/Log.final.out {params.out_dir}/SJ.out.tab >> {log} 2>&1
 
             # Map single
+            echo "Mapping SE reads and sorting them ..." >> {log} 2>&1
             STAR --runThreadN {threads} \
                  --runMode alignReads \
                  --genomeDir Assembly \
@@ -199,6 +204,7 @@ if 'mt' in TYPES:
                  --alignIntronMax 1 \
                  --outFileNamePrefix {params.out_dir}/ \
                  --outSAMtype BAM SortedByCoordinate \
+                 --limitBAMsortRAM {params.max_mem} \
                  --outSAMheaderHD '@RG\tID:{params.sample}\tSM:mt\tPL:platform\tLB:library' \
                  --outBAMcompression -1 \
                  --outReadsUnmapped Fastx \
@@ -215,13 +221,15 @@ if 'mt' in TYPES:
                    {params.out_dir}/Log.final.out {params.out_dir}/SJ.out.tab >> {log} 2>&1
 
             # Merge paired and se and sort
+            echo "Merging mapping PE and SE reads and sorting them ..." >> {log} 2>&1
             samtools merge --threads {threads} \
                            -o - \
                           {output.map_pair} \
                           {output.map_se} \
               | samtools sort --threads {threads} \
                               -m {SAMTOOLS_MEM} \
-                              - > {output.map_merge} 2>> {log} 
+                              - > {output.map_merge} 2>> {log}
+            echo "Done." >> {log}
             """
 
 rule index_bam:

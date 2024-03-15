@@ -1,25 +1,25 @@
-rule tar_intermediary:
-    input:
-        # Make sure its done at the very end
-        check = "status/workflow.done",
-        assembly = "Assembly/%s.assembly.merged.fa" % ASS
-    output:
-        "Assembly/intermediary.tar.gz"
-    threads:
-        1
-    resources:
-        runtime = SHORT_RUNTIME,
-        mem_mb = MAIN_MEMCORE_MB
-    params:
-        intermediary = "Assembly/intermediary/"
-    log:
-        "logs/assembly/tar_intermediary.log"
-    message:
-        "tar_intermediary: Compressing intermediary steps of assembly."
-    shell:
-       """
-       tar czf {output} {params.intermediary} && rm -rf {params.intermediary} >> {log} 2>&1
-       """
+# rule tar_intermediary:
+#     input:
+#         # Make sure its done at the very end
+#         check = "status/workflow.done",
+#         assembly = "Assembly/%s.assembly.merged.fa" % ASS
+#     output:
+#         "Assembly/intermediary.tar.gz"
+#     threads:
+#         1
+#     resources:
+#         runtime = SHORT_RUNTIME,
+#         mem_mb = MAIN_MEMCORE_MB
+#     params:
+#         intermediary = "Assembly/intermediary/"
+#     log:
+#         "logs/assembly/tar_intermediary.log"
+#     message:
+#         "tar_intermediary: Compressing intermediary steps of assembly."
+#     shell:
+#        """
+#        tar czf {output} {params.intermediary} && rm -rf {params.intermediary} >> {log} 2>&1
+#        """
 
 rule contig_fasta_indexing:
     input:

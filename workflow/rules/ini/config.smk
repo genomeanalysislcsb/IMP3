@@ -142,6 +142,7 @@ IMP_STEPS = sorted(config['steps'].split())
 PREPROCESSING_FILTERING = config['preprocessing_filtering']
 # Importing rrna_filtering from the configuration file and ensure type boolean
 KEEP_RRNAs = str(config['keep_rrnas']).lower() in ['true', '1', 'yes', 'y', 't']
+NORMALIZE_MT_READ_COVERAGE = str(config["read_coverage_normalization"]['normalize_read_coverage']).lower() in ['true', '1', 'yes', 'y', 't']
 # Importing filter from the configuration file and splitting it
 FILTER = config['filtering']['filter'].split()
 # Importing assembler from the configuration file
@@ -184,10 +185,13 @@ SHORT_RUNTIME = 720
 MEDIUM_RUNTIME = 1440
 # 3. long runtime (48h)
 LONG_RUNTIME = 2880
+# 4. very long runtime (120h)
+VERY_LONG_RUNTIME = 7200
+# 5. ultra long runtime (336h)
+ULTRA_LONG_RUNTIME = 20160
 
 # Checking if high_mem_cluster is set in the configuration file
 if config['cluster_specs'].get('high_mem_cluster'):
-    print('#' * 10, 'HIGH MEM ON', '#' * 10)
     USE_HIGH_MEM_CLUSTER = True
     # Importing high_mem_cluster specifications from the configuration file
     HIGH_MEM_BIGCORENO = config['cluster_specs']['high_mem_cluster']['big_mem_cores']

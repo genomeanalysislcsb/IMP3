@@ -1,202 +1,169 @@
-import math
+import os
 
-if config['nextseq']:
-    rule trimming:
-        input:
-            'Preprocessing/{type}.r1.fq',
-            'Preprocessing/{type}.r2.fq'
-        output:
-            temp('Preprocessing/{type}.r1.trimmed.fq'),
-            temp('Preprocessing/{type}.se1.trimmed.fq'),
-            temp('Preprocessing/{type}.r2.trimmed.fq'),
-            temp('Preprocessing/{type}.se2.trimmed.fq')
-        threads:
-            getThreads(10)
-        resources:
-            runtime = SHORT_RUNTIME,
-            mem_mb = MAIN_MEMCORE_MB,
-        params:
-            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type]
-        conda:
-            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log:
-            "logs/preprocessing/trimming.{type}.log"
-        message:
-            "trimming: Trimmming {wildcards.type} reads."
-        shell:
-            """
-            trimmomatic PE -threads {threads} {input[0]} {input[1]} {output} \
-             ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{config[trimmomatic][seed_mismatch]}:{config[trimmomatic][palindrome_clip_threshold]}:{config[trimmomatic][simple_clip_threshold]} \
-             LEADING:{config[trimmomatic][leading]} \
-             TRAILING:{config[trimmomatic][trailing]} \
-             SLIDINGWINDOW:{config[trimmomatic][window_size]}:{config[trimmomatic][window_quality]} \
-             MINLEN:{config[trimmomatic][minlen]} \
-             MAXINFO:{config[trimmomatic][target_length]}:{config[trimmomatic][strictness]} > {log} 2>&1
-            """
+def get_fastp_adapter_params(wildcards):
+    # Check if fasta is defined in config and use it if it is
+    adapter_fasta = config["fastp"]["adapter_trimming"][wildcards.type]["adapter_sequence_fasta"]
+    if adapter_fasta:
+        return f"--adapter_fasta {adapter_fasta}"
 
-    rule nextseq_trimming_se:
-        input:
-            'Preprocessing/{type}.{read}.trimmed.fq'
-        output:
-            temp('Preprocessing/{type}.{read}.trimmed.fq'),
-            temp('Preprocessing/{type}.{read}.trimmed.fq.gz')
-        wildcard_constraints:
-            read="se[1|2]"
-        threads:
-            getThreads(10)
-        resources:
-            runtime = SHORT_RUNTIME,
-            mem_mb = MAIN_MEMCORE_MB
-        conda:
-            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log:
-            "logs/preprocessing/nextseq_trimming_se.{type}.{read}.log"
-        message:
-            "trimming: Trimmming poly-G's off {wildcards.type} {wildcards.read} reads."
-        shell:
-            """
-            cutadapt -j {threads} \
-                     --nextseq-trim={config[trimmomatic][trailing]} \
-                     -o {output[0]} \
-                     --minimum-length {config[trimmomatic][minlen]} \
-                     {input} >> {log} 2>&1
-            pigz -p {threads} {input} >> {log} 2>&1
-            """
+    # Get adapter sequences from config
+    r1_adapt_str = config["fastp"]["adapter_trimming"][wildcards.type]["adapter_sequence_r1"]
+    r2_adapt_str = config["fastp"]["adapter_trimming"][wildcards.type]["adapter_sequence_r2"]
 
-    rule nextseq_trimming_pe:
-        input:
-            'Preprocessing/{type}.r1.trimmed.fq',
-            'Preprocessing/{type}.r2.trimmed.fq'
-        output:
-            temp('Preprocessing/{type}.r1.trimmed.fq'),
-            temp('Preprocessing/{type}.r2.trimmed.fq'),
-            temp('Preprocessing/{type}.r1Cut.trimmed.fq'),
-            temp('Preprocessing/{type}.r2Cut.trimmed.fq'),
-            temp('Preprocessing/{type}.se1Cut.trimmed.fq'),
-            temp('Preprocessing/{type}.se2Cut.trimmed.fq'),
-            temp('Preprocessing/{type}.r1.trimmed.fq.gz'),
-            temp('Preprocessing/{type}.r2.trimmed.fq.gz')
-        threads:
-            getThreads(10)
-        resources:
-            runtime = SHORT_RUNTIME,
-            mem_mb = MAIN_MEMCORE_MB
-        conda:
-            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log:
-            "logs/preprocessing/nextseq_trimming_pe.{type}.pe.log"
-        message:
-            "trimming: Trimmming poly-G's off {wildcards.type} pe reads."
-        shell:
-            """
-            cutadapt -j {threads} \
-                     --nextseq-trim={config[trimmomatic][trailing]} \
-                     --minimum-length {config[trimmomatic][minlen]}:{config[trimmomatic][minlen]} \
-                     -o {output[0]} \
-                     -p {output[1]} \
-                     --too-short-output {output[2]} \
-                     --too-short-paired-output {output[3]} \
-                     {input[0]} \
-                     {input[1]} >> {log} 2>&1
-            cutadapt -j {threads} \
-                     --minimum-length {confitrimmo
-                     --minimum-length {config[trimmomatic][minlen]} \
-                     -o {output[5]} \
-                     {output[3]} >> {log} 2>&1
-            pigz -p {threads} {input} >> {log} 2>&1
-            """
+    # By default, use auto-detection of adapter sequences
+    adapter_arg = "--detect_adapter_for_pe"
 
-    rule cat_se_trimmed:
-        input:
-            'Preprocessing/{type}.se1.trimmed.fq',
-            'Preprocessing/{type}.se2.trimmed.fq',
-            'Preprocessing/{type}.se1Cut.trimmed.fq',
-            'Preprocessing/{type}.se2Cut.trimmed.fq',
-            'Preprocessing/{type}.r1Cut.trimmed.fq',
-            'Preprocessing/{type}.r2Cut.trimmed.fq'
-        output:
-            temp('Preprocessing/{type}.se.trimmed.fq'),
-        threads:
-            # Ensure at least 10gb of mem
-            max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
-        resources:
-            runtime = SHORT_RUNTIME,
-            mem_mb = MAIN_MEMCORE_MB
-        conda:
-            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log:
-            "logs/preprocessing/cat_se_trimmed.{type}.log"
-        message:
-            "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
-        shell:
-            """
-            cat {input[0]} {input[1]} {input[2]} {input[3]} > {output} 2>> {log}
-            pigz -p {threads} {input} >> {log} 2>&1
-            """
-else:
-    rule trimming:
-        input:
-            'Preprocessing/{type}.r1.fq',
-            'Preprocessing/{type}.r2.fq'
-        output:
-            temp('Preprocessing/{type}.r1.trimmed.fq'),
-            temp('Preprocessing/{type}.se1.trimmed.fq'),
-            temp('Preprocessing/{type}.r2.trimmed.fq'),
-            temp('Preprocessing/{type}.se2.trimmed.fq')
-        threads:
-            getThreads(10)
-        resources:
-            runtime = SHORT_RUNTIME,
-            mem_mb = MAIN_MEMCORE_MB,
-        params:
-            adapter = lambda wildcards: config["trimmomatic"]["adapter"][wildcards.type],
-            leading = config["trimmomatic"]["leading"],
-            minlen = config["trimmomatic"]["minlen"],
-            palindrome_clip_threshold = config["trimmomatic"]["palindrome_clip_threshold"],
-            simple_clip_threshold = config["trimmomatic"]["simple_clip_threshold"],
-            trailing = config["trimmomatic"]["trailing"],
-            seed_mismatch = config["trimmomatic"]["seed_mismatch"],
-            window_size = config["trimmomatic"]["window_size"],
-            window_quality = config["trimmomatic"]["window_quality"],
-            strictness = config["trimmomatic"]["strictness"],
-            target_length = config["trimmomatic"]["target_length"]
-        conda:
-            os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-        log:
-            "logs/preprocessing/trimming.{type}.log"
-        message:
-            "trimming: Trimmming {wildcards.type} reads."
-        shell:
-            """
-            trimmomatic PE -threads {threads} \
-                           {input[0]} \
-                           {input[1]} \
-                           {output} \
-                           ILLUMINACLIP:{DBPATH}/adapters/{params.adapter}.fa:{params.seed_mismatch}:{params.palindrome_clip_threshold}:{params.simple_clip_threshold} \
-                           LEADING:{params.leading} \
-                           TRAILING:{params.trailing} \
-                           SLIDINGWINDOW:{params.window_size}:{params.window_quality} \
-                           MINLEN:{params.minlen} \
-                           MAXINFO:{params.target_length}:{params.strictness} > {log} 2>&1
-            """
+    # If adapter_sequence_r1 is defined and adapter_sequence_r2 is not, use only adapter_sequence_r1
+    if r1_adapt_str and not r2_adapt_str:
+        adapter_arg = f"--adapter_sequence {r1_adapt_str}"
+    # If adapter_sequence_r2 is defined and adapter_sequence_r1 is not, use only adapter_sequence_r2
+    elif r2_adapt_str and not r1_adapt_str:
+        adapter_arg = f"--adapter_sequence_r2 {r2_adapt_str}"
+    # If both adapter_sequence_r1 and adapter_sequence_r2 are defined, use both
+    elif r1_adapt_str and r2_adapt_str:
+        adapter_arg = f"--adapter_sequence {r1_adapt_str} --adapter_sequence_r2 {r2_adapt_str}"
 
-    rule cat_se_trimmed:
-        input:
-            'Preprocessing/{type}.se1.trimmed.fq',
-            'Preprocessing/{type}.se2.trimmed.fq'
-        output:
-            temp('Preprocessing/{type}.se.trimmed.fq')
-        threads:
-            # Ensure at least 10gb of mem
-            max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
-        resources:
-            runtime = SHORT_RUNTIME,
-            mem_mb = MAIN_MEMCORE_MB
-        log:
-            "logs/preprocessing/cat_se_trimmed.{type}.log"
-        message:
-            "cat_se_trimmed: Concatenating trimmed single end {wildcards.type} reads"
-        shell:
-            """
-            cat {input[0]} {input[1]} > {output} 2>> {log}
-            """
+    return adapter_arg
+
+def get_fastp_params(wildcards):
+    # Adapter trimming
+    params = [get_fastp_adapter_params(wildcards)]
+
+    # Quality filtering
+    qf = config["fastp"]["quality_filtering"]
+    params.extend([
+        f"--qualified_quality_phred {qf['qualified_quality_phred']}",
+        f"--unqualified_percent_limit {qf['unqualified_percent_limit']}",
+        f"--n_base_limit {qf['n_base_limit']}",
+        f"--average_qual {qf['average_qual']}",
+        "--low_complexity_filter" if qf.get("low_complexity_filter", False) else "",
+        f"--complexity_threshold {qf['complexity_threshold']}"
+    ])
+
+    # PolyG and PolyX tail trimming
+    if config["fastp"]["polyG_tail_trimming"]["force_trim_poly_g"]:
+        params.append(f"--trim_poly_g --poly_g_min_len {config['fastp']['polyG_tail_trimming']['poly_g_min_len']}")
+    elif config["fastp"]["polyG_tail_trimming"]["force_disable_trim_poly_g"]:
+        params.append("--disable_trim_poly_g")
+
+    if config["fastp"]["polyX_tail_trimming"]["trim_poly_x"]:
+        params.append(f"--trim_poly_x --poly_x_min_len {config['fastp']['polyX_tail_trimming']['poly_x_min_len']}")
+
+    # Global trimming
+    trim_front1 = config["fastp"]["global_trimming"]["trim_front1"]
+    trim_front2 = config["fastp"]["global_trimming"]["trim_front2"]
+    trim_tail = config["fastp"]["global_trimming"]["trim_tail1"]
+    trim_tail2 = config["fastp"]["global_trimming"]["trim_tail2"]
+
+    if trim_front2:
+        params.extend([
+            f"--trim_front1 {trim_front1}",
+            f"--trim_front2 {trim_front2}"
+        ])
+    else:
+        params.append(f"--trim_front1 {trim_front1}")
+    
+    if trim_tail2:
+        params.extend([
+            f"--trim_tail1 {trim_tail}",
+            f"--trim_tail2 {trim_tail2}"
+        ])
+    else:
+        params.append(f"--trim_tail1 {trim_tail}")
+
+    # Quality cutting
+    qc = config["fastp"]["quality_cutting"]
+    if qc["cut_front"]:
+        params.extend([
+            f"--cut_front --cut_front_window_size {qc['cut_front_window_size']}",
+            f"--cut_front_mean_quality {qc['cut_front_mean_quality']}"
+        ])
+    if qc["cut_tail"]:
+        params.extend([
+            f"--cut_tail --cut_tail_window_size {qc['cut_tail_window_size']}",
+            f"--cut_tail_mean_quality {qc['cut_tail_mean_quality']}"
+        ])
+    if qc["cut_right"]:
+        params.extend([
+            f"--cut_right --cut_right_window_size {qc['cut_right_window_size']}",
+            f"--cut_right_mean_quality {qc['cut_right_mean_quality']}"
+        ])
+
+    # Length filtering
+    lf = config["fastp"]["length_filtering"]
+    params.extend([
+        f"--length_required {lf['length_required']}",
+        f"--length_limit {lf['length_limit']}" if lf['length_limit'] else ""
+    ])
+
+    # Merging paired-end reads
+    if config["fastp"]["merging"]["merge"]:
+        params.append(f"--merge --merged_out Preprocessing/{wildcards.type}.merged.trimmed.fq")
+
+    # Base correction by overlap analysis
+    if config["fastp"]["base_correction"]["correction"]:
+        bc = config["fastp"]["base_correction"]
+        params.extend([
+            "--correction",
+            f"--overlap_len_require {bc['overlap_len_require']}",
+            f"--overlap_diff_limit {bc['overlap_diff_limit']}",
+            f"--overlap_diff_percent_limit {bc['overlap_diff_percent_limit']}"
+        ])
+
+    # Overrepresented sequence analysis
+    if config["fastp"]["overrepresented_sequence_analysis"]["overrepresentation_analysis"]:
+        osa = config["fastp"]["overrepresented_sequence_analysis"]
+        params.extend([
+            "--overrepresentation_analysis",
+            f"--overrepresentation_sampling {osa['overrepresentation_sampling']}"
+        ])
+
+    # Concatenate all parameters
+    return " ".join(params)
+
+rule trimming:
+    input:
+        r1 = 'Preprocessing/{type}.r1.fq',
+        r2 = 'Preprocessing/{type}.r2.fq'
+    output:
+        r1_trimmed = temp('Preprocessing/{type}.r1.trimmed.fq'),
+        r2_trimmed = temp('Preprocessing/{type}.r2.trimmed.fq'),
+        se_trimmed = temp('Preprocessing/{type}.se.trimmed.fq'),
+        json = 'Stats/{type}/fastp.{type}.json',
+        html = 'Stats/{type}/fastp.{type}.html'
+    threads:
+        getThreads(10)
+    resources:
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    params:
+        fastp_params = lambda wildcards: get_fastp_params(wildcards)
+    log:
+        'logs/preprocessing/fastp_trimming.{type}.log'
+    message:
+        "Fastp trimming: Trimming {wildcards.type} reads."
+    shell:
+        """
+        fastp --in1 {input.r1} \
+              --out1 {output.r1_trimmed} \
+              --in2 {input.r2} \
+              --out2 {output.r2_trimmed} \
+              --unpaired1 {output.se_trimmed}.tmp \
+              --unpaired2 {output.se_trimmed}.tmp \
+              {params.fastp_params} \
+              --thread {threads} \
+              --json {output.json} \
+              --html {output.html} \
+              >> {log} 2>&1
+        
+        # Concatenate unpaired reads with merged reads if merging is enabled
+        if [ -f Preprocessing/{wildcards.type}.merged.trimmed.fq ]; then
+            echo "Concatenating unpaired reads with merged reads ..." >> {log} 2>&1
+            cat {output.se_trimmed}.tmp Preprocessing/{wildcards.type}.merged.trimmed.fq > {output.se_trimmed} 2>> {log}
+        else
+            mv {output.se_trimmed}.tmp {output.se_trimmed} >> {log} 2>&1
+        fi
+        rm -f {output.se_trimmed}.tmp Preprocessing/{wildcards.type}.merged.trimmed.fq >> {log} 2>&1
+        """

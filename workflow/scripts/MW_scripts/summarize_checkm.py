@@ -1,45 +1,81 @@
 #!/usr/bin/env python3
 import sys
-import ast  # Import ast module to safely evaluate string literals as Python expressions
+from tabulate import tabulate
 
-# This script summarizes the statistics of each bin by parsing 
-# the checkm_folder/storage/bin_stats_ext.tsv file of the CheckM output
+# This script summarizes the statistics of each bin by parsing
+col_list = ["Bin", "Completeness", "Contamination", "Contig_N50", "Genome_Size", "GC_Content", "binner"]
 
-if len(sys.argv) == 3: 
-    binner = sys.argv[2]
-    print("bin\tcompleteness\tcontamination\tGC\tlineage\tN50\tsize\tbinner")
+data = [col_list]
+
+# Get input
+if len(sys.argv) < 3 or len(sys.argv) > 4:
+    print("Usage: ./summarize_checkm.py checkm_stats out_file [source_binner_stats_file]")
+    sys.exit(1)
+elif len(sys.argv) == 3:
+    checkm_stats = sys.argv[1]
+    out_file = sys.argv[2]
+    binner_source_stats = None
+    binner_source = checkm_stats.split(".")[0]
 elif len(sys.argv) == 4:
-    source = {}
-    with open(sys.argv[3]) as file:  # Use with statement for better file handling
-        for line in file:
-            cut = line.strip().split("\t")
-            source[cut[0]] = cut[7]
-    print("bin\tcompleteness\tcontamination\tGC\tlineage\tN50\tsize\tbinner")
-else:
-    print("bin\tcompleteness\tcontamination\tGC\tlineage\tN50\tsize")
+    checkm_stats = sys.argv[1]
+    out_file = sys.argv[2]
+    binner_source_stats = sys.argv[3]
 
-with open(sys.argv[1]) as file:  # Use with statement for better file handling
+# If binner_source_stats is provided, get the binner source for each bin
+if binner_source_stats:
+    bin_source = {}
+    # Get binning refiner combo/binning source name
+    with open(binner_source_stats) as f:
+        header = next(f)
+        for line in f:
+            try:
+                cut = line.strip().split("\t")
+                bin_source[cut[0]] = cut[-1]
+            except IndexError:
+                try:
+                    cut = line.strip().split()
+                    bin_source[cut[0]] = cut[-1]
+                except IndexError:
+                    print(f"Error splitting line with tabs or spaces: {line}")
+                    raise IndexError
+
+# Get CheckM stats
+with open(checkm_stats) as file:
+    header = next(file)
     for line in file:
-        # Use ast.literal_eval for safer evaluation of string to dictionary
-        dic = ast.literal_eval(line.strip().split("\t")[1])
+        try:
+            line_data = line.strip().split("\t")
+        except IndexError:
+            try:
+                line_data = line.strip().split()
+            except IndexError:
+                print(f"Error splitting line with tabs or spaces: {line}")
+                raise IndexError
 
-        if "__" in dic["marker lineage"]: dic["marker lineage"] = dic["marker lineage"].split("__")[1]
-        name = line.split("\t")[0]
+        # Stats we need are: bin, comp, cont, n50, gen_size, gc
+        bin_stats = [line_data[i] for i in [0, 1, 2, 6, 8, 9]]
 
-        if len(sys.argv) == 3:    
-            print("\t".join([name, str(dic["Completeness"])[:5],\
-                str(dic["Contamination"])[:5], str(dic["GC"])[:5],\
-                dic["marker lineage"], str(dic["N50 (contigs)"]),\
-                str(dic["Genome size"]), binner]))
-
-        elif len(sys.argv) == 4:
-            print("\t".join([name, str(dic["Completeness"])[:5],\
-                str(dic["Contamination"])[:5], str(dic["GC"])[:5],\
-                dic["marker lineage"], str(dic["N50 (contigs)"]),\
-                str(dic["Genome size"]), source.get(name, '')]))  # Use .get() to avoid KeyError
-
+        if binner_source_stats:
+            bin_stats.append(bin_source.get(bin_stats[0], ''))   
         else:
-            print("\t".join([name, str(dic["Completeness"])[:5],\
-                str(dic["Contamination"])[:5], str(dic["GC"])[:5],\
-                dic["marker lineage"], str(dic["N50 (contigs)"]),\
-                str(dic["Genome size"])]))
+            bin_stats.append(binner_source)
+        
+        data.append(bin_stats)
+
+# Sort the data by completeness, ignoring the header but it it back later
+# Separate the header and the data
+header = data[0]
+body = data[1:]
+
+# Sort the body based on the second column, in descending order
+sorted_body = sorted(body, key=lambda x: float(x[1]), reverse=True)
+
+# Reassemble the data with the header at the beginning
+sorted_data = [header] + sorted_body
+
+# Now tabulate and print
+print(tabulate(sorted_data, headers="firstrow", tablefmt="simple"))
+
+# Write to file
+with open(out_file, "w") as f:
+    f.write(tabulate(sorted_data, headers="firstrow", tablefmt="simple"))

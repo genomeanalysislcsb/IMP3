@@ -3,9 +3,9 @@ rule megahit_hybrid_assembly_1:
         mg_r1 = 'Preprocessing/mg.r1.preprocessed.fq',
         mg_r2 = 'Preprocessing/mg.r2.preprocessed.fq',
         mg_se = 'Preprocessing/mg.se.preprocessed.fq',
-        mt_r1 = 'Preprocessing/mt.r1.preprocessed.fq',
-        mt_r2 = 'Preprocessing/mt.r2.preprocessed.fq',
-        mt_se = 'Preprocessing/mt.se.preprocessed.fq',
+        mt_r1 = MT_R1_ASSEMBLY,
+        mt_r2 = MT_R2_ASSEMBLY,
+        mt_se = MT_SE_ASSEMBLY,
         mt_ass_pre = 'Assembly/intermediary/mt.megahit_preprocessed.1/final.contigs.fa',
         mt_unmapped = 'Assembly/intermediary/mt.megahit_unmapped.2/final.contigs.fa',
     output:
@@ -13,7 +13,7 @@ rule megahit_hybrid_assembly_1:
         contigs_hyb = 'Assembly/intermediary/mgmt.megahit_hybrid.1.fa',
         out_dir = directory('Assembly/intermediary/mgmt.megahit_hybrid.1')
     resources:
-        runtime = MEDIUM_RUNTIME,
+        runtime = LONG_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
@@ -58,7 +58,7 @@ use rule megahit_hybrid_assembly_1 as megahit_hybrid_assembly_2 with:
         contigs_hyb = 'Assembly/intermediary/mgmt.megahit_hybrid.2.fa',
         out_dir = directory('Assembly/intermediary/mgmt.megahit_hybrid.2')
     resources:
-        runtime = VERY_SHORT_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)

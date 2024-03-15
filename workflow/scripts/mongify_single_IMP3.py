@@ -162,7 +162,7 @@ for binner in BINNERS:
 
 
 #read DAStool
-dastoolFile = "Binning/DASTool/selected_DASTool_contig2bin.tsv"
+dastoolFile = "Binning/DASTool/selected_DASTool_scaffolds2bin.txt"
 if os.path.isdir(dastoolFile):
     dastoolCnt = 0
     print("Reading contig bin membership from ", dastoolFile)

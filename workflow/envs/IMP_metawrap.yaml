@@ -4,5 +4,8 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-  - checkm-genome=1.2.2
-  - biopython=1.70
+  - python>=3.7,<3.9
+  - checkm2=1.0.1
+  - biopython
+  - tabulate
+  - matplotlib

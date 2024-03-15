@@ -4,6 +4,7 @@ localrules: ALL_stats
 
 gathered = [report("Stats/all_stats.tsv",category="Stats"),
             "Stats/all_stats.Rdata"]
+            
 if "binning" in IMP_STEPS:
     gathered.append(report("Stats/all_bin_stats.tsv",category="Binning"))
 
@@ -26,7 +27,7 @@ rule gather_stats:
         mantis_dir = "Analysis/annotation/" if config["annotation"] == "mantis" else [],
         mantis_pattern = ".mantis.+tsv.summary" if config["annotation"] == "mantis" else []
     log:
-        "logs/misc/stats_gather_stats.log"
+        "logs/misc/gather_stats.log"
     message:
         "gather_stats: Summarizing stats."
     threads:

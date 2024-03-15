@@ -1,3 +1,6 @@
+import math
+
+
 rule assembly_contig_length:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS
@@ -8,7 +11,8 @@ rule assembly_contig_length:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
-        1
+        # Ensure at least 10gb of mem
+        max(int(math.ceil(10 / (int(MAIN_MEMCORE_MB[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     params:
         tmp_dir=TMPDIR
     conda:

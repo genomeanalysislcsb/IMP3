@@ -5,6 +5,7 @@ channels:
   - nodefaults
 dependencies:
   - kraken2=2.1.2
+  - bracken=2.9
   - popt=1.16
   - perl-bioperl=1.7.8
   - r=4.2

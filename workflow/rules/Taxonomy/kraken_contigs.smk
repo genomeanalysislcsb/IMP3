@@ -2,8 +2,6 @@ from os.path import getsize, join
 KRAKSIZE = float(os.path.getsize(DBPATH + "/" + config['kraken']['krakendb'] + "/hash.k2d" )) / 1000000000
 KRAKTHREADS = max(1, round((KRAKSIZE / (float(HIGH_MEM_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]])) * 1.15))
 
-print('#' * 10, f'KRAKTHREADS: {KRAKTHREADS} KRAKSIZE: {KRAKSIZE} HIGH_MEM_BIGMEMCORE_MB: {HIGH_MEM_BIGMEMCORE_MB}', '#' * 10)
-
 rule kraken_contigs:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS,
