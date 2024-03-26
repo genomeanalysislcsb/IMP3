@@ -246,7 +246,7 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".assembly.length.txt"))){
   breadthAssStats_files <- list()
   for(type in types){
     depthAssStats_files[[type]] <- paste0("Stats/",type,"/",ass,".assembly.contig_depth.txt")
-    breadthAssStats_files[[type]] <- paste0("Stats/",type,"/",ass,".assembly.contig_coverage.txt")
+    breadthAssStats_files[[type]] <- paste0("Stats/",type,"/",ass,".thresholds.bed.gz")
   }
   
   assTemp <- data.frame("type"=rep(ass,4),
@@ -269,16 +269,32 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".assembly.length.txt"))){
   breadthAssStat <- list()
   for(type in types){
     depthAssStat[[type]] <- read.delim(depthAssStats_files[[type]],stringsAsFactors=F,header = F)
-    breadthAssStat[[type]] <- read.delim(breadthAssStats_files[[type]],stringsAsFactors=F,header = F)[,c(1,7)]
+    # Columns of `breadthAssStat`: contig,contig_length,depth>=1X,depth>=10X,depth>=30X
+    breadthAssStat[[type]] <- read.delim(breadthAssStats_files[[type]],stringsAsFactors=F,header = F)[,c(1,3,5-7)]
+
     colnames(depthAssStat[[type]]) <- c("contig","depth")
-    colnames(breadthAssStat[[type]]) <- c("contig","breadth")
+    colnames(breadthAssStat[[type]]) <- c("contig","length","depth_1X","depth_10X","depth_30X")
+
+    # Calculate the percentage of contig bases covered at 1X, 10X, and 30X
+    percentage_1X  <- breadthAssStat[[type]]$depth_1X  / breadthAssStat[[type]]$length
+    percentage_10X <- breadthAssStat[[type]]$depth_10X / breadthAssStat[[type]]$length
+    percentage_30X <- breadthAssStat[[type]]$depth_30X / breadthAssStat[[type]]$length
+
     covTemp <- data.frame("type"=type,
                           "step"=c("contigs_max_depth",
-                                   "contigs_mean_depth>0","contigs_mean_depth>1",
-                                   "contigs_breadth>0","contigs_breadth=1"),
+                                   "contigs_mean_depth>0",
+                                   "contigs_mean_depth>1",
+                                   "contigs_breadth>0",
+                                   "contigs_breadth>=1",
+                                   "contigs_breadth>=10",
+                                   "contigs_breadth>=30"),
                           "number"=c(round(max(depthAssStat[[type]]$depth)),
-                                     nrow(depthAssStat[[type]]),length(which(depthAssStat[[type]]$depth>=1)),
-                                     length(which(breadthAssStat[[type]]$breadth>0)),length(which(breadthAssStat[[type]]$breadth==1))),
+                                     nrow(depthAssStat[[type]]),
+                                     length(which(depthAssStat[[type]]$depth>=1)),
+                                     length(which(breadthAssStat[[type]]$depth_1X>0)),
+                                     length(which(breadthAssStat[[type]]$depth_1X==1),
+                                     length(which(breadthAssStat[[type]]$depth_10X==1),
+                                     length(which(breadthAssStat[[type]]$depth_30X==1))),
                           stringsAsFactors=F)
     if(!"statsTab" %in% ls()){
       statsTab <- covTemp

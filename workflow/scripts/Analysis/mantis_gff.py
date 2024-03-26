@@ -5,7 +5,6 @@
 ##############################
 import pandas
 import logging
-from timeit import default_timer as timer
 
 ##############################
 # FUNCTIONS
@@ -164,63 +163,32 @@ if __name__ == '__main__':
     logging.info('Add GFF attributes based on Mantis annotations and GFF attributes per db for featureCounts.')
 
     pids_processed = 0
-    times_per_gff_pid = []
-    times_per_mantis_pid_total = []
-    times_per_mantis_pid_links = []
-    times_per_mantis_pid_gff = []
-    times_per_mantis_pid_gff_append = []
 
     with open(snakemake.output.gff, "w") as o_gff:
+        n_entries = len(gff.index)
         for pid in gff.index:
-            # print(f'pid: {pid}')
-            start_gff_pid = timer()
-            # save (updated) annotations to output GFF
+            # Save (updated) annotations to output GFF
             pid_line = gff.loc[pid, :].copy()
             if pid in mantis.index:
                 pid_line.loc["attr"] = ";".join(
                     [pid_line["attr"]] + list(mantis_links_generator(mantis.loc[pid, "Links"],
                                                                      sep=snakemake.params.sep)))
             o_gff.write("\t".join(pid_line.astype(str)) + "\n")
-            end_gff_pid = timer()
-            times_per_gff_pid.append(end_gff_pid - start_gff_pid)
 
-            # save GFF attributes for featureCounts
-            start_mantis_pid_total = timer()
+            # Save GFF attributes for featureCounts
             if pid in mantis.index:
-                start_mantis_pid_links = timer()
-                # print(f'mantis.loc[pid, "Links"]: {mantis.loc[pid, "Links"]}')
                 pid_links = mantis_links_pairs(mantis.loc[pid, "Links"], sep=snakemake.params.sep)
-                end_mantis_pid_links = timer()
-                times_per_mantis_pid_links.append(end_mantis_pid_links - start_mantis_pid_links)
                 if pid_links is not None:
-                    start_mantis_pid_gff_append = timer()
-                    # save GFF info + new attribute to file
+                    # Save GFF info + new attribute to file
                     for key, key_df in pid_links.groupby("Key"):
                         with open(f"{snakemake.params.prefix}.{key}.gff", "a") as o_fc:
                             for key_v in key_df.Pair:
                                 o_fc.write("\t".join(list(pid_line.drop(["attr"]).astype(str)) + [key_v]) + "\n")
-                    end_mantis_pid_gff_append = timer()
-                    times_per_mantis_pid_gff_append.append(end_mantis_pid_gff_append - start_mantis_pid_gff_append)
-
-            end_mantis_pid_total = timer()
-            times_per_mantis_pid_total.append(end_mantis_pid_total - start_mantis_pid_total)
 
             pids_processed += 1
-            if pids_processed % 10000 == 0 or pids_processed == len(gff.index):
-                sum_time_per_gff_pid = round(sum(times_per_gff_pid), 1)
-                sum_time_per_mantis_pid_total = round(sum(times_per_mantis_pid_total), 1)
-                sum_time_per_mantis_pid_links = round(sum(times_per_mantis_pid_links), 1)
-                sum_time_per_mantis_pid_gff = round(sum(times_per_mantis_pid_gff), 1)
-                sum_time_per_mantis_pid_gff_append = round(sum(times_per_mantis_pid_gff_append), 1)
-
-                logging.info(f'{pids_processed} Mantis annotations processed. Sum times per: gff_pid: {sum_time_per_gff_pid},'
-                             f' mantis_pid_total: {sum_time_per_mantis_pid_total}, mantis_pid_links: {sum_time_per_mantis_pid_links},'
-                             f' mantis_pid_gff: {sum_time_per_mantis_pid_gff}, mantis_pid_gff_append: {sum_time_per_mantis_pid_gff_append}.')
-
-                times_per_gff_pid = []
-                times_per_mantis_pid_total = []
-                times_per_mantis_pid_links = []
-                times_per_mantis_pid_gff = []
-                times_per_mantis_pid_gff_append = []
+            percent_processed = round(pids_processed / n_entries * 100, 1)
+            
+            if pids_processed % 10000 == 0 or pids_processed == n_entries:
+                logging.info(f'{pids_processed}/{n_entries} annotations processed ({percent_processed}%)')
 
     logging.info('Done.')

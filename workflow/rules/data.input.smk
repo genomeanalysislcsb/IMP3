@@ -115,7 +115,7 @@ rule prepare_input_data_copy:
     input:
         get_ori_files
     output:
-        temp(input_files_list)
+        temp(input_files_list),
     threads:
         getThreads(5)
     resources:

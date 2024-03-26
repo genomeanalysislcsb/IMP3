@@ -1,186 +1,84 @@
-# SortMeRNA:
-#   https://github.com/biocore/sortmerna/
-#   https://github.com/biocore/sortmerna/wiki/User-manual-v4.0
-
-# NOTE
-#   The helper function below should be moved later to a designated file.
-#
-#   The check whether the working directory exists and is not empty
-#   should not be required (as snakemake should remove it when (re-)running the rule)
-#   but it is included anyway for additional safety.
-
-def smk_get_sortmerna_params(wildcards, input):
-    """For snakemake: get SortMeRNA parameters"""
-    # reference files
-    # --fastx: output aligned reads
-    # -m: memory requirements for indexing
-    # --aligned/--other: output (non)-aligned reads
-    # TODO: Check how much mem we need for the index
-    refs = " ".join(["--ref %s" % ref for ref in input.refs])
-    mem = int(getThreads(112, bigmem=True, high_mem_cluster=True) * (int(HIGH_MEM_BIGMEMCORE[:-1]) * to_mb_dict[config['cluster_specs']["mem_unit"]]))
-
-    params = f"{refs} --fastx -m {mem} --aligned --other"
-
-    # additional parameters for PE reads
-    if hasattr(input, "r1"):
-        assert hasattr(input, "r2"), f"Found R1 but not R2 in {input}"
-        # --otu-map: OTU map (input to QIIME's make_otu_table.py)
-        # --paired_in: flags the PE reads as "aligned", when either of them is aligned
-        # --out2: output paired reads into separate files
-        params = f"{params} --otu_map --paired_in --out2"
-    return params
-
-def get_min_mem(wildcards, attempt):
-    return attempt * MAIN_BIGMEMCORE_MB
-
-def get_max_cores(wildcards, attempt):
-    mem_per_core_attempt = attempt * MAIN_BIGMEMCORE_MB
-    max_cores = getThreads(128, bigmem=True, high_mem_cluster=False)
-    attempt_supported_cores = int(math.ceil(MAIN_BIGMEMTOTAL / mem_per_core_gb_attempt))
-    return max(min(max_cores, attempt_supported_cores), 1)
-
 rule filter_rrna_pe:
     input:
-        r1="Preprocessing/mt.r1.trimmed.fq",
-        r2="Preprocessing/mt.r2.trimmed.fq",
-        refs=expand(
-            "{dbpath}/sortmerna/{fasta}.fasta",
-            dbpath=DBPATH, fasta=config["sortmerna"]["files"]
-        ),
+        r1 = "Preprocessing/mt.r1.trimmed.fq",
+        r2 = "Preprocessing/mt.r2.trimmed.fq",
     output:
         filt_r1 = temp("Preprocessing/mt.r1.trimmed__rna_filtered.fq"),
         filt_r2 = temp("Preprocessing/mt.r2.trimmed__rna_filtered.fq"),
         rrna_r1 = temp("Preprocessing/mt.r1.trimmed.rrna.fq"),
         rrna_r2 = temp("Preprocessing/mt.r2.trimmed.rrna.fq"),
-        otu = "Preprocessing/otu_map.txt",
-        # temp: working and index directories
-        wdir = temp(directory("Preprocessing/sortmerna_pe")),
-        idx = temp(directory("Preprocessing/sortmerna_idx")), # store index files separately so they can be re-used in filter_rrna_se
+        # otu = "Preprocessing/otu_map.txt", # TODO: Check if this is needed
     log:
         "logs/preprocessing/filter_rrna_pe.log"
     threads:
-        # Ensure at least 100gb of mem
-        # max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
-        # getThreads(128)
-        # get_max_cores
-        getThreads(112, bigmem=True, high_mem_cluster=True)
+        getThreads(128)
     resources:
-        runtime = VERY_LONG_RUNTIME,
-        # mem_mb = MAIN_BIGMEMCORE_MB
-        # mem_mb = get_min_mem
-        mem_mb = HIGH_MEM_BIGMEMCORE_MB
-    # retries:
-    #     4
-    params:
-        params = smk_get_sortmerna_params
+        runtime = LONG_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
         "filter_rna: filtering rRNA from mt PE reads."
     shell:
         """
-        if [ -d "{output.wdir}" ] && [ "$(ls -A {output.wdir})" ]; then
-            echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline." >> {log} 2>&1
-            exit 1
-        fi
+        ### Get average read length ###
+        echo "Calculating average read length ..." > {log}
+        r_mean_l=$( seqkit stats -T {input.r1} | cut -f 7 | tail -n +2 | awk '{{printf("%d\\n", $1 + 0.5)}}' )
 
-        # Ensure none of the outfiles are already present
-        echo "Removing any existing output files ..." >> {log}
-        rm -rf {output.filt_r1} {output.filt_r2} {output.rrna_r1} {output.rrna_r2} {output.otu} >> {log} 2>&1
+        ### Run RiboDetector ###
+        echo "Running RiboDetector ..." >> {log}
 
-        sortmerna {params.params} \
-                  --threads {threads} \
-                  --reads {input.r1} \
-                  --reads {input.r2} \
-                  --workdir {output.wdir}/ \
-                  --idx-dir {output.idx}/ >> {log} 2>&1
-
-        echo "SortmeRNA done." >> {log}
-        echo "### Begin of log file ###" >> {log}
-        cat {output.wdir}/out/aligned.log >> {log}
-        echo "### End of log file ###" >> {log}
-
-        echo "Moving output files ..." >> {log}
-        mv {output.wdir}/out/other_fwd.fq {output.filt_r1} >> {log} 2>&1
-        mv {output.wdir}/out/other_rev.fq {output.filt_r2} >> {log} 2>&1
-        mv {output.wdir}/out/aligned_fwd.fq {output.rrna_r1} >> {log} 2>&1
-        mv {output.wdir}/out/aligned_rev.fq {output.rrna_r2} >> {log} 2>&1
-
-        if [ -f {output.wdir}/out/otu_map.txt ]; then
-            mv {output.wdir}/out/otu_map.txt {output.otu} >> {log} 2>&1
-        else
-            touch {output.otu}
-            echo "# WARNING: SortMeRNA OTUs file does not exist" > status/sortmerna.warning
-        fi
+        ribodetector_cpu --threads {threads} \
+                         --len ${{r_mean_l}} \
+                         --input {input.r1} {input.r2} \
+                         --ensure none \
+                         --chunk_size 256 \
+                         --output {output.filt_r1} {output.filt_r2} \
+                         --rrna {output.rrna_r1} {output.rrna_r2} >> {log} 2>&1
 
         echo "Done." >> {log}
         """
 
 rule filter_rrna_se:
     input:
-        se="Preprocessing/mt.se.trimmed.fq",
-        refs=expand(
-            "{dbpath}/sortmerna/{fasta}.fasta",
-            dbpath=DBPATH, fasta=config["sortmerna"]["files"]
-        ),
-        idx=rules.filter_rrna_pe.output.idx, # to avoid additional overhead
+        se = "Preprocessing/mt.se.trimmed.fq",
     output:
         filt_se = temp("Preprocessing/mt.se.trimmed__rna_filtered.fq"),
         rrna_se = temp("Preprocessing/mt.se.trimmed.rrna.fq"),
-        # temp: working directory
-        wdir = temp(directory("Preprocessing/sortmerna_se")),
     log:
         "logs/preprocessing/filter_rrna_se.log"
     threads:
-        # Ensure at least 100gb of mem
-        # max(int(math.ceil(100 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
-        # getThreads(128)
-        # get_max_cores
-        getThreads(112, bigmem=True, high_mem_cluster=True)
+        getThreads(128)
     resources:
-        runtime = SHORT_RUNTIME,
-        # mem_mb = MAIN_BIGMEMCORE_MB
-        # mem_mb = get_min_mem
-        mem_mb = HIGH_MEM_BIGMEMCORE_MB
-    # retries:
-    #     4
-    params:
-        params=smk_get_sortmerna_params
+        runtime = MEDIUM_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
     message:
         "filter_rna: filtering rRNA from mt SE reads."
     shell:
         """
-        if [ -d "{output.wdir}" ] && [ "$(ls -A {output.wdir})" ]; then
-            echo "ERROR: {output.wdir} exists and is not empty. Please remove it and re-run the pipeline." >> {log} 2>&1
-            exit 1
-        fi
+        ### Get average read length ###
+        echo "Calculating average read length ..." > {log}
+        r_mean_l=$( seqkit stats -T {input.se} | cut -f 7 | tail -n +2 | awk '{{printf("%d\\n", $1 + 0.5)}}' )
 
-        # Ensure none of the outfiles are already present
-        echo "Removing any existing output files ..." >> {log}
-        rm -rf {output.filt_se} {output.rrna_se} >> {log} 2>&1
+        ### Run RiboDetector ###
+        echo "Running RiboDetector ..." >> {log}
 
-        sortmerna {params.params} \
-                  --threads {threads} \
-                  --reads {input.se} \
-                  --workdir {output.wdir}/ \
-                  --idx-dir {input.idx}/ >> {log} 2>&1
+        ribodetector_cpu --threads {threads} \
+                         --len ${{r_mean_l}} \
+                         --input {input.se} \
+                         --ensure none \
+                         --chunk_size 256 \
+                         --output {output.filt_se} \
+                         --rrna {output.rrna_se} >> {log} 2>&1
         
-        echo "SortmeRNA done." >> {log}
-        echo "### Begin of log file ###" >> {log}
-        cat {output.wdir}/out/aligned.log >> {log}
-        echo "### End of log file ###" >> {log}
-
-        echo "Moving output files ..." >> {log}
-        mv {output.wdir}/out/other.fq {output.filt_se} >> {log} 2>&1
-        mv {output.wdir}/out/aligned.fq {output.rrna_se} >> {log} 2>&1
         echo "Done." >> {log}
         """
 
 # If KEEP_RRNAs is set to True, then the rRNA-filtered reads are concatenated with rRNA reads
 if KEEP_RRNAs:
-    rule copy_sortmerna_out:
+    rule copy_rrna_proc_out:
         input:
             r1_filt = rules.filter_rrna_pe.output.filt_r1,
             r2_filt = rules.filter_rrna_pe.output.filt_r2,
@@ -189,14 +87,14 @@ if KEEP_RRNAs:
             r2_rrna = rules.filter_rrna_pe.output.rrna_r2,
             se_rrna = rules.filter_rrna_se.output.rrna_se
         output:
-            r1 = temp("Preprocessing/mt.r1.trimmed__sortmerna.fq"),
-            r2 = temp("Preprocessing/mt.r2.trimmed__sortmerna.fq"),
-            se = temp("Preprocessing/mt.se.trimmed__sortmerna.fq"),
+            r1 = temp("Preprocessing/mt.r1.trimmed__rrna_proc.fq"),
+            r2 = temp("Preprocessing/mt.r2.trimmed__rrna_proc.fq"),
+            se = temp("Preprocessing/mt.se.trimmed__rrna_proc.fq"),
             rrna_r1_gz = "Preprocessing/mt.r1.trimmed.rrna.fq.gz",
             rrna_r2_gz = "Preprocessing/mt.r2.trimmed.rrna.fq.gz",
             rrna_se_gz = "Preprocessing/mt.se.trimmed.rrna.fq.gz"
         log:
-            "logs/preprocessing/copy_sortmerna_out.log"
+            "logs/preprocessing/copy_rrna_proc_out.log"
         threads:
             getThreads(4)
         resources:
@@ -220,20 +118,23 @@ if KEEP_RRNAs:
             echo "Done." >> {log}
             """
 else:
-    rule copy_sortmerna_out:
+    rule copy_rrna_proc_out:
         input:
             r1 = rules.filter_rrna_pe.output.filt_r1,
             r2 = rules.filter_rrna_pe.output.filt_r2,
-            se = rules.filter_rrna_se.output.filt_se
+            se = rules.filter_rrna_se.output.filt_se,
+            r1_rrna = rules.filter_rrna_pe.output.rrna_r1,
+            r2_rrna = rules.filter_rrna_pe.output.rrna_r2,
+            se_rrna = rules.filter_rrna_se.output.rrna_se
         output:
-            r1 = temp("Preprocessing/mt.r1.trimmed__sortmerna.fq"),
-            r2 = temp("Preprocessing/mt.r2.trimmed__sortmerna.fq"),
-            se = temp("Preprocessing/mt.se.trimmed__sortmerna.fq"),
+            r1 = temp("Preprocessing/mt.r1.trimmed__rrna_proc.fq"),
+            r2 = temp("Preprocessing/mt.r2.trimmed__rrna_proc.fq"),
+            se = temp("Preprocessing/mt.se.trimmed__rrna_proc.fq"),
             rrna_r1_gz = "Preprocessing/mt.r1.trimmed.rrna.fq.gz",
             rrna_r2_gz = "Preprocessing/mt.r2.trimmed.rrna.fq.gz",
             rrna_se_gz = "Preprocessing/mt.se.trimmed.rrna.fq.gz"
         log:
-            "logs/preprocessing/copy_sortmerna_out.log"
+            "logs/preprocessing/copy_rrna_proc_out.log"
         threads:
             getThreads(4)
         resources:
@@ -250,9 +151,9 @@ else:
 
             # Compress rRNA reads
             echo "Compressing rRNA reads ..." >> {log}
-            pigz -p {threads} -c {input.r1_rrna} > {output.rrna_r1_gz} >> {log} 2>&1
-            pigz -p {threads} -c {input.r2_rrna} > {output.rrna_r2_gz} >> {log} 2>&1
-            pigz -p {threads} -c {input.se_rrna} > {output.rrna_se_gz} >> {log} 2>&1
+            pigz -p {threads} -c {input.r1_rrna} > {output.rrna_r1_gz} 2>> {log}
+            pigz -p {threads} -c {input.r2_rrna} > {output.rrna_r2_gz} 2>> {log}
+            pigz -p {threads} -c {input.se_rrna} > {output.rrna_se_gz} 2>> {log}
 
             echo "Done." >> {log}
             """

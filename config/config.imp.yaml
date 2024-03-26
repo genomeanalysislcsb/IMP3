@@ -246,7 +246,7 @@ binning:
     mask_disruptive_sequences: 'True'
     extract_scmags: 'True'
     coassembly_mode: 'auto'
-    NX_value: 90megahit -
+    NX_value: 90
     max_cont_length_cutoff_marker: 2250
     max_n_contigs: 5.0e5
     # 0: 'domain', 1: 'phylum', 2: 'class', 3: 'order', 4: 'family', 5: 'genus', 6: 'species'

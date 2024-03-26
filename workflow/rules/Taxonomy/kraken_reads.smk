@@ -4,8 +4,8 @@ KRAKTHREADS = max(1, round((KRAKSIZE / (float(HIGH_MEM_BIGMEMCORE[:-1]) * to_gb_
 
 rule kraken_reads:
     input:
-        "Preprocessing/{type}.r1.preprocessed.fq",
-        "Preprocessing/{type}.r2.preprocessed.fq",
+        r1 = "Preprocessing/{type}.r1.preprocessed.fq",
+        r2 = "Preprocessing/{type}.r2.preprocessed.fq",
     output:
         "Analysis/taxonomy/kraken/{type}.pe.kraken.output.gz",
         report("Analysis/taxonomy/kraken/{type}.pe.kraken.report", category="Taxonomy")
@@ -17,7 +17,10 @@ rule kraken_reads:
         confidence = config['kraken']['confidence'],
         database = os.path.join(DBPATH, config['kraken']['krakendb']),
         report_minimizer = '--report-minimizer-data' if config['kraken']['report_minimizer'] else '',
-        min_hit_groups = config['kraken']['min_hit_groups']
+        min_hit_groups = config['kraken']['min_hit_groups'],
+        rrna_r1 = "Preprocessing/mt.r1.trimmed.rrna.fq.gz",
+        rrna_r2 = "Preprocessing/mt.r2.trimmed.rrna.fq.gz",
+        keep_rrnas = KEEP_RRNAs
     threads:
         getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
     conda:
@@ -31,6 +34,17 @@ rule kraken_reads:
         # Run kraken2 on paired-end reads
         mkdir -p Analysis/taxonomy/kraken >> {log} 2>&1
 
+        # If `type` is `mt` add rRNAs to read files
+        if [ "{wildcards.type}" == "mt" ] && [ "{params.keep_rrnas}" == "False" ]; then
+            k_r1="{input.r1}.tmp"
+            k_r2="{input.r2}.tmp"
+            cat {input.r1} <(zcat {params.rrna_r1}) > ${{k_r1}}
+            cat {input.r2} <(zcat {params.rrna_r2}) > ${{k_r2}}
+        else
+            k_r1="{inputr1}"
+            k_r2="{input.r2}"
+        fi
+
         kraken2 --db {params.database} \
                 --confidence {params.confidence} \
                 --threads {threads} \
@@ -40,7 +54,12 @@ rule kraken_reads:
                 {params.report_minimizer} \
                 --output {params.tmp_out} \
                 --report {output[1]} \
-                {input} >> {log} 2>&1
+                ${{k_r1}} ${{k_r2}} >> {log} 2>&1
+
+        # If `type` is `mt` remove temporary read files
+        if [ "{wildcards.type}" == "mt" ]; then
+            rm -f {input.r1}.tmp {input.r2}.tmp
+        fi
 
         gzip {params.tmp_out} >> {log} 2>&1
         """

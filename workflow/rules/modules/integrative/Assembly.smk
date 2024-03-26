@@ -42,7 +42,7 @@ rule ASSEMBLY:
         'Assembly/mt.reads.sorted.bam.bai',
         'Assembly/mg.reads.sorted.bam',
         'Assembly/mg.reads.sorted.bam.bai',
-        expand("Stats/{type}/{ass}.assembly.contig_coverage.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.thresholds.bed.gz",type=TYPES,ass=ASS),
         expand("Stats/{type}/{ass}.assembly.contig_depth.txt",type=TYPES,ass=ASS),
         expand("Stats/{type}/{ass}.assembly.contig_flagstat.txt",type=TYPES,ass=ASS),
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),

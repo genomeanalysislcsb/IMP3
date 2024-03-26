@@ -27,22 +27,22 @@ kraken_reads_SE:
 #   clusters: "--clusters 'iris'"
 #   partition: "--partition bigmem"
 
-call_gene_depth:
-  clusters: "--clusters 'iris'"
-  partition: "--partition bigmem"
+# call_gene_depth:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
 
-call_contig_depth:
-  clusters: "--clusters 'iris'"
-  partition: "--partition bigmem"
+# call_contig_depth:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
 
-filter_rrna_pe:
-  clusters: "--clusters 'iris'"
-  partition: "--partition bigmem"
-  qos: "--qos long"
+# filter_rrna_pe:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
+#   qos: "--qos long"
 
-filter_rrna_se:
-  clusters: "--clusters 'iris'"
-  partition: "--partition bigmem"
+# filter_rrna_se:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
 
 # COMEBin gpu configuration
 comebin:

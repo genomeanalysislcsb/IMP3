@@ -13,9 +13,9 @@ trimmed_fq_files = [
     'Preprocessing/{type}.se.trimmed.fq'
 ]
 rna_filtered_fq_mt_files = [
-    'Preprocessing/mt.r1.trimmed__sortmerna.fq',
-    'Preprocessing/mt.r2.trimmed__sortmerna.fq',
-    'Preprocessing/mt.se.trimmed__sortmerna.fq',
+    'Preprocessing/mt.r1.trimmed__rrna_proc.fq',
+    'Preprocessing/mt.r2.trimmed__rrna_proc.fq',
+    'Preprocessing/mt.se.trimmed__rrna_proc.fq',
 ]
 bam_files = [
     'Assembly/{type}.reads.sorted.bam'

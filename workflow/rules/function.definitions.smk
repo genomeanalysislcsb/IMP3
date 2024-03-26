@@ -97,9 +97,9 @@ def no_filtering_input(wildcards):
             'Preprocessing/mg.se.trimmed.fq'
         ],
         'mt': [
-            'Preprocessing/mt.r1.trimmed__sortmerna.fq',
-            'Preprocessing/mt.r2.trimmed__sortmerna.fq',
-            'Preprocessing/mt.se.trimmed__sortmerna.fq'
+            'Preprocessing/mt.r1.trimmed__rrna_proc.fq',
+            'Preprocessing/mt.r2.trimmed__rrna_proc.fq',
+            'Preprocessing/mt.se.trimmed__rrna_proc.fq'
         ]
     }
     if wildcards.type in TYPES:
@@ -132,9 +132,9 @@ def reads_input_files(wildcards):
         'Preprocessing/{type}.se.trimmed.fq'
     ]
     rna_filtered_fq_mt_files = [
-        'Preprocessing/mt.r1.trimmed__sortmerna.fq',
-        'Preprocessing/mt.r2.trimmed__sortmerna.fq',
-        'Preprocessing/mt.se.trimmed__sortmerna.fq',
+        'Preprocessing/mt.r1.trimmed__rrna_proc.fq',
+        'Preprocessing/mt.r2.trimmed__rrna_proc.fq',
+        'Preprocessing/mt.se.trimmed__rrna_proc.fq',
     ]
     bam_files = [
         'Assembly/{type}.reads.sorted.bam'
@@ -209,7 +209,7 @@ def filtering_reads_input(wildcards, paired=True):
     if wildcards.type == 'mg':
         assert re.match(r'trimmed', wildcards.filterstep), 'no trimmed in {} for {}'.format(wildcards.filterstep, wildcards.type)
     elif wildcards.type == 'mt':
-        assert re.match(r'trimmed__sortmerna', wildcards.filterstep), 'no trimmed__sortmerna in {} for {}'.format(wildcards.filterstep, wildcards.type)
+        assert re.match(r'trimmed__rrna_proc', wildcards.filterstep), 'no trimmed__rrna_proc in {} for {}'.format(wildcards.filterstep, wildcards.type)
     
     # input files
     ifiles = expand(

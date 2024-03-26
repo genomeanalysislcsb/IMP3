@@ -33,7 +33,7 @@ master_ass_input = [
         'Assembly/mg.assembly.merged.fa.bed3',
         expand('Assembly/{type}.reads.sorted.bam',type=TYPES),
         expand('Assembly/{type}.reads.sorted.bam.bai',type=TYPES),
-        expand("Stats/{type}/{ass}.assembly.contig_coverage.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.thresholds.bed.gz",type=TYPES,ass=ASS),
         expand("Stats/{type}/{ass}.assembly.contig_depth.txt",type=TYPES,ass=ASS),
         expand("Stats/{type}/{ass}.assembly.contig_flagstat.txt",type=TYPES,ass=ASS),
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),

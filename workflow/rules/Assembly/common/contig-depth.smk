@@ -1,9 +1,5 @@
 import math
 
-def get_cores4min_mem(wildcards, attempt):
-    min_mem = attempt * 50
-    return max(int(math.ceil(min_mem / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
-
 rule call_contig_depth:
     input:
         bam = "Assembly/{type}.reads.sorted.bam",
@@ -11,53 +7,70 @@ rule call_contig_depth:
         assembly_fai = "Assembly/%s.assembly.merged.fa.fai" % ASS,
         assembly_bed = "Assembly/%s.assembly.merged.fa.bed3" % ASS
     output:
-        contig_cov = "Stats/{type}/%s.assembly.contig_coverage.txt" % ASS,
-        contig_depth = "Stats/{type}/%s.assembly.contig_depth.txt" % ASS,
-        report = report("Stats/{type}/%s.assembly.contig_flagstat.txt" % ASS,category="Assembly")
+        glob_dist = f"Stats/{{type}}/{ASS}.assembly.mosdepth.global.dist.txt",
+        summary = f"Stats/{{type}}/{ASS}.assembly.mosdepth.summary.txt",
+        region_dist = f"Stats/{{type}}/{ASS}.assembly.mosdepth.region.dist.txt",
+        per_base = f"Stats/{{type}}/{ASS}.assembly.per-base.bed.gz",
+        regions = f"Stats/{{type}}/{ASS}.assembly.regions.bed.gz",
+        breadth = f"Stats/{{type}}/{ASS}.assembly.thresholds.bed.gz",
+        read_count = f"Stats/{{type}}/{ASS}.assembly.contig_read_count.txt",
+        contig_depth = f"Stats/{{type}}/{ASS}.assembly.contig_depth.txt",
+        report = report(f"Stats/{{type}}/{ASS}.assembly.contig_flagstat.txt", category="Assembly")
     resources:
         runtime = SHORT_RUNTIME,
-        # mem_mb = MAIN_BIGMEMCORE_MB
-        mem_mb = HIGH_MEM_BIGMEMCORE_MB
-    # threads:
-    #     get_cores4min_mem
-    # retries:
-    #     6
+        mem_mb = MAIN_MEMCORE_MB
     threads:
-        getThreads(128, bigmem=True, high_mem_cluster=True)
+        # Ensure at least 50gb of mem
+        max(int(math.ceil(50 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 4)
     params:
-        tmp_dir=TMPDIR
+        tmp_dir = TMPDIR,
+        ass_type = ASS,
+        ome = lambda wildcards: wildcards.type,
+        stats_dir = lambda wildcards: f"Stats/{wildcards.type}",
+        ass_dir = "Assembly"
     conda:
-        ENVDIR + "/IMP_mapping.yaml"
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:
         "logs/analysis/call_contig_depth.{type}.log"
     message:
         "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
     shell:
         """
-        samtools idxstats {input.bam} 2>> {log} | cut -f 1-2 > Assembly/bedtools_contig_cov_contigs.txt
-        # Then sort the BED file according to this genome file
-        bedtools sort -faidx Assembly/bedtools_contig_cov_contigs.txt -i {input.assembly_bed} > Assembly/bedtools_contig_cov_features-sorted.bed 2>> {log}
-        # Finally use coverageBed with "-sorted", sorted BED file, and genome file
-        echo "Calculating contig coverage ..." >> {log}
-        bedtools coverage -a Assembly/bedtools_contig_cov_features-sorted.bed \
-                          -b {input.bam} \
-                          -g Assembly/bedtools_contig_cov_contigs.txt \
-                          -sorted > {output.contig_cov} 2>> {log}
-        echo "Coverage calculation done" >> {log}
+        ### Calculate coverage ###
+        echo "Calculating contig base coverage ..." >> {log} 2>&1
+        export MOSDEPTH_PRECISION=6
+        mosdepth --fast-mode \
+                 --by {input.assembly_bed} \
+                 --threads 4 \
+                 --thresholds 1,10,30 \
+                 {params.stats_dir}/{params.ass_type}.assembly \
+                 {input.bam} >> {log} 2>&1
 
-        echo "Running BEDTools for average depth in each position" >> {log}
+        ### Calculate read counts ###
+        echo "Calculating contig read counts ..." >> {log} 2>&1
+        hts_nim_tools count-reads --threads 4 \
+                                  {input.assembly_bed} \
+                                  {input.bam} 2>> {log}\
+          | sort -k1,1V > {output.read_count} 2>> {log} 
+
+        ### Calculate average read coverage depth ###
+        echo "Running BEDTools for average depth in each position ..." >> {log}
         export TMPDIR="{params.tmp_dir}"
         TMP_DEPTH=$(mktemp "depth_file_XXXXXX.txt")
 
-        genomeCoverageBed -ibam {input.bam} 2>> {log} | grep -v "genome" > $TMP_DEPTH
-        echo "Depth calculation done" >> {log}
+        genomeCoverageBed -ibam {input.bam} 2>> {log} | grep -v "genome" > ${{TMP_DEPTH}} 2>> {log}
 
-        ## This method of depth calculation was adapted and modified from the CONCOCT code
-        {SRCDIR}/calcAvgCoverage.pl $TMP_DEPTH {input.assembly} > {output.contig_depth} 2>> {log}
+        echo "Calculating average contig coverage ..." >> {log}
+        # This method of depth calculation was adapted and modified from the CONCOCT code
+        perl {SRCDIR}/calcAvgCoverage.pl ${{TMP_DEPTH}} {input.assembly} > {output.contig_depth} 2>> {log}
 
-        echo "Remove the temporary files" >> {log}
-        rm -f $TMP_DEPTH Assembly/bedtools_contig_cov_contigs.txt Assembly/bedtools_contig_cov_features-sorted.bed
+        ### Clean up ###
+        echo "Removing temporary files ..." >> {log}
+        rm -f ${{TMP_DEPTH}} >> {log} 2>&1
 
-        echo "flagstat" >> {log}
-        samtools flagstat {input.bam} 2>> {log} | cut -f1 -d ' ' > {output.report}
+        ### Calculate mappoing stats ###
+        echo "Running samtools flagstat ..." >> {log}
+        samtools flagstat {input.bam} 2>> {log} | cut -f1 -d ' ' > {output.report} 2>> {log}
+
+        echo "Done." >> {log}
         """
