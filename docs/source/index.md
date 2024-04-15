@@ -43,6 +43,14 @@ running/run_idx
 steps/Overview
 output/Overview
 ```
+```{toctree}
+:caption: walkthrough
+:hidden: true
+:maxdepth: 1
+:name: walkthrough
+
+walkthrough/walkthrough
+```
 
 ```{toctree}
 :caption: Multi-IMP
@@ -61,6 +69,7 @@ multiImp/multiimp
 
 FAQ
 ```
+
 
 
 % * :ref:`genindex`
