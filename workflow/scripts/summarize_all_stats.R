@@ -98,7 +98,7 @@ if(file.exists(paste0("Stats/",types[1],"/",types[1],".read_counts.txt"))){
   }
 }
 ###################################################################################################
-## Reads analysed by kraken
+## Reads analysed by kraken + bracken
 ###################################################################################################
 if(file.exists(paste0("Analysis/taxonomy/kraken/",types[1],".kraken.report"))){
   krakStats_files <- list()
@@ -113,7 +113,7 @@ if(file.exists(paste0("Analysis/taxonomy/kraken/",types[1],".kraken.report"))){
                            "step"=c("kraken classified reads","kraken unclassified reads",
                                     "kraken species","kraken genera"),
                            "number"=c(krakRep$V2[2],krakRep$V2[1],
-                                      length(which(krakRep$V4=="S")),length(which(krakRep$V4=="G"))),
+                                      length(which(krakRep$V6=="S")),length(which(krakRep$V6=="G"))),
                            stringsAsFactors=F)
     rm(krakRep)
     if(!"statsTab" %in% ls()){
@@ -124,6 +124,54 @@ if(file.exists(paste0("Analysis/taxonomy/kraken/",types[1],".kraken.report"))){
     }
   }
 }
+
+bracken_genera = paste0("Analysis/taxonomy/bracken/", types[1], "/", types[1], ".G.bracken")
+bracken_species = paste0("Analysis/taxonomy/bracken/", types[1], "/", types[1], ".S.bracken")
+
+if(file.exists(bracken_genera)){
+  bracken_genera <- read.delim(bracken_genera, stringsAsFactors = FALSE, header = TRUE)
+  
+  bracken_genera <- bracken_genera[bracken_genera$name != "unclassified",]
+  
+  # Count entries and add to stats file
+  bracken_genera_count <- nrow(bracken_genera)
+
+  if(!"statsTab" %in% ls()){
+    statsTab <- data.frame("type"=types[1],
+                           "step"="bracken genera",
+                           "number"=bracken_genera_count,
+                           stringsAsFactors = FALSE)
+  }else{
+    statsTab <- rbind(statsTab,
+                      data.frame("type"=types[1],
+                                 "step"="bracken genera",
+                                 "number"=bracken_genera_count,
+                                 stringsAsFactors = FALSE))
+  }
+}
+
+if(file.exists(bracken_species)){
+  bracken_species <- read.delim(bracken_species, stringsAsFactors = FALSE, header = TRUE)
+  
+  bracken_species <- bracken_species[bracken_species$name != "unclassified",]
+  
+  # Count entries and add to stats file
+  bracken_species_count <- nrow(bracken_species)
+
+  if(!"statsTab" %in% ls()){
+    statsTab <- data.frame("type"=types[1],
+                           "step"="bracken species",
+                           "number"=bracken_species_count,
+                           stringsAsFactors = FALSE)
+  }else{
+    statsTab <- rbind(statsTab,
+                      data.frame("type"=types[1],
+                                 "step"="bracken species",
+                                 "number"=bracken_species_count,
+                                 stringsAsFactors = FALSE))
+  }
+}
+
 ###################################################################################################
 ## Reads analysed by mOTUs
 ###################################################################################################
@@ -212,12 +260,11 @@ if (any(sapply(unlist(fc_sum_files), function(x) file.exists(pattern = x)))) {
       "number" = sapply(dbs, function(x) {
         if (file.exists(fc_sum_files[[type]][[x]])) {
           mapTab <- read.delim(fc_sum_files[[type]][[x]],
-                               stringsAsFactors = FALSE, header = TRUE)
+                              stringsAsFactors = FALSE, header = TRUE)
           combinedSum <- sum(mapTab[1, 2] + mapTab[1, 3], na.rm = TRUE)
-          paste(combinedSum)
-          # print(paste("Reads mapping to", x, ":", combinedSum))
+          return(paste(combinedSum))
         } else {
-          0
+          return(0)
         }
       }),
       stringsAsFactors = FALSE
@@ -233,20 +280,23 @@ if (any(sapply(unlist(fc_sum_files), function(x) file.exists(pattern = x)))) {
 ###################################################################################################
 ## Assembly stats
 ###################################################################################################
-if(file.exists(paste0("Stats/",ass,"/",ass,".assembly.length.txt"))){
+
+if (file.exists(paste0("Stats/", ass, "/", ass, ".assembly.length.txt"))) {
   print("Reading assembly stats.")
-  contig_length <- read.delim(paste0("Stats/",ass,"/",ass,".assembly.length.txt"),
-                              stringsAsFactors=F,header = F)
-  colnames(contig_length) <- c("contig","length")
-  contig_gc <- read.delim(paste0("Stats/",ass,"/",ass,".assembly.gc_content.txt"),
-                          stringsAsFactors=F,header = T)
-  colnames(contig_gc) <- c("contig","GC")
+  contig_length <- read.delim(paste0("Stats/", ass, "/", ass, ".assembly.length.txt"),
+                              stringsAsFactors = FALSE, header = FALSE)
+  colnames(contig_length) <- c("contig", "length")
+  contig_gc <- read.delim(paste0("Stats/", ass, "/", ass, ".assembly.gc_content.txt"),
+                          stringsAsFactors = FALSE, header = TRUE)
+
+  colnames(contig_gc) <- c("contig", "GC")
   
   depthAssStats_files <- list()
   breadthAssStats_files <- list()
+
   for(type in types){
     depthAssStats_files[[type]] <- paste0("Stats/",type,"/",ass,".assembly.contig_depth.txt")
-    breadthAssStats_files[[type]] <- paste0("Stats/",type,"/",ass,".thresholds.bed.gz")
+    breadthAssStats_files[[type]] <- paste0("Stats/",type,"/",ass,".assembly.thresholds.bed.gz")
   }
   
   assTemp <- data.frame("type"=rep(ass,4),
@@ -264,13 +314,14 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".assembly.length.txt"))){
     statsTab <- rbind(statsTab,
                       assTemp)
   }
-  
+
   depthAssStat <- list()
   breadthAssStat <- list()
+  
   for(type in types){
     depthAssStat[[type]] <- read.delim(depthAssStats_files[[type]],stringsAsFactors=F,header = F)
     # Columns of `breadthAssStat`: contig,contig_length,depth>=1X,depth>=10X,depth>=30X
-    breadthAssStat[[type]] <- read.delim(breadthAssStats_files[[type]],stringsAsFactors=F,header = F)[,c(1,3,5-7)]
+    breadthAssStat[[type]] <- read.delim(breadthAssStats_files[[type]],stringsAsFactors=F,header = T)[,c(1,3,5:7)]
 
     colnames(depthAssStat[[type]]) <- c("contig","depth")
     colnames(breadthAssStat[[type]]) <- c("contig","length","depth_1X","depth_10X","depth_30X")
@@ -292,10 +343,11 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".assembly.length.txt"))){
                                      nrow(depthAssStat[[type]]),
                                      length(which(depthAssStat[[type]]$depth>=1)),
                                      length(which(breadthAssStat[[type]]$depth_1X>0)),
-                                     length(which(breadthAssStat[[type]]$depth_1X==1),
-                                     length(which(breadthAssStat[[type]]$depth_10X==1),
-                                     length(which(breadthAssStat[[type]]$depth_30X==1))),
+                                     length(which(breadthAssStat[[type]]$depth_1X>=1)),
+                                     length(which(breadthAssStat[[type]]$depth_10X>=1)),
+                                     length(which(breadthAssStat[[type]]$depth_30X>=1))),
                           stringsAsFactors=F)
+
     if(!"statsTab" %in% ls()){
       statsTab <- covTemp
     }else{
@@ -307,6 +359,7 @@ if(file.exists(paste0("Stats/",ass,"/",ass,".assembly.length.txt"))){
 ###################################################################################################
 ## Contigs analysed by kraken
 ###################################################################################################
+
 if(file.exists(paste0("Analysis/taxonomy/kraken/",ass,".kraken.parsed.tsv"))){
   print("Reading Kraken contig results.")
   krakAssFile <- paste0("Analysis/taxonomy/kraken/",ass,".kraken.parsed.tsv")

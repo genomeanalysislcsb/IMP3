@@ -13,7 +13,7 @@ rule filter_rrna_pe:
     threads:
         getThreads(128)
     resources:
-        runtime = LONG_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     conda:
         os.path.join(ENVDIR, "IMP_preprocessing.yaml")

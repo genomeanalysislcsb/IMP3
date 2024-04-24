@@ -9,7 +9,9 @@ rule kraken_contigs:
         "Analysis/taxonomy/kraken/%s.kraken.contig.output.gz" % ASS,
         "Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS
     resources:
-        runtime = SHORT_RUNTIME,
+        # runtime = SHORT_RUNTIME,
+        # TODO: Change back after prospectomics done
+        runtime = 360,
         mem_mb = HIGH_MEM_BIGMEMCORE_MB
     params:
         tmp_out = lambda wildcards: f"Analysis/taxonomy/kraken/{ASS}.kraken.contig.output",

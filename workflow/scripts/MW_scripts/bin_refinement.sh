@@ -179,16 +179,43 @@ fi
 
 comm "There are $n_binnings bin sets!"
 
-shopt -s nullglob  # ohickl ###
+# ohickl ###
 if [[ ! -s ${out}/work_files/binsA.stats ]]; then
-	comm "Fix contig naming by removing special characters..."
-	for f in ${out}/binsA/*; do ${SOFT}/fix_config_naming.py $f > ${out}/tmp.fa; mv ${out}/tmp.fa $f; done
-	for f in ${out}/binsB/*; do ${SOFT}/fix_config_naming.py $f > ${out}/tmp.fa; mv ${out}/tmp.fa $f; done
-	if [[ -d $bins3 ]]; then
-		for f in ${out}/binsC/*; do ${SOFT}/fix_config_naming.py $f > ${out}/tmp.fa; mv ${out}/tmp.fa $f; done
-	fi
+    comm "Fix contig naming by removing special characters..."
+    # Check and create binsA and binsB array to loop through only if they aren't empty
+
+    # Process binsA
+    shopt -s nullglob
+    binsA=(${out}/binsA/*)
+    if [ ${#binsA[@]} -gt 0 ]; then
+        for f in "${binsA[@]}"; do
+            ${SOFT}/fix_contig_naming.py "$f" > "${out}/tmp.fa"
+            mv "${out}/tmp.fa" "$f"
+        done
+    fi
+
+    # Process binsB
+    binsB=(${out}/binsB/*)
+    if [ ${#binsB[@]} -gt 0 ]; then
+        for f in "${binsB[@]}"; do
+            ${SOFT}/fix_contig_naming.py "$f" > "${out}/tmp.fa"
+            mv "${out}/tmp.fa" "$f"
+        done
+    fi
+
+    # Process binsC if the directory exists
+    if [[ -d ${out}/binsC ]]; then
+        binsC=(${out}/binsC/*)
+        if [ ${#binsC[@]} -gt 0 ]; then
+            for f in "${binsC[@]}"; do
+                ${SOFT}/fix_contig_naming.py "$f" > "${out}/tmp.fa"
+                mv "${out}/tmp.fa" "$f"
+            done
+        fi
+    fi
+    shopt -u nullglob
 fi
-shopt -u nullglob  # ohickl ###
+# ohickl ###
 
 
 # I have to switch directories here - Binning_refiner dumps everything into the current dir"

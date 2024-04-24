@@ -16,9 +16,9 @@ include:
 # master command
 rule ANALYSIS:
     input:
-        expand("Stats/{type}/annotation/{type}.gene_depth.hist", type=TYPES),
-        expand("Stats/{type}/annotation/{type}.gene_depth.avg", type=TYPES),
-        expand("Stats/{type}/annotation/{type}.gene.len", type=TYPES),
+        expand("Stats/{type}/gene.thresholds.bed.gz", type=TYPES),
+        expand("Stats/{type}/{type}.gene_depth.avg", type=TYPES),
+        expand("Stats/{type}/{type}.gene.len", type=TYPES),
         expand("Analysis/snps/{type}.variants.samtools.vcf.gz", type=TYPES),
         expand("Analysis/annotation/per_contig_counts/{type}/annotation/{type}.{feature}_per_contig.counts.tsv",type=TYPES,feature=["rRNA","CDS"]),
         expand("Analysis/annotation/per_contig_counts/{type}/annotation/{type}.hmmer.{db}.per_contig.counts.tsv",type=TYPES,db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],

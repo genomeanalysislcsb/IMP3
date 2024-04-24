@@ -4,21 +4,20 @@ rule call_gene_depth:
     input:
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         bam = "Assembly/{type}.reads.sorted.bam",
+        bam_index = "Assembly/{type}.reads.sorted.bam.bai",
         assembly = f"Assembly/{ASS}.assembly.merged.fa",
         assembly_bed = f"Assembly/{ASS}.assembly.merged.fa.bed3"
     output:
-        gene_bed = f"Analysis/annotation/{{type}}.annotation_CDS_RNA_hmms.bed",
-        bed_hist = "Stats/{type}/annotation/{type}.gene_depth.hist",
-        gene_depth = "Stats/{type}/annotation/{type}.gene_depth.avg",
-        gene_len = "Stats/{type}/annotation/{type}.gene.len",
-        glob_dist = f"Stats/{{type}}/annotation/{{type}}.mosdepth.global.dist.txt",
-        summary = f"Stats/{{type}}/annotation/{{type}}.mosdepth.summary.txt",
-        region_dist = f"Stats/{{type}}/annotation/{{type}}.mosdepth.region.dist.txt",
-        per_base = f"Stats/{{type}}/annotation/{{type}}.per-base.bed.gz",
-        regions = f"Stats/{{type}}/annotation/{{type}}.regions.bed.gz",
-        breadth = f"Stats/{{type}}/annotation/{{type}}.thresholds.bed.gz",
-        read_count = f"Stats/{{type}}/annotation/{{type}}.gene_read_count.txt",
-        # gene_depth = f"Stats/{{type}}/annotation/{{type}}.gene_depth.txt"
+        gene_bed = f"Analysis/annotation/{{type}}.annotation_CDS_RNA_hmms.bed.gz",
+        gene_depth = "Stats/{type}/{type}.gene_depth.avg",
+        gene_len = "Stats/{type}/{type}.gene.len",
+        glob_dist = f"Stats/{{type}}/gene.mosdepth.global.dist.txt",
+        summary = f"Stats/{{type}}/gene.mosdepth.summary.txt",
+        region_dist = f"Stats/{{type}}/gene.mosdepth.region.dist.txt",
+        per_base = f"Stats/{{type}}/gene.per-base.bed.gz",
+        # regions = f"Stats/{{type}}/gene.regions.bed.gz",
+        breadth = f"Stats/{{type}}/gene.thresholds.bed.gz",
+        read_count = f"Stats/{{type}}/gene_read_count.txt"
     resources:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
@@ -29,7 +28,8 @@ rule call_gene_depth:
         tmp_dir = TMPDIR,
         ass_type = ASS,
         ome = lambda wildcards: wildcards.type,
-        stats_dir = lambda wildcards: f"Stats/{wildcards.type}/annotation/{wildcards.type}"
+        stats_dir = lambda wildcards: f"Stats/{wildcards.type}",
+        bed_tmp = lambda wildcards: f"Analysis/annotation/{wildcards.type}.annotation_CDS_RNA_hmms.bed"
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     log:
@@ -38,13 +38,15 @@ rule call_gene_depth:
         "call_gene_depth: Getting data on gene coverage with {wildcards.type} reads."
     shell:
         """
+        # Ensure stats_dir is there
+        mkdir -p {params.stats_dir} >> {log} 2>&1
+
         ### Make feature bed ###
         echo "Creating gene bed file ..." >> {log} 2>&1
-        # TODO: Change to working code!
         gxf2bed --input {input.gff} \
-                --output {output.gene_bed}\
-                --parent "ID" \
-                --child "ID" \
+                --output {params.bed_tmp}\
+                --parent "" \
+                --child "" \
                 --feature "ID" \
                 --threads {threads} >> {log} 2>&1
         
@@ -52,26 +54,30 @@ rule call_gene_depth:
         echo "Calculating gene base coverage ..." >> {log} 2>&1
         export MOSDEPTH_PRECISION=6
         mosdepth --fast-mode \
-                 --by {output.gene_bed} \
+                 --by {params.bed_tmp} \
                  --threads 4 \
                  --thresholds 1,10,30 \
-                 {params.stats_dir}/{params.ome} \
+                 {params.stats_dir}/gene \
                  {input.bam} >> {log} 2>&1
         
         ### Calculate read counts ###
         echo "Calculating gene read counts ..." >> {log} 2>&1
         hts_nim_tools count-reads --threads 4 \
-                                  {output.gene_bed} \
+                                  {params.bed_tmp} \
                                   {input.bam} 2>> {log} \
-          | sort -k1,1V > {output.read_count} 2>> {log} 
+          | sort -k1,1V -k4,4V > {output.read_count} 2>> {log} 
 
-        ### Calculate average read coverage depth ###
-        echo "Running BEDTools for average depth in each position ..." >> {log}
-        # TODO: Make this work
+        ### The average gene coverage is actually already in `gene.regions.bed.gz` so we just decompress it ###
+        echo "Decompressing gene depth file ..." >> {log} 2>&1
+        gunzip -c {params.stats_dir}/gene.regions.bed.gz > {output.gene_depth} 2>> {log}
 
-        echo "Calculating average gene coverage ..." >> {log}
-        # This method of depth calculation was adapted and modified from the CONCOCT code
-        perl {SRCDIR}/calcAvgCoverage.pl XXXXXXXXXXX > {output.gene_depth} 2>> {log}
+        ### Writing gene length to file ###
+        echo "Writing gene length to file ..." >> {log} 2>&1
+        cut -f 11,4 {params.bed_tmp} | sed -e 's/,$//g' > {output.gene_len} 2>> {log}
+
+        ### Compress bed file ###
+        echo "Compressing bed file ..." >> {log} 2>&1
+        gzip -f {params.bed_tmp} >> {log} 2>&1
 
         echo "Done." >> {log}
         """

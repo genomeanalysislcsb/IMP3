@@ -20,7 +20,7 @@ rule GTDBtk_bins_single:
     message:
         "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
     threads:
-        getThreads(32, bigmem=True)
+        getThreads(64, bigmem=True)
     shell:
         """
         export GTDBTK_DATA_PATH="{params.db_path}"

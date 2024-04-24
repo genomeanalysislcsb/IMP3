@@ -3,9 +3,9 @@ import math
 rule call_contig_depth:
     input:
         bam = "Assembly/{type}.reads.sorted.bam",
-        assembly = "Assembly/%s.assembly.merged.fa" % ASS,
-        assembly_fai = "Assembly/%s.assembly.merged.fa.fai" % ASS,
-        assembly_bed = "Assembly/%s.assembly.merged.fa.bed3" % ASS
+        assembly = f"Assembly/{ASS}.assembly.merged.fa",
+        assembly_fai = f"Assembly/{ASS}.assembly.merged.fa.fai",
+        assembly_bed = f"Assembly/{ASS}.assembly.merged.fa.bed3"
     output:
         glob_dist = f"Stats/{{type}}/{ASS}.assembly.mosdepth.global.dist.txt",
         summary = f"Stats/{{type}}/{ASS}.assembly.mosdepth.summary.txt",
@@ -39,6 +39,7 @@ rule call_contig_depth:
         ### Calculate coverage ###
         echo "Calculating contig base coverage ..." >> {log} 2>&1
         export MOSDEPTH_PRECISION=6
+
         mosdepth --fast-mode \
                  --by {input.assembly_bed} \
                  --threads 4 \

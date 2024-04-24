@@ -149,13 +149,13 @@ if 'mt' in TYPES:
             runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
-            getThreads(MAIN_BIGCORENO, bigmem=True)
+            getThreads(128, bigmem=True)
         params:
             # sam_header = f'@RG\tID:{SAMPLE}\tSM:mt'
             sample = SAMPLE,
             out_dir = 'Assembly',
             # Calc max amount of mem availbale (in bytes)
-            max_mem = int(round(MAIN_BIGMEMCORE_MB * getThreads(MAIN_BIGCORENO, bigmem=True)) * 1e6)
+            max_mem = int(round(MAIN_BIGMEMCORE_MB * getThreads(128, bigmem=True)) * 1e6)
         conda:
             ENVDIR + "/IMP_mapping.yaml"
         log:
@@ -164,11 +164,16 @@ if 'mt' in TYPES:
             "mapping_on_assembly: Mapping mt reads on merged assembly."
         shell:
             """
+            # Remove leftover tmp files
+            rm -rf {params.out_dir}/_STARtmp {params.out_dir}/Log.out {params.out_dir}/Log.progress.out  \
+                   {params.out_dir}/Log.final.out {params.out_dir}/SJ.out.tab > {log} 2>&1
+            
             # Increase max number of open file descriptors for STAR
-            ulimit -n 10000
+            ulimit -n 100000
 
             # Map paired
-            echo "Mapping PE reads and sorting them ..." > {log} 2>&1
+            echo "Mapping PE reads and sorting them ..." >> {log} 2>&1
+            # --seedPerWindowNmax 30
             STAR --runThreadN {threads} \
                  --runMode alignReads \
                  --genomeDir Assembly \
@@ -196,6 +201,7 @@ if 'mt' in TYPES:
 
             # Map single
             echo "Mapping SE reads and sorting them ..." >> {log} 2>&1
+            # --seedPerWindowNmax 30
             STAR --runThreadN {threads} \
                  --runMode alignReads \
                  --genomeDir Assembly \
@@ -241,7 +247,8 @@ rule index_bam:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
-        1
+        # Ensure at least 50gb of mem
+        max(int(math.ceil(50 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     params:
         out_file_name = lambda wildcards: wildcards.get("sorted_bam").split("/")[-1].replace(".bam", "")
     conda:

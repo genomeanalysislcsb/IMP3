@@ -3,14 +3,17 @@ import math
 include:
     "mantis_config.smk"
 
-def get_min_mem(wildcards, attempt):
-    return attempt * MAIN_MEMCORE_MB
+def get_min_mem_man(wildcards, attempt):
+    mem_per_core = float(config['cluster_specs']['main_cluster']['big_mem_per_core'])
+    mem_unit = config['cluster_specs']['mem_unit']
+    mem_avail_mb = math.floor(mem_per_core * to_mb_dict[mem_unit])
+    return attempt * max(mem_avail_mb, 4000)
 
-def get_max_cores(wildcards, attempt):
-    mem_per_core_gb_attempt = int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]] * attempt
-    max_cores = getThreads(128, bigmem=True, high_mem_cluster=False)
-    total_mem = max_cores * int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]
-    attempt_supported_cores = int(math.ceil(total_mem / mem_per_core_gb_attempt))
+def get_max_cores_man(wildcards, attempt):
+    mem_per_core_attempt = get_min_mem_man(wildcards, attempt)
+    max_cores = int(config['cluster_specs']['main_cluster']['big_mem_cores_max'])
+    total_mem = int(config['cluster_specs']['main_cluster']['big_mem_total'])
+    attempt_supported_cores = math.floor(total_mem / mem_per_core_attempt)
     return max(min(max_cores, attempt_supported_cores), 1)
 
 # Mantis: protein annotation
@@ -33,12 +36,10 @@ rule mantis_annot:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
         params="-gff -km -da heuristic",
     threads:
-        # getThreads(128, bigmem=True, high_mem_cluster=False)
-        get_max_cores
+        get_max_cores_man
     resources:
         runtime = LONG_RUNTIME,
-        # mem_mb = MAIN_MEMCORE_MB
-        mem_mb = get_min_mem
+        mem_mb = get_min_mem_man
     retries:
         3
     message:

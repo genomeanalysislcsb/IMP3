@@ -1,3 +1,18 @@
+import math
+
+def get_min_mem_sb(wildcards, attempt):
+    mem_per_core = float(config['cluster_specs']['main_cluster']['mem_per_core'])
+    mem_unit = config['cluster_specs']['mem_unit']
+    mem_avail_mb = math.floor(mem_per_core * to_mb_dict[mem_unit])
+    return attempt * mem_avail_mb
+
+def get_max_cores_sb(wildcards, attempt):
+    mem_per_core_attempt = get_min_mem_sb(wildcards, attempt)
+    max_cores = int(config['cluster_specs']['main_cluster']['cores_max'])
+    total_mem = int(config['cluster_specs']['main_cluster']['mem_total'])
+    attempt_supported_cores = math.floor(total_mem / mem_per_core_attempt)
+    return max(min(max_cores, attempt_supported_cores), 1)
+
 rule semibin:
     input:
         assembly = "Assembly/%s.assembly.merged.fa" % ASS,
@@ -12,10 +27,12 @@ rule semibin:
         # db_dir=os.path.join(config["db_path"], "gtdb_semibin"),
         tmp_dir = os.path.join(config["tmp_dir"])
     threads:
-        getThreads(128)
+        get_max_cores_sb
     resources:
         runtime = SHORT_RUNTIME,
-        mem_mb = MAIN_MEMCORE_MB
+        mem_mb = get_min_mem_sb
+    retries:
+        3
     conda:
         ENVDIR + "/IMP_semibin.yaml"
     log:

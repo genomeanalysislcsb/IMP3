@@ -39,15 +39,18 @@ rule call_contig_depth:
         ### Calculate coverage ###
         echo "Calculating contig base coverage ..." >> {log} 2>&1
         export MOSDEPTH_PRECISION=6
+
         mosdepth --fast-mode \
-                 --by {input.assembly_bed} \
                  --threads 4 \
+                 --by {input.assembly_bed} \
                  --thresholds 1,10,30 \
                  {params.stats_dir}/{params.ass_type}.assembly \
                  {input.bam} >> {log} 2>&1
 
         ### Calculate read counts ###
         echo "Calculating contig read counts ..." >> {log} 2>&1
+        # TODO: The default SAM flag is 1796, which seems to occasionally lead to inconsistencies, 
+        #       since a contig will have depth but 0 counts, maybe because its not a primary alignment
         hts_nim_tools count-reads --threads 4 \
                                   {input.assembly_bed} \
                                   {input.bam} 2>> {log} \
