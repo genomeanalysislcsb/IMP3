@@ -40,27 +40,36 @@ if binner_source_stats:
                     raise IndexError
 
 # Get CheckM stats
-with open(checkm_stats) as file:
-    header = next(file)
-    for line in file:
-        try:
-            line_data = line.strip().split("\t")
-        except IndexError:
+
+# Check if file is empty. if so, warn, write empty file and exit
+
+try:
+    with open(checkm_stats) as file:
+        header = next(file)
+        for line in file:
             try:
-                line_data = line.strip().split()
+                line_data = line.strip().split("\t")
             except IndexError:
-                print(f"Error splitting line with tabs or spaces: {line}")
-                raise IndexError
+                try:
+                    line_data = line.strip().split()
+                except IndexError:
+                    print(f"Error splitting line with tabs or spaces: {line}")
+                    raise IndexError
 
-        # Stats we need are: bin, comp, cont, n50, gen_size, gc
-        bin_stats = [line_data[i] for i in [0, 1, 2, 6, 8, 9]]
+            # Stats we need are: bin, comp, cont, n50, gen_size, gc
+            bin_stats = [line_data[i] for i in [0, 1, 2, 6, 8, 9]]
 
-        if binner_source_stats:
-            bin_stats.append(bin_source.get(bin_stats[0], ''))   
-        else:
-            bin_stats.append(binner_source)
-        
-        data.append(bin_stats)
+            if binner_source_stats:
+                bin_stats.append(bin_source.get(bin_stats[0], ''))   
+            else:
+                bin_stats.append(binner_source)
+            
+            data.append(bin_stats)
+except StopIteration:
+    print(f"File {checkm_stats} is empty. Writing empty summary.")
+    with open(out_file, "w") as f:
+        f.write(tabulate(data, headers="firstrow", tablefmt="simple"))
+    sys.exit(0)
 
 # Sort the data by completeness, ignoring the header but it it back later
 # Separate the header and the data

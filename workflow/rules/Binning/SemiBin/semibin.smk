@@ -1,17 +1,22 @@
 import math
 
-def get_min_mem_sb(wildcards, attempt):
-    mem_per_core = float(config['cluster_specs']['main_cluster']['mem_per_core'])
-    mem_unit = config['cluster_specs']['mem_unit']
-    mem_avail_mb = math.floor(mem_per_core * to_mb_dict[mem_unit])
-    return attempt * mem_avail_mb
+# def get_min_mem_sb(wildcards, attempt):
+#     mem_per_core = float(config['cluster_specs']['main_cluster']['mem_per_core'])
+#     mem_unit = config['cluster_specs']['mem_unit']
+#     mem_avail_mb = math.floor(mem_per_core * to_mb_dict[mem_unit])
+#     return attempt * mem_avail_mb
 
-def get_max_cores_sb(wildcards, attempt):
-    mem_per_core_attempt = get_min_mem_sb(wildcards, attempt)
-    max_cores = int(config['cluster_specs']['main_cluster']['cores_max'])
-    total_mem = int(config['cluster_specs']['main_cluster']['mem_total'])
-    attempt_supported_cores = math.floor(total_mem / mem_per_core_attempt)
-    return max(min(max_cores, attempt_supported_cores), 1)
+# def get_max_cores_sb(wildcards, attempt):
+#     mem_per_core_attempt = get_min_mem_sb(wildcards, attempt)
+#     max_cores = int(config['cluster_specs']['main_cluster']['cores_max'])
+#     total_mem = int(config['cluster_specs']['main_cluster']['mem_total'])
+#     attempt_supported_cores = math.floor(total_mem / mem_per_core_attempt)
+#     return max(min(max_cores, attempt_supported_cores), 1)
+
+def retry_increase_cutoff(wildcards, attempt):
+    cutoff = config["binning"]["SemiBin"]["cutoff"]
+    cutoff_increase = 250 * (attempt - 1)
+    return cutoff + cutoff_increase
 
 rule semibin:
     input:
@@ -19,20 +24,26 @@ rule semibin:
         mapping = "Assembly/mg.reads.sorted.bam"
     output:
         s2b = "Binning/SemiBin/contig2bin.tsv",
-        out_dir = temp(directory("Binning/SemiBin")),
+        out_dir = directory("Binning/SemiBin"),
         out_bin_dir = directory("Binning/SemiBin/bins")
     params:
         model = config["binning"]["SemiBin"]["model"],
-        cutoff = config["binning"]["SemiBin"]["cutoff"],
+        # cutoff = config["binning"]["SemiBin"]["cutoff"],
+        # cutoff = retry_increase_cutoff
+        # cutoff = lambda wildcards, attempt: config["binning"]["SemiBin"]["cutoff"] + (250 * (attempt - 1)),
         # db_dir=os.path.join(config["db_path"], "gtdb_semibin"),
         tmp_dir = os.path.join(config["tmp_dir"])
     threads:
-        get_max_cores_sb
+        # get_max_cores_sb
+        getThreads(128)
     resources:
         runtime = SHORT_RUNTIME,
-        mem_mb = get_min_mem_sb
+        # mem_mb = get_min_mem_sb
+        mem_mb = MAIN_MEMCORE_MB,
+        # attempt_nr = lambda wildcards, attempt: attempt
+        cutoff = lambda wildcards, attempt: config["binning"]["SemiBin"]["cutoff"] + (250 * (attempt - 1))
     retries:
-        3
+        5
     conda:
         ENVDIR + "/IMP_semibin.yaml"
     log:
@@ -41,6 +52,8 @@ rule semibin:
         "Running SemiBin."
     shell:
         """
+        echo "Using cutoff: {resources.cutoff}"
+
         # Run SemiBin2
         SemiBin2 \
             single_easy_bin \
@@ -49,7 +62,7 @@ rule semibin:
                 --environment {params.model} \
                 --threads {threads} \
                 --random-seed 0 \
-                --min-len {params.cutoff} \
+                --min-len {resources.cutoff} \
                 --compression none \
                 --output {output.out_dir} >> {log} 2>&1
 

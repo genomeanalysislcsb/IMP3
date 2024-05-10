@@ -4,7 +4,7 @@ rule metabat:
         depth = "Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
         s2b = "Binning/MetaBAT/contig2bin.tsv",
-        out_dir = temp(directory("Binning/MetaBAT")),
+        out_dir = directory("Binning/MetaBAT"),
         out_bin_dir = directory("Binning/MetaBAT/bins")
     params:
         tmp_dir = TMPDIR,

@@ -90,11 +90,11 @@ if 'mt' in TYPES:
             runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
-            # Ensure at least 20gb of mem
-            max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+            # Ensure at least 75gb of mem
+            max(int(math.ceil(75 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
         params:
             fasta_file = lambda wildcards: "_".join(f'Assembly/{wildcards.get("ASS")}.assembly.merged.fa'.split("/")[-2:]),
-            max_mem_bytes = int(20e9)
+            max_mem_bytes = int(75e9)
         conda:
             os.path.join(ENVDIR, "IMP_mapping.yaml")
         log:

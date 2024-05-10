@@ -3,6 +3,8 @@ import math
 include:
     "mantis_config.smk"
 
+# TODO: Check why 4000 mb/core + 56 cores or 8000 mb/core + 28 cores cores cant submit with slurm but manually. 12000 + 16 works 
+
 def get_min_mem_man(wildcards, attempt):
     mem_per_core = float(config['cluster_specs']['main_cluster']['big_mem_per_core'])
     mem_unit = config['cluster_specs']['mem_unit']
@@ -11,8 +13,8 @@ def get_min_mem_man(wildcards, attempt):
 
 def get_max_cores_man(wildcards, attempt):
     mem_per_core_attempt = get_min_mem_man(wildcards, attempt)
-    max_cores = int(config['cluster_specs']['main_cluster']['big_mem_cores_max'])
-    total_mem = int(config['cluster_specs']['main_cluster']['big_mem_total'])
+    max_cores = config['cluster_specs']['main_cluster']['big_mem_cores_max']
+    total_mem = math.floor(config['cluster_specs']['main_cluster']['big_mem_total'] * 0.95)
     attempt_supported_cores = math.floor(total_mem / mem_per_core_attempt)
     return max(min(max_cores, attempt_supported_cores), 1)
 

@@ -3,7 +3,7 @@ rule concoct:
        assembly="Assembly/%s.assembly.merged.fa" % ASS,
        depth="Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
-        out_dir = temp(directory("Binning/CONCOCT")),
+        out_dir = directory("Binning/CONCOCT"),
         s2b = "Binning/CONCOCT/contig2bin.tsv",
         out_bin_dir = directory("Binning/CONCOCT/bins")
     params:

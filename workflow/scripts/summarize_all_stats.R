@@ -389,9 +389,9 @@ if(file.exists("Analysis/annotation/annotation_CDS_RNA_hmms.gff")){
   colnames(gene_gff) <- c("contig","source","feature","start","end","score","strand","frame","attribute")
 }
 
-if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
+if(file.exists(paste0("Stats/",types[1],"/",types[1],".gene.len"))){
   print("Reading annotation stats.")
-  gene_length <- read.delim(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"),
+  gene_length <- read.delim(paste0("Stats/",types[1],"/",types[1],".gene.len"),
                             stringsAsFactors=F,header = F)
   colnames(gene_length) <- c("gene","length")
   
@@ -399,7 +399,7 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
                     "gene"=gsub("ID=([^;]+);.+","\\1",gene_gff$attribute))
   depthGeneStats_files <- list()
   for(type in types){
-    depthGeneStats_files[[type]] <- paste0("Stats/",type,"/annotation/",type,".gene_depth.avg")
+    depthGeneStats_files[[type]] <- paste0("Stats/",type,"/",type,".gene_depth.avg")
   }
 
   annTemp <- data.frame("type"=ass,
@@ -433,7 +433,7 @@ if(file.exists(paste0("Stats/",types[1],"/annotation/",types[1],".gene.len"))){
   depthGeneStat <- list()
   for(type in types){
     depthGeneStat[[type]] <- read.delim(depthGeneStats_files[[type]],stringsAsFactors=F,header = F)
-    colnames(depthGeneStat[[type]]) <- c("gene","depth")
+    colnames(depthGeneStat[[type]]) <- c("contig","start","end","gene","depth")
     covTemp <- data.frame("type"=type,
                           "step"=c("max_gene_depth","genes_mean_depth>0"),
                           "number"=c(round(max(depthGeneStat[[type]]$depth)),length(which(depthGeneStat[[type]]$depth>0))),
@@ -492,6 +492,7 @@ if(file.exists(bin_in_file)){
       }
       
       # Extract information for non-CDS features from the gene_gff data frame
+      # TODO: CHeck if this actually works
       products_bin <- gsub(".+;product=","",gene_gff[gene_gff$contig %in% contigs_temp & gene_gff$feature != "CDS",9])
       
       # Calculate RNA-related statistics for the current bin

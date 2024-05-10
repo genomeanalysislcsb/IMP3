@@ -70,6 +70,10 @@ rule MetaWrap_refine:
         mkdir -p Visualization
 
         # Round 1
+        echo "########################################################################################" >> {log}
+        echo "Running MetaWrap bin refinement with the binner outputs: {params.binner_inputs_list[0]}" >> {log}
+        echo "########################################################################################" >> {log}
+
         SOFT={params.script_path} \
         {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_1} \
                                                --checkm2-db-path {params.checkm_db} \
@@ -78,7 +82,19 @@ rule MetaWrap_refine:
                                                {params.binner_inputs_list[0]} \
                                                -c {params.mw_min_comp} \
                                                -x {params.mw_max_cont} >> {log} 2>&1
-                
+
+        # If no bins are in the output directory, create empty output files and exit
+        shopt -s nullglob
+        bin_files=$(ls {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*.fa >> {log} 2>&1)
+        shopt -u nullglob
+
+        if [[ -z "${{bin_files}}" ]]; then
+          echo "No bins above thresholds found. Creating empty output files and exiting."
+          mkdir -p {output.out_dir}/bins
+          touch {output.out_dir}/bins.stats {output.out_dir}/bins.contigs
+          exit 0
+        fi
+
         # Rename bin fastas back to .fasta
         shopt -s nullglob
         for bin in {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*.fa; do
@@ -95,6 +111,10 @@ rule MetaWrap_refine:
         
         # Round 2
         if [[ ${{#binner_input_array[*]}} > 3 ]]; then
+            echo "########################################################################################" >> {log}
+            echo "Running MetaWrap bin refinement with the binner outputs: {params.binner_inputs_list[1]}" >> {log}
+            echo "########################################################################################" >> {log}
+
             mv {output.out_dir}/{params.prefix_1}/${{bin_folder}} {output.out_dir}/{params.prefix_1}/${{bin_folder}}_round_01
             SOFT={params.script_path} \
             {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_2} \
@@ -126,6 +146,11 @@ rule MetaWrap_refine:
         
         # Round 3
         if [[ ${{#binner_input_array[*]}} > 5 ]]; then
+
+            echo "\n########################################################################################" >> {log}
+            echo "Running MetaWrap bin refinement with the binner outputs: {params.binner_inputs_list[2]}" >> {log}
+            echo "########################################################################################\n" >> {log}
+
             mv {output.out_dir}/{params.prefix_2}/${{bin_folder}} {output.out_dir}/{params.prefix_2}/${{bin_folder}}_round_02
             SOFT={params.script_path} \
             {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_3} \

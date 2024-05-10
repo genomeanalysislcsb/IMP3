@@ -1,8 +1,36 @@
 import math
+import logging
+
+def setup_logger(logfile=None, level=logging.DEBUG):
+    """
+    Setup a logger
+    """
+
+    # Formatting
+    formatter = logging.Formatter('%(asctime)s - %(message)s', '%d/%m/%Y %I:%M:%S %p')
+
+    # Create logger
+    logger = logging.getLogger()
+    logger.setLevel(level)
+
+    # Console handler
+    ch = logging.StreamHandler()
+    logger.addHandler(ch)
+
+    # File handler
+    if logfile:
+        fh = logging.FileHandler(logfile)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
+
+    return
+
+##########
 
 rule GTDBtk_bins_single:
     input:
-        bin = ancient("Binning/MetaWrap/bins/{clusterID}")
+        bin = ancient("Binning/MetaWrap/bins/{clusterID}"),
+        dir_prep = "status/binning_GRiD.prepped"
     output:
         gtdbtk_out = directory("Binning/MetaWrap/bins/{clusterID}/GTDB"),
         # summary_bac = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.bac120.markers_summary.tsv",
@@ -47,10 +75,13 @@ rule GTDB_all:
         touch {output}
         """
 
+
+
 rule GTDBtk_summarize:
     input:
         ancient(gather_GTDB_bins),
-        mw_stats="Binning/MetaWrap/bins.stats"
+        mw_stats="Binning/MetaWrap/bins.stats",
+        dir_prep = "status/binning_GRiD.prepped"
     output:
         out_file=report("Stats/%s/%s.bins.tsv" % (ASS,ASS), category="Taxonomy"),
         grid="status/binning_GRiD.done" if MG else []
@@ -65,12 +96,15 @@ rule GTDBtk_summarize:
         # Ensure at least 10gb of mem
         max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     run:
+        # Setup logger
+        setup_logger(log[0], level=logging.INFO)
+
         # Check if MetaWrap output is empty
         if os.stat(input.mw_stats).st_size > 0:
             stats_data = {}
 
             # Get stats
-            print('Getting MetaWrap bin stats.')
+            logging.info('Getting MetaWrap bin stats.')
             with open(input.mw_stats,'r') as mws:
                 # Get mw stats header
                 header = next(mws).strip('\n \t')
@@ -82,7 +116,7 @@ rule GTDBtk_summarize:
             # Read GRiD out
             got_grid_header = False
 
-            print("Reading GRiD results.")
+            logging.info("Reading GRiD results.")
             # Get all GRiD stat files
             grid_out = glob.glob("Binning/MetaWrap/bins/*/grid/reads.GRiD.txt")
             if grid_out:
@@ -102,7 +136,7 @@ rule GTDBtk_summarize:
             # Read GTDBtk out
             got_gtdbtk_header = False
 
-            print("Reading GTDBtk results.")
+            logging.info("Reading GTDBtk results.")
             # Get all GTBtk stat files
             gtdbtk_out = glob.glob("Binning/MetaWrap/bins/*/GTDB/gtdbtk.*.summary.tsv")
             if gtdbtk_out:
@@ -123,14 +157,15 @@ rule GTDBtk_summarize:
                 for bin in stats_data.keys():
                     of.write('\t'.join(stats_data[bin]) + '\n')
         else:
-            print("No output from MetaWrap!")
+            logging.warning("No output from MetaWrap!")
             os.mknod(output.out_file)
+            os.mknod(output.grid)
 
 if MG:
     rule bins_tar:
         input:
-            dir="Binning/MetaWrap/bins",
-            ctrl="Stats/%s/%s.bins.tsv" % (ASS, ASS)
+            dir = ancient("Binning/MetaWrap/bins"),
+            ctrl = ancient("Stats/%s/%s.bins.tsv" % (ASS, ASS))
         output:
             "Binning/per_bin_results.tar.gz"
         threads:
@@ -168,9 +203,8 @@ if MG:
 else:
     rule bins_tar:
         input:
-            bins_dir = "Binning/MetaWrap/bins",
-            ctrl = "Stats/%s/%s.bins.tsv" % (ASS,ASS)
-            # ctrl="Stats/mt/mt.bins.tsv"
+            bins_dir = ancient(dir="Binning/MetaWrap/bins",),            
+            ctrl = ancient("Stats/%s/%s.bins.tsv" % (ASS, ASS))
         output:
             bin_res_arc = "Binning/per_bin_results.tar.gz"
         threads:

@@ -24,30 +24,39 @@ max_x = 0
 for file_name in file_list:
     bin_set = ".".join(file_name.split("/")[-1].split(".")[:-1])
     data[bin_set] = []
-    with open(file_name) as f:
-        header = next(f)
-        seperator_line = next(f)
-        for line in f:
-            bin_data = line.strip().split()
-            try:
-                bin_comp = float(bin_data[1])
-                bin_cont = float(bin_data[2])
-            except IndexError:
-                print(f"Error: {line}, file: {file_name}")
-                raise IndexError
-            # skip bins that are too contaminated or very incomplete
-            try:
-                if bin_comp > max_contamination:
-                    continue
-                if bin_cont < min_completion:
-                    continue
-            except IndexError:
-                print(f"Error: {line}, file: {file_name}")
-                raise IndexError
+    try:
+        with open(file_name) as f:
+            header = next(f)
+            seperator_line = next(f)
+            for line in f:
+                bin_data = line.strip().split()
+                try:
+                    bin_comp = float(bin_data[1])
+                    bin_cont = float(bin_data[2])
+                except IndexError:
+                    print(f"Error: {line}, file: {file_name}")
+                    raise IndexError
+                # skip bins that are too contaminated or very incomplete
+                try:
+                    if bin_comp > max_contamination:
+                        continue
+                    if bin_cont < min_completion:
+                        continue
+                except IndexError:
+                    print(f"Error: {line}, file: {file_name}")
+                    raise IndexError
 
-            # save the completion value of each bin into a list
-            data[bin_set].append(bin_comp)
-    if len(data[bin_set]) > max_x: max_x = len(data[bin_set])
+                # save the completion value of each bin into a list
+                data[bin_set].append(bin_comp)
+        if len(data[bin_set]) > max_x: max_x = len(data[bin_set])
+    except StopIteration:
+        print(f"Warning: {file_name} is empty. Skipping...")
+        continue
+
+# Pass if no bins are found
+if all([len(data[k]) == 0 for k in data]):
+    print("No bins found. Exiting...")
+    sys.exit(0)
 
 # sort the completion data sets
 for bin_set in data:

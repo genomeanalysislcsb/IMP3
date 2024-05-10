@@ -299,16 +299,23 @@ if [ "$run_checkm" == "true" ] && [[ ! -s work_files/binsM.stats ]]; then
 		comm "Running CheckM2 on $bin_set bins"
 		if [[ -d ${bin_set}.checkm ]]; then rm -r ${bin_set}.checkm; fi
 		if [[ ! -d ${bin_set}.tmp ]]; then mkdir ${bin_set}.tmp; fi
-		checkm2 predict --threads $threads --input $bin_set --output-directory ${bin_set}.checkm --extension fa --force --database_path $checkm_db --tmpdir ${bin_set}.tmp
+		# If Checkm fails to preduce and output, print warning and toch emtpy outputs
+		checkm2 predict --threads $threads --input $bin_set --output-directory ${bin_set}.checkm --extension fa --force --database_path $checkm_db --tmpdir ${bin_set}.tmp \
+			|| { warning "CheckM2 failed to produce an output for $bin_set. Touching empty files ..."; touch ${bin_set}.checkm/quality_report.tsv ${bin_set}.stats ; }
 		
-		if [[ ! -s ${bin_set}.checkm/quality_report.tsv ]]; then error "Something went wrong with running CheckM2. Exiting..."; fi
+		if [[ ! -f ${bin_set}.checkm/quality_report.tsv ]]; then error "Something went wrong with running CheckM2. Exiting..."; fi
 		comm "CheckM2 stats for $bin_set"
 		${SOFT}/summarize_checkm.py ${bin_set}.checkm/quality_report.tsv ${bin_set}.stats
 		if [[ $? -ne 0 ]]; then error "Cannot make checkm summary file. Exiting."; fi
 		rm -r ${bin_set}.checkm; rm -r ${bin_set}.tmp
 
-		num=$(awk -v c="$comp" -v x="$cont" 'NR>1 {if ($2 >= c && $3 >= 0 && $3 <= x) count++} END{print count}' ${bin_set}.stats)
-		comm "There are $num 'good' bins found in $bin_set! (>${comp}% completion and <${cont}% contamination)"
+		num=$(awk -v c="$comp" -v x="$cont" 'NR>1 {if ($2 > c && $3 > 0 && $3 < x) count++} END{print count}' ${bin_set}.stats)
+		# Also always count near complete bins
+		num_nc=$(awk -v c=90 -v x=5 'NR>1 {if ($2 > c && $3 > 0 && $3 < x) count++} END{print count}' ${bin_set}.stats)
+		# if num is empty, set it to 0, same for num_nc
+		if [[ -z $num ]]; then num=0; fi
+		if [[ -z $num_nc ]]; then num_nc=0; fi
+		comm "There are $num 'good' bins found in $bin_set! (>${comp}% completion and <${cont}% contamination).\nThere are also $num_nc NC (>90% completion and <5% contamination) bins."
 	done
 elif [ "$run_checkm" == "true" ] && [[ -s work_files/binsM.stats ]]; then
 	comm "Previous bin refinement files found. If this was not intended, please re-run with a clear output directory. Skipping CheckM2 runs..."
@@ -443,7 +450,9 @@ if [[ ( "$run_checkm" == "true" ) && ( -f "${stats_file[0]}" && -s "${stats_file
 	comm "Making completion and contamination ranking plots for all refinement iterations."
 	${SOFT}/plot_binning_results.py $comp $cont $(ls | grep ".stats")
 	mkdir figures
-	mv binning_results.png figures/intermediate_binning_results.png
+	if [[ -s binning_results.png ]]; then
+		mv binning_results.png figures/binning_results.png
+	fi
 fi
 
 ########################################################################################################
@@ -472,11 +481,15 @@ shopt -u nullglob  # ohickl ###
 cp -r work_files/binsO metawrap_${comp}_${cont}_bins 2>/dev/null || :  # ohickl ###
 
 # Here we need to make the final table machine readable (multiple spaces separated) and remove the last column
-awk 'BEGIN{OFS="\t"} 
-    NR==1 || (NR>1 && $2>=0) { 
-        print $1, $2, $3, $4, $5, $6
-    }' work_files/binsO.stats > metawrap_${comp}_${cont}_bins.stats
-
+if [[ -s work_files/binsO.stats ]]; then
+	awk 'BEGIN{OFS="\t"} 
+		NR==1 || (NR>1 && $2>=0) { 
+			print $1, $2, $3, $4, $5, $6
+		}' work_files/binsO.stats > metawrap_${comp}_${cont}_bins.stats
+else
+	echo "Warning: work_files/binsO.stats does not exist. Creating empty metawrap_${comp}_${cont}_bins.stats file."
+	touch metawrap_${comp}_${cont}_bins.stats
+fi
 
 cp -r work_files/binsA ${bins1##*/} 2>/dev/null || :  # ohickl ###
 cp work_files/binsA.stats ${bins1##*/}.stats 2>/dev/null || :  # ohickl ###
@@ -495,13 +508,18 @@ stats_file=( $(ls *.stats) )   # ohickl ###
 if [[ ( "$run_checkm" == "true" ) && ( -f "${stats_file[0]}" && -s "${stats_file[0]}"  &&  $(stat -c%s "${stats_file[0]}") -gt 2  &&  $(wc -l "${stats_file[0]}" | cut -d ' ' -f 1) -gt 1 ) ]] ; then  # ohickl ###
 	comm "Making completion and contamination ranking plots of final outputs."
 	${SOFT}/plot_binning_results.py $comp $cont $(ls | grep ".stats")
-	mv binning_results.png figures/binning_results.png
+	
+	if [[ -s binning_results.png ]]; then
+		mv binning_results.png figures/binning_results.png
+	fi
 	
 	comm "Making contig membership files (for Anvio and other applications)."
+	shopt -s nullglob
 	for dir in *_bins; do
 		echo "summarizing $dir ..."
 		for i in ${dir}/*.fa; do f=${i##*/}; for c in $(cat $i | grep ">"); do echo -e "${c##*>}\t${f%.*}"; done; done > ${dir}.contigs
 	done
+	shopt -u nullglob
 fi
 
 cd $home

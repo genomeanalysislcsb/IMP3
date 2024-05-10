@@ -165,6 +165,7 @@ def get_kmer_distrib(ome):
     return closest_kmer_distrib_file_size
 
 # TODO: Improve stability of this, eg with checkpoint rule to properly handle missing kmer_distrib files
+# TODO: bracken -r input is an int, the var is implying file, check and fix
 rule bracken_reads:
     input:
         seqkit_stats = "Stats/{type}/{type}.stats",
@@ -209,7 +210,7 @@ rule bracken_reads:
                         -o {output.bracken_dir}/{params.ome}.${{level}}.bracken \
                         -r {params.kmer_distrib_file} \
                         -l ${{level}} \
-                        -t {threads} >> {log} 2>&1 || touch {output.check} && continue
+                        -t {params.min_reads} >> {log} 2>&1 || touch {output.check} && continue
                 
                 # Check if bracken output exists and isn't empty, if it isnt move the report from kraken dir to bracken dir
                 if [ ! -s "{output.bracken_dir}/{params.ome}.${{level}}.bracken" ]; then

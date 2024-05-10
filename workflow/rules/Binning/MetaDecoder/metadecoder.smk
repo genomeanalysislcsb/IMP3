@@ -3,7 +3,7 @@ rule metadecoder:
         assembly = "Assembly/%s.assembly.merged.fa" % ASS,
         bam = "Assembly/mg.reads.sorted.bam"
     output:
-        out_dir = temp(directory("Binning/MetaDecoder")),
+        out_dir = directory("Binning/MetaDecoder"),
         out_bin_dir = directory("Binning/MetaDecoder/bins")
     params:
         min_cont_size = config["binning"]["MetaDecoder"]["cutoff"],
@@ -23,26 +23,28 @@ rule metadecoder:
         """
         mkdir -p {params.work_dir}/{output.out_dir}
         cd {params.work_dir}/{output.out_dir}
-        
-        # Create sam files
-        echo "Creating sam files." >> {log} 2>&1
 
         printf "MetaDecoder version: " >> {log} 2>&1
         metadecoder --version >> {log} 2>&1
-        
+
+        # Create sam files
+        echo "Creating sam files ..." >> {log} 2>&1
         samtools view -@ {threads} -h {params.work_dir}/{input.bam} -o {params.work_dir}/{output.out_dir}/mg.reads.sorted.sam >> {log} 2>&1
         
         # Run MetaDecoder
+        echo "Running MetaDecoder coverage ..." >> {log} 2>&1
         metadecoder coverage --sam {params.work_dir}/{output.out_dir}/mg.reads.sorted.sam \
                              --threads {threads} \
                              --output {params.work_dir}/{output.out_dir}/METADECODER.COVERAGE >> {log} 2>&1
         
         rm -rf {params.work_dir}/{output.out_dir}/mg.reads.sorted.sam \
         
+        echo "Running MetaDecoder seed ..." >> {log} 2>&1
         metadecoder seed --fasta {params.work_dir}/{input.assembly} \
                          --threads {threads} \
                          --output {params.work_dir}/{output.out_dir}/METADECODER.SEED >> {log} 2>&1
 
+        echo "Running MetaDecoder cluster ..." >> {log} 2>&1
         metadecoder cluster --fasta {params.work_dir}/{input.assembly} \
                             --min_sequence_length {params.min_cont_size} \
                             --coverage {params.work_dir}/{output.out_dir}/METADECODER.COVERAGE \
@@ -50,7 +52,9 @@ rule metadecoder:
                             --output {params.work_dir}/{output.out_dir}/METADECODER >> {log} 2>&1
         
         # Move bin fastas and rename.
+        echo "Moving bin fastas ..." >> {log} 2>&1
         mkdir -p {params.work_dir}/{output.out_bin_dir}
+        
         shopt -s nullglob
         for i in {output.out_dir}/*.{{fa,fna,fasta}}; do
           bin_file=${{i##*/}}
@@ -59,7 +63,7 @@ rule metadecoder:
         done
         shopt -u nullglob
 
-        mv {params.work_dir}/{output.out_dir}/*.fasta {params.work_dir}/{output.out_dir}/bins
+        echo "Done." >> {log} 2>&1
         """
 
 metadecoder_bins = "Binning/MetaDecoder/bins"

@@ -81,8 +81,9 @@ if MG and "taxonomy" not in IMP_STEPS:
     
     rule bins_tar:
         input:
-            dir="Binning/MetaWrap/bins",
-            ctrl="Stats/%s/%s.bins.tsv" %(ASS,ASS)
+            dir = ancient(dir="Binning/MetaWrap/bins",),
+            ctrl = ancient("Stats/%s/%s.bins.tsv" %(ASS,ASS))
+            
         output:
             "Binning/per_bin_results.tar.gz"
         threads:
@@ -119,7 +120,7 @@ if MG and "taxonomy" not in IMP_STEPS:
 
 checkpoint getBins:
     input: 
-        "Binning/MetaWrap/bins.stats"
+        ancient("Binning/MetaWrap/bins.stats")
     output:
         "status/binning_GRiD.prepped"
     resources:
@@ -135,7 +136,7 @@ checkpoint getBins:
         """
         # Check if bins.stats has a non-zero size
         if [ -s {input} ]; then
-            # Read selected bins and perform actions on each
+            # Read selected bins, copy them to single directories
             while read BIN; do
                 if [ -f Binning/MetaWrap/bins/${{BIN}}.fasta ]; then
                     echo "Copying bin ${{BIN}} to single directory." >> {log} 2>&1

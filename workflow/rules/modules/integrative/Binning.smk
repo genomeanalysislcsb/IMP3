@@ -81,6 +81,6 @@ if not 'taxonomy' in IMP_STEPS:
 ## master command
 rule BINNING:
     input:
-        inputs_binning
+        ancient(inputs_binning)
     output:
         touch('status/binning.done')

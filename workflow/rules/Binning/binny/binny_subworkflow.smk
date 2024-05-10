@@ -34,7 +34,7 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
         proteins="Analysis/annotation/prokka.faa"
     output:
         "Binning/tmp/consensus_annotation.tsv",
-        out_dir = temp(directory("Binning/tmp"))
+        out_dir = directory("Binning/tmp")
     params:
         binny_cfg=os.path.join(ROOTDIR, "submodules/binny/config/binny_mantis.cfg")
     threads:
@@ -59,7 +59,7 @@ use rule binny from binny_workflow as binny_binny with:
         directory('Binning/binny/bins'),
         os.path.join("Binning/binny/contig_data.tsv.gz"),
         os.path.join("Binning/binny/binny.done"),
-        temp(directory('Binning/binny'))
+        directory('Binning/binny')
     params:
         binny_out=config["binning"]["binny"]["outputdir"],
         sample=config['sample'],

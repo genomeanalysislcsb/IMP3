@@ -18,7 +18,7 @@ rule DAS_tool:
         dt_summary = "Binning/DASTool/selected_DASTool_summary.txt",
         s2b = "Binning/DASTool/selected_DASTool_scaffolds2bin.txt",
         bin_dir = directory("Binning/DASTool/bins"),
-        out_dir = temp(directory("Binning/DASTool"))
+        out_dir = directory("Binning/DASTool")
     threads:
         getThreads(4)
     params:

@@ -45,7 +45,7 @@ kraken_reads_SE:
 #   partition: "--partition bigmem"
 
 # COMEBin gpu configuration
-comebin:
+comebin_train:
   clusters: "--clusters 'iris'"
   partition: "--partition gpu"
   threads: "--constraint volta --gpus 1 --cpus-per-task "

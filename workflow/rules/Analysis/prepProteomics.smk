@@ -42,7 +42,7 @@ elif config['proteomics']['filter_N_peptides']:
         output:
             "Analysis/annotation/proteomics.proteins.faa"
         resources: 
-            runtime = VERY_SHORT_RUNTIME,
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
             minPep = config['proteomics']['filter_N_peptides']
@@ -69,7 +69,7 @@ else:
         output:
             "Analysis/annotation/proteomics.proteins.faa"
         resources: 
-            runtime = VERY_SHORT_RUNTIME,
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         conda:
             os.path.join(ENVDIR, "IMP_bioperl.yaml")

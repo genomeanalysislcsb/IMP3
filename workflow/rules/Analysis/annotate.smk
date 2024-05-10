@@ -96,6 +96,7 @@ rule tar_annotation:
     input:
         # Make sure its done at the very end
         check = "status/workflow.done",
+        check2 = "status/stats.done",
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
         # from featureCount.smk
         counts_hmmer=expand("Analysis/annotation/{type}.hmmer.{db}.counts.tsv", type=TYPES,
