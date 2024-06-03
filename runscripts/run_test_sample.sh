@@ -31,7 +31,7 @@ snakemake --snakefile ${snakefile} \
 # Ensure preprocessing is finished
 omes=("mg" "mt")
 reads=("r1" "r2" "se")
-files_to_make=("fq" "trimmed.fq" "trimmed.rrna.fq" "trimmed__rna_filtered.fq" "trimmed__rrna_proc.fq" "trimmed__rrna_proc__PhiX_filtered.fq" "trimmed__rrna_proc__PhiX_filtered__T2TCHM13v2genomic_filtered.fq" "trimmed__rrna_proc__PhiX_filtered__T2TCHM13v2genomic_filtered__T2TCHM13v2transcripts_filtered.fq")
+files_to_make=("fq" "trimmed.fq" "trimmed.rrna.fq" "trimmed__rrna_filtered.fq" "trimmed__rrna_proc.fq" "trimmed__rrna_proc__PhiX_filtered.fq" "trimmed__rrna_proc__PhiX_filtered__T2TCHM13v2genomic_filtered.fq" "trimmed__rrna_proc__PhiX_filtered__T2TCHM13v2genomic_filtered__T2TCHM13v2transcripts_filtered.fq")
 
 if [[ -d "${prep_path}" ]]; then
   # Check for non-empty '*preprocessed*' files. If none are found, delete empty files.

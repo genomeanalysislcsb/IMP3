@@ -37,7 +37,7 @@ if "binny" in BIN_STEPS:
 
 ## MaxBin
 if "MaxBin" in BIN_STEPS:
-    inputs_binning.append("Binning/MaxBin/maxbin_res.log")
+    inputs_binning.append("Binning/MaxBin/maxbin_res.summary")
     inputs_binning.append("Binning/MaxBin")
     include:
         '../../Binning/MaxBin/maxbin.smk'

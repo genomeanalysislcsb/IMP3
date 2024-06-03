@@ -8,7 +8,6 @@ dependencies:
   - any2fasta=0.4.2
   - clustalw=2.1
   - paml=4.10.7
-  - prokka=1.14.6
   - subread=2.0.6
   - t_coffee=11.0.8
   - unzip=6.0

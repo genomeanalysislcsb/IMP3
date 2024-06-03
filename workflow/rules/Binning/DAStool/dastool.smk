@@ -11,7 +11,7 @@ checkpoint DAS_tool_check:
 rule DAS_tool:
     input:
         contigs="Assembly/%s.assembly.merged.fa" % ASS,
-        proteins="Binning/prokka.renamed.faa", 
+        proteins="Binning/annotation.renamed.faa", 
         tabs=check_bintabs
         # tabs=expand("Binning/{binner}/contig2bin.tsv",binner=BIN_STEPS)  # if used without DAS_tool_check
     output:
@@ -115,11 +115,12 @@ rule DAS_tool:
 
 rule format_protein_names:
     input:
-        "Analysis/annotation/prokka.faa",
-        "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
+        proteins = "Analysis/annotation/bakta/annotation.faa",
+        annotations = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
-        "Analysis/annotation/annotation.filt.contig2ID.tsv",
-        "Binning/prokka.renamed.faa"
+        contig2id = "Analysis/annotation/bakta/annotation.filt.contig2ID.tsv",
+        tmp_proteins = temp("Binning/annotation.tmp.faa"),
+        renamed_proteins = "Binning/annotation.renamed.faa"
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
@@ -134,10 +135,30 @@ rule format_protein_names:
         "format_protein_names: Preparing protein sequences for DAS tool."
     shell:
         """
-        export TMPDIR="{params.tmp_dir}"
-        TMP_PROT=$(mktemp "${{TMPDIR}}/proteins_XXXXXX.faa")
-        cut -f 1,9 {input[1]} | sort -k 1 | perl -F'\\t' -ane '$_=~/ID=(.+)_(.+);inference/; print "$F[0]\\t$1\\t$2\\n";' >{output[0]}
-        sed 's/ .*//' {input[0]} >> $TMP_PROT
-        {SRCDIR}/prokka2dastoolHeader.pl  $TMP_PROT {output[0]} > {output[1]} 2> {log}
+        echo "Getting contig to ID mapping ..." > {log}
+        cut -f 1,9 {input.annotations} 2>> {log} \
+          | sort -k 1 2>> {log} \
+          | perl -F'\\t' -ane '$_=~/ID=([^_]+)_([^;]+);/; print "$F[0]\\t$1\\t$2\\n";' > {output.contig2id} 2>> {log}
+
+        # Exit with error if no contig2id file is created or it is empty
+        if [[ ! -s {output.contig2id} ]]; then
+          echo "No contig2id file created. Exiting." >> {log}
+          exit 1
+        fi
+
+        echo "Renaming protein sequences ..." >> {log}
+        sed 's/ .*//' {input.proteins} >> {output.tmp_proteins} 2>> {log}
+
+        echo "Running prokka2dastoolHeader.pl ..." >> {log}
+        {SRCDIR}/prokka2dastoolHeader.pl {output.tmp_proteins} \
+                                         {output.contig2id} > {output.renamed_proteins} 2>> {log}
+
+        # Exit with error if no renamed protein file is created or it is empty
+        if [[ ! -s {output.renamed_proteins} ]]; then
+          echo "No renamed protein file created. Exiting." >> {log}
+          exit 1
+        fi
+
+        echo 'Done.'
         """
 

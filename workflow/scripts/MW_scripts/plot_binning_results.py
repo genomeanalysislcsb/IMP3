@@ -22,6 +22,7 @@ data = {}
 max_x = 0
 # loop over all bin .stats files
 for file_name in file_list:
+    print(f"Loading {file_name}...")
     bin_set = ".".join(file_name.split("/")[-1].split(".")[:-1])
     data[bin_set] = []
     try:
@@ -30,17 +31,19 @@ for file_name in file_list:
             seperator_line = next(f)
             for line in f:
                 bin_data = line.strip().split()
+
                 try:
                     bin_comp = float(bin_data[1])
                     bin_cont = float(bin_data[2])
                 except IndexError:
                     print(f"Error: {line}, file: {file_name}")
                     raise IndexError
+                
                 # skip bins that are too contaminated or very incomplete
                 try:
-                    if bin_comp > max_contamination:
+                    if bin_comp < min_completion:
                         continue
-                    if bin_cont < min_completion:
+                    if bin_cont > max_contamination:
                         continue
                 except IndexError:
                     print(f"Error: {line}, file: {file_name}")
@@ -48,7 +51,9 @@ for file_name in file_list:
 
                 # save the completion value of each bin into a list
                 data[bin_set].append(bin_comp)
-        if len(data[bin_set]) > max_x: max_x = len(data[bin_set])
+        
+        if len(data[bin_set]) > max_x:
+            max_x = len(data[bin_set])
     except StopIteration:
         print(f"Warning: {file_name} is empty. Skipping...")
         continue
@@ -151,8 +156,9 @@ print("Loading contamination info...")
 data = {}
 # loop over all bin .stats files
 for file_name in file_list:
+    print(f"Loading {file_name}...")
     bin_set = ".".join(file_name.split("/")[-1].split(".")[:-1])
-    data[bin_set] = []#plt.show()
+    data[bin_set] = []
     with open(file_name) as f:
         header = next(f)
         seperator_line = next(f)

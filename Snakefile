@@ -1,8 +1,8 @@
 # include global functions
-ROOTDIR = srcdir(".")
+ROOTDIR = srcdir('')
 
 # print(f'workflow.cores, workflow.nodes: {workflow.cores}, {workflow.nodes}')
-# print(f'workflow.conda_prefix: {workflow.conda_prefix}')
+# print(f'workflow.conda_prefix: {workflow.conda_prefix}, {os.environ["CONDA_PREFIX"]}')
 
 include:
     "workflow/rules/function.definitions.smk"
@@ -175,7 +175,13 @@ if 'preprocessing' in IMP_STEPS:
 #     inputs_all.append("Assembly/intermediary.tar.gz")
 
 if 'analysis' in IMP_STEPS:
-    inputs_all.append('Analysis/annotation/intermediary.tar.gz')
+    inputs_all.append("Analysis/annotation/annotation_CDS_RNA_hmms.gff")
+    # from featureCount.smk
+    inputs_all.append(expand("Analysis/annotation/{type}.hmmer.{db}.counts.tsv",
+                             type=TYPES,
+                             db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [])
+    
+    inputs_all.append(aggregate_mantis_fc if config["annotation"] == "mantis" else [])
 
 if 'binning' in IMP_STEPS:
     # inputs_all.extend([f'Binning/{binner}.tar.gz' for binner in BIN_STEPS + ['DASTool']])

@@ -107,7 +107,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             cd {output.out_dir} >> {log} 2>&1
 
             # Run quickmerge
-            time merge_wrapper.py --threads {threads} \
+            time {SRCDIR}/merge_wrapper.py --threads {threads} \
                                   --version4 \
                                   --prefix {params.merge_prefix} \
                                   --merging_length_cutoff {params.min_overlap} \
@@ -194,7 +194,7 @@ elif config["assembly"]["merge"] == "quickmerge":
 
             cd {output.out_dir}
 
-            time merge_wrapper.py --threads {threads} \
+            time {SRCDIR}/merge_wrapper.py --threads {threads} \
                           --version4 \
                           --prefix {params.merge_prefix} \
                           --merging_length_cutoff {params.min_overlap} \

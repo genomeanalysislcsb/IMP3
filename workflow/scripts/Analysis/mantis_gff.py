@@ -138,7 +138,7 @@ if __name__ == '__main__':
     setup_logger(log, level=logging.INFO)
 
     # read in
-    logging.info('Reading Prokka gff.')
+    logging.info('Reading annotation gff.')
     gff = read_in_gff(snakemake.input.gff)
     logging.info('Reading Mantis output.')
     mantis = read_mantis_consensus(snakemake.input.mantis)

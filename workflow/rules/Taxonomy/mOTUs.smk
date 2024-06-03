@@ -12,9 +12,30 @@ rule allmotu:
     message:
         "allmotu: mOTUs done?"
 
+rule get_motus_db:
+    output:
+        os.path.join(ENVDIR, 'motus.ready')
+    resources:
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        4
+    conda:
+        os.path.join(ENVDIR, "IMP_motus.yaml")
+    log:
+        os.path.join(ENVDIR, "logs/motus_downloadDB.log")
+    message:
+        "motus: Downloading mOTUs database."
+    shell:
+        """
+        motus downloadDB > {log} 2>&1 \
+         && touch {output} >> {log} 2>&1
+        """
+
 # https://github.com/motu-tool/mOTUs/wiki
 rule motus:
     input:
+        db_ready = os.path.join(ENVDIR, 'motus.ready'),
         r1="Preprocessing/{type}.r1.preprocessed.fq",
         r2="Preprocessing/{type}.r2.preprocessed.fq",
         se="Preprocessing/{type}.se.preprocessed.fq"
@@ -27,7 +48,8 @@ rule motus:
         # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
         # -A: print all tax. levels together
         # -c: return counts
-        params = "-A -c",
+        extra_params = "-A -c",
+        min_markers = config["motus"]["min_markers"],
         sample = config["sample"],
         min_size = lambda wildcards: config["motus"][f"min_read_len_{wildcards.type}"]
         # database = os.path.join(DBPATH, 'motus')
@@ -48,14 +70,16 @@ rule motus:
                           -s {input.se} \
                           -o {output} \
                           -n {params.sample} \
-                          {params.params} \
+                          {params.extra_params} \
+                          -g {params.min_markers} \
                           -l {params.min_size} \
                           -t {threads} >& {log}
         elif [ -s {input.se} ]; then
             motus profile -s {input.se} \
                           -o {output} \
                           -n {params.sample} \
-                          {params.params} \
+                          {params.extra_params} \
+                          -g {params.min_markers} \
                           -l {params.min_size} \
                           -t {threads} >& {log}
         else
@@ -63,7 +87,8 @@ rule motus:
                           -r {input.r2} \
                           -o {output} \
                           -n {params.sample} \
-                          {params.params} \
+                          {params.extra_params} \
+                          -g {params.min_markers} \
                           -l {params.min_size} \
                           -t {threads} >& {log}
         fi 
@@ -73,7 +98,8 @@ use rule motus as motus_rel_ab with:
     output:
         report("Analysis/taxonomy/mOTUs/{type}.mOTU.rel_abun.tsv",category="Taxonomy")
     params:
-        params = "-p -A",
+        extra_params = "-p -A",
+        min_markers = config["motus"]["min_markers"],
         sample = config["sample"],
         min_size = lambda wildcards: config["motus"][f"min_read_len_{wildcards.type}"]
     log:

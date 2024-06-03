@@ -212,9 +212,16 @@ featureCountsStranding:
   mt: 2
   mg: 0
 proteomics:
-  filter_N_peptides: 2
-  host_proteome: ""
-  insert_variants: false
+  # Valid path to extra proteomes to add to the database in fasta format
+  extra_proteomes: ""
+  # Maximum length of protein sequences to keep
+  max_len: 40000
+  # Minimum length of protein sequences to keep
+  min_len: 6
+  # Add proteomes of taxa identified in filtered Kraken report(s) (if NCBI has any)
+  add_kraken_taxa_proteomes: true
+  # Path to CRAP common contaminants database
+  crap_db: "/mnt/lscratch/users/ohickl/databases/imp3/proteomics/20240515_CCP_cRAP.fasta"  ### USER_INPUT ####
 binning:
   # Options: abawaca COMEBin CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
   # NOTE: IMP supports a maximum of six binners only atm.
@@ -270,19 +277,22 @@ binning:
     min_completeness: 60
     max_contamination: 10
 kraken:
-  confidence: 0.501
+  confidence: 0.5
   krakendb: k2_standard_08gb_20240112  ### USER_INPUT ####
   report_minimizer: true
   min_hit_groups: 3
+  report_min_reads: 10
+  report_min_unique_minimizers: 1000
 bracken:
   # Choose from: D for Domain, P for Phylum, C for Class, O for Order, F for Family, G for Genus, S for Species
   # e.g. "D P C O F G S"
   levels: "D P C O F G S"
-  min_reads: 50
+  min_reads: 10
 # Default is 75, for MT might need to be reduced
 motus:
   min_read_len_mg: 75
   min_read_len_mt: 75
+  min_markers: 3
 eukdetect:
   run_eukdetect: false
   eukdetect_dir: ../EukDetect

@@ -71,7 +71,7 @@ rule combine_kraken_reports:
         pe_report = "Analysis/taxonomy/kraken/{type}.pe.kraken.report",
         se_report = "Analysis/taxonomy/kraken/{type}.se.kraken.report"
     output:
-        report("Analysis/taxonomy/kraken/{type}.kraken.report",category="Taxonomy")
+        "Analysis/taxonomy/kraken/{type}.kraken.unfiltered.report"
     resources:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
@@ -94,6 +94,35 @@ rule combine_kraken_reports:
             -o {output} \
             {params.combined_report_options} \
             {params.has_minimizer} > {log} 2>&1
+        """
+
+
+rule filter_kraken_read_report:
+    input:
+        report_unfilt = "Analysis/taxonomy/kraken/{type}.kraken.unfiltered.report"
+    output:
+        report = report("Analysis/taxonomy/kraken/{type}.kraken.report",category="Taxonomy")
+    resources:
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    params:
+        script_path = os.path.join(ROOTDIR, "submodules", "KrakenTools", "combine_kreports.py"),
+        min_reads = int(config['kraken']['report_min_reads']),
+        min_uniq_mini = int(config['kraken']['report_min_unique_minimizers'])
+    log:
+        "logs/analysis/taxonomy/filter_kraken_reports.{type}.log"
+    message:
+        "Filtering Kraken reports for {wildcards.type} into a single report."
+    conda:
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
+    threads:
+        getThreads(12, bigmem=False, high_mem_cluster=False)
+    shell:
+        """
+        python {SRCDIR}/filter_kraken_report.py {input.report_unfilt} \
+                                                {output.report} \
+                                                --min_reads {params.min_reads} \
+                                                --min_uniq_mini {params.min_uniq_mini} > {log} 2>&1
         """
 
 # Run SeqKit to get read stats

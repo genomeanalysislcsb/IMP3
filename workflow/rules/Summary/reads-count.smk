@@ -3,7 +3,7 @@ if MG or MT:
         input:
             reads_input_files
         output:
-            'Stats/{type}/{type}.read_counts.txt'
+            'Stats/{type}/{type}.read_stats.tsv'
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
@@ -22,7 +22,7 @@ elif MGaln or MTaln:
         input:
             reads_input_files
         output:
-            'Stats/{type}/{type}.read_counts.txt'
+            'Stats/{type}/{type}.read_stats.tsv'
         resources:
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB

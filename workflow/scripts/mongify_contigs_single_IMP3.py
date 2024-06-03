@@ -156,7 +156,7 @@ protein_dict = {}
 rrna_dict = {}
 trna_dict = {}
 # read gff file
-protFile = "Analysis/annotation/annotation_CDS_RNA_hmms.gff" if os.path.isdir("Analysis/annotation/annotation_CDS_RNA_hmms.gff") else "Analysis/annotation/annotation.filt.gff"
+protFile = "Analysis/annotation/annotation_CDS_RNA_hmms.gff" if os.path.isdir("Analysis/annotation/annotation_CDS_RNA_hmms.gff") else "Analysis/annotation/bakta/annotation.filt.gff"
 if os.path.isdir(protFile):
     pct = 0
     rct = 0

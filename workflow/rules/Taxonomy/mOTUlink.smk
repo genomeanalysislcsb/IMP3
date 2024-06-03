@@ -21,8 +21,8 @@ rule allmotulinks:
 
 rule fetchmg:
     input:
-        "Analysis/annotation/prokka.ffn",
-        "Analysis/annotation/prokka.faa"
+        "Analysis/annotation/bakta/annotation.ffn",
+        "Analysis/annotation/bakta/annotation.faa"
     output:
         expand("Analysis/taxonomy/mOTU_links/intermediary/marker_genes/{COG}.fna",COG=COGS_LIST)
     threads:

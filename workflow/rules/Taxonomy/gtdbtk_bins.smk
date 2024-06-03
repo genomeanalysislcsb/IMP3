@@ -40,7 +40,7 @@ rule GTDBtk_bins_single:
         mem_mb = MAIN_BIGMEMCORE_MB
     params:
         pplacer_cpus=getThreads(min(MAIN_BIGCORENO, max(1, int(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]] * MAIN_BIGCORENO / 45))), bigmem=True),
-        db_path = os.path.join(DBPATH, "gtdbtk/release214")
+        db_path = os.path.join(DBPATH, "gtdbtk/release220")
     conda:
         os.path.join(ENVDIR, "IMP_gtdbtk.yaml")
     log:

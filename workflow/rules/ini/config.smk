@@ -140,6 +140,7 @@ elif CONTIGS and MT:
 IMP_STEPS = sorted(config['steps'].split())
 # Importing preprocessing_filtering from the configuration file
 PREPROCESSING_FILTERING = config['preprocessing_filtering']
+FILTER_STEPS = config['filtering']['filter'].split()
 # Importing rrna_filtering from the configuration file and ensure type boolean
 KEEP_RRNAs = str(config['keep_rrnas']).lower() in ['true', '1', 'yes', 'y', 't']
 NORMALIZE_MT_READ_COVERAGE = str(config["read_coverage_normalization"]['normalize_read_coverage']).lower() in ['true', '1', 'yes', 'y', 't']

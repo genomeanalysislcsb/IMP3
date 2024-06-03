@@ -75,23 +75,32 @@ if(length(snakemake@output)>2) out_file_bins <- snakemake@output[[3]] #"Stats/al
 ###################################################################################################
 ## Read Preprocessing stats
 ###################################################################################################
-if(file.exists(paste0("Stats/",types[1],"/",types[1],".read_counts.txt"))){
+if(file.exists(paste0("Stats/",types[1],"/",types[1],".read_stats.tsv"))){
   readStats_files <- list()
   for(type in types){
-    readStats_files[[type]] <- paste0("Stats/",type,"/",type,".read_counts.txt")
+    readStats_files[[type]] <- paste0("Stats/",type,"/",type,".read_stats.tsv")
   }
   
   print("Reading read stats.")
   for(type in types){
     if(!"statsTab" %in% ls()){
       statsTab <- data.frame("type"=type,
-                             read.delim(readStats_files[[type]],stringsAsFactors=F,header = F),
+                             read.delim(readStats_files[[type]],stringsAsFactors=F,header = T),
                              stringsAsFactors = F)
+
+      selected_columns <- c("type", "file", "num_seqs")
+      statsTab <- statsTab[, selected_columns]
+
       colnames(statsTab)[2:3] <- c("step","number")
+
     }else{
       tmpTab <- data.frame("type"=type,
-                           read.delim(readStats_files[[type]],stringsAsFactors=F,header = F),
+                           read.delim(readStats_files[[type]],stringsAsFactors=F,header = T),
                            stringsAsFactors = F)
+
+      selected_columns <- c("type", "file", "num_seqs")
+      tmpTab <- tmpTab[, selected_columns]
+        
         colnames(tmpTab)[2:3] <- c("step","number")
       statsTab <- rbind(statsTab,tmpTab)
     }

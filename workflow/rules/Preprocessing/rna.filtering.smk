@@ -3,8 +3,8 @@ rule filter_rrna_pe:
         r1 = "Preprocessing/mt.r1.trimmed.fq",
         r2 = "Preprocessing/mt.r2.trimmed.fq",
     output:
-        filt_r1 = temp("Preprocessing/mt.r1.trimmed__rna_filtered.fq"),
-        filt_r2 = temp("Preprocessing/mt.r2.trimmed__rna_filtered.fq"),
+        filt_r1 = temp("Preprocessing/mt.r1.trimmed__rrna_filtered.fq"),
+        filt_r2 = temp("Preprocessing/mt.r2.trimmed__rrna_filtered.fq"),
         rrna_r1 = temp("Preprocessing/mt.r1.trimmed.rrna.fq"),
         rrna_r2 = temp("Preprocessing/mt.r2.trimmed.rrna.fq"),
         # otu = "Preprocessing/otu_map.txt", # TODO: Check if this is needed
@@ -43,7 +43,7 @@ rule filter_rrna_se:
     input:
         se = "Preprocessing/mt.se.trimmed.fq",
     output:
-        filt_se = temp("Preprocessing/mt.se.trimmed__rna_filtered.fq"),
+        filt_se = temp("Preprocessing/mt.se.trimmed__rrna_filtered.fq"),
         rrna_se = temp("Preprocessing/mt.se.trimmed.rrna.fq"),
     log:
         "logs/preprocessing/filter_rrna_se.log"

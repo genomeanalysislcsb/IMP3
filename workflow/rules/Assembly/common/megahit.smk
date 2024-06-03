@@ -1,3 +1,4 @@
+# TODO: reverse runtime reduction
 rule megahit_assembly_from_preprocessing:
     input:
         r1 = 'Preprocessing/{type}.r1.preprocessed.fq',
@@ -8,7 +9,7 @@ rule megahit_assembly_from_preprocessing:
         contigs_final = 'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
         contigs = 'Assembly/intermediary/{type}.megahit_preprocessed.1.fa'
     resources:
-        runtime = LONG_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)

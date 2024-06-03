@@ -507,6 +507,7 @@ stats_file=( $(ls *.stats) )   # ohickl ###
 
 if [[ ( "$run_checkm" == "true" ) && ( -f "${stats_file[0]}" && -s "${stats_file[0]}"  &&  $(stat -c%s "${stats_file[0]}") -gt 2  &&  $(wc -l "${stats_file[0]}" | cut -d ' ' -f 1) -gt 1 ) ]] ; then  # ohickl ###
 	comm "Making completion and contamination ranking plots of final outputs."
+	
 	${SOFT}/plot_binning_results.py $comp $cont $(ls | grep ".stats")
 	
 	if [[ -s binning_results.png ]]; then

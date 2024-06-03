@@ -1,0 +1,7 @@
+name: IMP_maxbin
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - maxbin2=2.2.7

@@ -83,3 +83,8 @@ star_map_tests.sh
 Untitled-*
 extra_scripts/run_kraken_bracken_combine_covalux_bigmem.sh
 extra_scripts/run_kraken_bracken_combine.sh
+workflow/envs/motus.ready
+workflow/envs/genome_updater.ready
+workflow/envs/bakta.trnascan.ready
+workflow/envs/bakta.ready
+workflow/envs/bakta.cmscan.ready

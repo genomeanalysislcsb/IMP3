@@ -262,17 +262,17 @@ use rule feature_count_hmmer_paired as feature_count_gene_paired with:
         map = "Assembly/{type}.reads.paired.sorted.bam",
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
-        temp("Analysis/annotation/{type}.{feature}_counts.paired.tsv")
+        temp("Analysis/annotation/{type}.{db}.{feature}_counts.paired.tsv")
     params:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
-        db = "ID",
+        db = lambda wildcards: wildcards.db,
         flags = "-p -O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,
         read_type = "paired",
         feature_sum = "total",
         count_type = "gene"
     log:
-        "logs/analysis/featurecount/gene/total.{type}.{feature}.paired.log"
+        "logs/analysis/featurecount/gene/total.{type}.{db}.{feature}.paired.log"
 
 # single total feature sum
 use rule feature_count_hmmer_paired as feature_count_gene_single with:
@@ -280,17 +280,17 @@ use rule feature_count_hmmer_paired as feature_count_gene_single with:
         map = "Assembly/{type}.reads.single.sorted.bam",
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
-        temp("Analysis/annotation/{type}.{feature}_counts.single.tsv")
+        temp("Analysis/annotation/{type}.{db}.{feature}_counts.single.tsv")
     params:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
-        db = "ID",
+        db = lambda wildcards: wildcards.db,
         flags = "-O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,
         read_type = "single",
         feature_sum = "total",
         count_type = "gene"
     log:
-        "logs/analysis/featurecount/gene/total.{type}.{feature}.single.log"
+        "logs/analysis/featurecount/gene/total.{type}.{db}.{feature}.single.log"
 
 # paired per contig sum
 use rule feature_count_hmmer_paired as feature_count_gene_paired_per_contig with:
@@ -298,17 +298,17 @@ use rule feature_count_hmmer_paired as feature_count_gene_paired_per_contig with
         map = "Assembly/{type}.reads.paired.sorted.bam",
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
-        temp("Analysis/annotation/per_contig_counts/{type}.{feature}_counts.paired.tsv")
+        temp("Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_counts.paired.tsv")
     params:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
-        db = "ID",
+        db = lambda wildcards: wildcards.db,
         flags = "-p -f -O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,
         read_type = "paired",
         feature_sum = "per_contig",
         count_type = "gene"
     log:
-        "logs/analysis/featurecount/gene/per_contig.{type}.{feature}.paired.log"
+        "logs/analysis/featurecount/gene/per_contig.{type}.{db}.{feature}.paired.log"
 
 # single per contig sum
 use rule feature_count_hmmer_paired as feature_count_gene_single_per_contig with:
@@ -316,42 +316,42 @@ use rule feature_count_hmmer_paired as feature_count_gene_single_per_contig with
         map = "Assembly/{type}.reads.single.sorted.bam",
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
-        temp("Analysis/annotation/per_contig_counts/{type}.{feature}_counts.single.tsv")
+        temp("Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_counts.single.tsv")
     params:
         stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
-        db = "ID",
+        db = lambda wildcards: wildcards.db,
         flags = "-f -O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,
         read_type = "single",
         feature_sum = "per_contig",
         count_type = "gene"
     log:
-        "logs/analysis/featurecount/gene/per_contig.{type}.{feature}.single.log"
+        "logs/analysis/featurecount/gene/per_contig.{type}.{db}.{feature}.single.log"
 
 # Combine single and paired counts based on feature in first column
 use rule combine_feature_counts_hmmer as combine_feature_counts_gene with:
     input:
-        paired = "Analysis/annotation/{type}.{feature}_counts.paired.tsv",
-        single = "Analysis/annotation/{type}.{feature}_counts.single.tsv"
+        paired = "Analysis/annotation/{type}.{db}.{feature}_counts.paired.tsv",
+        single = "Analysis/annotation/{type}.{db}.{feature}_counts.single.tsv"
     output:
-        "Analysis/annotation/{type}.{feature}_counts.tsv"
+        "Analysis/annotation/{type}.{db}.{feature}_counts.tsv"
     params:
-        db = "ID",
+        db = lambda wildcards: wildcards.db,
         feature_sum = "total",
         count_type = lambda wildcards: wildcards.feature
     log:
-        "logs/analysis/featurecount/gene/total.{type}.{feature}.combine.log"
+        "logs/analysis/featurecount/gene/total.{type}.{db}.{feature}.combine.log"
 
 # Combine single and paired per-contig counts
 use rule combine_feature_counts_hmmer as combine_feature_counts_gene_per_contig with:
     input:
-        paired = "Analysis/annotation/per_contig_counts/{type}.{feature}_counts.paired.tsv",
-        single = "Analysis/annotation/per_contig_counts/{type}.{feature}_counts.single.tsv"
+        paired = "Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_counts.paired.tsv",
+        single = "Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_counts.single.tsv"
     output:
-        "Analysis/annotation/per_contig_counts/{type}/annotation/{type}.{feature}_per_contig.counts.tsv"
+        "Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_per_contig.counts.tsv"
     params:
-        db = "ID",
+        db = lambda wildcards: wildcards.db,
         feature_sum = "per_contig",
         count_type = lambda wildcards: wildcards.feature
     log:
-        "logs/analysis/featurecount/gene/per_contig.{type}.{feature}.combine.log"
+        "logs/analysis/featurecount/gene/per_contig.{type}.{db}.{feature}.combine.log"

@@ -1,80 +1,57 @@
 # TODO: Manually changed comebin cluster.py to try to deal with cases where no seed clusters are found
 
-# rule comebin:
-#     input:
-#         assembly = "Assembly/%s.assembly.merged.fa" % ASS,
-#         mapping = "Assembly/mg.reads.sorted.bam"
-#     output:
-#         s2b = "Binning/COMEBin/contig2bin.tsv",
-#         out_dir = directory("Binning/COMEBin"),
-#         out_bin_dir = directory("Binning/COMEBin/bins"),
-#         filt_ass = temp(f'Assembly/{ASS}.assembly.merged_{config["binning"]["comebin"]["cutoff"]}.fa')
-#     params:
-#         tmp_align_dir = "Binning/COMEBin/bam",
-#         abs_out_dir = OUTPUTDIR,
-#         min_cont_size = config["binning"]["comebin"]["cutoff"],
-#         # filt_ass = f'Assembly/{ASS}.assembly.merged_{config["binning"]["comebin"]["cutoff"]}.fa'
-#     threads:
-#         # getThreads(7, high_mem_cluster=True)
-#         getThreads(128)
-#     resources:
-#         runtime = LONG_RUNTIME,
-#         # mem_mb = 27000,
-#         mem_mb = MAIN_MEMCORE_MB
-#     conda:
-#         ENVDIR + "/IMP_comebin.yaml"
-#     log:
-#         os.path.join(OUTPUTDIR, "logs/binning/COMEBin.log")
-#     message:
-#         "Running COMEBin."
-#     shell:
-#         """
-#         # Change to outdir to avoid weird errors
-#         echo "Moving to {params.abs_out_dir}/{output.out_dir} ..." >> {log} 2>&1 
-#         cd {params.abs_out_dir}/{output.out_dir} >> {log} 2>&1
+rule comebin_setup_scripts_from_fork:
+    output:
+        comebin_path = directory(os.path.join(ROOTDIR, "submodules/comebin")), 
+        comebin_ready_check = os.path.join(ROOTDIR, 'submodules/comebin.ready')
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        4
+    conda:
+        os.path.join(ENVDIR, "IMP_comebin.yaml")
+    log:
+        os.path.join(ENVDIR, "logs/comebin_setup_scripts.log")
+    params:
+        fork_url = "https://github.com/ohickl/COMEBin.git"
+    message:
+        "comebin: Setting up scripts from fork."
+    shell:
+        """
+        # Clone git repo to submodule dir
+        echo "Cloning comebin fork ..." >> {log}
+        git clone {params.fork_url} {output.comebin_path} >> {log} 2>&1
 
-#         # Prepare tmp dir for mg read alignments
-#         echo "Symlinking mg read alignments to tmp dir {params.abs_out_dir}/{params.tmp_align_dir} ..." >> {log} 2>&1
-#         mkdir -p {params.abs_out_dir}/{params.tmp_align_dir} >> {log} 2>&1
-#         ln -s {params.abs_out_dir}/{input.mapping} {params.abs_out_dir}/{params.tmp_align_dir}/ >> {log} 2>&1
+        # Replace all instance of main.py, cluster.py and utils.py with the ones from the fork
+        # echo "Replacing scripts in conda env ..." >> {log}
+        # find ${{CONDA_PREFIX}}/bin/COMEBin -type f -name main.py -exec cp {output.comebin_path}/COMEBin/main.py {{}} \; >> {log} 2>&1
+        # find ${{CONDA_PREFIX}}/bin/COMEBin -type f -name cluster.py -exec cp {output.comebin_path}/COMEBin/cluster.py {{}} \; >> {log} 2>&1
+        # find ${{CONDA_PREFIX}}/bin/COMEBin -type f -name utils.py -exec cp {output.comebin_path}/COMEBin/utils.py {{}} \; >> {log} 2>&1
 
-#         # Filter contigs by length
-#         echo "Filtering contigs by length ..." >> {log} 2>&1
-#         $CONDA_PREFIX/bin/COMEBin/scripts/Filter_tooshort.py {params.abs_out_dir}/{input.assembly} {params.min_cont_size} >> {log} 2>&1
-#         echo "Filtered assembly written to {params.abs_out_dir}/{output.filt_ass}." >> {log} 2>&1
+        # Copy new run scripts into conda env bin as well as conda env comebin dir
+        echo "Copying run scripts to conda env bin ..." >> {log}
+        cp {output.comebin_path}/bin/run_comebin_train.sh ${{CONDA_PREFIX}}/bin/ >> {log} 2>&1
+        cp {output.comebin_path}/bin/run_comebin_bin.sh ${{CONDA_PREFIX}}/bin/ >> {log} 2>&1
 
-#         # Run COMEBin
-#         echo "Running COMEBin ..." >> {log} 2>&1
-#         CUDA_VISIBLE_DEVICES=0
+        echo "Copying run scripts to conda env comebin dir ..." >> {log}
+        # Find comebin conda env dir
+        comebin_env_dir=$(find ${{CONDA_PREFIX}} -type d -name COMEBin)
+        cp {output.comebin_path}/bin/run_comebin_train.sh ${{comebin_env_dir}}/ >> {log} 2>&1
+        cp {output.comebin_path}/bin/run_comebin_bin.sh ${{comebin_env_dir}}/ >> {log} 2>&1
 
-#         run_comebin.sh -a {params.abs_out_dir}/{output.filt_ass} \
-#                        -o {params.abs_out_dir}/{output.out_dir} \
-#                        -p {params.abs_out_dir}/{params.tmp_align_dir} \
-#                        -t {threads} >> {log} 2>&1
+        # Finally, we need to resintall torch using pip, to avoid unhinged library linkage problems for now
+        pip3 install torch --force-reinstall >> {log} 2>&1
 
-#         # Remove symlink dir
-#         echo "Removing tmp read map dir ..." >> {log} 2>&1
-#         rm -rf {params.abs_out_dir}/{params.tmp_align_dir} >> {log} 2>&1
+        # Touch ready file
+        touch {output.comebin_ready_check} >> {log} 2>&1
 
-#         # Move bin fastas and rename.
-#         echo "Moving and renaming bins ..." >> {log} 2>&1
-#         mv {params.abs_out_dir}/{output.out_dir}/comebin_res/comebin_res_bins {params.abs_out_dir}/{output.out_dir}/bins >> {log} 2>&1
-#         shopt -s nullglob
-#         for i in {params.abs_out_dir}/{output.out_bin_dir}/*.fa; do
-#           bin_name=$(basename -s .fa ${{i}})
-#           mv ${{i}} {params.abs_out_dir}/{output.out_bin_dir}/COMEBIN_${{bin_name}}.fasta >> {log} 2>&1
-#         done
-#         shopt -u nullglob
-
-#         # Write bin table
-#         echo "Writing bin table ..." >> {log} 2>&1
-#         python {SRCDIR}/write_bin_table_from_fastas.py {params.abs_out_dir}/{output.out_bin_dir} {params.abs_out_dir}/{output.s2b} >> {log} 2>&1
-#         rm -rf {params.abs_out_dir}/{output.out_dir}/comebin_res/comebin_res_bins >> {log} 2>&1
-#         echo "Done." >> {log} 2>&1
-#         """
+        echo "Done." >> {log}
+        """
 
 rule comebin_train:
     input:
+        comebin_ready_check = os.path.join(ROOTDIR, 'submodules/comebin.ready'),
         assembly = "Assembly/%s.assembly.merged.fa" % ASS,
         mapping = "Assembly/mg.reads.sorted.bam"
     output:
@@ -163,9 +140,9 @@ rule comebin_bin:
         echo "Running COMEBin binning ..." >> {log} 2>&1
         CUDA_VISIBLE_DEVICES=0
 
-        run_comebin_bin.sh {params.abs_out_dir}/{input.out_dir} \
-                           {params.abs_out_dir}/{input.filt_ass} \
-                           {threads} >> {log} 2>&1
+        run_comebin_bin.sh -o {params.abs_out_dir}/{input.out_dir} \
+                           -a {params.abs_out_dir}/{input.filt_ass} \
+                           -t {threads} >> {log} 2>&1
 
         # Move bin fastas and rename.
         echo "Moving and renaming bins ..." >> {log} 2>&1

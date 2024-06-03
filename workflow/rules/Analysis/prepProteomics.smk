@@ -37,7 +37,7 @@ if config['proteomics']['insert_variants']:
 elif config['proteomics']['filter_N_peptides']:
     rule cutends:
         input:
-            "Analysis/annotation/prokka.faa",
+            "Analysis/annotation/bakta/annotation.faa",
             "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
         output:
             "Analysis/annotation/proteomics.proteins.faa"
@@ -65,7 +65,7 @@ elif config['proteomics']['filter_N_peptides']:
 else:
     rule renameProteomics:
         input:
-            "Analysis/annotation/prokka.faa"
+            "Analysis/annotation/bakta/annotation.faa"
         output:
             "Analysis/annotation/proteomics.proteins.faa"
         resources: 
@@ -91,7 +91,7 @@ if config['proteomics']['host_proteome'].split():
         input:
             "Analysis/annotation/proteomics.proteins.faa"
         output:
-            "Analysis/annotation/proteomics.final.faa"
+            "Analysis/annotation/proteomics.final.faa.gz"
         resources: 
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
@@ -114,7 +114,7 @@ else:
         input:
             "Analysis/annotation/proteomics.proteins.faa"
         output:
-            "Analysis/annotation/proteomics.final.faa"
+            "Analysis/annotation/proteomics.final.faa.gz"
         resources: 
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB

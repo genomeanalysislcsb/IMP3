@@ -8,7 +8,7 @@ rule reads_filtering:
         "logs/preprocessing/{type}_filtering.{filterstep}.log"
     wildcard_constraints:
         type = "|".join(TYPES),
-        filterstep = "|".join(["trimmed(\.rna_filtered)?\." + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
+        filterstep = "|".join(["trimmed(\.rrna_filtered)?\." + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB

@@ -1,8 +1,11 @@
 import math
 
+ruleorder: index_merged_bam > call_contig_depth
+
 rule call_contig_depth:
     input:
         bam = "Assembly/{type}.reads.sorted.bam",
+        bam_index = "Assembly/{type}.reads.sorted.bam.bai",
         assembly = f"Assembly/{ASS}.assembly.merged.fa",
         assembly_fai = f"Assembly/{ASS}.assembly.merged.fa.fai",
         assembly_bed = f"Assembly/{ASS}.assembly.merged.fa.bed3"
@@ -17,7 +20,7 @@ rule call_contig_depth:
         contig_depth = f"Stats/{{type}}/{ASS}.assembly.contig_depth.txt",
         report = report(f"Stats/{{type}}/{ASS}.assembly.contig_flagstat.txt", category="Assembly")
     resources:
-        runtime = SHORT_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         # Ensure at least 50gb of mem

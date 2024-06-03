@@ -11,10 +11,20 @@ checkpoint MetaWrap_refine_check:
     shell:
         "touch {output}"
 
+rule get_checkm2_db:
+    output:
+        checkm2_db = f"{DBPATH}/checkm2/uniref100.KO.1.dmnd"
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    log:
+        os.path.join(ENVDIR, "logs/checkm2_downloadDB.log")
+    shell:
+        "checkm2 database --download --path {output.checkm2_db} >> {log} 2>&1"
+
 rule MetaWrap_refine:
     input:
         binner_fasta_dirs = check_binner_bin_fastas,
-        setup_check = f"{DBPATH}/checkm/checkm_db.ready"
+        checkm2_db = f"{DBPATH}/checkm2/uniref100.KO.1.dmnd"
     output:
         "Binning/MetaWrap/bins.stats",
         directory("Binning/MetaWrap/bins"),
@@ -27,8 +37,7 @@ rule MetaWrap_refine:
         prefix_2="metawrap_round_02",
         prefix_3="metawrap_round_03",
         total_mem=int(float(int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]) * getThreads(MAIN_BIGCORENO, bigmem=True)),
-        script_path = os.path.join(SRCDIR, "MW_scripts"),
-        checkm_db = os.path.join(DBPATH, "checkm2/uniref100.KO.1.dmnd")
+        script_path = os.path.join(SRCDIR, "MW_scripts")
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     resources:
@@ -76,7 +85,7 @@ rule MetaWrap_refine:
 
         SOFT={params.script_path} \
         {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_1} \
-                                               --checkm2-db-path {params.checkm_db} \
+                                               --checkm2-db-path {input.checkm2_db} \
                                                -t {threads} \
                                                -m {params.total_mem} \
                                                {params.binner_inputs_list[0]} \
@@ -85,13 +94,13 @@ rule MetaWrap_refine:
 
         # If no bins are in the output directory, create empty output files and exit
         shopt -s nullglob
-        bin_files=$(ls {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*.fa >> {log} 2>&1)
+        bin_files=$(ls {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*.fa 2>> {log})
         shopt -u nullglob
 
         if [[ -z "${{bin_files}}" ]]; then
-          echo "No bins above thresholds found. Creating empty output files and exiting."
-          mkdir -p {output.out_dir}/bins
-          touch {output.out_dir}/bins.stats {output.out_dir}/bins.contigs
+          echo "No bins above thresholds found. Creating empty output files and exiting." >> {log}
+          mkdir -p {output.out_dir}/bins >> {log} 2>&1
+          touch {output.out_dir}/bins.stats {output.out_dir}/bins.contigs >> {log} 2>&1
           exit 0
         fi
 
@@ -105,7 +114,7 @@ rule MetaWrap_refine:
 
         # Move plot to Visualization
         if [[ -f {output.out_dir}/{params.prefix_1}/figures/binning_results.png ]]; then
-          mv {output.out_dir}/{params.prefix_1}/figures/binning_results.png Visualization/metawrap_round_02_binning_results.png
+          mv {output.out_dir}/{params.prefix_1}/figures/binning_results.png Visualization/metawrap_round_01_binning_results.png
         fi
         rm -rf {output.out_dir}/{params.prefix_1}/${{bin_folder}}/*/
         
@@ -118,7 +127,7 @@ rule MetaWrap_refine:
             mv {output.out_dir}/{params.prefix_1}/${{bin_folder}} {output.out_dir}/{params.prefix_1}/${{bin_folder}}_round_01
             SOFT={params.script_path} \
             {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_2} \
-                                                   --checkm2-db-path {params.checkm_db} \
+                                                   --checkm2-db-path {input.checkm2_db} \
                                                    -t {threads} \
                                                    -m {params.total_mem} \
                                                    {params.binner_inputs_list[1]} \
@@ -154,7 +163,7 @@ rule MetaWrap_refine:
             mv {output.out_dir}/{params.prefix_2}/${{bin_folder}} {output.out_dir}/{params.prefix_2}/${{bin_folder}}_round_02
             SOFT={params.script_path} \
             {params.script_path}/bin_refinement.sh -o {output.out_dir}/{params.prefix_3} \
-                                                   --checkm2-db-path {params.checkm_db} \
+                                                   --checkm2-db-path {input.checkm2_db} \
                                                    -t {threads} \
                                                    -m {params.total_mem} \
                                                    {params.binner_inputs_list[2]} \
@@ -182,6 +191,7 @@ rule MetaWrap_refine:
         rm -rf {output.out_dir}/${{final_out}}/bins \
                {output.out_dir}/${{final_out}}/work_files
         mv {output.out_dir}/${{final_out}}/* {output.out_dir}/ && rm -rf {output.out_dir}/${{final_out}}
+
         for i in {output.out_dir}/metawrap_{params.mw_min_comp}_{params.mw_max_cont}*; do
           mv ${{i}} ${{i/metawrap_{params.mw_min_comp}_{params.mw_max_cont}_/}}
         done
@@ -198,35 +208,3 @@ rule MetaWrap_refine:
           done
         done
         """
-
-# Compress single binner out
-# rule compress_binner_out:
-#     input:
-#         # Make sure its done at the very end
-#         check = "status/workflow.done",
-#         binner_out = check_binner_dirs
-#     output:
-#         "Binning/{binner}.tar.gz"
-#     threads:
-#         # Ensure at least 10gb of mem
-#         max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 8)
-#     resources:
-#         runtime = SHORT_RUNTIME,
-#         mem_mb = MAIN_MEMCORE_MB
-#     log:
-#         "logs/misc/compress_binner_{binner}.log"
-#     message:
-#         "compress_binner_out: Compressing output of {wildcards.binner}."
-#     conda:
-#         os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-#     shell:
-#        """
-#        echo '.Compressing {wildcards.binner} output.'
-#        tar -cv {input.binner_out} 2> {log} | pigz --stdout \
-#                                                   --best \
-#                                                   --processes {threads} \
-#                                                   --rsyncable \
-#                                                   --verbose > {output} 2>> {log} && \
-#        rm -rf {input.binner_out} >> {log} 2>&1
-#        """
-

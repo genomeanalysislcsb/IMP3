@@ -28,7 +28,7 @@ PREP_IN = ['Preprocessing/mt.r1.preprocessed.fq',
         'Stats/mt/mt.r1.preprocessed_fastqc.zip',
         'Stats/mt/mt.r2.preprocessed_fastqc.zip',
         'Stats/mt/mt.se.preprocessed_fastqc.zip',
-        'Stats/mt/mt.read_counts.txt']
+        'Stats/mt/mt.read_stats.tsv']
 
 
 # include MT read coverafe normalization or not

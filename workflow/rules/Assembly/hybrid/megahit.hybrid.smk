@@ -1,3 +1,4 @@
+# TODO: reverse runtime reduction
 rule megahit_hybrid_assembly_1:
     input:
         mg_r1 = 'Preprocessing/mg.r1.preprocessed.fq',
@@ -13,7 +14,7 @@ rule megahit_hybrid_assembly_1:
         contigs_hyb = 'Assembly/intermediary/mgmt.megahit_hybrid.1.fa',
         out_dir = directory('Assembly/intermediary/mgmt.megahit_hybrid.1')
     resources:
-        runtime = LONG_RUNTIME,
+        runtime = MEDIUM_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)

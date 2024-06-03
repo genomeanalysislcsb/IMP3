@@ -31,7 +31,7 @@ module binny_workflow:
 
 use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_marker_sets with:
     input:
-        proteins="Analysis/annotation/prokka.faa"
+        proteins="Analysis/annotation/bakta/annotation.faa"
     output:
         "Binning/tmp/consensus_annotation.tsv",
         out_dir = directory("Binning/tmp")
@@ -51,7 +51,7 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
 use rule binny from binny_workflow as binny_binny with:
     input:
         mgdepth = 'Stats/mg/%s.assembly.contig_depth.txt' % ASS,
-        raw_gff = "Analysis/annotation/annotation.filt.gff",
+        raw_gff = "Analysis/annotation/bakta/annotation.filt.gff",
         assembly = "Assembly/%s.assembly.merged.fa" % ASS,
         hmm_markers = "Binning/tmp/consensus_annotation.tsv",
         tmp_dir = "Binning/tmp"

@@ -1,5 +1,7 @@
 import math
 
+ruleorder: index_merged_bam > call_gene_depth
+
 rule call_gene_depth:
     input:
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff",

@@ -104,31 +104,7 @@ elif config["assembly"]["merge"] == "flye":
             ) &> {log}
             """
 elif config["assembly"]["merge"] == "quickmerge":
-    # Now already done during install
-    # rule install_qm_mummer4:
-    #     output:
-    #         os.path.join(ENVDIR, "qm.ready")
-    #     log:
-    #         os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install.log")
-    #     benchmark:
-    #         os.path.join(ENVDIR, "logs",  "assembly_quickmerge_install_benchmark.tsv")
-    #     resources:
-    #         runtime = VERY_SHORT_RUNTIME,
-    #         mem_mb = MAIN_MEMCORE_MB
-    #     threads:
-    #         1
-    #     conda:
-    #         os.path.join(ENVDIR, "IMP_assembly_merge.yaml")
-    #     message:
-    #         "Fixing quickmerge wrapper."
-    #     shell:
-    #         """
-    #         wget https://raw.githubusercontent.com/mahulchak/quickmerge/master/merge_wrapper.py \
-    #              -O ${{CONDA_PREFIX}}/bin/merge_wrapper.py >> {log} 2>&1 \
-    #           && chmod 750 ${{CONDA_PREFIX}}/bin/merge_wrapper.py \
-    #           && touch {output}
-    #         """
-
+    # TODO: Put merge_wrapper.py in the scripts folder. Document this
     rule format_fastas:
         input:
             i1 = 'Assembly/intermediary/%s.%s_preprocessed.1.fa' % (ASS, IMP_ASSEMBLER),
@@ -204,7 +180,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             fi
 
             cd {output.out_dir}
-            time merge_wrapper.py --threads {threads} \
+            time {SRCDIR}/merge_wrapper.py --threads {threads} \
                           --version4 \
                           --prefix "h1_with_h2" \
                           --merging_length_cutoff {params.min_overlap} \
@@ -265,7 +241,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             fi
 
             cd {output.out_dir}
-            time merge_wrapper.py --threads {threads} \
+            time {SRCDIR}/merge_wrapper.py --threads {threads} \
                           --version4 \
                           --prefix "h2_with_h1" \
                           --merging_length_cutoff {params.min_overlap} \
@@ -328,7 +304,7 @@ elif config["assembly"]["merge"] == "quickmerge":
 
             cd {output.out_dir}
 
-            time merge_wrapper.py --threads {threads} \
+            time {SRCDIR}/merge_wrapper.py --threads {threads} \
                           --version4 \
                           --prefix "h1h2_with_h2h1" \
                           --merging_length_cutoff {params.min_overlap} \

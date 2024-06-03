@@ -7,9 +7,9 @@ include:
 # HMMER: protein annotation
 rule hmmer:
     input:
-        "Analysis/annotation/prokka.faa"
+        "Analysis/annotation/bakta/annotation.faa"
     output:
-        "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan"
+        "Analysis/annotation/intermediary/annotation.faa.{db}.hmmscan"
     params: 
         lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
         dbs = DBPATH + "/hmm/{db}"
@@ -35,9 +35,9 @@ rule hmmer:
 # GFF from HMMER output
 rule makegff:
     input:
-        "Analysis/annotation/intermediary/prokka.faa.{db}.hmmscan",
-        "Analysis/annotation/annotation.filt.gff",
-        "Analysis/annotation/prokka.faa"
+        "Analysis/annotation/intermediary/annotation.faa.{db}.hmmscan",
+        "Analysis/annotation/bakta/annotation.filt.gff",
+        "Analysis/annotation/bakta/annotation.faa"
     output:
         "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     params:
@@ -68,7 +68,7 @@ rule makegff:
 # Merge GFFs
 rule mergegff:
     input:
-        "Analysis/annotation/annotation.filt.gff", # from prokkaC.smk
+        "Analysis/annotation/bakta/annotation.filt.gff", # from bakta
         expand("Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff", db=config["hmm_DBs"].split())
           if config["annotation"] == "hmmer" else [],
         # ["Analysis/annotation/intermediary/annotation.CDS.RNA.essential.gff"] if (config["annotation"] != "hmmer" and "binny" in BIN_STEPS) else [],
@@ -90,41 +90,3 @@ rule mergegff:
         """
         {SRCDIR}/mergegffs.pl {output} {input} > {log} 2>&1
         """
-
-# Compress intermediate files
-rule tar_annotation:
-    input:
-        # Make sure its done at the very end
-        check = "status/workflow.done",
-        check2 = "status/stats.done",
-        gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-        # from featureCount.smk
-        counts_hmmer=expand("Analysis/annotation/{type}.hmmer.{db}.counts.tsv", type=TYPES,
-                            db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [],
-        counts_mantis=aggregate_mantis_fc if config["annotation"] == "mantis" else [],
-        bins="Binning/MetaWrap/bins.stats" if 'binning' in IMP_STEPS else []
-    output:
-        "Analysis/annotation/intermediary.tar.gz"
-    threads:
-        # Ensure at least 10gb of mem
-        max(int(math.ceil(10 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 8)
-    resources:
-        runtime = SHORT_RUNTIME,
-        mem_mb = MAIN_MEMCORE_MB
-    params:
-        intermediary = "Analysis/annotation/intermediary/"
-    log:
-        "logs/misc/tar_annotation.log"
-    message:
-        "tar_annotation: Compressing intermediary steps of annotation."
-    conda:
-        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
-    shell:
-       """
-       tar -cv {params.intermediary} | pigz --stdout \
-                                            --best \
-                                            --processes {threads} \
-                                            --rsyncable \
-                                            --verbose > {output} 2> {log} && \
-       rm -rf {params.intermediary} >> {log} 2>&1
-       """

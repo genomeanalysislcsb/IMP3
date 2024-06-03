@@ -131,7 +131,7 @@ def reads_input_files(wildcards):
         'Preprocessing/{type}.r2.trimmed.fq',
         'Preprocessing/{type}.se.trimmed.fq'
     ]
-    rna_filtered_fq_mt_files = [
+    rrna_filtered_fq_mt_files = [
         'Preprocessing/mt.r1.trimmed__rrna_proc.fq',
         'Preprocessing/mt.r2.trimmed__rrna_proc.fq',
         'Preprocessing/mt.se.trimmed__rrna_proc.fq',
@@ -148,7 +148,7 @@ def reads_input_files(wildcards):
             if PREPROCESSING_FILTERING:
                 base += trimmed_fq_files
                 if wildcards.type == 'mt':
-                    base += rna_filtered_fq_mt_files
+                    base += rrna_filtered_fq_mt_files
         else:
             if len(MG) == 3 and wildcards.type == 'mg':
                 base += ['Preprocessing/mg.se.fq']
@@ -220,14 +220,35 @@ def filtering_reads_input(wildcards, paired=True):
     )
     return ifiles
 
+
 def filtering_filter(wildcards):
     '''Reference input files for the paired-/single-end MG/MT reads filtering rule.'''
 
     return ancient(expand('{dir}/filtering/{filter}.{ext}',
                           dir=DBPATH,
-                          filter=[ref.replace('_filtered', '') for ref in wildcards.filterstep.split('__') if ref not in ['trimmed', 'rna_filtered']][-1],
+                          filter=[ref.replace('_filtered', '') for ref in wildcards.filterstep.split('__') if ref not in ['trimmed', 'rrna_filtered']][-1],
                           ext=['fa', 'fa.0123', 'fa.bwt.2bit.64']
     ))
+
+
+def gather_filter_step_type_read_stats(wildcards):
+    '''Gather the filter step read stats for the different read types (R1, R2, SE) for a given ome.'''
+    
+    if wildcards.type == 'mg':
+        filter_steps = ['.raw', '.trimmed']
+        current_filter_step = filter_steps[-1]
+        for step in FILTER_STEPS:
+            filter_steps.append(f"{current_filter_step}__{step}_filtered")
+            current_filter_step = filter_steps[-1]
+    elif wildcards.type == 'mt':
+        filter_steps = ['.raw', '.trimmed', '.trimmed.rrna', '.trimmed__rrna_filtered', '.trimmed__rrna_proc']
+        current_filter_step = filter_steps[-1]
+        for step in FILTER_STEPS:
+            filter_steps.append(f"{current_filter_step}__{step}_filtered")
+            current_filter_step = filter_steps[-1]
+
+    return expand('Stats/{{type}}/{{type}}{filterstep}.read_stats.tsv', filterstep=filter_steps)
+
 
 # for archiving checkpoint:
 # TODO: Deal with this mess, we only want to keep the compresed preprocessed reads!
@@ -298,7 +319,6 @@ def check_binner_dirs(wildcards):
     return os.path.join('Binning', '{binner}')
 
 
-
 def get_mw_binner_inputs(wildcards):
     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
     binners = BIN_STEPS
@@ -348,13 +368,35 @@ def getBam(wildcards):
 
 def aggregate_mantis_fc(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
-    return expand('Analysis/annotation/{type}.mantis.{i}.counts.tsv', i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,type=TYPES)
+    return expand('Analysis/annotation/{type}.mantis.{i}.counts.tsv',
+                  i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,
+                  type=TYPES)
 
 
 def aggregate_mantis_fc_per_contig(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
-    return expand('Analysis/annotation/per_contig_counts/{type}.mantis.{i}.per_contig.counts.tsv', i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,type=TYPES)
+    return expand('Analysis/annotation/per_contig_counts/{type}.mantis.{i}.per_contig.counts.tsv',
+                  i=glob_wildcards('Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff').i,
+                  type=TYPES)
 
 
 def get_extra_cores(wildcards, attempt):
     return attempt * 2
+
+# PROTEOMICS:
+def get_kraken_tax_genomes(wildcards):
+    '''Get all downloaded genomes from detected kraken taxa.'''
+
+    checkpoint_output = checkpoints.download_kraken_tax_proteomes.get(**wildcards).output.download_dir
+
+    return os.path.join(checkpoint_output, "files/{genome_id}_genomic.fna.gz")
+
+
+def gather_kraken_tax_proteome_checks(wildcards):
+    '''Gather all protein fastas from leftover downloaded or predicted kraken taxa.'''
+
+    checkpoint_output = checkpoints.download_kraken_tax_proteomes.get(**wildcards).output.download_dir
+
+    GENOME_IDS, = glob_wildcards(os.path.join(checkpoint_output, "files/{genome_id}_genomic.fna.gz"))
+
+    return expand('status/proteomics/{genome_id}.processed', genome_id=GENOME_IDS)

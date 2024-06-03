@@ -36,7 +36,7 @@ PREP_IN = [expand([
         "Stats/{type}/{type}.r1.preprocessed_fastqc.html",
         "Stats/{type}/{type}.r2.preprocessed_fastqc.html",
         "Stats/{type}/{type}.se.preprocessed_fastqc.html",
-        "Stats/{type}/{type}.read_counts.txt"], type=TYPES),
+        "Stats/{type}/{type}.read_stats.tsv"], type=TYPES),
         expand('Stats/mg/mg.{read}_nonpareil.diversity.txt',read=["r1","r2"])]
 
 # include MT read coverafe normalization or not

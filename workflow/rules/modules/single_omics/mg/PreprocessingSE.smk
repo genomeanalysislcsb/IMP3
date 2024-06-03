@@ -27,7 +27,7 @@ rule PREPROCESSING:
         'Preprocessing/mg.se.preprocessed.fq',
         "Stats/mg/mg.se.preprocessed_fastqc.zip",
         "Stats/mg/mg.se.preprocessed_fastqc.html",
-        "Stats/mg/mg.read_counts.txt",], type=TYPES)
+        "Stats/mg/mg.read_stats.tsv",], type=TYPES)
         # 'status/preprocessing_mg.reads.compressed'], type=TYPES)
     output:
         touch('status/preprocessing.done')

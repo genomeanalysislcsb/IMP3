@@ -94,6 +94,9 @@ rule reads_filtering:
             echo "There are no singletons reads. {input.reads[2]} is empty. Generating empty {output[2]}" >> {log}
             touch {output[2]}
         fi
+
+        echo "#####################################################################################" >> {log}
+        echo "Done." >> {log}
         """
 
 localrules: make_preprocessed_reads_files

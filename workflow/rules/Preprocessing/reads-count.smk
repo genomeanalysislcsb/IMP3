@@ -1,21 +1,87 @@
-rule reads_count:
+# Get raw read stats
+rule get_raw_stats:
     input:
-        reads=reads_input_files
+        raw = expand('Preprocessing/{{type}}.{read}.fq', read=['r1', 'r2'])
     output:
-        report('Stats/{type}/{type}.read_counts.txt',category="Preprocessing")
+        temp('Stats/{type}/{type}.raw.read_stats.tsv')
+    resources:
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        12
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    log:
+        "logs/analysis/{type}.raw.read_stats.log"
+    message:
+        "Getting stats for raw reads."
+    shell:
+        """
+        echo "Getting stats for {input} ..." > {log}
+        seqkit stats --threads {threads} \
+                     --all \
+                     --tabular \
+                     --basename \
+                     {input} > {output} 2>> {log}
+        echo "Done." >> {log}
+        """
+
+# Count reads using seqit for each steps fastq files
+rule count_step_reads:
+    input:
+        expand('Preprocessing/{{type}}.{read}.{{filterstep}}.fq', read=['r1', 'r2', 'se'])
+    output:
+        temp('Stats/{type}/{type}.{filterstep}.read_stats.tsv')
+    resources:
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        12
+    conda:
+        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+    log:
+        "logs/analysis/{type}.{filterstep}.read_stats.log"
+    message:
+        "Getting stats for {wildcards.type} {wildcards.filterstep} reads."
+    shell:
+        """
+        echo "Counting reads in {input} ..." > {log}
+        seqkit stats --threads {threads} \
+                     --all \
+                     --tabular \
+                     --basename \
+                     {input} > {output} 2>> {log}
+        echo "Done." >> {log}
+        """
+
+rule gather_type_read_stats:
+    input:
+        type_read_stats = gather_filter_step_type_read_stats
+    output:
+        type_all_read_stats = report('Stats/{type}/{type}.read_stats.tsv',category="Preprocessing")
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
         1
-    # log:
-    #     "logs/analysis/read_numbers.{type}.log"
+    log:
+        "logs/analysis/{type}.read_stats.log"
     message:
         "reads_count: Getting length of {wildcards.type} fastq files."
-    run:
-        for fs in {input.reads}:
-            for f in fs:
-                shell('echo -e "{f}\t$(($(wc -l < {f})/4))" >> {output}')
+    shell:
+        """
+        # Get header from first file
+        echo "Getting header from first file ..." > {log}
+        head -n 1 {input.type_read_stats[0]} > {output.type_all_read_stats} 2>> {log}
+
+        # Add stats from all files, skippin headers
+        for f in {input.type_read_stats}; do
+            echo "Adding stats from ${{f}} ..." >> {log}
+            tail -n +2 ${{f}} >> {output.type_all_read_stats} 2>> {log}
+        done
+
+        echo "Done." >> {log}
+        """
 
 rule reads_gzip:
     input:
@@ -59,7 +125,7 @@ rule gzip_files:
 
 checkpoint reads_gziped:
     input:
-        'Stats/{type}/{type}.read_counts.txt'
+        'Stats/{type}/{type}.read_stats.tsv'
     output:
         "status/preprocessing_{type}.reads.detected"
     resources:

@@ -2,7 +2,7 @@ rule reads_count:
     input:
         reads=reads_input_files_SE
     output:
-        report('Stats/{type}/{type}.read_counts.txt',category="Preprocessing")
+        report('Stats/{type}/{type}.read_stats.tsv',category="Preprocessing")
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
@@ -59,7 +59,7 @@ rule gzip_files:
 
 checkpoint reads_gziped:
     input:
-        file = 'Stats/{type}/{type}.read_counts.txt'
+        file = 'Stats/{type}/{type}.read_stats.tsv'
     output:
         "status/preprocessing_{type}.reads.detected"
     resources:
