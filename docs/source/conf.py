@@ -9,6 +9,9 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.append(os.path.abspath('..'))
+from sphinx.application import Sphinx
+from sphinx.util.docutils import SphinxDirective
 # Include the parent directory of the docs into the path so that we can import functions
 
 project = 'IMP3_Docs3'
