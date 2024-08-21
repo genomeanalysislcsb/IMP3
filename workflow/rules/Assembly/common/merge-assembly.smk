@@ -148,8 +148,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             assembly_1 = "Assembly/intermediary/%s.%s_preprocessed.1_formatted.fa" % (ASS, IMP_ASSEMBLER),
             assembly_2 = "Assembly/intermediary/%s.%s_unmapped.2_formatted.fa" % (ASS, IMP_ASSEMBLER)
         output:
-            out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2")),
-            merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta")
+            merged_assembly = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta")
         log:
             os.path.join(OUTPUTDIR, "logs",  "assembly", "join_h1_with_h2.log")
         benchmark:
@@ -158,6 +157,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
+            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2")),
             sample = SAMPLE,
             work_dir = OUTPUTDIR,
             min_overlap=config["assembly"]["quickmerge"]["min_overlap"],
@@ -175,11 +175,11 @@ elif config["assembly"]["merge"] == "quickmerge":
             echo "File with contigs to join: {input.assembly_1}." >> {log} 2>&1
             echo "File with contigs to use as bridges: {input.assembly_2}." >> {log} 2>&1
 
-            if [[ ! -d {output.out_dir} ]]; then
-              mkdir -p {output.out_dir}
+            if [[ ! -d {params.out_dir} ]]; then
+              mkdir -p {params.out_dir}
             fi
 
-            cd {output.out_dir}
+            cd {params.out_dir}
             time {SRCDIR}/merge_wrapper.py --threads {threads} \
                           --version4 \
                           --prefix "h1_with_h2" \
@@ -209,7 +209,6 @@ elif config["assembly"]["merge"] == "quickmerge":
             assembly_1= "Assembly/intermediary/%s.%s_preprocessed.1_formatted.fa" % (ASS,IMP_ASSEMBLER),
             assembly_2= "Assembly/intermediary/%s.%s_unmapped.2_formatted.fa" % (ASS,IMP_ASSEMBLER)
         output:
-            out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1")),
             merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
         log:
             os.path.join(OUTPUTDIR, "logs",  "assembly", "join_h2_with_h1.log")
@@ -219,6 +218,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
+            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1")),
             sample = SAMPLE,
             work_dir = OUTPUTDIR,
             min_overlap=config["assembly"]["quickmerge"]["min_overlap"],
@@ -236,11 +236,11 @@ elif config["assembly"]["merge"] == "quickmerge":
             echo "File with contigs to join: {input.assembly_2}." >> {log} 2>&1
             echo "File with contigs to use as bridges: {input.assembly_1}." >> {log} 2>&1
 
-            if [[ ! -d {output.out_dir} ]]; then
-              mkdir -p {output.out_dir}
+            if [[ ! -d {params.out_dir} ]]; then
+              mkdir -p {params.out_dir}
             fi
 
-            cd {output.out_dir}
+            cd {params.out_dir}
             time {SRCDIR}/merge_wrapper.py --threads {threads} \
                           --version4 \
                           --prefix "h2_with_h1" \
@@ -270,7 +270,6 @@ elif config["assembly"]["merge"] == "quickmerge":
             assembly_h1h2 = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h1_with_h2/merged_h1_with_h2_rn.fasta"),
             assembly_h2h1 = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "join_h2_with_h1/merged_h2_with_h1_rn.fasta")
         output:
-            out_dir=directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "h1h2_with_h2h1")),
             # merged_assembly=os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "h1h2_with_h2h1/merged_with_bridge_singletons_99id.fasta")
             merged_assembly = 'Assembly/%s.assembly.merged.fa' % ASS
         log:
@@ -281,6 +280,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
+            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", "h1h2_with_h2h1")),
             sample = SAMPLE,
             min_overlap=config["assembly"]["quickmerge"]["min_overlap"],
             len_cutoff=config["assembly"]["quickmerge"]["len_cutoff"],
@@ -298,11 +298,11 @@ elif config["assembly"]["merge"] == "quickmerge":
             echo "File with contigs to join: {input.assembly_h1h2}." >> {log} 2>&1
             echo "File with contigs to use as bridges: {input.assembly_h2h1}." >> {log} 2>&1
 
-            if [[ ! -d {output.out_dir} ]]; then
-              mkdir -p {output.out_dir}
+            if [[ ! -d {params.out_dir} ]]; then
+              mkdir -p {params.out_dir}
             fi
 
-            cd {output.out_dir}
+            cd {params.out_dir}
 
             time {SRCDIR}/merge_wrapper.py --threads {threads} \
                           --version4 \
@@ -318,12 +318,12 @@ elif config["assembly"]["merge"] == "quickmerge":
               gzip ${{i}}
             done \
               && \
-            for fasta in {output.out_dir}/merged_h1h2_with_h2h1.fasta {input.assembly_h2h1}; do
-              if [[ $fasta == '{output.out_dir}/merged_h1h2_with_h2h1.fasta' ]]; then
-                out_file="{output.out_dir}/merged_h1h2_with_h2h1_rn.fasta"
+            for fasta in {params.out_dir}/merged_h1h2_with_h2h1.fasta {input.assembly_h2h1}; do
+              if [[ $fasta == '{params.out_dir}/merged_h1h2_with_h2h1.fasta' ]]; then
+                out_file="{params.out_dir}/merged_h1h2_with_h2h1_rn.fasta"
                 suffix="merged"
               else
-                out_file="{output.out_dir}/bridges_h2h1_rn.fasta"
+                out_file="{params.out_dir}/bridges_h2h1_rn.fasta"
                 suffix="bridges"
               fi
               seqkit replace -p .+ \
@@ -333,27 +333,27 @@ elif config["assembly"]["merge"] == "quickmerge":
                              ${{fasta}}
             done
 
-            cat "{output.out_dir}/merged_h1h2_with_h2h1_rn.fasta" \
-                "{output.out_dir}/bridges_h2h1_rn.fasta" > "{output.out_dir}/merged_with_bridge_singletons.fasta"
+            cat "{params.out_dir}/merged_h1h2_with_h2h1_rn.fasta" \
+                "{params.out_dir}/bridges_h2h1_rn.fasta" > "{params.out_dir}/merged_with_bridge_singletons.fasta"
 
             # cdhit
             echo "Running cdhit-est." >> {log} 2>&1
-            time cd-hit-est -i {output.out_dir}/merged_with_bridge_singletons.fasta \
+            time cd-hit-est -i {params.out_dir}/merged_with_bridge_singletons.fasta \
                             -o {OUTPUTDIR}/{output.merged_assembly} \
                             -T {threads} \
                             -c 0.995 \
                             -d 50000 \
                             -M 300000 >> {log} 2>&1 \
             || \
-            time {params.alt_cdhit} -i {output.out_dir}/merged_with_bridge_singletons.fasta \
+            time {params.alt_cdhit} -i {params.out_dir}/merged_with_bridge_singletons.fasta \
                                     -o {OUTPUTDIR}/{output.merged_assembly} \
                                     -T {threads} \
                                     -c 0.995 \
                                     -d 50000 \
                                     -M 300000 >> {log} 2>&1 \
             && \
-            rm -rf {output.out_dir}/merged_with_bridge_singletons.fasta {output.out_dir}/merged_h1h2_with_h2h1.fasta \
-                   {output.out_dir}/bridges_h2h1_rn.fasta {output.out_dir}/merged_h1h2_with_h2h1_rn.fasta \
+            rm -rf {params.out_dir}/merged_with_bridge_singletons.fasta {params.out_dir}/merged_h1h2_with_h2h1.fasta \
+                   {params.out_dir}/bridges_h2h1_rn.fasta {params.out_dir}/merged_h1h2_with_h2h1_rn.fasta \
             """
 
     # # Commented compression for now, as its messing with multi-step/re- running of imp

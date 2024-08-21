@@ -71,11 +71,10 @@ elif config["assembly"]["merge"] == "quickmerge":
 
     rule quickmerge_join_h1_with_h2:
         input:
-            os.path.join(ENVDIR, "qm.ready"),
+            qm_check = os.path.join(ENVDIR, "qm.ready"),
             assembly_1 = f"Assembly/intermediary/mgmt.{IMP_ASSEMBLER}_hybrid.1_formatted.fa",
             assembly_2 = f"Assembly/intermediary/mgmt.{IMP_ASSEMBLER}_hybrid.2_formatted.fa"
         output:
-            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_1}")),
             merged_assembly = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_1}/merged_{QM_MERGE_PREFIX_1}_rn.fasta")
         log:
             os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_1}.log")
@@ -85,6 +84,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             runtime = SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
+            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_1}")),
             sample = SAMPLE,
             work_dir = OUTPUTDIR,
             min_overlap = config["assembly"]["quickmerge"]["min_overlap"],
@@ -101,10 +101,10 @@ elif config["assembly"]["merge"] == "quickmerge":
         shell:
             """
             echo -e "File with contigs to join: {input.assembly_1}.\nFile with contigs to use as bridges: {input.assembly_2}." >> {log} 2>&1
-            mkdir -p {output.out_dir} >> {log} 2>&1
+            mkdir -p {params.out_dir} >> {log} 2>&1
 
             # We have to change to the output directory because qickmerge will write the output files to the current directory ...
-            cd {output.out_dir} >> {log} 2>&1
+            cd {params.out_dir} >> {log} 2>&1
 
             # Run quickmerge
             time {SRCDIR}/merge_wrapper.py --threads {threads} \
@@ -125,10 +125,10 @@ elif config["assembly"]["merge"] == "quickmerge":
                            -r "S{params.sample}_{params.merge_prefix}_C{{nr}}" \
                            --nr-width 10 \
                            -o  {output.merged_assembly} \
-                           {output.out_dir}/merged_{params.merge_prefix}.fasta >> {log} 2>&1
+                           {params.out_dir}/merged_{params.merge_prefix}.fasta >> {log} 2>&1
             
             # Remove the raw merged assembly file
-            rm -f {output.out_dir}/merged_{params.merge_prefix}.fasta >> {log} 2>&1
+            rm -f {params.out_dir}/merged_{params.merge_prefix}.fasta >> {log} 2>&1
             """
 
     use rule quickmerge_join_h1_with_h2 as quickmerge_join_h2_with_h1 with:
@@ -136,13 +136,13 @@ elif config["assembly"]["merge"] == "quickmerge":
             assembly_1 = f"Assembly/intermediary/mgmt.{IMP_ASSEMBLER}_hybrid.2_formatted.fa",
             assembly_2 = f"Assembly/intermediary/mgmt.{IMP_ASSEMBLER}_hybrid.1_formatted.fa"
         output:
-            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_2}")),
             merged_assembly = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_2}/merged_{QM_MERGE_PREFIX_2}_rn.fasta")
         log:
             os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_2}.log")
         benchmark:
             os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_2}_benchmark.tsv")
         params:
+            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_2}")),
             sample = SAMPLE,
             work_dir = OUTPUTDIR,
             min_overlap = config["assembly"]["quickmerge"]["min_overlap"],
@@ -158,7 +158,6 @@ elif config["assembly"]["merge"] == "quickmerge":
             assembly_h1h2 = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_1}/merged_{QM_MERGE_PREFIX_1}_rn.fasta"),
             assembly_h2h1 = os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_2}/merged_{QM_MERGE_PREFIX_2}_rn.fasta")
         output:
-            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_FINAL}")),
             merged_assembly = f"Assembly/{ASS}.assembly.merged.fa"
         log:
             os.path.join(OUTPUTDIR, "logs",  f"assembly/{QM_MERGE_PREFIX_FINAL}.log")
@@ -168,6 +167,7 @@ elif config["assembly"]["merge"] == "quickmerge":
             runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB
         params:
+            out_dir = directory(os.path.join(OUTPUTDIR, "Assembly",  "intermediary", f"{QM_MERGE_PREFIX_FINAL}")),
             sample = SAMPLE,
             min_overlap = config["assembly"]["quickmerge"]["min_overlap"],
             len_cutoff = config["assembly"]["quickmerge"]["len_cutoff"],
@@ -188,11 +188,11 @@ elif config["assembly"]["merge"] == "quickmerge":
             echo "File with contigs to join: {input.assembly_h1h2}." >> {log} 2>&1
             echo "File with contigs to use as bridges: {input.assembly_h2h1}." >> {log} 2>&1
 
-            if [[ ! -d {output.out_dir} ]]; then
-              mkdir -p {output.out_dir}
+            if [[ ! -d {params.out_dir} ]]; then
+              mkdir -p {params.out_dir}
             fi
 
-            cd {output.out_dir}
+            cd {params.out_dir}
 
             time {SRCDIR}/merge_wrapper.py --threads {threads} \
                           --version4 \
@@ -208,12 +208,12 @@ elif config["assembly"]["merge"] == "quickmerge":
               gzip ${{i}}
             done
             
-            for fasta in {output.out_dir}/merged_{params.merge_prefix}.fasta {input.assembly_h2h1}; do
-              if [[ $fasta == '{output.out_dir}/merged_{params.merge_prefix}.fasta' ]]; then
-                out_file="{output.out_dir}/merged_{params.merge_prefix}_rn.fasta"
+            for fasta in {params.out_dir}/merged_{params.merge_prefix}.fasta {input.assembly_h2h1}; do
+              if [[ $fasta == '{params.out_dir}/merged_{params.merge_prefix}.fasta' ]]; then
+                out_file="{params.out_dir}/merged_{params.merge_prefix}_rn.fasta"
                 suffix="merged"
               else
-                out_file="{output.out_dir}/bridges_h2h1_rn.fasta"
+                out_file="{params.out_dir}/bridges_h2h1_rn.fasta"
                 suffix="bridges"
               fi
               seqkit replace -p .+ \
@@ -223,25 +223,25 @@ elif config["assembly"]["merge"] == "quickmerge":
                              ${{fasta}}
             done
 
-            cat "{output.out_dir}/merged_{params.merge_prefix}_rn.fasta" \
-                "{output.out_dir}/bridges_h2h1_rn.fasta" > "{output.out_dir}/merged_with_bridge_singletons.fasta"
+            cat "{params.out_dir}/merged_{params.merge_prefix}_rn.fasta" \
+                "{params.out_dir}/bridges_h2h1_rn.fasta" > "{params.out_dir}/merged_with_bridge_singletons.fasta"
 
             # cdhit
             echo "Running cdhit-est." >> {log} 2>&1
-            time cd-hit-est -i {output.out_dir}/merged_with_bridge_singletons.fasta \
+            time cd-hit-est -i {params.out_dir}/merged_with_bridge_singletons.fasta \
                             -o {OUTPUTDIR}/{output.merged_assembly} \
                             -T {threads} \
                             -c 0.995 \
                             -d 50000 \
                             -M 300000 >> {log} 2>&1 \
             || \
-            time {params.alt_cdhit} -i {output.out_dir}/merged_with_bridge_singletons.fasta \
+            time {params.alt_cdhit} -i {params.out_dir}/merged_with_bridge_singletons.fasta \
                                     -o {OUTPUTDIR}/{output.merged_assembly} \
                                     -T {threads} \
                                     -c 0.995 \
                                     -d 50000 \
                                     -M 300000 >> {log} 2>&1
             
-            # rm -rf {output.out_dir}/merged_with_bridge_singletons.fasta {output.out_dir}/merged_{params.merge_prefix}.fasta \
-            #        {output.out_dir}/bridges_h2h1_rn.fasta {output.out_dir}/merged_{params.merge_prefix}_rn.fasta
+            # rm -rf {params.out_dir}/merged_with_bridge_singletons.fasta {params.out_dir}/merged_{params.merge_prefix}.fasta \
+            #        {params.out_dir}/bridges_h2h1_rn.fasta {params.out_dir}/merged_{params.merge_prefix}_rn.fasta
             """

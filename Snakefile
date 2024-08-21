@@ -70,7 +70,7 @@ elif MG:
                 "workflow/rules/modules/single_omics/mg/Preprocessing.smk"
         if len(MG) == 1:
             include:
-                "workflow/rules/modules/single_omics/mg/PreprocessingSE.smk"
+                "workflow/rules/modules/single_omics/mg/Preprocessing_SE.smk"
 
     if 'assembly' in IMP_STEPS:
         include:
@@ -90,8 +90,12 @@ elif MG:
 # MT-only workflow
 elif MT:
     if 'preprocessing' in IMP_STEPS:
-        include:
-            "workflow/rules/modules/single_omics/mt/Preprocessing.smk"
+        if len(MT) == 2:
+            include:
+                "workflow/rules/modules/single_omics/mt/Preprocessing.smk"
+        if len(MT) == 1:
+            include:
+                "workflow/rules/modules/single_omics/mt/Preprocessing_SE.smk"
 
     if 'assembly' in IMP_STEPS:
         include:
@@ -171,8 +175,8 @@ inputs_all = ['status/inputs.done','status/workflow.done']
 if 'preprocessing' in IMP_STEPS:
     inputs_all.append(expand('status/preprocessing_{type}.reads.compressed', type=TYPES))
 
-# if 'assembly' in IMP_STEPS:
-#     inputs_all.append("Assembly/intermediary.tar.gz")
+if 'assembly' in IMP_STEPS:
+    inputs_all.append("Assembly/intermediary.tar.gz")
 
 if 'analysis' in IMP_STEPS:
     inputs_all.append("Analysis/annotation/annotation_CDS_RNA_hmms.gff")

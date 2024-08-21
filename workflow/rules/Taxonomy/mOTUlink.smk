@@ -116,7 +116,7 @@ rule blast_mOTU_db_genes:
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
-        "logs/analysis/taxonomy/blast_mOTU_db_genes.{COG}.log"
+        "logs/analysis/taxonomy/post_process_motus/blast_mOTU_db_genes.{COG}.log"
     message:
         "blast_mOTU_db_genes: Blasting {wildcards.COG} genes to present mOTUs."
     shell:
@@ -153,7 +153,7 @@ rule parse_blast_mOTU:
     conda:
         ENVDIR + "/IMP_taxonomy.yaml"
     log:
-        "logs/analysis/taxonomy/parse_blast_mOTU.{COG}.log"
+        "logs/analysis/taxonomy/post_process_motus/parse_blast_mOTU.{COG}.log"
     message:
         "parse_blast_mOTU: Parsing blast results of {wildcards.COG} genes."
     script:

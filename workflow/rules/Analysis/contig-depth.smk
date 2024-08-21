@@ -1,6 +1,84 @@
 import math
 
-ruleorder: index_merged_bam > call_contig_depth
+# ruleorder: index_bam > fasta2bed > index_assembly > call_contig_depth
+
+# rule index_bam:
+#     input:
+#         bam = "Assembly/{type}.reads.sorted.bam"
+#     output:
+#         bam_index = "Assembly/{type}.reads.sorted.bam.bai"
+#     resources:
+#         runtime = SHORT_RUNTIME,
+#         mem_mb = MAIN_BIGMEMCORE_MB
+#     threads:
+#         # Ensure at least 50gb of mem
+#         max(int(math.ceil(50 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+#     conda:
+#         ENVDIR + "/IMP_mapping.yaml"
+#     log:
+#         "logs/assembly/index_bam.{type}.log"
+#     message:
+#         "index_bam: Indexing {wildcards.type} bam."
+#     shell:
+#         """
+#         echo "Indexing {input} ..." >> {log}
+#         samtools index {input} >> {log} 2>&1
+
+#         # Check output and print name
+#         if [ -f {output} ]; then
+#             echo "Indexing done. Index at: {output}." >> {log}
+#         else
+#             echo "Indexing failed." >> {log}
+#             exit 1
+#         fi
+
+#         echo "Done." >> {log}
+#         """
+
+# rule index_assembly:
+#     input:
+#         f"Assembly/{ASS}.assembly.merged.fa"
+#     output:
+#         f"Assembly/{ASS}.assembly.merged.fa.fai"
+#     resources:
+#         runtime = SHORT_RUNTIME,
+#         mem_mb = MAIN_MEMCORE_MB
+#     threads:
+#         4
+#     conda:
+#         os.path.join(ENVDIR, "IMP_mapping.yaml")
+#     log:
+#         "logs/assembly/index_assembly.log"
+#     message:
+#         "index_assembly: Indexing assembly."
+#     shell:
+#         """
+#         echo "Indexing assembly ..." >> {log}
+#         samtools faidx {input[0]} >> {log} 2>&1
+#         echo "Done." >> {log}
+#         """
+
+# rule fasta2bed:
+#     input:
+#         assembly = f"Assembly/{ASS}.assembly.merged.fa",
+#         assembly_index = f"Assembly/{ASS}.assembly.merged.fa.fai"
+#     output:
+#         f"Assembly/{ASS}.assembly.merged.fa.bed3"
+#     resources:
+#         runtime = VERY_SHORT_RUNTIME,
+#         mem_mb = MAIN_MEMCORE_MB
+#     threads:
+#         4
+#     log:
+#         "logs/assembly/fasta2bed.log"
+#     message:
+#         "fasta2bed: Writing bed file for assembly."
+#     shell:
+#         """
+#         echo "Writing bed3 file from assembly index ..." >> {log}
+#         awk '{{print $1 \"\t0\t\" $2}}' {input.assembly_index} > {output} 2>> {log}
+#         echo "Done." >> {log}
+#         """
 
 rule call_contig_depth:
     input:

@@ -23,6 +23,64 @@ config["binning"]["binny"]["write_contig_data"] = "True"
 binny_contig_data = os.path.join(config["binning"]["binny"]["outputdir"], "contig_data.tsv.gz")
 binny_s2b = "Binning/binny/contig2bin.tsv"
 
+
+# First we check if theres enough contigs/the assembly is large enough to bin
+BINNY_IMPOSSIBLE = False
+
+checkpoint binny_check_assembly:
+    input:
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS,
+    output:
+        status_check = 'status/binning_binny_assembly.checked'
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        getThreads(14)
+    message:
+        "binny: Checking assembly size."
+    run:
+        # Load assembly
+        cont_dict = {}
+        
+        with open(input.assembly, 'r') as f:
+            current_header = None
+            header_line = False
+            for line in f:
+                if line.startswith(">"):
+                    header_line = True
+                else:
+                    header_line = False
+                line = line.strip(">\n\t ")
+                # Get header
+                if header_line:
+                    # Transform sublists of sequences from previous header to one list.
+                    if current_header:
+                        cont_dict[current_header] = "".join(cont_dict[current_header])
+                    cont_dict[line] = []
+                    current_header = line
+                # Get sequences
+                else:
+                    cont_dict[current_header].append(line)
+            # Transform sublists of sequences from last header to one list.
+            cont_dict[current_header] = "".join(cont_dict[current_header])
+
+        # Check if assembly is large enough
+        min_size = config["binning"]["binny"]["max_cont_length_cutoff_marker"]
+        contigs_greater_min = [contig for contig in cont_dict if len(cont_dict[contig]) > min_size]
+        n_contigs_greater_min = len(contigs_greater_min)
+        contigs_greater_min_len_bp = sum([len(cont_dict[contig]) for contig in contigs_greater_min])
+
+        if n_contigs_greater_min < 100 or contigs_greater_min_len_bp < 100000:
+            BINNY_IMPOSSIBLE = True
+        else:
+            BINNY_IMPOSSIBLE = False
+        
+        # Write status file
+        with open(output.status_check, 'w') as f:
+            f.write("impossible" if BINNY_IMPOSSIBLE else "possible")
+
+
 module binny_workflow:
     snakefile:
         os.path.join(ROOTDIR, "submodules/binny/Snakefile")
@@ -31,6 +89,7 @@ module binny_workflow:
 
 use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_marker_sets with:
     input:
+        status_check = 'status/binning_binny_assembly.checked',
         proteins="Analysis/annotation/bakta/annotation.faa"
     output:
         "Binning/tmp/consensus_annotation.tsv",
@@ -50,16 +109,17 @@ use rule mantis_checkm_marker_sets from binny_workflow as binny_mantis_checkm_ma
 
 use rule binny from binny_workflow as binny_binny with:
     input:
+        status_check = 'status/binning_binny_assembly.checked',
         mgdepth = 'Stats/mg/%s.assembly.contig_depth.txt' % ASS,
         raw_gff = "Analysis/annotation/bakta/annotation.filt.gff",
         assembly = "Assembly/%s.assembly.merged.fa" % ASS,
         hmm_markers = "Binning/tmp/consensus_annotation.tsv",
         tmp_dir = "Binning/tmp"
     output:
-        directory('Binning/binny/bins'),
         os.path.join("Binning/binny/contig_data.tsv.gz"),
         os.path.join("Binning/binny/binny.done"),
-        directory('Binning/binny')
+        out_dir = directory('Binning/binny'),
+        out_bin_dir = directory('Binning/binny/bins')
     params:
         binny_out=config["binning"]["binny"]["outputdir"],
         sample=config['sample'],
@@ -96,11 +156,19 @@ use rule binny from binny_workflow as binny_binny with:
     log:
         "logs/binning/binny.log"
 
+# Check if we run binny
+def binny_check(wildcards):
+    with checkpoints.binny_check_assembly.get(**wildcards).output[0].open() as f:
+        if f.read().strip() == "impossible":
+            return 'status/binning_binny_assembly.checked'
+        else:
+            return [binny_contig_data, 'Binning/binny/bins']
+
 rule binny_contig2bin:
     input:
-        binny_contig_data
+        check = binny_check
     output:
-        binny_s2b
+        s2b = binny_s2b
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
@@ -110,12 +178,21 @@ rule binny_contig2bin:
         "binny: Preparing table for DAS_Tool from binny output."
     run:
         import gzip
-        with gzip.open(binny_contig_data,'rt') as gz: # {input.contig_data}
-            with open(binny_s2b, 'w') as of:  # {output.s2b}
-                header = next(gz)
-                for line in gz:
-                    line = line.strip('\n ')
-                    line_contig = line.split('\t')[0]
-                    line_bin = line.split('\t')[1]
-                    if line_bin != 'N':
-                        of.write(f'{line_contig}\t{line_bin}\n')
+        import os
+
+        # If binny is impossible, we just touch and empty output file
+        if input.check == 'status/binning_binny_assembly.checked':
+            print("Binny impossible, touching empty file.")
+            with open(output.s2b, 'w') as f:
+                f.write('')
+        else:
+            print("Binny possible, preparing table.")
+            with gzip.open(binny_contig_data,'rt') as gz: # {input.contig_data}
+                with open(output.s2b, 'w') as of:  # {output.s2b}
+                    header = next(gz)
+                    for line in gz:
+                        line = line.strip('\n ')
+                        line_contig = line.split('\t')[0]
+                        line_bin = line.split('\t')[1]
+                        if line_bin != 'N':
+                            of.write(f'{line_contig}\t{line_bin}\n')

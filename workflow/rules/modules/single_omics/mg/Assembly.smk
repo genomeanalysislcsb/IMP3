@@ -27,7 +27,6 @@ include:
 
 
 master_ass_input = [
-        # 'Assembly/intermediary.tar.gz',
         'Assembly/mg.assembly.merged.fa',
         'Assembly/mg.assembly.merged.fa.fai',
         'Assembly/mg.assembly.merged.fa.bed3',

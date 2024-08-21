@@ -54,7 +54,7 @@ else:
         output:
             directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
-            'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
+            'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa',
         resources:
             runtime = MEDIUM_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB

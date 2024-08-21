@@ -32,9 +32,7 @@ rule GTDBtk_bins_single:
         bin = ancient("Binning/MetaWrap/bins/{clusterID}"),
         dir_prep = "status/binning_GRiD.prepped"
     output:
-        gtdbtk_out = directory("Binning/MetaWrap/bins/{clusterID}/GTDB"),
-        # summary_bac = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.bac120.markers_summary.tsv",
-        # summary_arc = "Binning/MetaWrap/bins/{clusterID}/GTDB/identify/gtdbtk.ar53.markers_summary.tsv",
+        gtdbtk_out = directory("Binning/MetaWrap/bins/{clusterID}/GTDB")
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
@@ -44,7 +42,7 @@ rule GTDBtk_bins_single:
     conda:
         os.path.join(ENVDIR, "IMP_gtdbtk.yaml")
     log:
-        "logs/analysis/GTDBtk_bins_single.{clusterID}.log"
+        "logs/taxonomy/GTDBtk/GTDBtk_bins_single.{clusterID}.log"
     message:
         "GTDBtk_bins_single: Classifiying {wildcards.clusterID} using GTDBtk."
     threads:
@@ -159,7 +157,8 @@ rule GTDBtk_summarize:
         else:
             logging.warning("No output from MetaWrap!")
             os.mknod(output.out_file)
-            os.mknod(output.grid)
+            if output.grid:
+                os.mknod(output.grid)
 
 if MG:
     rule bins_tar:
@@ -203,7 +202,7 @@ if MG:
 else:
     rule bins_tar:
         input:
-            bins_dir = ancient(dir="Binning/MetaWrap/bins",),            
+            bins_dir = ancient("Binning/MetaWrap/bins"),            
             ctrl = ancient("Stats/%s/%s.bins.tsv" % (ASS, ASS))
         output:
             bin_res_arc = "Binning/per_bin_results.tar.gz"

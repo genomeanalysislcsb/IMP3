@@ -3,6 +3,7 @@ import math
 rule call_contig_depth:
     input:
         bam = "Assembly/{type}.reads.sorted.bam",
+        bam_index = "Assembly/{type}.reads.sorted.bam.bai",
         assembly = f"Assembly/{ASS}.assembly.merged.fa",
         assembly_fai = f"Assembly/{ASS}.assembly.merged.fa.fai",
         assembly_bed = f"Assembly/{ASS}.assembly.merged.fa.bed3"

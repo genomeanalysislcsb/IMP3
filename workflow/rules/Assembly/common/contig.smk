@@ -1,25 +1,30 @@
-# rule tar_intermediary:
-#     input:
-#         # Make sure its done at the very end
-#         check = "status/workflow.done",
-#         assembly = "Assembly/%s.assembly.merged.fa" % ASS
-#     output:
-#         "Assembly/intermediary.tar.gz"
-#     threads:
-#         1
-#     resources:
-#         runtime = SHORT_RUNTIME,
-#         mem_mb = MAIN_MEMCORE_MB
-#     params:
-#         intermediary = "Assembly/intermediary/"
-#     log:
-#         "logs/assembly/tar_intermediary.log"
-#     message:
-#         "tar_intermediary: Compressing intermediary steps of assembly."
-#     shell:
-#        """
-#        tar czf {output} {params.intermediary} && rm -rf {params.intermediary} >> {log} 2>&1
-#        """
+rule tar_assembly_intermediary:
+    input:
+        # Make sure its done at the very end
+        check = "status/workflow.done",
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS
+    output:
+        "Assembly/intermediary.tar.gz"
+    threads:
+        getThreads(128, bigmem=False, high_mem_cluster=False)
+    resources:
+        runtime = MEDIUM_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    params:
+        intermediary = "Assembly/intermediary/"
+    log:
+        "logs/assembly/tar_assembly_intermediary.log"
+    message:
+        "tar_intermediary: Compressing intermediary steps of assembly."
+    shell:
+        """
+        echo "Compressing assembly intermediary dir ..." >> {log}
+
+        tar -cf - -C Assembly/ intermediary/  2>> {log} | pigz -p {threads} -c > {output} 2>> {log} \
+            && rm -rf {params.intermediary} >> {log} 2>&1
+
+        echo "Done." >> {log}
+        """
 
 rule contig_fasta_indexing:
     input:
@@ -54,7 +59,7 @@ rule contig_fasta2bed_conversion:
     threads:
         1
     log:
-        "logs/assembly/fasta2bed.log"
+        "logs/assembly/convert_fasta2bed.log"
     message:
         "contig_fasta2bed_conversion: Writing bed file for assembly."
     shell:

@@ -1,6 +1,16 @@
 import math
 
-SAMTOOLS_MEM = str(round(float(MAIN_BIGMEMCORE[:-1]) * 0.75 - 0.5)) + config['cluster_specs']['mem_unit']
+
+cores_avail = getThreads(MAIN_BIGCORENO, bigmem=True)
+memcore_gb = int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]
+total_mem_avail_gb = max(1, math.floor(cores_avail * memcore_gb))
+cores_to_use = min(cores_avail, 16)
+gb_per_core = min(math.floor(total_mem_avail_gb / cores_to_use), 1)
+moa_SAMTOOLS_MEM = '' if gb_per_core < 1 else f'-m {gb_per_core}G'
+
+# Params dont get evaluated during retries so this doesnt work ...
+def get_try_bwa_threads(wildcards, attempt):
+    return getThreads(MAIN_BIGCORENO, bigmem=True) if attempt == 1 else math.floor(getThreads(MAIN_BIGCORENO, bigmem=True) / 2)
 
 rule mapping_on_assembly:
     input:
@@ -20,11 +30,16 @@ rule mapping_on_assembly:
     resources:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
+    retries:
+        2
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
         # sam_header = f'@RG\tID:{SAMPLE}\tSM:mg\tPL:platform\tLB:library'
-        sample = SAMPLE
+        sample = SAMPLE,
+        ome = lambda wildcards: wildcards.type,
+        samtools_threads = min(16, getThreads(MAIN_BIGCORENO, bigmem=True)),
+        # bwa_threads = get_try_bwa_threads
     conda:
         ENVDIR + "/IMP_mapping.yaml"
     log:
@@ -33,46 +48,49 @@ rule mapping_on_assembly:
         "mapping_on_assembly: Mapping {wildcards.type} reads on merged assembly."
     shell:
         """
+        # Workaround to reduce threads used by bwa to ghopefully avoid OOM
+        bwa_threads=$(echo "{threads} * 0.85" | bc | cut -d '.' -f1)
+
         # map paired and sort
-        echo "Mapping PE reads and sorting them." >> {log} 2>&1
+        echo "###### Mapping PE reads and sorting them. ######" >> {log} 2>&1
         bwa-mem2 mem -v 1 \
-                        -t {threads} \
-                        -M \
-                        -R '@RG\tID:{params.sample}\tSM:mg\tPL:platform\tLB:library' \
-                        {input.assembly} \
-                        {input.r_1} \
-                        {input.r_2} 2>> {log} \
-            | samtools sort --threads {threads} \
-                            -m {SAMTOOLS_MEM} \
+                     -t $bwa_threads \
+                     -M \
+                     -R '@RG\tID:{params.sample}\tSM:{params.ome}\tPL:platform\tLB:library' \
+                     {input.assembly} \
+                     {input.r_1} \
+                     {input.r_2} 2>> {log} \
+            | samtools sort --threads {params.samtools_threads} \
+                            {moa_SAMTOOLS_MEM} \
                             - > {output.map_pair} 2>> {log}
 
         echo "#####################################################################################" >> {log} 2>&1
 
         # map se and sort
-        echo "Mapping SE reads and sorting them." >> {log} 2>&1
+        echo "###### Mapping SE reads and sorting them. ######" >> {log} 2>&1
         bwa-mem2 mem -v 1 \
-                        -t {threads} \
-                        -M \
-                        -R '@RG\tID:{params.sample}\tSM:mg\tPL:platform\tLB:library' \
-                        {input.assembly} \
-                        {input.r_se} 2>> {log} \
-            | samtools sort --threads {threads} \
-                            -m {SAMTOOLS_MEM} \
+                     -t $bwa_threads \
+                     -M \
+                     -R '@RG\tID:{params.sample}\tSM:{params.ome}\tPL:platform\tLB:library' \
+                     {input.assembly} \
+                     {input.r_se} 2>> {log} \
+            | samtools sort --threads {params.samtools_threads} \
+                            {moa_SAMTOOLS_MEM} \
                             - > {output.map_se} 2>> {log}
         
         echo "#####################################################################################" >> {log} 2>&1
 
         # merge paired and se and sort
-        echo "Merging mapping PE and SE reads and sorting them." >> {log} 2>&1
-        samtools merge --threads {threads} \
-                        -o - \
-                        {output.map_pair} \
-                        {output.map_se} \
-            | samtools sort --threads {threads} \
-                            -m {SAMTOOLS_MEM} \
+        echo "###### Merging mapping PE and SE reads and sorting them. ######" >> {log} 2>&1
+        samtools merge --threads {params.samtools_threads} \
+                       -o - \
+                       {output.map_pair} \
+                       {output.map_se} \
+            | samtools sort --threads {params.samtools_threads} \
+                            {moa_SAMTOOLS_MEM} \
                             - > {output.map_merge} 2>> {log}
         echo "#####################################################################################" >> {log} 2>&1
-        echo "Done." >> {log}
+        echo "###### Done. ######" >> {log}
         """
 
 rule index_merged_bam:

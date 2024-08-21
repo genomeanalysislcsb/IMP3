@@ -4,4 +4,5 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-  - semibin=2.0.2
+  - semibin=2.1.0
+  - seqkit=2.8.2

@@ -41,6 +41,39 @@ warning () { ${SOFT}/print_comment.py "$1" "*"; }
 announcement () { ${SOFT}/print_comment.py "$1" "#"; }
 
 ########################################################################################################
+################################               Functions                ################################
+########################################################################################################
+
+process_bins() {
+  local bins=$1
+  local out_dir=$2
+  mkdir -p $out_dir
+  for F in ${bins}/*; do
+    SIZE=$(stat -c%s "$F")
+
+    # Set size to 0 if file is empty or not found
+    if [[ -z $SIZE ]]; then SIZE=0; fi
+
+    # Check size
+    if (( SIZE > 50000 )) && (( SIZE < 20000000 )); then
+      BASE=${F##*/}
+      cp "$F" "${out_dir}/${BASE%.*}.fa"
+    else
+      echo "Skipping $F because the bin size is not between 50kb and 20Mb"
+    fi
+  done
+
+  comm "there are $(ls "$out_dir" | wc -l) bins in $(basename "$out_dir")"
+  if [[ $(ls "$out_dir" | wc -l) -eq 0 ]]; then
+    comm "$bins is empty, ignoring it..."
+    return 1
+  else
+    n_binnings=$((n_binnings + 1))
+    return 0
+  fi
+}
+
+########################################################################################################
 ########################               LOADING IN THE PARAMETERS                ########################
 ########################################################################################################
 
@@ -107,75 +140,80 @@ comm "There is $mem RAM and $threads threads available, and each pplacer thread 
 ########################               BEGIN REFINEMENT PIPELINE!               ########################
 ########################################################################################################
 announcement "BEGIN PIPELINE!"
-comm "setting up output folder  at ${out} and copying over bins..."
+comm "setting up output folder at ${out} and copying over bins..."
 if [[ ! -d ${out} ]]; then
         mkdir ${out}
 	if [[ ! -d ${out} ]]; then
 		error "cannot make ${out}"
 	fi
 else
-        warning "Warning: ${out} already exists. Attempting to clean."
-	rm -r ${out}/binsA
-	rm -r ${out}/binsB
-	rm -r ${out}/binsC
-	rm -r ${out}/binsAB
-	rm -r ${out}/binsBC
-	rm -r ${out}/binsAC
-	rm -r ${out}/binsABC
-	rm ${out}/bin.*
+    warning "Warning: ${out} already exists. Attempting to clean."
+	rm -rf ${out}/binsA
+	rm -rf ${out}/binsB
+	rm -rf ${out}/binsC
+	rm -rf ${out}/binsAB
+	rm -rf ${out}/binsBC
+	rm -rf ${out}/binsAC
+	rm -rf ${out}/binsABC
+	rm -f ${out}/bin.*
 fi
 
 
 n_binnings=0
-if [[ -d $bins1 ]]; then 
-	mkdir ${out}/binsA
-	for F in ${bins1}/*; do
-		SIZE=$(stat -c%s "$F")
-		if (( $SIZE > 50000)) && (( $SIZE < 20000000)); then 
-			BASE=${F##*/}
-			cp $F ${out}/binsA/${BASE%.*}.fa
-		else 
-			echo "Skipping $F because the bin size is not between 50kb and 20Mb"
-		fi
-	done
-	n_binnings=$((n_binnings +1))
-	comm "there are $(ls ${out}/binsA | wc -l) bins in binsA"
-	if [[ $(ls ${out}/binsA | wc -l) -eq 0 ]]; then error "Please provide valid input. Exiting..."; fi
-else
-	error "$bins1 is not a valid directory. Exiting."
+shopt -s nullglob
+
+# Initialize bin_dirs and out_dirs arrays
+bin_dirs=()
+out_dirs=()
+
+# Populate the arrays based on provided arguments
+if [[ -n ${bins1} && ${bins1} != "None" ]]; then
+  bin_dirs+=("$bins1")
+  out_dirs+=("${out}/binsA")
 fi
 
-if [[ -d $bins2 ]]; then 
-	mkdir ${out}/binsB
-	for F in ${bins2}/*; do
-		SIZE=$(stat -c%s "$F")
-		if (( $SIZE > 50000)) && (( $SIZE < 20000000)); then 
-			BASE=${F##*/}
-			cp $F ${out}/binsB/${BASE%.*}.fa
-		else 
-			echo "Skipping $F because the bin size is not between 50kb and 20Mb"
-		fi
-        done
-	n_binnings=$((n_binnings +1))
-	comm "there are $(ls ${out}/binsB | wc -l) bins in binsB"
-	if [[ $(ls ${out}/binsB | wc -l) -eq 0 ]]; then error "Please provide valid input. Exiting..."; fi
+if [[ -n ${bins2} && ${bins2} != "None" ]]; then
+  bin_dirs+=("$bins2")
+  out_dirs+=("${out}/binsB")
 fi
 
-if [[ -d $bins3 ]]; then 
-	mkdir ${out}/binsC
-	for F in ${bins3}/*; do
-		SIZE=$(stat -c%s "$F")
-		if (( $SIZE > 50000)) && (( $SIZE < 20000000)); then 
-			BASE=${F##*/}
-			cp $F ${out}/binsC/${BASE%.*}.fa
-		else 
-			echo "Skipping $F because the bin size is not between 50kb and 20Mb"
-		fi
-        done
-	n_binnings=$((n_binnings +1))
-	comm "there are $(ls ${out}/binsC | wc -l) bins in binsC"
-	if [[ $(ls ${out}/binsC | wc -l) -eq 0 ]]; then error "Please provide valid input. Exiting..."; fi
+if [[ -n ${bins3} && ${bins3} != "None" ]]; then
+  echo "Bin dir 3: $bins3"
+  bin_dirs+=("$bins3")
+  out_dirs+=("${out}/binsC")
 fi
+
+# List of non-empty output directories
+valid_out_dirs=()
+
+for i in "${!bin_dirs[@]}"; do
+  if [[ -n ${bin_dirs[i]} && -d ${bin_dirs[i]} ]]; then
+    if ! process_bins "${bin_dirs[i]}" "${out_dirs[i]}"; then
+      bin_dirs[i]=""
+      out_dirs[i]=""
+    else
+      valid_out_dirs+=("${out_dirs[i]}")
+    fi
+  elif [[ -n ${bin_dirs[i]} ]]; then
+    error "${bin_dirs[i]} is not a valid directory. Exiting."
+    exit 1
+  fi
+done
+
+# Rename the directories sequentially to ensure no gaps (binsA, binsB, binsC)
+for i in "${!valid_out_dirs[@]}"; do
+  new_dir="${out}/bins$(printf "%s" $(echo {A..Z} | cut -d ' ' -f $((i + 1))))"
+  if [[ "${valid_out_dirs[i]}" != "$new_dir" ]]; then
+    if [[ -d "$new_dir" && -z $(ls -A "$new_dir") ]]; then
+      rm -rf "$new_dir"
+    elif [[ -d "$new_dir" && -n $(ls -A "$new_dir") ]]; then
+      error "Target directory $new_dir is not empty. Exiting."
+    fi
+    mv "${valid_out_dirs[i]}" "$new_dir"
+  fi
+done
+
+shopt -u nullglob
 
 comm "There are $n_binnings bin sets!"
 
@@ -418,8 +456,13 @@ if [ "$run_checkm" == "true" ] && [ $dereplicate != "false" ] && [ -n "$(ls -A b
 
 	if [[ $? -ne 0 ]]; then error "Cannot make checkm summary file. Exiting."; fi
 	rm -r binsO.checkm
-	num=$(awk -v c="$comp" -v x="$cont" 'NR>1 {if ($2 >= c && $3 >= 0 && $3 <= x) count++} END{print count}' binsO.stats)
-	comm "There are $num 'good' bins found in binsO.checkm! (>${comp}% completion and <${cont}% contamination)"
+	num=$(awk -v c="$comp" -v x="$cont" 'NR>1 {if ($2 > c && $3 > 0 && $3 < x) count++} END{print count}' binsO.stats)
+	# Also always count near complete bins
+	num_nc=$(awk -v c=90 -v x=5 'NR>1 {if ($2 > c && $3 > 0 && $3 < x) count++} END{print count}' binsO.stats)
+	# if num is empty, set it to 0, same for num_nc
+	if [[ -z $num ]]; then num=0; fi
+	if [[ -z $num_nc ]]; then num_nc=0; fi
+	comm "There are $num 'good' bins found in binsO.checkm! (>${comp}% completion and <${cont}% contamination).\nThere are also $num_nc NC (>90% completion and <5% contamination) bins."
 	
 	comm "Removing bins that are inadequate quality..."
 	for bin_name in $(awk -v c="$comp" -v x="$cont" 'NR>2 && ($2 < c || $2 > 100 || $3 < 0 || $3 > x) {print $1}' binsO.stats | cut -d' ' -f1); do
@@ -522,6 +565,14 @@ if [[ ( "$run_checkm" == "true" ) && ( -f "${stats_file[0]}" && -s "${stats_file
 	done
 	shopt -u nullglob
 fi
+
+# If no bins were produced, touch empty stats and bin directory
+if [[ ! -s metawrap_${comp}_${cont}_bins.stats ]]; then
+	comm "No bins were produced. Touching empty stats and bin directory."
+	touch metawrap_${comp}_${cont}_bins.stats
+	mkdir -p metawrap_${comp}_${cont}_bins
+fi
+
 
 cd $home
 

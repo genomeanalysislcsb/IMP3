@@ -4,10 +4,13 @@ include:
     "../../Taxonomy/mOTUlink.smk"
 include:
     "../../Taxonomy/mOTUs.smk"
-include:
-    "../../Taxonomy/kraken_reads.smk"
-include:
-    "../../Taxonomy/kraken_reads_SE.smk"
+# TODO fix to allow combinations
+if len(MG) == 2:
+    include:
+        "../../Taxonomy/kraken_reads.smk"
+else:
+    include:
+        "../../Taxonomy/kraken_reads_SE.smk"
 include:
     "../../Taxonomy/kraken_contigs.smk"
 include:

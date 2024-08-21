@@ -2,12 +2,17 @@
 
 include:
     "../../../Taxonomy/mOTUlink.smk"
-include:
-    "../../../Taxonomy/mOTUs.smk"
-include:
-    "../../../Taxonomy/kraken_reads.smk"
-include:
-    "../../../Taxonomy/kraken_reads_SE.smk"
+
+if len(MG) == 2:
+    include:
+        "../../../Taxonomy/kraken_reads.smk"
+    include:
+        "../../../Taxonomy/mOTUs.smk"
+else:
+    include:
+        "../../../Taxonomy/kraken_reads_SE.smk"
+    include:
+        "../../../Taxonomy/mOTUs_SE.smk"
 include:
     "../../../Taxonomy/kraken_contigs.smk"
 include:
@@ -15,7 +20,6 @@ include:
 if config['eukdetect']['run_eukdetect']:
     include:
         "../../../Taxonomy/eukdetect.smk"
-
 
 # master command
 if MG or MT:
@@ -28,14 +32,12 @@ if MG or MT:
 if "assembly" in IMP_STEPS:
     tax_ctrl.append("Analysis/taxonomy/kraken/%s.kraken.contig.output.gz" % ASS)
     if "analysis" in IMP_STEPS:
-        # tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
         tax_ctrl.append("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")
 if CONTIGS:
     tax_ctrl = ["Analysis/taxonomy/kraken/%s.kraken.contig.output.gz" % ASS]
     if MG or MT:
         tax_ctrl.append(expand("Analysis/taxonomy/kraken/{type}.kraken.{outfile}",type=TYPES,outfile=["output.gz","report"]))
         if "analysis" in IMP_STEPS:
-            # tax_ctrl.append("Analysis/taxonomy/mOTU_links/intermediary.tar.gz")
             tax_ctrl.append("Analysis/taxonomy/mOTU_links/bestPresentHitPhylogeny.tsv")
 if "binning" in IMP_STEPS:
     tax_ctrl.append("status/taxonomy_GTDBtk.done")

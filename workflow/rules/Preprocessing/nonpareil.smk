@@ -1,9 +1,11 @@
 if "preprocessing" in IMP_STEPS and int(config['fastp']['length_filtering']['length_required'])>=24:
     nonpareil_cmd = """
+                    # Run nonpareil, touch empty output file if nonpareil fails
                     nonpareil -s {input} \
                               -T kmer \
                               -f fastq \
-                              -b {params.out1}.{wildcards.read}{params.out2} >> {log}
+                              -b {params.out1}.{wildcards.read}{params.out2} >> {log} 2>&1 \
+                      || touch {output} >> {log} 2>&1
                     """
 else:
    nonpareil_cmd = """
@@ -11,12 +13,14 @@ else:
                    TMP_FILE=$(mktemp "no_short_XXXXXX.fq")
                    seqkit seq {input} \
                               -j {threads} \
-                              -m 24 >> $TMP_FILE
+                              -m 24 >> $TMP_FILE 2>> {log}
+                   
+                   # Run nonpareil, touch empty output file if nonpareil fails
                    nonpareil -s $TMP_FILE \
                              -T kmer \
                              -f fastq \
-                             -b {params.out1}.{wildcards.read}{params.out2} >> {log}
-                   rm $TMP_FILE
+                             -b {params.out1}.{wildcards.read}{params.out2} >> {log} 2>&1 \
+                     || touch {output} >> {log} 2>&1
                    """
 
 rule nonpareil:

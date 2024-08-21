@@ -18,7 +18,7 @@ kraken_reads:
   clusters: "--clusters 'iris'"
   partition: "--partition bigmem"
 
-kraken_reads_SE:
+kraken_reads_se:
   clusters: "--clusters 'iris'"
   partition: "--partition bigmem"
 
@@ -49,6 +49,9 @@ comebin_train:
   clusters: "--clusters 'iris'"
   partition: "--partition gpu"
   threads: "--constraint volta --gpus 1 --cpus-per-task "
+
+# comebin_bin:
+#   qos: "--qos long"
 
 # megahit_assembly_from_preprocessing:
 # qos: "--qos long"

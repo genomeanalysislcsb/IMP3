@@ -5,19 +5,19 @@ include:
     '../../../Assembly/common/bwa.index.smk'
 
 include:
-    '../../../Assembly/common/%s.smk' % IMP_ASSEMBLER
+    '../../../Assembly/common/%s_SE.smk' % IMP_ASSEMBLER
 
 include:
     '../../../Assembly/common/merge-assembly.smk'
 
 include:
-    '../../../Assembly/single-omic/extract-unmapped.smk'
+    '../../../Assembly/single-omic/extract-unmapped_SE.smk'
 
 include:
     '../../../Assembly/common/contig.smk'
 
 include:
-    '../../../Assembly/common/mapping.smk'
+    '../../../Assembly/common/mapping_SE.smk'
 
 include:
     '../../../Assembly/common/contig-length.smk'
@@ -28,7 +28,6 @@ include:
 # master command
 rule ASSEMBLY:
     input:
-        # 'Assembly/intermediary.tar.gz',
         'Assembly/mt.assembly.merged.fa',
         'Assembly/mt.assembly.merged.fa.fai',
         'Assembly/mt.assembly.merged.fa.bed3',

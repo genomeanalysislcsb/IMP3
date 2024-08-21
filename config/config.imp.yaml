@@ -8,11 +8,11 @@ cluster_specs:  ### USER_INPUT ####
   # Choose between: K, M, G, T
   mem_unit: "M"
   main_cluster:
-    mem_total: 224000
-    mem_per_core: 1750
-    big_mem_total: 224000
+    mem_total: 218624
+    mem_per_core: 1708
+    big_mem_total: 218624
     big_mem_cores: 128
-    big_mem_per_core: 1750
+    big_mem_per_core: 1708
     # Set maximum n cores to use for jobs
     cores_max: 32
     big_mem_cores_max: 32

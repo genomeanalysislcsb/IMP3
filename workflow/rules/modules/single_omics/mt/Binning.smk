@@ -26,8 +26,8 @@ if "MetaBAT" in BIN_STEPS:
 include:
     '../../../Binning/GRiD/grid_dynamic.smk'
 
-if not 'taxonomy' in IMP_STEPS:
-    inputs_binning.append("Binning/per_bin_results.tar.gz")
+# if not 'taxonomy' in IMP_STEPS:
+#     inputs_binning.append("Binning/per_bin_results.tar.gz")
 
 ## tar annotation
 # if 'analysis' in IMP_STEPS:

@@ -4,14 +4,20 @@ import subprocess
 import sys
 import time
 
-RETRY_COUNT = 3  # Number of retries
-RETRY_DELAY = 5  # Delay (in seconds) between retries
+RETRY_COUNT = 5  # Number of retries
+RETRY_DELAY = 10  # Delay (in seconds) between retries
 
 def get_sacct_output(jobid, cluster):
+    # Verify clujster is a single string with no spaces and jobid is a number
+    if not cluster.isalnum() or not jobid.isdigit():
+        print(f"WARNING: Unexpected format in job info: {jobid} {cluster}", file=sys.stderr)
+
     cmd_sacct = ["sacct", "--allclusters", "--clusters", cluster, "--jobs", jobid, "--format", "State", "--noheader"]
     try:
         output_sacct = subprocess.check_output(cmd_sacct).decode('utf-8').strip()
     except subprocess.CalledProcessError:
+        print(f"Error: Failed to run sacct command: {' '.join(cmd_sacct)}", file=sys.stderr)
+        print(f"Error message: {sys.exc_info()}", file=sys.stderr)
         return None
     return output_sacct
 
@@ -49,18 +55,28 @@ def main():
 
     # Retry logic for sacct command
     for _ in range(RETRY_COUNT):
-        output_sacct = get_sacct_output(jobid, cluster)
-        if output_sacct:
+        output_status = get_sacct_output(jobid, cluster)
+        if output_status:
             break
         time.sleep(RETRY_DELAY)
     else:
         # All retries exhausted and still no output
         print(f"No output from sacct for job {jobid} on cluster {cluster} after {RETRY_COUNT} retries.", file=sys.stderr)
-        print("unknown")
-        sys.exit(0)
+        print(f"Trying with seff command for job {jobid} on cluster {cluster}.", file=sys.stderr)
+        # Try with `seff` as final measure
+        cmd_seff = ["seff", jobid]
+        try:
+            output_seff = subprocess.check_output(cmd_seff).decode('utf-8').strip()
+            # Get line 4 for status
+            output_status = output_seff.splitlines()[3].split()[1]
+        except subprocess.CalledProcessError:
+            print(f"Error: Failed to run seff command: {' '.join(cmd_seff)}", file=sys.stderr)
+            print(f"Error message: {sys.exc_info()}", file=sys.stderr)
+            print("unknown")
+            sys.exit(0)
 
     # Process the output
-    output = output_sacct.splitlines()[0].split()[0]
+    output = output_status.splitlines()[0].split()[0]
 
     # Determine job status based on the output
     running_status = ["PENDING", "CONFIGURING", "COMPLETING", "RUNNING", "SUSPENDED"]

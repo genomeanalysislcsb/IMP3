@@ -5,3 +5,4 @@ channels:
   - nodefaults
 dependencies:
   - maxbin2=2.2.7
+  - seqkit=2.8.2

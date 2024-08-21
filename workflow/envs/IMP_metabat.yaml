@@ -5,3 +5,4 @@ channels:
   - nodefaults
 dependencies:
   - metabat2=2.15
+  - seqkit=2.8.2

@@ -39,6 +39,8 @@ elif MT and len(MT) == 3:
     input_files_list.append("Preprocessing/mt.r1.fq")
     input_files_list.append("Preprocessing/mt.r2.fq")
     input_files_list.append("Preprocessing/mt.se.fq")
+elif MT and len(MT) == 1:
+    input_files_list.append("Preprocessing/mt.se.fq")
 if CONTIGS and not "assembly" in IMP_STEPS:
     input_files_list.append("Assembly/%s.assembly.merged.fa" %ASS)
     if MGaln:
@@ -81,6 +83,9 @@ if MG and len(MG) == 1:
     fake_output.append("Preprocessing/mg.r2.fq")
 if not 'preprocessing' in IMP_STEPS and MT and len(MT) == 2:
     fake_output.append("Preprocessing/mt.se.fq")
+if MT and len(MT) == 1:
+    fake_output.append("Preprocessing/mt.r1.fq")
+    fake_output.append("Preprocessing/mt.r2.fq")
 
 localrules: prepare_input_data_touch
 

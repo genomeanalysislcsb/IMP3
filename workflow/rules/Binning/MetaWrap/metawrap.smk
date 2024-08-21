@@ -4,8 +4,8 @@ localrules: MetaWrap_refine_check
 
 checkpoint MetaWrap_refine_check:
     input:
-        expand("Binning/{binner}/bins",binner=BIN_STEPS + ['DASTool']),
-        expand("Binning/{binner}",binner=BIN_STEPS + ['DASTool'])
+        check_mw_input,
+        "Binning/binny/contig2bin.tsv" if 'binny' in IMP_STEPS else []
     output:
         "status/MetaWrap_refine.ready"
     shell:

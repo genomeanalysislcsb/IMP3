@@ -1,5 +1,6 @@
 import os
 
+# TODO: CHeck what should take predecence: adapter_fasta or adapter_sequence
 def get_fastp_adapter_params(wildcards):
     # Check if fasta is defined in config and use it if it is
     adapter_fasta = config["fastp"]["adapter_trimming"][wildcards.type]["adapter_sequence_fasta"]

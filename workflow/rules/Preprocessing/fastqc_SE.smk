@@ -60,8 +60,8 @@ rule fastqc_preprocessed:
                  --dir {params.tmp_dir} \
                  {input.reads_se} > {log} 2>&1
         else
-          echo "{input.reads_se} is empty, FastQC will not run for that file." > {log} 2>&1
-          touch {output.fqc_report}
+          echo "{input.reads_se} is empty, FastQC will not run for that file." >> {log} 2>&1
+          touch {output.fqc_se_report}
           # TODO: This message is written to a zip file ???
           echo "No single end reads were generated" > {output.fqc_se_output} 2>> {log}
         fi

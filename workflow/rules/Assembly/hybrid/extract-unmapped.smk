@@ -1,4 +1,4 @@
-SAMTOOLS_MEM = str(round(float(MAIN_BIGMEMCORE[:-1]) * 0.75 - 0.5)) + config['cluster_specs']['mem_unit']
+eufm_SAMTOOLS_MEM = str(round(float(MAIN_BIGMEMCORE[:-1]) * 0.75 - 0.5)) + config['cluster_specs']['mem_unit']
 
 EXTRACT_UNMAPPED_SHELL = """
                          export TMPDIR="{params.tmp_dir}"
@@ -37,7 +37,7 @@ EXTRACT_UNMAPPED_SHELL = """
                                          --exclude-flags 2048  \
                                          - 2>> {log} | \
                            samtools sort --threads {threads} \
-                                         -m {SAMTOOLS_MEM} \
+                                         -m {eufm_SAMTOOLS_MEM} \
                                          -n \
                                          - 2>> {log} | \
                            samtools fastq -1 {output[0]} \

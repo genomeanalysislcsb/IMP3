@@ -4,7 +4,7 @@ checkpoint DAS_tool_check:
     input:
         expand("Binning/{binner}/contig2bin.tsv",binner=BIN_STEPS)
     output:
-        "Binning/DAS_tool.ready"
+        "status/DAS_tool.ready"
     shell:
         "touch {output}"
 

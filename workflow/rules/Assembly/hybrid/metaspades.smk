@@ -37,7 +37,7 @@ else:
         output:
             'Assembly/intermediary/mgmt.metaspades_hybrid.1/contigs.fa',
             'Assembly/intermediary/mgmt.metaspades_hybrid.1.fa',
-            directory('Assembly/intermediary/mgmt.metaspades_hybrid.1')
+            directory('Assembly/intermediary/mgmt.metaspades_hybrid.1'),
         params:
             contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa",
             gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])

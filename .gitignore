@@ -88,3 +88,4 @@ workflow/envs/genome_updater.ready
 workflow/envs/bakta.trnascan.ready
 workflow/envs/bakta.ready
 workflow/envs/bakta.cmscan.ready
+imp3_test_*.log

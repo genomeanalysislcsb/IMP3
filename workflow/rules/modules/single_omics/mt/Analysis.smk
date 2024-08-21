@@ -10,9 +10,14 @@ include:
     '../../../Analysis/annotate.smk'
 include:
     '../../../Proteomics/prot_db_prep.smk'
-include:
-    '../../../Analysis/featureCount.smk'
 
+if len(MT) == 2:
+    include:
+        '../../../Analysis/featureCount.smk'
+if len(MT) == 1:
+    include:
+        '../../../Analysis/featureCount_SE.smk'
+    
 # master command
 rule ANALYSIS:
     input:
@@ -25,16 +30,21 @@ rule ANALYSIS:
                db=["ID", "Name"],
                feature=["CRISPR", "CDS", "crispr-repeat", "crispr-spacer", "ncRNA", "oriC", "oriT", "regulatory_region", "rRNA", "tmRNA", "tRNA"]),
         expand("Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.per_contig.counts.tsv",
-               type=TYPES,db=config["hmm_DBs"].split())
+               type=TYPES,
+               db=config["hmm_DBs"].split())
             if config["annotation"] == "hmmer"
             else [],
         aggregate_mantis_fc_per_contig
             if config["annotation"] == "mantis"
             else [],
         "Analysis/annotation/annotation_CDS_RNA_hmms.gff",
-        "Analysis/annotation/mt.CDS_counts.tsv",
+        expand("Analysis/annotation/{type}.{db}.{feature}_counts.tsv",
+               type=TYPES,
+               db=["ID", "Name"],
+               feature=["CRISPR", "CDS", "crispr-repeat", "crispr-spacer", "ncRNA", "oriC", "oriT", "regulatory_region", "rRNA", "tmRNA", "tRNA"]),
         expand("Analysis/annotation/{type}.hmmer.{db}.counts.tsv",
-               type=TYPES,db=config["hmm_DBs"].split())
+               type=TYPES,
+               db=config["hmm_DBs"].split())
             if config["annotation"] == "hmmer"
             else [],
         aggregate_mantis_fc

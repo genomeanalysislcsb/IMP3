@@ -137,4 +137,3 @@ checkpoint reads_gziped:
         "reads_gziped: Collecting reads for compression."
     run:
         shell("touch {output}")
-        

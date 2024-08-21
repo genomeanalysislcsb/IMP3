@@ -1,3 +1,4 @@
+# TODO: Update with latest functionalities and min size checks etc
 rule maxbin:
     input:
        assembly = "Assembly/%s.assembly.merged.fa" % ASS,

@@ -5,3 +5,5 @@ channels:
   - nodefaults
 dependencies:
   - concoct=1.1.0
+  - seqkit=2.8.2
+  

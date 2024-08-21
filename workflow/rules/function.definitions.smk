@@ -110,11 +110,13 @@ def no_filtering_input_SE(wildcards):
     input_no_filtering = {
         'mg': [
             'Preprocessing/mg.se.trimmed.fq'
+        ],
+        'mt': [
+            'Preprocessing/mt.se.trimmed__rrna_proc.fq'
         ]
     }
-    if wildcards.type == 'mg':
-        return input_no_filtering[wildcards.type]
-    return 'no_filtering_input_no_file_here'
+
+    return input_no_filtering[wildcards.type]
 
 def reads_input_files(wildcards):
     raw_fq_files = [
@@ -158,25 +160,26 @@ def reads_input_files(wildcards):
         base = bam_files
     return expand(base, type=wildcards.type)
     
+# TODO: WTF is this?
 def reads_input_files_SE(wildcards):
     raw_fq_files = [
-        'Preprocessing/{type}.r1.fq'
+        'Preprocessing/{type}.se.fq'
     ]
     preprocessed_fq_files = [
-        'Preprocessing/{type}.r1.preprocessed.fq',
-        'Preprocessing/{type}.r2.preprocessed.fq',
         'Preprocessing/{type}.se.preprocessed.fq',
     ]
     trimmed_fq_files = [
         'Preprocessing/{type}.se.trimmed.fq'
     ]
-    if wildcards.type != 'mg' :
-        return 'reads_input_files-no-file-here'
-    else:
-        base = raw_fq_files
-        base += preprocessed_fq_files
-        if PREPROCESSING_FILTERING:
-            base += trimmed_fq_files
+    
+    base = raw_fq_files
+    base += preprocessed_fq_files
+    if PREPROCESSING_FILTERING:
+        base += trimmed_fq_files
+
+    if wildcards.type =='mt':
+        base += ['Preprocessing/mt.se.trimmed__rrna_proc.fq']
+    
     return expand(base, type=wildcards.type)
 
 def filtering_reads_pe_input(wildcards):
@@ -218,8 +221,8 @@ def filtering_reads_input(wildcards, paired=True):
         read=['r1', 'r2', 'se'] if paired else ['se'],
         filterstep=f"{'__'.join(filtersteps[:-1])}"
     )
+    
     return ifiles
-
 
 def filtering_filter(wildcards):
     '''Reference input files for the paired-/single-end MG/MT reads filtering rule.'''
@@ -248,6 +251,30 @@ def gather_filter_step_type_read_stats(wildcards):
             current_filter_step = filter_steps[-1]
 
     return expand('Stats/{{type}}/{{type}}{filterstep}.read_stats.tsv', filterstep=filter_steps)
+
+def se_filter_checkpoint(wildcards):
+    '''Get the checkpoint output for the SE reads filtering rule.'''
+    # print(f"se_filter_checkpoint: {wildcards}")
+    checkpoint_out = checkpoints.reads_filtering_se.get(**wildcards).output[0]
+
+    # Dict of make_preprocessed_reads_files_se inputs fake_pe and final_filter
+    # fake_pe = expand("Preprocessing/{{type}}.{read}.fq", read=['r1', 'r2']),
+    # final_filter = lambda wildcards: expand("Preprocessing/{{type}}.{read}.{filtered}.fq",
+    #                          filtered=('trimmed.' if wildcards.type == 'mg' \
+    #                                    else 'trimmed__rrna_proc__') \
+    #                                    + ".".join([s + "_filtered" for s in FILTER]),
+    #                          read=['se'])
+    # print(f"se_filter_checkpoint: {checkpoint_out}")
+
+    # inputs = {
+    #     'fake_pe': expand("Preprocessing/{type}.{read}.fq", read=['r1', 'r2']),
+    #     'final_filter': expand("Preprocessing/{type}.{read}.{filtered}.fq",
+    #                            filtered=('trimmed.' if wildcards.type == 'mg' else 'trimmed__rrna_proc__') \
+    #                                     + ".".join([s + "_filtered" for s in FILTER]),
+    #                            read=['se'])
+    # }
+
+    # return inputs
 
 
 # for archiving checkpoint:
@@ -287,8 +314,27 @@ def check_bintabs(wildcards):
         s2b_path = os.path.join(OUTPUTDIR, 'Binning', binner, 'contig2bin.tsv')
         if os.path.exists(s2b_path) and os.stat(s2b_path).st_size > 0:
             valid_binners.append(binner)
+    
     return expand('Binning/{binner}/contig2bin.tsv',binner=valid_binners)
 
+def check_mw_input(wildcards):
+    if 'binny' in IMP_STEPS:
+        checkpoint_output = checkpoints.binny_check_assembly.get(**wildcards).output[0]
+        checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
+    else:
+        checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
+    
+    valid_binners = []
+    for binner in BIN_STEPS:
+        bin_list = glob.glob(f'{OUTPUTDIR}/Binning/{binner}/bins/*.fasta')
+        if bin_list:
+            if any(os.stat(bin).st_size > 0 for bin in bin_list):
+                valid_binners.append(binner)
+    
+    if valid_binners:
+        valid_binners.append('DASTool')
+
+    return expand("Binning/{binner}/bins", binner=valid_binners)
 
 def check_binner_bin_fastas(wildcards):
     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
@@ -303,6 +349,7 @@ def check_binner_bin_fastas(wildcards):
                 if any(os.stat(bin).st_size > 0 for bin in bin_list):
                     valid_binners.append(binner)
                     break
+    
     if glob.glob(OUTPUTDIR + '/Binning/DASTool/bins/*.fasta'):
         valid_binners.append('DASTool')
 
@@ -311,12 +358,12 @@ def check_binner_bin_fastas(wildcards):
     return binner_out_paths
 
 
-def check_binner_dirs(wildcards):
-    checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
+# def check_binner_dirs(wildcards):
+#     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
 
-    binner_out_paths, = glob_wildcards(os.path.join('Binning', '{binner}'))
+#     binner_out_paths, = glob_wildcards(os.path.join('Binning', '{binner}'))
 
-    return os.path.join('Binning', '{binner}')
+#     return os.path.join('Binning', '{binner}')
 
 
 def get_mw_binner_inputs(wildcards):

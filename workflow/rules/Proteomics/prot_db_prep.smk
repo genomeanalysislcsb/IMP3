@@ -73,7 +73,7 @@ if config['proteomics']['add_kraken_taxa_proteomes']:
             proteome_fasta = lambda wildcards: os.path.join("Analysis/annotation/proteomics/taxa_proteins/download/files", f"{wildcards.genome_id}_protein.faa.gz"),
             unsupported_taxa = 'plant|vertebrate_mammalian|fungi|invertebrate|protozoa|vertebrate_other'
         threads:
-            getThreads(128)
+            getThreads(16)
         conda:
             os.path.join(ENVDIR, "IMP_protein_db.yaml")
         log:
@@ -82,23 +82,69 @@ if config['proteomics']['add_kraken_taxa_proteomes']:
             """
             echo "{params.genome_id}: Processing genome/proteome ..." >> {log}
 
+            # Check if the genome fasta archive is valid
+            echo "{params.genome_id}: Checking genome fasta archive ..." >> {log}
+            if ! gzip -t {input.kraken_taxa_genome} 2>/dev/null; then
+                echo "{params.genome_id}: Invalid genome fasta archive. Attempting to re-download." >> {log}
+
+                # Extract the assembly name from the genome_id
+                assembly_accession=$(echo "{params.genome_id}" | cut -d'_' -f -2)
+
+                # Extract the URL from the assembly summary file
+                url=$(awk -F'\t' -v acc="$assembly_accession" '$1==acc {{print $20}}' {input.assembly_summary})
+                
+                if [ -z "$url" ]; then
+                    echo "{params.genome_id}: Unable to find URL in assembly summary. Exiting." >> {log}
+                    exit 1
+                fi
+                
+                # Extract the filename from the URL
+                filename=$(basename "$url")_genomic.fna.gz
+                
+                # Download the file
+                wget --tries=5 \
+                     --wait=10 \
+                     --random-wait \
+                     --retry-connrefused \
+                     --retry-on-http-error=404,500,503 \
+                     -O {input.kraken_taxa_genome} \
+                     "$url/$filename" >> {log} 2>&1
+                
+                # Check if the download was successful
+                if ! gzip -t {input.kraken_taxa_genome} 2>/dev/null; then
+                    echo "{params.genome_id}: Re-download failed or file still invalid. Exiting." >> {log}
+                    exit 1
+                fi
+                
+                echo "{params.genome_id}: Successfully re-downloaded and validated genome fasta archive." >> {log}
+            fi
+            
             # Check if the proteome file exists and is valid. if `seqkit stats` doesnt fail we dont need to process further
             echo "{params.genome_id}: Checking proteome fasta ..." >> {log}
-            seqkit_check=$(seqkit stats --seq-type protein "{params.proteome_fasta}" 2>&1)
-            if echo "$seqkit_check" | grep -qv 'invalid FASTA/Q format'; then
+
+            set +e  # Temporarily disable exit on error
+            seqkit_check=$(set +o pipefail;seqkit stats --seq-type protein "path/to/some_protein.faa.gz" 2>&1)
+            seqkit_exit_code=$?
+            set -e  # Re-enable exit on error
+
+            if [ $seqkit_exit_code -eq 0 ] && ! echo "$seqkit_check" | grep -q 'invalid FASTA/Q format'; then
                 echo "{params.genome_id}: Valid proteome fasta. No gene prediction needed. Exiting." >> {log}
                 touch {output.process_check}
                 exit 0
+            else
+                # Remove invalid proteome fasta
+                echo "{params.genome_id}: Invalid proteome fasta. Deleting proteome file." >> {log}
+                rm -rf {params.proteome_fasta} >> {log} 2>&1
             fi
 
             # Exit if the proteome file is not a valid fasta file and the genome is an euakryote
             echo "{params.genome_id}: Checking if genome is eukaryote ..." >> {log}
             if [[ $(grep {params.genome_id} {input.assembly_summary} | grep -q -E "{params.unsupported_taxa}" ; echo $?) -eq 0 ]]; then
                 echo "{params.genome_id}: Eukaryote without valid proteome fasta. Deleting proteome file (if it exists) and exiting." >> {log}
-                rm -rf {params.proteome_fasta} >> {log} 2>&1
                 touch {output.process_check}
                 exit 0
             fi
+
 
             # If the proteome fasta is not valid or not present, run gene prediction
             echo "{params.genome_id}: Running Pyrodigal ..." >> {log}
@@ -107,7 +153,7 @@ if config['proteomics']['add_kraken_taxa_proteomes']:
                                                  --cores {threads} \
                                                  --write_gff >> {log} 2>&1
             touch {output.process_check}
-            echo "{params.genome_id}:Done." >> {log}
+            echo "{params.genome_id}: Done." >> {log}
             """
 
     # Add all kraken taxa proteomes to the bakta metaproteome
@@ -167,7 +213,16 @@ if config['proteomics']['extra_proteomes'].split():
         shell:
             """
             echo "Merging extra proteome(s) with metaproteomics proteome ..." >> {log}
-            cat {input} {params.extra_proteomes} > {output} 2>> {log}
+            (
+                cat {input} 
+                for file in {params.extra_proteomes}; do
+                    if [[ $file == *.gz ]]; then
+                        zcat "$file"
+                    else
+                        cat "$file"
+                    fi
+                done
+            ) > {output} 2>> {log}
             echo "Done." >> {log}
             """
     

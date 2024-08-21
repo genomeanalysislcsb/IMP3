@@ -5,3 +5,4 @@ channels:
   - nodefaults
 dependencies:
   - comebin=1.0.4
+  - seqkit=2.8.2

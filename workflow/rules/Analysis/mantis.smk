@@ -5,18 +5,18 @@ include:
 
 # TODO: Check why 4000 mb/core with > 42 cores (168G total) or 8000 mb/core with > 25 (200G total) cores cant submit with slurm but 12000 mb/core + 18 cores (216G total) works 
 # Maybe the problem is with the cluster configuration: for batch `DefMemPerCPU=1750 MaxMemPerCPU=1750`
-def get_min_mem_man(wildcards, attempt):
-    mem_per_core = float(config['cluster_specs']['main_cluster']['big_mem_per_core'])
-    mem_unit = config['cluster_specs']['mem_unit']
-    mem_avail_mb = math.floor(mem_per_core * to_mb_dict[mem_unit])
-    return attempt * max(mem_avail_mb, 4000)
+# def get_min_mem_man(wildcards, attempt):
+#     mem_per_core = float(config['cluster_specs']['main_cluster']['big_mem_per_core'])
+#     mem_unit = config['cluster_specs']['mem_unit']
+#     mem_avail_mb = math.floor(mem_per_core * to_mb_dict[mem_unit])
+#     return attempt * max(mem_avail_mb, 4000)
 
-def get_max_cores_man(wildcards, attempt):
-    mem_per_core_attempt = get_min_mem_man(wildcards, attempt)
-    max_cores = config['cluster_specs']['main_cluster']['big_mem_cores_max']
-    total_mem = math.floor(config['cluster_specs']['main_cluster']['big_mem_total'] * 0.95)
-    attempt_supported_cores = math.floor(total_mem / mem_per_core_attempt)
-    return max(min(max_cores, attempt_supported_cores), 1)
+# def get_max_cores_man(wildcards, attempt):
+#     mem_per_core_attempt = get_min_mem_man(wildcards, attempt)
+#     max_cores = config['cluster_specs']['main_cluster']['big_mem_cores_max']
+#     total_mem = math.floor(config['cluster_specs']['main_cluster']['big_mem_total'] * 0.95)
+#     attempt_supported_cores = math.floor(total_mem / mem_per_core_attempt)
+#     return max(min(max_cores, attempt_supported_cores), 1)
 
 # Mantis: protein annotation
 # NOTE: assumming that mantis has been setup
@@ -36,7 +36,8 @@ rule mantis_annot:
         "logs/analysis/mantis.log"
     params:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
-        params="-gff -km -da heuristic",
+        mantis_params="-gff -km -da heuristic",
+        mem_avail_gb = math.floor(float(MAIN_BIGMEMTOTAL) * to_gb_dict[config['cluster_specs']['mem_unit']] * 0.75)
     threads:
         # get_max_cores_man
         getThreads(128, bigmem=True, high_mem_cluster=False)
@@ -44,8 +45,6 @@ rule mantis_annot:
         runtime = LONG_RUNTIME,
         # mem_mb = get_min_mem_man
         mem_mb = MAIN_BIGMEMCORE_MB
-    retries:
-        3
     message:
         "Mantis: annotate {input}"
     conda:
@@ -53,15 +52,21 @@ rule mantis_annot:
     shell:
         """
         # Check installation
+        echo "### Checking Mantis installation ... ###" >> {log}
         (mantis  check  --mantis_config {input.config} >> {log} 2>&1 && echo "Mantis is installed correctly." >> {log}) \
           || (echo "Mantis is not installed correctly." >> {log} && mantis setup --mantis_config {input.config} --cores {threads} >> {log} 2>&1)
 
-        rm -rf Analysis/annotation/intermediary/mantis*
+        # Use 10% less cores/threads to try to avoiud OOM errors
+        mantis_cores=$(echo "{threads} * 0.75" | bc | cut -d '.' -f1)
+
+        # Run Mantis
+        rm -rf Analysis/annotation/intermediary/mantis* >> {log} 2>&1
         mantis run -i {input.faa} \
                    -o {params.odir} \
                    -mc {input.config} \
-                   {params.params} \
-                   -c {threads} >> {log} 2>&1
+                   {params.mantis_params} \
+                   -c $mantis_cores \
+                   -m {params.mem_avail_gb} >> {log} 2>&1
 
         # Compress all output files
         echo "Compressing Mantis output files" >> {log}

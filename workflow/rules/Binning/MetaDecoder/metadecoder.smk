@@ -4,10 +4,12 @@ rule metadecoder:
         bam = "Assembly/mg.reads.sorted.bam"
     output:
         out_dir = directory("Binning/MetaDecoder"),
-        out_bin_dir = directory("Binning/MetaDecoder/bins")
+        out_bin_dir = directory("Binning/MetaDecoder/bins"),
+        ass_stats = temp("Binning/MetaDecoder/assembly_stats.tsv")
     params:
         min_cont_size = config["binning"]["MetaDecoder"]["cutoff"],
-        work_dir = OUTPUTDIR
+        work_dir = OUTPUTDIR,
+        impossible_check = 'status/binning_metadecoder.impossible'
     threads:
         getThreads(8)
     resources:
@@ -21,6 +23,25 @@ rule metadecoder:
         "Running MetaDecoder."
     shell:
         """
+        # Clear previous status check
+        rm -rf {params.impossible_check} > {log} 2>&1
+
+        # Check if there are enough contigs < min_cont_size to proceed with binning
+        echo "### Checking number of contigs > min length ... ###" >> {log}
+        # Stats format is `file  format  type  num_seqs    sum_len  min_len  avg_len  max_len`
+        seqkit seq -m {params.min_cont_size} {input.assembly} 2>> {log} | seqkit stats -j 4 -T 2>> {log} | tail -n +2 > {output.ass_stats} 2>> {log}
+        ass_n_contigs=$(cut -f 4 {output.ass_stats} 2>> {log})
+        ass_size=$(cut -f 5 {output.ass_stats} 2>> {log})
+
+        # Touch output and extit if theres less than 1000 contigs or the size is < 2*10^6 bps
+        if [[ ! $ass_n_contigs -ge 1000 || ! $ass_size -ge 2000000 ]];then
+          echo "### Less than 1000 contigs larger min size or assembly smaller than 2*10^6 bps. Exiting ... ###" >> {log}
+          touch {params.impossible_check} >> {log} 2>&1
+          mkdir -p {output.out_dir} \
+                   {output.out_bin_dir} >> {log} 2>&1
+          exit 0
+        fi
+
         mkdir -p {params.work_dir}/{output.out_dir}
         cd {params.work_dir}/{output.out_dir}
 
@@ -50,16 +71,15 @@ rule metadecoder:
                             --coverage {params.work_dir}/{output.out_dir}/METADECODER.COVERAGE \
                             --seed {params.work_dir}/{output.out_dir}/METADECODER.SEED \
                             --output {params.work_dir}/{output.out_dir}/METADECODER >> {log} 2>&1
-        
+
         # Move bin fastas and rename.
         echo "Moving bin fastas ..." >> {log} 2>&1
         mkdir -p {params.work_dir}/{output.out_bin_dir}
         
         shopt -s nullglob
-        for i in {output.out_dir}/*.{{fa,fna,fasta}}; do
-          bin_file=${{i##*/}}
-          bin_name=${{i%.*}}
-          mv ${{i}} {output.out_bin_dir}/${{bin_name}}.fasta
+        for i in {params.work_dir}/{output.out_dir}/*.{{fa,fna,fasta}}; do
+          bin_name=$(basename ${{i}} | sed 's/.[^.]*$//g')
+          mv ${{i}} {params.work_dir}/{output.out_bin_dir}/${{bin_name}}.fasta >> {log} 2>&1
         done
         shopt -u nullglob
 

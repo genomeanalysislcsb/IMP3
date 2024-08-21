@@ -22,7 +22,6 @@ rule get_bakta_db:
                           --type full > {log} 2>&1 \
          && touch {output} >> {log} 2>&1
         """
-
 rule setup_functions_from_fork:
     output:
         bakta_path = directory(os.path.join(ROOTDIR, "submodules/bakta")), 
@@ -37,29 +36,47 @@ rule setup_functions_from_fork:
     log:
         os.path.join(ENVDIR, "logs/bakta_setup_functions.log")
     params:
-        fork_url = "https://github.com/ohickl/bakta.git"
+        fork_url = "https://github.com/ohickl/bakta.git",
+        fork_branch = "dynamic_db_fetch"
     message:
         "bakta: Setting up functions from fork."
     shell:
         """
         # Clone git repo to submodule dir
         echo "Cloning bakta fork ..." >> {log}
-        git clone {params.fork_url} {output.bakta_path} >> {log} 2>&1
+        git clone -b {params.fork_branch} {params.fork_url} {output.bakta_path} >> {log} 2>&1
 
-        # Replace all instance of nc_rna.py, nc_rna_region.py, r_rna.py, t_rna.py, tm_rna.py, main.py, config.py, and utils.py in conda env with those from fork
+        # Find the bakta package directory in the conda environment
+        BAKTA_CONDA_DIR=$(find ${{CONDA_PREFIX}} -type d -name "bakta" -path "*/site-packages/bakta" | head -n 1)
+
+        if [ -z "$BAKTA_CONDA_DIR" ]; then
+            echo "Error: Bakta directory not found in conda environment" >> {log}
+            exit 1
+        fi
+
         echo "Replacing functions in conda env ..." >> {log}
-        find ${{CONDA_PREFIX}} -type f -name nc_rna.py -exec cp {output.bakta_path}/bakta/features/nc_rna.py {{}} \; >> {log} 2>&1
-        find ${{CONDA_PREFIX}} -type f -name nc_rna_region.py -exec cp {output.bakta_path}/bakta/features/nc_rna_region.py {{}} \; >> {log} 2>&1
-        find ${{CONDA_PREFIX}} -type f -name r_rna.py -exec cp {output.bakta_path}/bakta/features/r_rna.py {{}} \; >> {log} 2>&1
-        find ${{CONDA_PREFIX}} -type f -name t_rna.py -exec cp {output.bakta_path}/bakta/features/t_rna.py {{}} \; >> {log} 2>&1
-        find ${{CONDA_PREFIX}} -type f -name tm_rna.py -exec cp {output.bakta_path}/bakta/features/tm_rna.py {{}} \; >> {log} 2>&1
-        find ${{CONDA_PREFIX}} -type f -name main.py -exec cp {output.bakta_path}/bakta/main.py {{}} \; >> {log} 2>&1
-        find ${{CONDA_PREFIX}} -type f -name config.py -exec cp {output.bakta_path}/bakta/config.py {{}} \; >> {log} 2>&1
-        find ${{CONDA_PREFIX}} -type f -name utils.py -exec cp {output.bakta_path}/bakta/utils.py {{}} \; >> {log} 2>&1
+        # Replace files in the features directory
+        cp {output.bakta_path}/bakta/features/nc_rna.py ${{BAKTA_CONDA_DIR}}/features/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/features/nc_rna_region.py ${{BAKTA_CONDA_DIR}}/features/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/features/r_rna.py ${{BAKTA_CONDA_DIR}}/features/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/features/t_rna.py ${{BAKTA_CONDA_DIR}}/features/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/features/tm_rna.py ${{BAKTA_CONDA_DIR}}/features/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/features/s_orf.py ${{BAKTA_CONDA_DIR}}/features/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/features/cds.py ${{BAKTA_CONDA_DIR}}/features/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/features/crispr.py ${{BAKTA_CONDA_DIR}}/features/ >> {log} 2>&1
 
-        # Also increase diamond block size from 3 to 6 `'--block-size', '3'` to `'--block-size', '6'`
+        # Replace files in the main bakta directory
+        cp {output.bakta_path}/bakta/main.py ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/config.py ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/utils.py ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/psc.py ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/pscc.py ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/ips.py ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
+        cp {output.bakta_path}/bakta/ups.py ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
+
+        # Increase diamond block size from 3 to 6
         echo "Increasing diamond block size ..." >> {log}
-        find ${{CONDA_PREFIX}} -type f -name *.py -exec sed -i "s/'--block-size', '3'/'--block-size', '6'/g" {{}} \; >> {log} 2>&1
+        find ${{BAKTA_CONDA_DIR}} -type f -name '*.py' -exec sed -i "s/'--block-size', '3'/'--block-size', '6'/g" {{}} \; >> {log} 2>&1
 
         # Touch ready file
         touch {output.ready_check} >> {log} 2>&1
@@ -97,13 +114,9 @@ rule annotate:
         "annotate: Running bakta."
     shell:
         """
-
-        # Copy db into node ram
-        echo "Copying bakta dbs into node RAM ..." >> {log}
-        rsync -aPu {params.db} /dev/shm/ >> {log} 2>&1
-
         echo "Running bakta ..." >> {log}
-        bakta --db /dev/shm/db \
+        bakta --db {params.db} \
+              --tmp_db_path /dev/shm \
               --verbose \
               --debug \
               --prefix {params.prefix} \

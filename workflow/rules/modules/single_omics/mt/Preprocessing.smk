@@ -1,7 +1,7 @@
 # include rules for the Preprocessing part of the workflow
 
 include:
-    "../../../Preprocessing/fastqc.smk"
+    "../../../Preprocessing/fastqc_SE.smk"
 include:
     '../../../Preprocessing/reads-count.smk'
 include:

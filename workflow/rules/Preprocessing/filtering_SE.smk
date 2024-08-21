@@ -1,19 +1,22 @@
-rule reads_filtering:
+checkpoint reads_filtering_se:
     input:
-        reads=filtering_reads_se_input,
-        ref=filtering_filter
+        reads = filtering_reads_se_input,
+        ref = filtering_filter
     output:
         temp('Preprocessing/{type}.se.{filterstep}.fq')
     log:
         "logs/preprocessing/{type}_filtering.{filterstep}.log"
     wildcard_constraints:
         type = "|".join(TYPES),
-        filterstep = "|".join(["trimmed(\.rrna_filtered)?\." + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
+        filterstep = "|".join(["trimmed(__rrna_proc)?__" + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
         runtime = SHORT_RUNTIME,
         mem_mb = MAIN_BIGMEMCORE_MB
     threads:
         getThreads(MAIN_BIGCORENO, bigmem=True)
+    params:
+        mem = str(max(int(MAIN_BIGMEMCORE_MB * 0.75), 1)) + 'M',
+        tmp_dir=TMPDIR
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -31,18 +34,19 @@ rule reads_filtering:
                        - 2>> {log}
         """
 
-localrules: make_preprocessed_reads_files
+localrules: make_preprocessed_reads_files_se
 
-rule make_preprocessed_reads_files:
+rule make_preprocessed_reads_files_se:
     input:
-        expand("Preprocessing/mg.{read}.fq", read=['r1', 'r2']),
-        lambda wildcards: expand("Preprocessing/{{type}}.{read}.{filtered}.fq",
+        # check = se_filter_checkpoint,
+        fake_pe = expand("Preprocessing/{{type}}.{read}.fq", read=['r1', 'r2']),
+        final_filter = lambda wildcards: expand("Preprocessing/{{type}}.{read}.{filtered}.fq",
                                  filtered=('trimmed.' if wildcards.type == 'mg' \
                                            else 'trimmed__rrna_proc__') \
-                                           + ".".join([s + "_filtered" for s in FILTER]),
+                                           + "__".join([s + "_filtered" for s in FILTER]),
                                  read=['se'])
     output:
-        expand('Preprocessing/{{type}}.{read}.preprocessed.fq', read=['r1', 'r2', 'se'])
+        expand('Preprocessing/{{type}}.{read}.preprocessed.fq', read=['se'])
     wildcard_constraints:
         type = "|".join(TYPES),
     threads:
@@ -50,7 +54,10 @@ rule make_preprocessed_reads_files:
     log:
         "logs/preprocessing/{type}_make_preprocessed_reads_files.log"
     message:
-        "symlink_preprocessed_reads_files: link to preprocessed {wildcards.type} reads"
-    run:
-        for i, o in zip(input, output):
-            shell("cp {i} {o} > {log} 2>&1")
+        "make_preprocessed_reads_files_se: Create final preprocessed {wildcards.type} reads file"
+    shell:
+        """
+        echo "Creating final preprocessed {wildcards.type} reads file ..." > {log}
+        cp {input.final_filter} {output} >> {log} 2>&1
+        echo "Done." >> {log}
+        """

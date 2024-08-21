@@ -81,7 +81,7 @@ if MG and "taxonomy" not in IMP_STEPS:
     
     rule bins_tar:
         input:
-            dir = ancient(dir="Binning/MetaWrap/bins",),
+            dir = ancient("Binning/MetaWrap/bins"),
             ctrl = ancient("Stats/%s/%s.bins.tsv" %(ASS,ASS))
             
         output:
@@ -120,7 +120,7 @@ if MG and "taxonomy" not in IMP_STEPS:
 
 checkpoint getBins:
     input: 
-        ancient("Binning/MetaWrap/bins.stats")
+        "Binning/MetaWrap/bins.stats"
     output:
         "status/binning_GRiD.prepped"
     resources:
@@ -162,7 +162,7 @@ if MG:
         params:
             clusterInput="Binning/MetaWrap/bins"
         resources:
-            runtime = VERY_SHORT_RUNTIME,
+            runtime = SHORT_RUNTIME,
             mem_mb = MAIN_BIGMEMCORE_MB
         threads:
             # Ensure at least 5gb of mem
@@ -170,7 +170,7 @@ if MG:
         conda:
             ENVDIR + "/IMP_annotation.yaml"
         log:
-            "logs/binning/grid.{clusterID}.log"
+            "logs/binning/grid/grid.{clusterID}.log"
         message:
             "grid: Running GRiD on {wildcards.clusterID}."
         shell:
@@ -193,7 +193,7 @@ if MG:
             # Ensure at least 5gb of mem
             max(int(math.ceil(20 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         log:
-            "logs/binning/prepare_gridBed.{clusterID}.log"
+            "logs/binning/grid/prepare_gridBed.{clusterID}.log"
         message:
             "prepare_gridBed: Preparing .bed file for GRiD - {wildcards.clusterID}."
         shell:
@@ -214,7 +214,7 @@ if MG:
             # Ensure at least 5gb of mem
             max(int(math.ceil(20 / (int(MAIN_BIGMEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
         log:
-            "logs/binning/prepare_gridReads.{clusterID}.log"
+            "logs/binning/grid/prepare_gridReads.{clusterID}.log"
         message:
             "prepare_gridReads: Preparing fastq file for GRiD - {wildcards.clusterID}."
         conda:
