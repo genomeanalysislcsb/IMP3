@@ -4,19 +4,20 @@ A run is defined by one YAML file; `config/config.imp.yaml` is the template (`co
 test sample). Lines marked `### USER_INPUT ####` must be set for every installation or project. The schema is in
 `schemas/schema.imp.yaml`.
 
+- Only `raws` and `outputdir` are required; every other field has a default.
+- The order of the fields does not matter.
+- IMP3 writes the complete configuration it used, defaults included, to `<outputdir>/sample.config.yaml`.
+
 ## Run
 
 | key | example | meaning |
 |---|---|---|
 | `steps` | `"preprocessing assembly analysis binning taxonomy summary"` | steps to run |
-| `sample` | `bhc01` | sample name (prefix of the contig names) |
+| `sample` | `bhc01` | sample name, prefixed to the contig names; punctuation becomes `_`; empty = the last two parts of `outputdir` |
 | `outputdir` | `/path/IMP/bhc01` | output folder of the sample |
 | `tmp_dir` | `/scratch/.../tmp` | temporary files |
 | `db_path` | `/path/databases/imp3` | databases from the install workflow |
-| `raws.Metagenomics` | `"mg.r1.fq.gz mg.r2.fq.gz"` | paired metagenome reads (empty: none) |
-| `raws.Metatranscriptomics` | `"mt.r1.fq.gz mt.r2.fq.gz"` | paired metatranscriptome reads (empty: none) |
-| `raws.LongReads`, `raws.LongReadTech` | | long reads for hybrid assembly |
-| `raws.Contigs`, `raws.Gff`, `raws.Alignment_*` | | start from an existing assembly / annotation / alignment |
+| `raws.*` | | input files, see [Inputs](inputs.md) |
 | `summary_steps` | `"stats"` | `stats`, `vis` |
 | `compress_level` | `mid` | how much of the intermediate output is compressed at the end |
 

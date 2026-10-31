@@ -8,16 +8,20 @@ into MAGs (CheckM2, GTDB-Tk) and per-sample statistics. Runs on metagenomes or m
 
 **Documentation: <https://genomeanalysislcsb.github.io/IMP3/>**
 
-- [Installation and test run](https://genomeanalysislcsb.github.io/IMP3/installation/)
-- [Configuration](https://genomeanalysislcsb.github.io/IMP3/configuration/) ·
-  [Running](https://genomeanalysislcsb.github.io/IMP3/running/) ·
-  [Output files](https://genomeanalysislcsb.github.io/IMP3/outputs/)
+- [Installation and test run](https://genomeanalysislcsb.github.io/IMP3/installation/) ·
+  [Databases](https://genomeanalysislcsb.github.io/IMP3/databases/)
+- [Inputs](https://genomeanalysislcsb.github.io/IMP3/inputs/) ·
+  [Configuration](https://genomeanalysislcsb.github.io/IMP3/configuration/) ·
+  [Running](https://genomeanalysislcsb.github.io/IMP3/running/)
+- [Workflow steps](https://genomeanalysislcsb.github.io/IMP3/steps/overview/) ·
+  [Output files](https://genomeanalysislcsb.github.io/IMP3/outputs/) ·
+  [FAQ](https://genomeanalysislcsb.github.io/IMP3/faq/)
 
 ```bash
 git clone https://github.com/genomeanalysislcsb/IMP3.git && cd IMP3
 conda env create -n snakemake_env -f requirements.yaml          # Snakemake 7.32
 conda activate snakemake_env
-snakemake -s install/Snakefile --configfile config/config.install.yaml --use-conda --cores 8   # tools + databases
+snakemake -s install/Snakefile --configfile config/config.install.yaml --use-conda --conda-prefix conda --cores 8   # tools + databases
 snakemake --profile cluster_profile/ --configfile config/my_sample.yaml                        # one sample
 ```
 

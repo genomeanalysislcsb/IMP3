@@ -1,166 +1,96 @@
 # Installation and test run
-A guide to installing IMP3 with its databases and running the test sample.
 
-!!! note "Third-party tools are installed, not bundled"
-    binny, Bakta, COMEBin, CD-HIT, ESOM and KrakenTools are not part of this repository. The install workflow
-    (`install/Snakefile`) clones or downloads them into `submodules/` and sets up the databases.
+IMP3 needs Linux, conda (or mamba / micromamba), Snakemake 7 and, depending on the databases, up to ~1 TB of disk
+space and ~450 GB of memory for the largest Kraken2 databases. All tools run in conda environments that Snakemake
+creates; third-party tools that are not on conda (binny, the Bakta fork, COMEBin, CD-HIT, ESOM, KrakenTools) are
+fetched by the install workflow into `submodules/`.
 
-Note: All commands below are meant to be executed from within the imp3 directory after cloning. Cluster execution using 
-profiles supports slurm only at the moment.
+Run all commands from the IMP3 folder.
 
-1) Clone the repository with git:
-    ```shell
-    git clone https://github.com/genomeanalysislcsb/IMP3.git
-    cd IMP3
-    ```
+## 1. Clone the repository
 
-2) Create a Snakemake environment or add some necessary packages to your existing one
-    ```shell
-    # Create new one
-    my_package_manager='conda'  # conda mamba micromamba
-    ${my_package_manager} env create -n snakemake_env -f requirements.yaml
-    ```
-    or
-    ```shell
-    # Add to existing
-    my_package_manager='conda'  # conda mamba micromamba
-    ${my_package_manager} activate my_snakemake_env
-    ${my_package_manager} install pigz=2.6 filetype=1.2.0 -c conda-forge
-    ```
-
-3) Set install configuration:
-
-   You need to set some basic parameters in the config file `config/config.install.yaml` first:
-
-   1) Set `db_path` to where you want to keep your databases. Make sure that there is enough space available as, 
-      depending on which databases you choose for Kraken2 and Mantis, you will need up to ~1tb.
-
-   2) Choose your desired Kraken2 database with the `kraken2` parameter, commenting out the unused ones
-
-   3) Set the desired Mantis dbs, following the instructions in the config at `mantis`.
-   
-   4) Set `snakemake_env_path` under `binny` to the path of either your existing Snakemake environment, the one you
-      might have created in step 2) (e.g. `/abs/path/to/imp3/conda/snakemake_env`) or set it to `in_path`, if it is
-      always available to your system by default.
-
-      (If you want to find the path to your Snakemake environment, you can use `echo ${CONDA_PREFIX}`,
-      while the environment is active.)
-
-4) Install databases and prep some tools:
-
-    You need to choose a path to place the conda environments using Snakemakes `--conda-prefix` parameter, in the example it
-    will be put in `conda` in the IMP3 dir.
-
-    You might need to set your conda channel priority to flexible to be able to install some of the environments. To do
-    so you can run `conda config --set channel_priority flexible` or do it manually in the file `~/.condarc`. It is
-    also recommended to have either no or a basic default channel setup  in `~/.condarc` with only bioconda and conda-forge,
-    e.g. like this:
-    ```yaml
-    channel_priority: flexible
-    channels:
-      - conda-forge
-      - bioconda
-      - anaconda
-    ```
-
-    Note that the installation might take a long time, if you selected large databases.
-    ```shell
-    # Activate environment (replace name with the one you chose)
-    ${my_package_manager} activate snakemake_env
-    
-    # Set conda dir and amount of cores (at least 8)
-    my_conda_dir="./conda"
-    cores=14
-    
-    # Dry-run
-    snakemake --snakefile install/Snakefile \
-              --configfile config/config.install.yaml \
-              --cores 1 \
-              --use-conda \
-              --conda-prefix ${my_conda_dir} \
-              --reason \
-              --printshellcmds \
-              --verbose \
-              --dry-run
-              
-    # Run install
-    snakemake --snakefile install/Snakefile \
-              --configfile config/config.install.yaml \
-              --cores ${cores} \
-              --use-conda \
-              --conda-prefix ${my_conda_dir} \
-              --reason \
-              --printshellcmds
-    ```
-
-5) Install remaining conda envs and run a test:
-    
-    You can use Snakemakes profile feature, to have it submit different jobs to the cluster or run it locally.
-    
-    First you will have to set up the test config file at `config/config.test.yaml`:
-    1) Set up the specifications of your cluster nodes/whatever kind of machine you have under `mem`. If you don't have a separate
-       large memory system you can set all `big_mem` parameter to be identical to the normal ones.
-
-    2) Set up all paths for `tmp_dir`, `outputdir`, `krakendb`, the paths at `mantis`, and `Metagenomics` 
-    (test files are in the IMP3 dir at `test/Reads`), matching what was done during the installation.
-
-    Optional:
-    
-    3) Set up `cluster_profile/config.yaml` paths for `configfile`, `default-resources`, `conda-prefix`, and
-       `cluster-config`, as well as max numbers of cores to use and jobs to run in parallel.
-
-    4) Dry-run:
-        ```shell
-        # Activate environment
-        conda activate my_snakemake_env
-        
-        # Dry-run
-        my_conda_dir="./conda"
-        snakemake --snakefile Snakefile \
-                  --configfile config/config.test.yaml \
-                  --use-conda \
-                  --conda-prefix ${my_conda_dir} \
-                  --cores 1 \
-                  --reason \
-                  --printshellcmds \
-                  --verbose \
-                  --dry-run
-        ```
-   
-    5) Regular (Ensure enough memory is available, e.g. for the large kraken db you will need ~450gb:
-        ```shell
-        # Set conda dir and run install
-        my_conda_dir="./conda"
-        # Set max cores
-        n_cores=28
-       
-        snakemake --snakefile Snakefile \
-                 --configfile config/config.test.yaml \
-                 --cores ${n_cores} \
-                 --use-conda \
-                 --conda-prefix ${my_conda_dir} \
-                 --reason \
-                 --printshellcmds
-        ```
-        or profile:
-        ```shell
-        # Set conda dir and run install
-        my_conda_dir="./conda"
-        snakemake --profile cluster_profile/ \
-                  --verbose
-        ```
-
-6) Set up your own project:
-    1) Set up your config using `config/config.imp.yaml` as template the same way it was described before.
-   
-    Optional:
-    
-    2) Set up your profile using `cluster_profile/config.yaml` as template the same way it was described before.
-
-## Snakemake 7 and the shadow directive
-
-For IMP3 to work with the shadow directive (Snakemake v7.*) we modify `unshadow_output` in `dag.py` so it properly copies back files:
+```bash
+git clone https://github.com/genomeanalysislcsb/IMP3.git
+cd IMP3
 ```
+
+## 2. Snakemake environment
+
+```bash
+conda env create -n snakemake_env -f requirements.yaml     # Snakemake 7.32, pigz, filetype
+conda activate snakemake_env
+```
+
+Or add the two extra packages to an existing Snakemake 7 environment:
+`conda install pigz=2.6 filetype=1.2.0 -c conda-forge`.
+
+Recommended `~/.condarc`, so that all environments resolve:
+
+```yaml
+channel_priority: flexible
+channels:
+  - conda-forge
+  - bioconda
+```
+
+!!! warning "Snakemake 7 and the shadow directive"
+    IMP3 uses Snakemake's `shadow` directive. With Snakemake 7 the function `unshadow_output` in Snakemake's
+    `dag.py` must be patched so that it copies nested outputs back correctly; see
+    [the patch](#snakemake-7-shadow-patch) at the end of this page.
+
+## 3. Databases and tools
+
+Edit `config/config.install.yaml`:
+
+- `db_path`: where the databases go (up to ~1 TB, depending on the Kraken2 and Mantis databases);
+- `kraken2`: the Kraken2 database(s) to download (comment out the others);
+- `mantis`: the Mantis reference databases;
+- `binny` › `snakemake_env_path`: path of your Snakemake environment (`echo $CONDA_PREFIX` while it is active), or
+  `in_path` if Snakemake is always on the `PATH`.
+
+Then run the install workflow (dry run first). The conda environments go to `--conda-prefix`; use the same prefix
+for all later runs.
+
+```bash
+conda activate snakemake_env
+snakemake -s install/Snakefile --configfile config/config.install.yaml \
+          --use-conda --conda-prefix ./conda --cores 1 --dry-run
+snakemake -s install/Snakefile --configfile config/config.install.yaml \
+          --use-conda --conda-prefix ./conda --cores 14 --printshellcmds
+```
+
+This may take hours for large databases. What is installed is listed under [Databases](databases.md).
+
+## 4. Test run
+
+The test reads are in `test/Reads/` (metaG and metaT, paired, gzipped). In `config/config_test.yaml` set:
+
+- `cluster_specs`: memory and cores of your machine or cluster nodes (set the `big_mem` values equal to the normal
+  ones if you have no large-memory nodes);
+- `tmp_dir`, `outputdir`, `db_path`, `kraken.krakendb` and the Mantis reference folders, as installed in step 3;
+- `raws`: the test reads, `test/Reads/MG.R{1,2}.fq.gz` and `test/Reads/MT.R{1,2}.fq.gz` (absolute paths are safest).
+
+```bash
+snakemake --snakefile Snakefile --configfile config/config_test.yaml \
+          --use-conda --conda-prefix ./conda --cores 1 --dry-run
+snakemake --snakefile Snakefile --configfile config/config_test.yaml \
+          --use-conda --conda-prefix ./conda --cores 28 --printshellcmds
+```
+
+The first run also builds the remaining conda environments. On a Slurm cluster use the profile instead of
+`--cores`: see [Running IMP3](running.md#on-a-slurm-cluster).
+
+## 5. Your own samples
+
+Copy `config/config.imp.yaml`, set the [inputs](inputs.md) and the [configuration](configuration.md), and
+[run](running.md) it.
+
+## Snakemake 7 shadow patch
+
+Replace `unshadow_output` in `snakemake/dag.py` of your Snakemake environment
+(`$CONDA_PREFIX/lib/python3.*/site-packages/snakemake/dag.py`) with:
+
+```python
     def unshadow_output(self, job, only_log=False):
         """Move files from shadow directory to real output paths."""
         if not job.shadow_dir or not job.expanded_output:

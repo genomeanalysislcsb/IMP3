@@ -26,10 +26,30 @@ nav:
   - Home: index.md
   - Getting started:
       - Installation and test run: installation.md
+      - Databases: databases.md
+  - Running IMP3:
+      - Inputs: inputs.md
       - Configuration: configuration.md
-      - Running IMP3: running.md
+      - Running: running.md
+  - Workflow steps:
+      - Overview: steps/overview.md
+      - Preprocessing: steps/preprocessing.md
+      - Assembly: steps/assembly.md
+      - Analysis: steps/analysis.md
+      - Taxonomy: steps/taxonomy.md
+      - Binning: steps/binning.md
+      - Summary: steps/summary.md
   - Output files: outputs.md
   - Downstream tools: downstream.md
+  - FAQ and troubleshooting: faq.md
+  - History and credits: about.md
+
+# old Sphinx documentation (replaced by these pages); remove with: git rm -r docs/source docs/build docs/Makefile docs/make.bat README.rst
+exclude_docs: |
+  source/
+  build/
+  Makefile
+  make.bat
 
 markdown_extensions:
   - admonition

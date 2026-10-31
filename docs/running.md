@@ -3,14 +3,21 @@
 ## Locally or in one job
 
 ```bash
-conda activate snakemake_env
-snakemake --snakefile Snakefile --configfile config/my_sample.yaml \
-          --use-conda --conda-prefix /path/to/conda_envs --cores 28 --reason --printshellcmds
+snakemake -s /path/to/IMP3/Snakefile --configfile sample.yaml \
+          --use-conda --conda-prefix /path/to/IMP3/conda --cores 28
 ```
 
-Always start with a dry run (`--dry-run`).
+| option | meaning |
+|---|---|
+| `--configfile` | the [config](configuration.md) of the sample |
+| `--use-conda --conda-prefix` | conda environments of IMP3; use the same prefix as at installation |
+| `--cores` | maximum cores used at the same time (memory per rule comes from `cluster_specs`) |
+| `--dry-run` | show what would run |
+| `--report report.html` | after a run: report with environments, rules and run times |
 
-## On a Slurm cluster (ULHPC aion / iris)
+Always start with a dry run.
+
+## On a Slurm cluster
 
 The profile in `cluster_profile/config.yaml` submits every rule as its own job:
 
@@ -36,6 +43,31 @@ Set in `cluster_profile/config.yaml` (lines marked `### USER_INPUT ####`): `cond
 | `status.py` | Slurm job status for Snakemake |
 
 A sample list is a TSV with `Sample`, `MG_R1`, `MG_R2`, `MT_R1`, `MT_R2`.
+
+## Other batch systems
+
+Without the profile, give the submission command and a cluster config file directly:
+
+```bash
+snakemake -s Snakefile --configfile sample.yaml --use-conda --conda-prefix conda --cores 28 \
+  --cluster-config config/slurm.config.yaml \
+  --cluster "{cluster.call} {cluster.runtime}{resources.runtime} {cluster.mem_per_cpu}{resources.mem_mb} {cluster.threads}{threads} {cluster.partition} {cluster.nodes}"
+```
+
+The cluster config (YAML) holds the submission command and the argument names, with a default section and
+sections for rules that need large-memory nodes. Templates: `config/slurm.config.yaml`,
+`config/slurm_simple.config.yaml`, `config/slurm_simple_ul_hybrid_cluster.config.yaml` (ULHPC),
+`config/pbs.config.yaml` and `config/sge.config.yaml`.
+
+```yaml
+__default__:
+  call: "sbatch"
+  nodes: ""
+  mem_per_cpu: "--mem-per-cpu "
+  partition: "-p batch"
+  runtime: "-t"
+  threads: "-n"
+```
 
 ## Re-running and resuming
 
