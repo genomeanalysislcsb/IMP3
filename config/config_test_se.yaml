@@ -27,8 +27,8 @@ cluster_specs:  ### USER_INPUT ####
     big_mem_cores_max: 28
 tmp_dir: "/mnt/lscratch/users/ohickl/prospectomics/tests/imp_test/tmp"  ### USER_INPUT ####
 raws:
-  Metagenomics: "/mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/MG.R1.fq"  ### USER_INPUT ####
-  Metatranscriptomics: "/mnt/isilon/projects/ecosystem_biology/local_tools/IMP3_devel/test/Reads/MT.R1.fq"  ### USER_INPUT ####
+  Metagenomics: "test/Reads/MG.R1.fq.gz"  ### USER_INPUT ####
+  Metatranscriptomics: "test/Reads/MT.R1.fq.gz"  ### USER_INPUT ####
   LongReads: ""
   LongReadTech: ""
   Contigs: ""
