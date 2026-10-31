@@ -1,62 +1,106 @@
-localrules: prepare_binny
 
-rule prepare_binny:
-    input:
-       mgdepth='Stats/mg/%s.assembly.contig_depth.txt' % ASS,
-       vizbin='Binning/binny/%s.vizbin.with-contig-names.points' % ASS,
-       gff='Analysis/annotation/annotation_CDS_RNA_hmms.gff'
+rule setup_binny:
     output:
-       directory("Binning/binny/clusterFiles")
-#    threads: 1
-    message: "Prepare binny."
+        binny_ready_check = os.path.join(ROOTDIR, 'workflow/envs/binny.ready')
+    resources:
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        12
+    conda:
+        os.path.join(ENVDIR, "IMP_binny.yaml")
+    log:
+        os.path.join(ENVDIR, "logs/setup_binny.log")
+    message:
+        "binny: Setting up binny."
+    shadow: "copy-minimal"
     shell:
-       """
-       mkdir -p {output} || echo "{output} exists"
-       """
+        """
+        # Setup binny
+        echo "### Setting up binny ... ###" > {log}
+        binny --setup >> {log} 2>&1
+
+        # Touch ready file
+        touch {output.binny_ready_check} >> {log} 2>&1
+
+        echo "## Done. ###" >> {log}
+        """
 
 rule binny:
     input:
-       outdir="Binning/binny/clusterFiles",
-       mgdepth='Stats/mg/%s.assembly.contig_depth.txt' % ASS,
-       vizbin="Binning/binny/%s.vizbin.with-contig-names.points" % ASS,
-       gff="Analysis/annotation/annotation_CDS_RNA_hmms.gff"
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS,
+        depth = "Stats/mg/%s.assembly.contig_depth.txt" % ASS
     output:
-        expand("Binning/binny/reachabilityDistanceEstimates.{pk}.{nn}.tsv \
-        Binning/binny/clusterFirstScan.{pk}.{nn}.tsv \
-        Binning/binny/bimodalClusterCutoffs.{pk}.{nn}.tsv \
-        Binning/binny/contigs2clusters.{pk}.{nn}.tsv \
-        Binning/binny/contigs2clusters.{pk}.{nn}.RDS \
-        Binning/binny/clusteringWS.{pk}.{nn}.Rdata".split(),pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"]),
-        report(expand("Binning/binny/finalClusterMap.{pk}.{nn}.png",pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"]),caption="../../../report/stats/binny_final_map.rst",category="Binning"),
-        "Binning/binny/binny_WS.Rdata"
+        s2b = "Binning/MetaBAT/contig2bin.tsv",
+        out_dir = directory("Binning/MetaBAT"),
+        out_bin_dir = directory("Binning/MetaBAT/bins")
     params:
-        plot_functions = SRCDIR + "/IMP_plot_binny_functions.R",
-        binnydir="Binning/binny"
+        tmp_dir = TMPDIR,
+        res = "Binning/MetaBAT/metabat_res",
+        min_cont_size = config["binning"]["MetaBAT"]["cutoff"]
+    threads:
+        getThreads(8)
     resources:
-        runtime = "24:00:00",
-        mem = BIGMEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_binning.yaml" 
-    log: "logs/binning_binny.log"
-    message: "binny: Running Binny."
-    script:
-        SRCDIR + "/binny.R"
-
-rule tar_binny_files:
-    input:
-        "Binning/binny/clusterFiles",
-        expand("Binning/binny/contigs2clusters.{pk}.{nn}.tsv",pk=config["binning"]["binny"]["pk"],nn=config["binning"]["binny"]["nn"])
-    output:
-        "Binning/binny/clusterFiles.tar.gz"
-    threads: 1
-    resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    params:
-        intermediary = "Binning/binny/clusterFiles/"
-    log: "logs/binning_tar_binny_files.log"
-    message: "tar_binny_files: Compressing intermediary files from binny."
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    conda:
+        ENVDIR + "/IMP_binny.yaml"
+    log:
+        "logs/binning/binny.log"
+    message:
+        "Running binny."
+    shadow: "copy-minimal"
     shell:
-       """
-       tar cvzf {output} {params.intermediary} >> {log} 2>&1 && rm -r {params.intermediary} >> {log} 2>&1
-       """
+        """
+        ## Create MetaBat dir
+        mkdir -p {output.out_bin_dir}
+
+        export TMPDIR="{params.tmp_dir}"
+        TMP_FILE=$(mktemp "metabat_depth_XXXXXX.tsv")
+        echo "# fakeheader" > $TMP_FILE
+        cat {input.depth}  >> $TMP_FILE
+
+        ## Run MetaBat
+        metabat2 -i {input.assembly} \
+                 -a $TMP_FILE \
+                 --cvExt \
+                 --saveCls \
+                 -o {params.res} \
+                 -t {threads} \
+                 -v \
+                 -m {params.min_cont_size} >> {log} 2>&1
+        mv {params.res} {output.s2b}
+        rm $TMP_FILE
+        
+        # Move bin fastas and rename.
+        shopt -s nullglob
+        for i in {output.out_dir}/*.fa; do
+          bin_name=$(basename -s .fa ${{i}})
+          mv ${{i}} {output.out_bin_dir}/${{bin_name}}.fasta
+        done
+        shopt -u nullglob
+        """
+
+rule binny_contig2bin:
+    input:
+        binny_contig_data
+    output:
+        binny_s2b
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        1
+    message:
+        "binny: Preparing table for DAS_Tool from binny output."
+    run:
+        import gzip
+        with gzip.open(binny_contig_data,'rt') as gz: # {input.contig_data}
+            with open(binny_s2b, 'w') as of:  # {output.s2b}
+                header = next(gz)
+                for line in gz:
+                    line = line.strip('\n ')
+                    line_contig = line.split('\t')[0]
+                    line_bin = line.split('\t')[1]
+                    if line_bin != 'N':
+                        of.write(f'{line_contig}\t{line_bin}\n')

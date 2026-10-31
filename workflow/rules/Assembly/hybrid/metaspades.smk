@@ -11,7 +11,7 @@ spades.py --meta \
  --pe2-s {input[5]} \
   {params.contigs} \
   -t {threads} \
-  -m {BIGMEMTOTAL} \
+  -m {params.gb_mem_total} \
   -k {KMER_STEPS} \
   {LONG_READ_ARG} \
   -o {output[0]} > {log} 2>&1
@@ -27,26 +27,32 @@ if LONG:
 else:
     rule metaspades_hybrid_assembly_1:
         input:
-            'Preprocessing/mg.r1.preprocessed.fq',
-            'Preprocessing/mg.r2.preprocessed.fq',
-            'Preprocessing/mg.se.preprocessed.fq',
-            'Preprocessing/mt.r1.preprocessed.fq',
-            'Preprocessing/mt.r2.preprocessed.fq',
-            'Preprocessing/mt.se.preprocessed.fq',
+            'Preprocessing/mg.r1.preprocessed.fq.gz',
+            'Preprocessing/mg.r2.preprocessed.fq.gz',
+            'Preprocessing/mg.se.preprocessed.fq.gz',
+            'Preprocessing/mt.r1.preprocessed.fq.gz',
+            'Preprocessing/mt.r2.preprocessed.fq.gz',
+            'Preprocessing/mt.se.preprocessed.fq.gz',
             'Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa'
         output:
             'Assembly/intermediary/mgmt.metaspades_hybrid.1/contigs.fa',
             'Assembly/intermediary/mgmt.metaspades_hybrid.1.fa',
-            directory('Assembly/intermediary/mgmt.metaspades_hybrid.1')
+            directory('Assembly/intermediary/mgmt.metaspades_hybrid.1'),
         params:
-            contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa"
+            contigs = "--trusted-contigs Assembly/intermediary/mt.metaspades_preprocessed.1.final.contigs.fa",
+            gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
         resources:
-            runtime = "120:00:00",
-            mem = BIGMEMCORE
-        threads: getThreads(BIGCORENO)
-        conda: ENVDIR + "/IMP_assembly.yaml"
-        log: "logs/assembly_metaspades_hybrid_assembly_1.log"
-        message: "metaspades_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using METASPADES"
+            runtime = LONG_RUNTIME,
+            mem_mb = MAIN_BIGMEMCORE_MB
+        threads:
+            getThreads(MAIN_BIGCORENO, bigmem=True)
+        conda:
+            ENVDIR + "/IMP_assembly.yaml"
+        log:
+            "logs/assembly/metaspades_hybrid_assembly_1.log"
+        message:
+            "metaspades_hybrid_assembly_1: Performing hybrid assembly 1 from preprocessed reads using METASPADES"
+        shadow: "copy-minimal"
         shell:
             """
             if [ -d "{output[2]}" ]; then
@@ -68,14 +74,20 @@ rule metaspades_hybrid_assembly_2:
         'Assembly/intermediary/mgmt.metaspades_hybrid.2.fa',
         directory('Assembly/intermediary/mgmt.metaspades_hybrid.2')
     params:
-        contigs = ""
+        contigs = "",
+        gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
     resources:
-        runtime = "120:00:00",
-        mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_metaspades_hybrid_assembly_2.log"
-    message: "metaspades_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using metaspades"
+        runtime = LONG_RUNTIME,
+        mem_mb = MAIN_BIGMEMCORE_MB
+    threads:
+        getThreads(MAIN_BIGCORENO, bigmem=True)
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    log:
+        "logs/assembly/metaspades_hybrid_assembly_2.log"
+    message:
+        "metaspades_hybrid_assembly_2: Performing hybrid assembly 2 from preprocessed reads using metaspades"
+    shadow: "copy-minimal"
     shell:
         """
         if [ -d "{output[2]}" ]; then
@@ -83,7 +95,7 @@ rule metaspades_hybrid_assembly_2:
         fi
 
         METASPADES_ASSEMBLY_SHELL 
-	"""
+    """
 
 rule concatenate_mapped_unmapped:
     input:
@@ -92,10 +104,13 @@ rule concatenate_mapped_unmapped:
     output:
         'Assembly/intermediary/mt.metaspades_preprocessed.1.final.contig.fa'
     resources:
-        runtime = "02:00:00",
-        mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_assembly.yaml"
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        1
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         {SRCDIR}/rename_sequences.pl {input[0]} preprocessing > {input[0]}.tmp

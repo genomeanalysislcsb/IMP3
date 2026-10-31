@@ -143,7 +143,7 @@ if os.path.isdir(coordFile):
 
 #read single binner memberships
 for binner in BINNERS:
-    clusterFile = "/Binning/%s/scaffold2bin.tsv" % binner
+    clusterFile = "/Binning/%s/contig2bin.tsv" % binner
     if os.path.isdir(clusterFile):
         contigCnt = 0
         clusterName = binner + "_bin"
@@ -162,7 +162,7 @@ for binner in BINNERS:
 
 
 #read DAStool
-dastoolFile = "Binning/selected_DASTool_scaffolds2bin.txt"
+dastoolFile = "Binning/DASTool/selected_DASTool_scaffolds2bin.txt"
 if os.path.isdir(dastoolFile):
     dastoolCnt = 0
     print("Reading contig bin membership from ", dastoolFile)
@@ -206,7 +206,7 @@ protein_dict = {}
 rrna_dict = {}
 trna_dict = {}
 # read gff file
-protFile = "Analysis/annotation/annotation_CDS_RNA_hmms.gff" if os.path.isdir("Analysis/annotation/annotation_CDS_RNA_hmms.gff") else "Analysis/annotation/annotation.filt.gff"
+protFile = "Analysis/annotation/annotation_CDS_RNA_hmms.gff" if os.path.isdir("Analysis/annotation/annotation_CDS_RNA_hmms.gff") else "Analysis/annotation/bakta/annotation.filt.gff"
 if os.path.isdir(protFile):
     pct = 0
     rct = 0

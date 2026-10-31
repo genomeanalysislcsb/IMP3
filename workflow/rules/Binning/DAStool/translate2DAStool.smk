@@ -5,15 +5,21 @@ rule get_proteins_DAStool:
     output:
         "Binning/prokka.renamed.faa"
     resources:
-        runtime = "4:00:00",
-        mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_bioperl.yaml"
-    log: "logs/binning_translateProteins.log"
-    message: "get_proteins_DAStool: Translating sequences based on GFF - code 11."
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        1
+    conda:
+        ENVDIR + "/IMP_bioperl.yaml"
+    log:
+        "logs/binning/translateProteins.log"
+    message:
+        "get_proteins_DAStool: Translating sequences based on GFF - code 11."
+    shadow: "copy-minimal"
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
         {SRCDIR}/translateBacFromGFF.pl  {input[0]} {input[1]} >> {output} 2> {log}
-	    """
+        """
 

@@ -45,7 +45,7 @@ plot(length_hist_log$mids,length_hist_log$counts,type="l",
           las=1,xlim=c(2,max(length_hist_log$mids)*1.03),xaxs="i",
           ylim=c(0,max(length_hist_log$counts)*1.04),yaxs="i",
           ylab="",col= brewer.pal(9,"Purples")[7],
-          xlab=expression("log"["2"]*" contig length"),cex.lab=9/7,axes=F,lwd=0.8)
+          xlab=expression("log"["10"]*" contig length"),cex.lab=9/7,axes=F,lwd=0.8)
 abline(v=log10(statsTab$number[statsTab$step=="N50"]),lty=3)
 text(log10(statsTab$number[statsTab$step=="N50"]),
      max(length_hist_log$counts)*0.95,

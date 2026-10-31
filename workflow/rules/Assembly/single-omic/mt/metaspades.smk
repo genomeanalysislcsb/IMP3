@@ -7,7 +7,7 @@ rnaspades.py --meta \
  --pe1-2 {input[1]} \
  --pe1-s {input[2]} \
   -t {threads} \
-  -m {BIGMEMTOTAL} \
+  -m {MAIN_BIGMEMTOTAL} \
   -k {KMER_STEPS} \
   {STRANDED_ARG} \
   -o {output[0]} > {log} 2>&1
@@ -24,20 +24,21 @@ elif MT_STRANDED == 2:
 
 rule metaspades_assembly_from_preprocessing:
     input:
-        'Preprocessing/mt.r1.preprocessed.fq',
-        'Preprocessing/mt.r2.preprocessed.fq',
-        'Preprocessing/mt.se.preprocessed.fq'
+        'Preprocessing/mt.r1.preprocessed.fq.gz',
+        'Preprocessing/mt.r2.preprocessed.fq.gz',
+        'Preprocessing/mt.se.preprocessed.fq.gz'
     output:
         directory('Assembly/intermediary/mt.metaspades_preprocessed.1'),
         'Assembly/intermediary/mt.metaspades_preprocessed.1/transcripts.fasta',
         'Assembly/intermediary/mt.metaspades_preprocessed.1.fa'
     resources:
-        runtime = "120:00:00",
-        mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
+        runtime = LONG_RUNTIME,
+        mem_mb = MAIN_BIGMEMCORE_MB
+    threads: getThreads(MAIN_BIGCORENO, bigmem=True)
     conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_metaspades_assembly_from_preprocessing.mt.log"
+    log: "logs/assembly/metaspades_assembly_from_preprocessing.mt.log"
     message: "metaspades_assembly_from_preprocessing: Performing mt assembly step 1 from preprocessed reads using MetaSpades"
+    shadow: "copy-minimal"
     shell:
         METASPADES_ASSEMBLY_SHELL
 
@@ -51,11 +52,12 @@ rule metaspades_assembly_from_unmapped:
         'Assembly/intermediary/mt.metaspades_unmapped.2/transcripts.fasta',
         'Assembly/intermediary/mt.metaspades_unmapped.2.fa'
     resources:
-        runtime = "120:00:00",
-        mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
+        runtime = LONG_RUNTIME,
+        mem_mb = MAIN_BIGMEMCORE_MB
+    threads: getThreads(MAIN_BIGCORENO, bigmem=True)
     conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_metaspades_assembly_from_unmapped.mt.log"
+    log: "logs/assembly/metaspades_assembly_from_unmapped.mt.log"
     message: "metaspades_assembly_from_unmapped: Performing mt assembly step 2 from unmapped reads using METASPADES"
+    shadow: "copy-minimal"
     shell:
         METASPADES_ASSEMBLY_SHELL

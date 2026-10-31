@@ -19,6 +19,14 @@ input_data          <- snakemake@input[[1]] #"Stats/mg/mg.{read}_nonpareil.npo"
 outplot             <- snakemake@output[[1]] #Visualization/mg.{read}_nonpareil.curve.png"
 outtab              <- snakemake@output[[2]] #"Stats/mg/mg.{read}_nonpareil.diversity.txt"
 
+# If the input is empty just touch the output files
+if (file.info(input_data)$size == 0) {
+  print("Input file is empty. Touching output files.")
+  system(paste("touch", outplot))
+  system(paste("touch", outtab))
+  q()
+}
+
 ###################################################################################################
 ## Run curve 
 ###################################################################################################

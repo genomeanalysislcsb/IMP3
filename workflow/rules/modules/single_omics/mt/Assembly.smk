@@ -24,17 +24,15 @@ include:
 include:
     '../../../Assembly/common/contig-depth.smk'
 
-
 # master command
 rule ASSEMBLY:
     input:
-        'Assembly/intermediary.tar.gz',
         'Assembly/mt.assembly.merged.fa',
         'Assembly/mt.assembly.merged.fa.fai',
         'Assembly/mt.assembly.merged.fa.bed3',
         'Assembly/mt.reads.sorted.bam',
         'Assembly/mt.reads.sorted.bam.bai',
-        'Stats/mt/mt.assembly.contig_coverage.txt',
+        'Stats/mt/mt.assembly.thresholds.bed.gz',
         'Stats/mt/mt.assembly.contig_depth.txt',
         'Stats/mt/mt.assembly.contig_flagstat.txt',
         'Stats/mt/mt.assembly.length.txt',

@@ -1,56 +1,64 @@
-MEGAHIT_ASSEMBLY_SHELL = """
-if [ -d "{output[0]}" ]; then
-    rm -rf {output[0]}
-fi
-MAX_MEM="$(({BIGMEMTOTAL} * 1000000000))"
-megahit -1 {input[0]} \
- -2 {input[1]} \
- -r {input[2]} \
- -o {output[0]} \
- --k-min {config[assembly][mink]} \
- --k-max {config[assembly][maxk]} \
- --k-step {config[assembly][step]} \
- --bubble-level 0 \
- -t {threads} --cpu-only \
- -m "${{MAX_MEM}}" \
- --mem-flag 1 > {log} 2>&1
-ln -fs $(echo {output[1]} | cut -f 3,4 -d /) {output[2]} && touch -h {output[2]}
-"""
+def set_runtime_mh(wildcards, attempt):
+    if attempt == 1:
+        return SHORTISH_RUNTIME
+    elif attempt == 2:
+        return SHORT_RUNTIME
+    else:
+        return MEDIUM_RUNTIME
 
 rule megahit_assembly_from_preprocessing:
     input:
-        'Preprocessing/{type}.r1.preprocessed.fq',
-        'Preprocessing/{type}.r2.preprocessed.fq',
-        'Preprocessing/{type}.se.preprocessed.fq'
+        r1 = 'Preprocessing/{type}.r1.preprocessed.fq.gz',
+        r2 = 'Preprocessing/{type}.r2.preprocessed.fq.gz',
+        se = 'Preprocessing/{type}.se.preprocessed.fq.gz'
     output:
-        directory('Assembly/intermediary/{type}.megahit_preprocessed.1'),
-        'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
-        'Assembly/intermediary/{type}.megahit_preprocessed.1.fa'
+        out_dir = directory('Assembly/intermediary/{type}.megahit_preprocessed.1'),
+        contigs_final = 'Assembly/intermediary/{type}.megahit_preprocessed.1/final.contigs.fa',
+        contigs = 'Assembly/intermediary/{type}.megahit_preprocessed.1.fa'
     resources:
-        runtime = "120:00:00",
-        mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_megahit_assembly_from_preprocessing.{type}.log"
-    message: "megahit_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MEGAHIT"
+        runtime = set_runtime_mh,
+        mem_mb = MAIN_BIGMEMCORE_MB
+    retries:
+        3
+    threads:
+        getThreads(MAIN_BIGCORENO, bigmem=True)
+    params:
+        max_mem = int(MAIN_BIGMEMTOTAL * byte_dict[config['cluster_specs']["mem_unit"]]),
+        kmer_list = config["assembly"]["kmer_list"]
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    log:
+        "logs/assembly/megahit_assembly_from_preprocessing.{type}.log"
+    message:
+        "megahit_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MEGAHIT"
+    shadow: "copy-minimal"
     shell:
-        MEGAHIT_ASSEMBLY_SHELL
+        """
+        if [ -d "{output.out_dir}" ]; then
+          rm -rf {output.out_dir}
+        fi
 
-rule megahit_assembly_from_unmapped:
+        megahit -1 {input.r1} \
+                -2 {input.r2} \
+                -r {input.se} \
+                --out-dir {output.out_dir} \
+                --k-list {params.kmer_list} \
+                --num-cpu-threads {threads} \
+                -m {params.max_mem} \
+                --mem-flag 1 > {log} 2>&1
+        ln -fs $(echo {output.contigs_final} | cut -f 3,4 -d /) {output.contigs} && touch -h {output.contigs}
+        """
+
+use rule megahit_assembly_from_preprocessing as megahit_assembly_from_unmapped with:
     input:
-        'Assembly/intermediary/{type}.r1.unmapped.fq',
-        'Assembly/intermediary/{type}.r2.unmapped.fq',
-        'Assembly/intermediary/{type}.se.unmapped.fq'
+        r1 = 'Assembly/intermediary/{type}.r1.unmapped.fq',
+        r2 = 'Assembly/intermediary/{type}.r2.unmapped.fq',
+        se = 'Assembly/intermediary/{type}.se.unmapped.fq'
     output:
-        directory('Assembly/intermediary/{type}.megahit_unmapped.2'),
-        'Assembly/intermediary/{type}.megahit_unmapped.2/final.contigs.fa',
-        'Assembly/intermediary/{type}.megahit_unmapped.2.fa'
-    resources:
-        runtime = "120:00:00",
-        mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_megahit_assembly_from_unmapped.{type}.log"
-    message: "megahit_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using MEGAHIT"
-    shell:
-        MEGAHIT_ASSEMBLY_SHELL
+        out_dir = directory('Assembly/intermediary/{type}.megahit_unmapped.2'),
+        contigs_final = 'Assembly/intermediary/{type}.megahit_unmapped.2/final.contigs.fa',
+        contigs = 'Assembly/intermediary/{type}.megahit_unmapped.2.fa'
+    log:
+        "logs/assembly/megahit_assembly_from_unmapped.{type}.log"
+    message:
+        "megahit_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using MEGAHIT"

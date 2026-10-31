@@ -28,16 +28,16 @@ properties:
   mem:
     type: object
     properties:
-      normal_mem_per_core_gb:
+      mem_per_core:
         type: number
         minimum: 1
-      big_mem_total_gb:
+      big_mem_total:
         type: number
         minimum: 1
       big_mem_cores:
         type: number
         minimum: 1
-      big_mem_per_core_gb:
+      big_mem_per_core:
         type: number
         minimum: 1
   tmp_dir:
@@ -131,7 +131,9 @@ properties:
     properties:
       filter:
         type: string
-        pattern: "^[^_.]+$" 
+        pattern: "^.+$"  # TODO: Needs proper adjustment or change of system to work properly with different inputs
+  keep_rrnas:
+    type: boolean
   sortmerna:
     type: object
     properties:

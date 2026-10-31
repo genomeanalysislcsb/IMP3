@@ -3,15 +3,19 @@ rule no_filtering:
     input:
         no_filtering_input
     output:
-        'Preprocessing/{type}.r1.preprocessed.fq',
-        'Preprocessing/{type}.r2.preprocessed.fq',
-        'Preprocessing/{type}.se.preprocessed.fq'
+        'Preprocessing/{type}.r1.preprocessed.fq.gz',
+        'Preprocessing/{type}.r2.preprocessed.fq.gz',
+        'Preprocessing/{type}.se.preprocessed.fq.gz'
     resources:
-        runtime = "1:00:00",
-        mem = MEMCORE
-    threads: 1
-#    log: "logs/preprocessing_no_filtering.{type}.log"
-    message: "no_filtering: not filtering {wildcards.type} reads."
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        1
+    # log:
+    #     "logs/preprocessing/no_filtering.{type}.log"
+    message:
+        "no_filtering: not filtering {wildcards.type} reads."
+    shadow: "copy-minimal"
     shell:
         """
         R1=`echo {input[0]} | sed 's/Preprocessing\///g'`

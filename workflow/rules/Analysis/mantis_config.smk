@@ -2,10 +2,13 @@
 #       Do not add any other code here if this code is not supposed to be used during the installation as well.
 
 # Mantis: create config file from snakemake config
-localrules: mantis_config
 rule mantis_config:
     output:
         config_file="mantis.config"
+    threads: 1
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
     params:
         config=config["mantis"]
     message:
@@ -14,7 +17,9 @@ rule mantis_config:
         def write_ref_path(file_handle, ref_path, ref_name):
             """Write ref path to file"""
             if ref_path:
-                assert os.path.exists(ref_path) and os.path.isdir(ref_path), f"Mantis ref path does not exist or is not a path: {ref_path}"
+                if not os.path.exists(ref_path):
+                    os.makedirs(ref_path)
+                    assert os.path.exists(ref_path) and os.path.isdir(ref_path), f"Mantis ref path does not exist or is not a path: {ref_path}"
                 file_handle.write(f"{ref_name}={ref_path}\n")
             elif ref_name != "custom_ref":
                 file_handle.write(f"{ref_name}=NA\n")

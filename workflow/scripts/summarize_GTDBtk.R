@@ -14,7 +14,7 @@ libs <- paste0(Sys.getenv("CONDA_PREFIX"),"/lib/R/library")
 ## Files from snakemake
 ###################################################################################################
 
-cluster_dirs        <- snakemake@input #"Binning/selected_DASTool_bins/{i}/GTDB"
+cluster_dirs        <- snakemake@input #"Binning/DASTool/selected_DASTool_bins/{i}/GTDB"
 out_file            <- as.character(snakemake@output) #"Stats/%s/bins.tsv" %ASS
 binners             <- unlist(strsplit(snakemake@config[["binning"]][["binners"]],split=" "))
 
@@ -42,11 +42,11 @@ for(binner in binners){
 ## Read DAStool output for selected bins
 ###################################################################################################
 print("Reading DAStool results.")
-if(file.info("Binning/selected_DASTool_summary.txt")$size==0){
+if(file.info("Binning/DASTool/selected_DASTool_summary.txt")$size==0){
   print("No Output from DAStool!")
   system(paste0("touch ",out_file))
 }else{
-selTab <- read.delim("Binning/selected_DASTool_summary.txt",stringsAsFactors=F)
+selTab <- read.delim("Binning/DASTool/selected_DASTool_summary.txt",stringsAsFactors=F)
 binTab$selected_by_DASTool <- sapply(binTab$bin, function(x){
   if(x %in% selTab$bin){
     y <- x
@@ -62,20 +62,20 @@ binTab <- merge(binTab,selTab,by.x="selected_by_DASTool",by.y="bin",all=T,suffix
 ###################################################################################################
 ## Read GRiD output for selected bins
 ###################################################################################################
-if(file.exists(paste0("Binning/selected_DASTool_bins/",
+if(file.exists(paste0("Binning/DASTool/selected_DASTool_bins/",
                       setdiff(binTab$selected_by_DASTool[!is.na(binTab$selected_by_DASTool)],"")[1]))){
 print("Reading GRiD results.")
   for(bin in setdiff(binTab$selected_by_DASTool[!is.na(binTab$selected_by_DASTool)],"")){
-    if(file.exists(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"))){
+    if(file.exists(paste0("Binning/DASTool/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"))){
       if(!"gridTab" %in% ls()){
         gridTab <- data.frame("bin"=bin,
-                              read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
+                              read.delim(paste0("Binning/DASTool/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
                                          stringsAsFactors=F)[,-1],
                               stringsAsFactors = F)
       }else{
         gridTab <- rbind(gridTab,
                          data.frame("bin"=bin,
-                                    read.delim(paste0("Binning/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
+                                    read.delim(paste0("Binning/DASTool/selected_DASTool_bins/",bin,"/grid/reads.GRiD.txt"),
                                                stringsAsFactors=F)[,-1],
                                     stringsAsFactors = F))
       }
@@ -88,7 +88,7 @@ if("gridTab" %in% ls()) binTab <- merge(binTab,gridTab,by.x="selected_by_DASTool
 ###################################################################################################
 print("Reading GTDBtk results.")
 for(bin in setdiff(binTab$selected_by_DASTool,"")){
-  gtdb_dir <- paste0("Binning/selected_DASTool_bins/",bin,"/GTDB/classify/")
+  gtdb_dir <- paste0("Binning/DASTool/selected_DASTool_bins/",bin,"/GTDB/classify/")
   if(file.exists(gtdb_dir)){
     tfile <- paste0(gtdb_dir,
                     list.files(path=gtdb_dir,

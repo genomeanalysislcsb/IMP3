@@ -1,22 +1,51 @@
 import os
 import shutil
 from pathlib import Path
-
+import glob
+import math
 
 # Snakefile
 def open_output(filename):
-    return(open(OUTPUTDIR+'/'+filename, 'w+'))
+    return(open(f'{OUTPUTDIR}/{filename}', 'w+'))
 
 def workflow_ctrl(wildcards):
-    return(["status/" + s + ".done" for s in IMP_STEPS if s != "summary"])
+    return([f'status/{s}.done' for s in IMP_STEPS if s != 'summary'])
 
-def getThreads(max):
-    if workflow.cores:
-        realThreads = max if max <= workflow.cores else workflow.cores
-    elif workflow.nodes:
-        realThreads = max if max <= workflow.nodes else workflow.nodes
+def getThreads(cores, bigmem=False, high_mem_cluster=False):
+    if high_mem_cluster and USE_HIGH_MEM_CLUSTER:
+        cluster_specs = config['cluster_specs']['high_mem_cluster']
     else:
-        realThreads = max
+        cluster_specs = config['cluster_specs']['main_cluster']
+
+    if bigmem:
+        mem_core = int(cluster_specs['big_mem_per_core'])
+        mem_total = int(cluster_specs['big_mem_total'])
+        n_cores_from_mem = max(math.floor(mem_total / mem_core), 1)
+        n_cores = int(cluster_specs['big_mem_cores'])
+        assert n_cores_from_mem == n_cores, f'Number of big_mem cores specified differs from number calculated from ' \
+                                            f'total memory available and memory per big_mem core: {n_cores} vs ' \
+                                            f'{n_cores_from_mem}. Please check config.\n' \
+                                            f'mem_core: {mem_core}\n' \
+                                            f'n_cores: {n_cores}\n' \
+                                            f'mem_total: {mem_total}'
+        max_cores = int(cluster_specs['big_mem_cores_max'])
+    else:
+        mem_core = int(cluster_specs['mem_per_core'])
+        mem_total = int(cluster_specs['mem_total'])
+        n_cores = max(math.floor(mem_total / mem_core), 1)
+        max_cores = int(cluster_specs['cores_max'])
+
+    # Ensure the maximum number of cores to use per job is actually possible
+    assert max_cores <= n_cores, 'Maximum number of cores allowed per rule is larger than node core count.'
+
+    if workflow.cores:
+        realThreads = min(cores, max_cores)
+    # What is this for?
+    elif workflow.nodes:
+        realThreads = min(cores, workflow.nodes)
+    else:
+        realThreads = max_cores
+
     return realThreads
 
 # data input
@@ -27,15 +56,15 @@ def get_ori_files(wildcards):
         inputs.append(MG)
     if MT:
         inputs.append(MT)
-    if CONTIGS and not "assembly" in IMP_STEPS:
+    if CONTIGS and not 'assembly' in IMP_STEPS:
         inputs.append(CONTIGS)
         if MGaln:
             inputs.append(MGaln)
         if MTaln:
             inputs.append(MTaln)
-    if "assembly" in IMP_STEPS and LONG:
+    if 'assembly' in IMP_STEPS and LONG:
         inputs.append(LONG)
-    if ANN and not "analysis" in IMP_STEPS:
+    if ANN and not 'analysis' in IMP_STEPS:
         inputs.append(ANN)
     if any(isinstance(i, list) for i in inputs):
         out = []
@@ -48,20 +77,6 @@ def get_ori_files(wildcards):
     else:
         out = inputs
     return(out)
-		
-# def prepare_input_files(inputs, outputs):
-#     """
-#     Prepare file names from input into snakemake pipeline.
-#     """
-#     if len(inputs) != len(outputs):
-#         raise OSError("//Inputs and outputs are not of the same length: %s <> %s" % (', '.join(inputs), ', '.join(outputs)))
-#     for infilename, outfilename in zip(inputs, outputs):
-#         _, fname1 = os.path.split(infilename)
-#         _process_file(fname1, infilename, outfilename)
-#     # check if r1,r2 are in outputs, if yes, check if both have the same number of lines
-#     # quickcheck samtools for bam input
-#     # for bam and assembly check number of SQ headers and contigs are equal
-#     # for assembly and gff file check that they match
 
 def symlink_input_files(data):
     for infilename, outfilename in data:
@@ -73,23 +88,6 @@ def touch_fake_output(files):
         print('touching', outfile)
         Path(outfile).touch()
 
-# def _process_file(fname, inp, outfilename):
-#     """
-#     Write the input to the output. Handle raw, zip, or bzip input files.
-#     """
-#     print(inp, '=>', outfilename)
-#     import bz2
-#     # ungunzip
-#     if os.path.splitext(fname)[-1] in ['.gz', '.gzip']:
-#         with open(outfilename, 'wb') as whandle, gzip.open(inp, 'rb') as rhandle:
-#             whandle.write(rhandle.read())
-#     # unbzip2
-#     elif os.path.splitext(fname)[-1] in ['.bz2', '.bzip2']:
-#         shell("bzip2 -dc {i} > {o}".format(i=inp, o=outfilename))
-#     # copy
-#     else:
-#         shutil.copy(inp, outfilename)
-
 # PREPROCESSING:
 def no_filtering_input(wildcards):
     input_no_filtering = {
@@ -99,9 +97,9 @@ def no_filtering_input(wildcards):
             'Preprocessing/mg.se.trimmed.fq'
         ],
         'mt': [
-            'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-            'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-            'Preprocessing/mt.se.trimmed.rna_filtered.fq'
+            'Preprocessing/mt.r1.trimmed__rrna_proc.fq',
+            'Preprocessing/mt.r2.trimmed__rrna_proc.fq',
+            'Preprocessing/mt.se.trimmed__rrna_proc.fq'
         ]
     }
     if wildcards.type in TYPES:
@@ -112,11 +110,13 @@ def no_filtering_input_SE(wildcards):
     input_no_filtering = {
         'mg': [
             'Preprocessing/mg.se.trimmed.fq'
+        ],
+        'mt': [
+            'Preprocessing/mt.se.trimmed__rrna_proc.fq'
         ]
     }
-    if wildcards.type == "mg":
-        return input_no_filtering[wildcards.type]
-    return 'no_filtering_input_no_file_here'
+
+    return input_no_filtering[wildcards.type]
 
 def reads_input_files(wildcards):
     raw_fq_files = [
@@ -124,19 +124,19 @@ def reads_input_files(wildcards):
         'Preprocessing/{type}.r2.fq'
     ]
     preprocessed_fq_files = [
-        'Preprocessing/{type}.r1.preprocessed.fq',
-        'Preprocessing/{type}.r2.preprocessed.fq',
-        'Preprocessing/{type}.se.preprocessed.fq',
+        'Preprocessing/{type}.r1.preprocessed.fq.gz',
+        'Preprocessing/{type}.r2.preprocessed.fq.gz',
+        'Preprocessing/{type}.se.preprocessed.fq.gz',
     ]
     trimmed_fq_files = [
         'Preprocessing/{type}.r1.trimmed.fq',
         'Preprocessing/{type}.r2.trimmed.fq',
         'Preprocessing/{type}.se.trimmed.fq'
     ]
-    rna_filtered_fq_mt_files = [
-        'Preprocessing/mt.r1.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.r2.trimmed.rna_filtered.fq',
-        'Preprocessing/mt.se.trimmed.rna_filtered.fq',
+    rrna_filtered_fq_mt_files = [
+        'Preprocessing/mt.r1.trimmed__rrna_proc.fq',
+        'Preprocessing/mt.r2.trimmed__rrna_proc.fq',
+        'Preprocessing/mt.se.trimmed__rrna_proc.fq',
     ]
     bam_files = [
         'Assembly/{type}.reads.sorted.bam'
@@ -150,47 +150,48 @@ def reads_input_files(wildcards):
             if PREPROCESSING_FILTERING:
                 base += trimmed_fq_files
                 if wildcards.type == 'mt':
-                    base += rna_filtered_fq_mt_files
+                    base += rrna_filtered_fq_mt_files
         else:
             if len(MG) == 3 and wildcards.type == 'mg':
-                base += ["Preprocessing/mg.se.fq"]
+                base += ['Preprocessing/mg.se.fq']
             if len(MT) == 3 and wildcards.type == 'mt':
-                base += ["Preprocessing/mt.se.fq"]		
+                base += ['Preprocessing/mt.se.fq']
     elif MGaln or MTaln:
         base = bam_files
     return expand(base, type=wildcards.type)
     
+# TODO: WTF is this?
 def reads_input_files_SE(wildcards):
     raw_fq_files = [
-        'Preprocessing/{type}.r1.fq'
+        'Preprocessing/{type}.se.fq'
     ]
     preprocessed_fq_files = [
-        'Preprocessing/{type}.r1.preprocessed.fq',
-        'Preprocessing/{type}.r2.preprocessed.fq',
-        'Preprocessing/{type}.se.preprocessed.fq',
+        'Preprocessing/{type}.se.preprocessed.fq.gz',
     ]
     trimmed_fq_files = [
         'Preprocessing/{type}.se.trimmed.fq'
     ]
-    if wildcards.type != "mg" :
-        return 'reads_input_files-no-file-here'
-    else:
-        base = raw_fq_files
-        base += preprocessed_fq_files
-        if PREPROCESSING_FILTERING:
-            base += trimmed_fq_files
+    
+    base = raw_fq_files
+    base += preprocessed_fq_files
+    if PREPROCESSING_FILTERING:
+        base += trimmed_fq_files
+
+    if wildcards.type =='mt':
+        base += ['Preprocessing/mt.se.trimmed__rrna_proc.fq']
+    
     return expand(base, type=wildcards.type)
 
 def filtering_reads_pe_input(wildcards):
-    """Input files for paired-end MG/MT reads filtering (excl. rRNA filtering)"""
+    '''Input files for paired-end MG/MT reads filtering (excl. rRNA filtering)'''
     return filtering_reads_input(wildcards, True)
 
 def filtering_reads_se_input(wildcards):
-    """Input files for single-end MG/MT reads filtering (excl. rRNA filtering)"""
+    '''Input files for single-end MG/MT reads filtering (excl. rRNA filtering)'''
     return filtering_reads_input(wildcards, False)
 
 def filtering_reads_input(wildcards, paired=True):
-    """
+    '''
     FASTQ input files for the paired-/single-end MG/MT reads filtering rule.
     Note, that rRNA filtering for MT reads has a separate rule.
 
@@ -200,114 +201,293 @@ def filtering_reads_input(wildcards, paired=True):
         wildcards from the rule, must contain keywords 'type', 'filterstep'
     paired : bool
         paired-end (R1, R2, SE) or single-end (SE) reads
-    """
+    '''
     import re
     # list of steps
-    filtersteps = wildcards.filterstep.split(".")
+    # Terrible solution, would need to rework the whole preprocessing filtering at some point
+    filtersteps = wildcards.filterstep.split('__')
+
     # checks
     assert wildcards.type in TYPES, 'invalid reads type: {} for {}'.format(wildcards.type, wildcards.filterstep)
     if wildcards.type == 'mg':
-        assert re.match(r"trimmed", wildcards.filterstep), 'no trimmed in {} for {}'.format(wildcards.filterstep, wildcards.type)
+        assert re.match(r'trimmed', wildcards.filterstep), 'no trimmed in {} for {}'.format(wildcards.filterstep, wildcards.type)
     elif wildcards.type == 'mt':
-        assert re.match(r"trimmed\.rna_filtered", wildcards.filterstep), 'no trimmed.rna_filtered in {} for {}'.format(wildcards.filterstep, wildcards.type)
+        assert re.match(r'trimmed__rrna_proc', wildcards.filterstep), 'no trimmed__rrna_proc in {} for {}'.format(wildcards.filterstep, wildcards.type)
+    
     # input files
     ifiles = expand(
-        'Preprocessing/{type}.{read}.{filterstep}.fq',
+        'Preprocessing/{type}.{read}.{filterstep}.fq.gz',
         type=wildcards.type,
         read=['r1', 'r2', 'se'] if paired else ['se'],
-        filterstep='.'.join(filtersteps[:-1])
+        filterstep=f"{'__'.join(filtersteps[:-1])}"
     )
-    # print("{}: {}".format(filtersteps, ifiles))
+
+    # print('################################################################')
+    # print(ifiles)
+    # print('################################################################')
+    # raise Exception
+
     return ifiles
 
 def filtering_filter(wildcards):
-    """Reference input files for the paired-/single-end MG/MT reads filtering rule."""
-    return ancient(expand(
-        "{dir}/filtering/{filter}.{ext}",
-        dir=DBPATH,
-        filter=wildcards.filterstep.split(".")[-1].split("_")[0],
-        ext=['fa', 'fa.amb', 'fa.ann', 'fa.bwt', 'fa.pac', 'fa.sa']
+    '''Reference input files for the paired-/single-end MG/MT reads filtering rule.'''
+
+    return ancient(expand('{dir}/filtering/{filter}.{ext}',
+                          dir=DBPATH,
+                          filter=[ref.replace('_filtered', '') for ref in wildcards.filterstep.split('__') if ref not in ['trimmed', 'rrna_filtered']][-1],
+                          ext=['fa', 'fa.0123', 'fa.bwt.2bit.64']
     ))
 
+
+def gather_filter_step_type_read_stats(wildcards):
+    '''Gather the filter step read stats for the different read types (R1, R2, SE) for a given ome.'''
+    
+    if wildcards.type == 'mg':
+        filter_steps = ['.raw', '.trimmed']
+        current_filter_step = filter_steps[-1]
+        for step in FILTER_STEPS:
+            filter_steps.append(f"{current_filter_step}__{step}_filtered")
+            current_filter_step = filter_steps[-1]
+    elif wildcards.type == 'mt':
+        filter_steps = ['.raw', '.trimmed', '.trimmed.rrna', '.trimmed__rrna_filtered', '.trimmed__rrna_proc']
+        current_filter_step = filter_steps[-1]
+        for step in FILTER_STEPS:
+            filter_steps.append(f"{current_filter_step}__{step}_filtered")
+            current_filter_step = filter_steps[-1]
+
+    stats_files = expand('Stats/{{type}}/{{type}}{filterstep}.read_stats.tsv', filterstep=filter_steps)
+
+    # print('################################################################')
+    # print(filter_steps)
+    # print('################################################################')
+    # print(stats_files)
+    # print('################################################################')
+    # raise Exception
+
+    return stats_files
+
+def se_filter_checkpoint(wildcards):
+    '''Get the checkpoint output for the SE reads filtering rule.'''
+    # print(f"se_filter_checkpoint: {wildcards}")
+    checkpoint_out = checkpoints.reads_filtering_se.get(**wildcards).output[0]
+
+    # Dict of make_preprocessed_reads_files_se inputs fake_pe and final_filter
+    # fake_pe = expand("Preprocessing/{{type}}.{read}.fq", read=['r1', 'r2']),
+    # final_filter = lambda wildcards: expand("Preprocessing/{{type}}.{read}.{filtered}.fq",
+    #                          filtered=('trimmed.' if wildcards.type == 'mg' \
+    #                                    else 'trimmed__rrna_proc__') \
+    #                                    + ".".join([s + "_filtered" for s in FILTER]),
+    #                          read=['se'])
+    # print(f"se_filter_checkpoint: {checkpoint_out}")
+
+    # inputs = {
+    #     'fake_pe': expand("Preprocessing/{type}.{read}.fq", read=['r1', 'r2']),
+    #     'final_filter': expand("Preprocessing/{type}.{read}.{filtered}.fq",
+    #                            filtered=('trimmed.' if wildcards.type == 'mg' else 'trimmed__rrna_proc__') \
+    #                                     + ".".join([s + "_filtered" for s in FILTER]),
+    #                            read=['se'])
+    # }
+
+    # return inputs
+
+
 # for archiving checkpoint:
+# TODO: Deal with this mess, we only want to keep the compresed preprocessed reads!
 def gather_reads(wildcards):
     checkpoint_output = checkpoints.reads_gziped.get(**wildcards).output[0]
     type=wildcards.type
-    pot_reads = expand("Preprocessing/{type}.{i}.fq",
-           type=type,
-           i=glob_wildcards("Preprocessing/"+ type + ".{i}.fq").i)
-    last_reads = [os.readlink(l) for l in expand("Preprocessing/{type}.{read}.preprocessed.fq",
-                                                   type=type,read=["r1","r2","se"])]
-    valid_reads = [f for f in list(set(pot_reads).difference(["Preprocessing/" + s for s in last_reads])) if not os.path.islink(f)]
-    return([s + ".gz" for s in valid_reads])
-	
-# BINNING:		
+                        
+    paths_to_check = temp(expand('Preprocessing/{type}.{read}.preprocessed.fq.gz', type=type, read=['r1', 'r2', 'se']))
+    last_reads = [path for path in paths_to_check if os.path.exists(path) and os.path.getsize(path) > 0]
+
+    # print('################################################################')
+    # print(paths_to_check)
+    # print('################################################################')
+    # print(last_reads)
+    # print('################################################################')
+    # raise Exception
+
+    return([s for s in last_reads]) #  + '.gz' 
+
+
+# BINNING:
 # for checkpoints:
 def gather_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
+    
     if MG or MGaln:
-        return expand("Binning/selected_DASTool_bins/{i}/grid",
-           i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
+        return expand('Binning/MetaWrap/bins/{i}/grid', i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i)
     else:
-        return ""
+        return ''
+
+def parse_bins_stats(file_path):
+    """
+    Parse the bins.stats file and return a list of valid bins.
+    Each valid bin is represented as a string (the bin ID).
+    """
+    with open(file_path, 'r') as file:
+        bins = [line.split('\t')[0] for line in file.readlines()[1:] if line.strip()]
+    return bins
 
 def gather_GTDB_bins(wildcards):
     checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
-    return expand("Binning/selected_DASTool_bins/{i}/GTDB",
-           i=glob_wildcards("Binning/selected_DASTool_bins/{i}/contigs.fa").i)
+
+    tools = ['GTDB', 'grid'] if MG else ['GTDB']
+
+    return expand('Binning/MetaWrap/bins/{i}/GTDB',
+                  i=glob_wildcards('Binning/MetaWrap/bins/{i}/contigs.fasta').i)
+
+def gather_gtdbtk_checks(wildcards):
+    checkpoint_output = checkpoints.getBins.get(**wildcards).output[0]
+
+    return expand("status/binning_{i}_GTDBtk.prepped",
+                    i=glob_wildcards('status/binning_{i}_GTDBtk.prepped').i)
 
 def check_bintabs(wildcards):
     checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
     binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
-        if os.stat(OUTPUTDIR + "/Binning/" + binner + "/scaffold2bin.tsv").st_size > 0:
+        s2b_path = os.path.join(OUTPUTDIR, 'Binning', binner, 'contig2bin.tsv')
+        if os.path.exists(s2b_path) and os.stat(s2b_path).st_size > 0:
             valid_binners.append(binner)
-    return expand("Binning/{binner}/scaffold2bin.tsv",binner=valid_binners)
-		
-def check_bintabs_multi(wildcards):
-    checkpoint_output = checkpoints.DASTool_check.get(**wildcards).output[0]
-    binners = config['dereplication']['cross_mapping_rebinning']['binners'].split()
+    
+    return expand('Binning/{binner}/contig2bin.tsv',binner=valid_binners)
+
+def check_mw_input(wildcards):
+    if 'binny' in IMP_STEPS:
+        checkpoint_output = checkpoints.binny_check_assembly.get(**wildcards).output[0]
+        checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
+    else:
+        checkpoint_output = checkpoints.DAS_tool_check.get(**wildcards).output[0]
+    
+    valid_binners = []
+    for binner in BIN_STEPS:
+        bin_list = glob.glob(f'{OUTPUTDIR}/Binning/{binner}/bins/*.fasta')
+        if bin_list:
+            if any(os.stat(bin).st_size > 0 for bin in bin_list):
+                valid_binners.append(binner)
+    
+    if valid_binners:
+        valid_binners.append('DASTool')
+
+    return expand("Binning/{binner}/bins", binner=valid_binners)
+
+def check_binner_bin_fastas(wildcards):
+    checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
+    binners = BIN_STEPS
     valid_binners = []
     for binner in binners:
-        if os.stat(OUTPUTDIR + "/Dereplication/" + binner + "/" + wildcards.sample + "/scaffold2bin.tsv").st_size > 0:
-            valid_binners.append(binner)
-    return expand("Dereplication/{binner}/{sample}/scaffold2bin.tsv",binner=valid_binners,sample=wildcards.sample)
+        # Glob over possible extensions: `fasta`, `fa`, `fna`
+        # Break if any bin file is found with correct extension and non-zero size
+        for ext in ['fasta', 'fa', 'fna']:
+            bin_list = glob.glob(f"{OUTPUTDIR}/Binning/{binner}/bins/*.{ext}")
+            if bin_list:
+                if any(os.stat(bin).st_size > 0 for bin in bin_list):
+                    valid_binners.append(binner)
+                    break
+    
+    if glob.glob(OUTPUTDIR + '/Binning/DASTool/bins/*.fasta'):
+        valid_binners.append('DASTool')
 
-# MULTI:
-def getCatIn(wildcards):
-    inputs = ["Catalogue/catalogue_anno.tsv"]
-    if config['catalogue']['kraken']['do']:
-        inputs.append("Catalogue/catalogue_kraken.parsed.tsv")
-    if config['catalogue']['mapping']['do']:
-        for type in TYPES:
-            inputs.append("Catalogue/" + type + ".counts.tsv")
-    return inputs
-    
-def gather_multi_bins(wildcards):
-    checkpoint_output = checkpoints.pre_grid.get(**wildcards).output[0]
-    return expand("Dereplication/GRiD_multi/{i}/grid/reads.GRiD.txt",
-           i=glob_wildcards("Dereplication/GRiD_multi/{i}/contigs.fa").i)
-    
-def gather_multi_GTDB_bins(wildcards):
-    checkpoint_output = checkpoints.dRep_multi.get(**wildcards).output[0]
-    return expand("Dereplication/GTDB_multi/{i}.GTDB_out",
-           i=glob_wildcards("Dereplication/dRep_multi_out/dereplicated_genomes/{i}.contigs.fa").i)
-           
+    binner_out_paths = expand('Binning/{binner}/bins', binner=valid_binners)
+
+    return binner_out_paths
+
+
+# def check_binner_dirs(wildcards):
+#     checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
+
+#     binner_out_paths, = glob_wildcards(os.path.join('Binning', '{binner}'))
+
+#     return os.path.join('Binning', '{binner}')
+
+
+def get_mw_binner_inputs(wildcards):
+    checkpoint_output = checkpoints.MetaWrap_refine_check.get(**wildcards).output[0]
+    binners = BIN_STEPS
+
+    min_comp = config['binning']['MetaWrap']['min_completeness']
+    max_cont = config['binning']['MetaWrap']['max_contamination']
+
+    valid_binners = []
+    for binner in binners:
+        bin_list = glob.glob(f'{OUTPUTDIR}/Binning/{binner}/bins/*.fasta')
+        if bin_list:
+            if any(os.stat(bin).st_size > 0 for bin in bin_list):
+                valid_binners.append(binner)
+    if glob.glob(f'{OUTPUTDIR}/Binning/DASTool/bins/*.fasta'):
+        valid_binners.append('DASTool')
+
+    binner_fasta_dirs = [f'Binning/{binner}/bins' for binner in valid_binners]
+
+    out_list = []
+    prefixes = ['-A ', '-B ', '-C ']
+    round_1_length = min(len(binner_fasta_dirs), 3)
+    input_round_1 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
+                              zip(prefixes, binner_fasta_dirs[:round_1_length])])
+    out_list.append(input_round_1)
+    if len(binner_fasta_dirs) > 3:
+        input_round_2 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
+                                  zip(prefixes, [f'Binning/MetaWrap/metawrap_round_01/metawrap_{min_comp}_{max_cont}_bins_round_01']
+                                                + binner_fasta_dirs[3:5])])
+        out_list.append(input_round_2)
+    else:
+        out_list.append('')
+    if len(binner_fasta_dirs) > 5:
+        input_round_3 = ' '.join([prefix + binner_fasta_path for prefix, binner_fasta_path in
+                                  zip(prefixes, [f'Binning/MetaWrap/metawrap_round_02/metawrap_{min_comp}_{max_cont}_bins_round_02']
+                                                + binner_fasta_dirs[5:])])
+        out_list.append(input_round_3)
+    else:
+        out_list.append('')
+
+    return out_list
+
+
 def getBam(wildcards):
-    ori_sample = wildcards.clusterID.split(".")[0]
-    return expand("{raw_directory}/Assembly/mg.reads.sorted.bam",
-                raw_directory=samples.path[ori_sample])
+    ori_sample = wildcards.clusterID.split('.')[0]
+    return expand('{raw_directory}/Assembly/mg.reads.sorted.bam', raw_directory=samples.path[ori_sample])
 
 
 def aggregate_mantis_fc(wildcards):
     checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
-    return expand("Analysis/annotation/{type}.mantis.{i}.counts.tsv",
-           i=glob_wildcards("Analysis/annotation/intermediary/mantis/consensus_annotation.mantis.{i}.gff").i,type=TYPES)
+    return expand('Analysis/annotation/{type}.mantis.{i}.counts.tsv',
+                  i=glob_wildcards('Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{i}.gff').i,
+                  type=TYPES)
+
+def aggregate_mantis_fc_gz(wildcards):
+    checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
+    return expand('Analysis/annotation/{type}.mantis.{i}.counts.tsv.gz',
+                  i=glob_wildcards('Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{i}.gff').i,
+                  type=TYPES)
 
 
+def aggregate_mantis_fc_per_contig(wildcards):
+    checkpoint_output = checkpoints.makegff_mantis.get(**wildcards).output[0]
+    return expand('Analysis/annotation/per_contig_counts/{type}.mantis.{i}.per_contig.counts.tsv',
+                  i=glob_wildcards('Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{i}.gff').i,
+                  type=TYPES)
 
 
+def get_extra_cores(wildcards, attempt):
+    return attempt * 2
+
+# PROTEOMICS:
+def get_kraken_tax_genomes(wildcards):
+    '''Get all downloaded genomes from detected kraken taxa.'''
+
+    checkpoint_output = checkpoints.download_kraken_tax_proteomes.get(**wildcards).output.download_dir
+
+    return os.path.join(checkpoint_output, "files/{genome_id}_genomic.fna.gz")
 
 
+def gather_kraken_tax_proteome_checks(wildcards):
+    '''Gather all protein fastas from leftover downloaded or predicted kraken taxa.'''
 
+    checkpoint_output = checkpoints.download_kraken_tax_proteomes.get(**wildcards).output.download_dir
+
+    # TODO: This is wonky because were modifying the checkpoint output afterwards and delete the genomjes. still works because at the checpoint time the genomesa are all there?
+    GENOME_IDS, = glob_wildcards(os.path.join(checkpoint_output, "files/{genome_id}_genomic.fna.gz"))
+
+    return expand('status/proteomics/{genome_id}.processed', genome_id=GENOME_IDS)

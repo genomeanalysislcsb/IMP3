@@ -1,7 +1,8 @@
+name: IMP_install_utils
 channels:
   - conda-forge
   # - bioconda
-  - defaults
+  - nodefaults
 dependencies:
   - python=3.10.0
   - filetype=1.0.7
@@ -12,3 +13,5 @@ dependencies:
   # - bzip2=1.0.8
   - pbzip2=1.1.13
   - zip=3.0
+  - cxx-compiler=1.5.2
+  - zlib=1.2.13

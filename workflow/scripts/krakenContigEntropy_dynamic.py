@@ -10,6 +10,7 @@ import numpy as np
 parser = argparse.ArgumentParser(description='Process output of Kraken run on contigs.')
 parser.add_argument('-c','--contig', default="", help='per-contig output from Kraken')
 parser.add_argument('-r','--report', default="", help='report output from Kraken (all taxa must be reported)')
+parser.add_argument('-rm','--report_has_minimizers', default=False, help='report output from Krakencontains minimizer data')
 parser.add_argument('-e','--entropy', default=0.0,type=float,help='upper cut-off for entropy, defaults to 0.0')
 parser.add_argument('-u','--unknown', action='store_true',help='set -u, if contigs should be reported that were not annotated by Kraken')
 parser.add_argument('-o','--outname', default="",help='name for the output can be specified or will be constructed from input file name and entropy cut-off')
@@ -94,10 +95,22 @@ while 1:
     if line == "":
         break
     line = line.rstrip()
-    tab = line.split("\t")   # 0: total perc, 1:total counts, 2: counts at this level, 3: rank abbrev., 4: tax ID, 5: name (indented)
-    if tab[3] == "U":
+    # Default: 0: total perc, 1:total counts, 2: counts at this level, 3: rank abbrev., 4: tax ID, 5: name (indented)
+    # With minimizer: 0: total perc, 1:total counts, 2: counts at this level, 3: minimizer count for taxon, 4: est. of unique minimizers count, 5: rank abbrev., 46: tax ID, 7: name (indented) 
+    tab = line.split("\t")
+
+    if args.report_has_minimizers:
+        rank = tab[5]
+        tax_id = tab[6]
+        indentName = tab[7]
+    else:
+        rank = tab[3]
+        tax_id = tab[4]
+        indentName = tab[5]
+
+    if rank == "U":
         next
-    rank, tax_id, indentName = tab[3], tab[4], tab[5]      # Assign tax_id and name ...
+    
     name = indentName.lstrip(' ')
     ilevel = int((len(indentName) - len(name))/2)     # get level from indentation
 #    print(ilevel)

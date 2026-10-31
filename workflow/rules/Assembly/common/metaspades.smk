@@ -1,18 +1,18 @@
 METASPADES_ASSEMBLY_SHELL = """
-if [ -d "{output[0]}" ]; then
-    rm -rf {output[0]}
-fi
-spades.py --meta \
- --pe1-1 {input[0]} \
- --pe1-2 {input[1]} \
- --pe1-s {input[2]} \
-  -t {threads} \
-  -m {BIGMEMTOTAL} \
-  -k {KMER_STEPS} \
-  {LONG_READ_ARG} \
-  -o {output[0]} > {log} 2>&1
-ln -fs $(echo {output[1]} | cut -f 3,4 -d /) {output[2]} && touch -h {output[2]}
-"""
+                            if [ -d "{output[0]}" ]; then
+                                rm -rf {output[0]}
+                            fi
+                            spades.py --meta \
+                                      --pe1-1 {input[0]} \
+                                      --pe1-2 {input[1]} \
+                                      --pe1-s {input[2]} \
+                                      -t {threads} \
+                                      -m {params.gb_mem_total} \
+                                      -k {KMER_STEPS} \
+                                      {LONG_READ_ARG} \
+                                      -o {output[0]} > {log} 2>&1
+                            ln -fs $(echo {output[1]} | cut -f 3,4 -d /) {output[2]} && touch -h {output[2]}
+                            """
 
 kmersteps=range(config['assembly']['mink'],config['assembly']['maxk']+1,config['assembly']['step'])
 KMER_STEPS =",".join(map(str,kmersteps)) 
@@ -22,40 +22,54 @@ if LONG:
     LONG_READ_ARG = "--" + config['raws']['LongReadTech'] + " Assembly/long_reads.fastq"
     rule metaspades_assembly_from_preprocessing:
         input:
-            'Preprocessing/{type}.r1.preprocessed.fq',
-            'Preprocessing/{type}.r2.preprocessed.fq',
-            'Preprocessing/{type}.se.preprocessed.fq',
+            'Preprocessing/{type}.r1.preprocessed.fq.gz',
+            'Preprocessing/{type}.r2.preprocessed.fq.gz',
+            'Preprocessing/{type}.se.preprocessed.fq.gz',
             'Assembly/long_reads.fastq'
         output:
             directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
             'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
         resources:
-            runtime = "120:00:00",
-            mem = BIGMEMCORE
-        threads: getThreads(BIGCORENO)
-        conda: ENVDIR + "/IMP_assembly.yaml"
-        log: "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
-        message: "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
+            runtime = MEDIUM_RUNTIME,
+            mem_mb = MAIN_BIGMEMCORE_MB
+        threads:
+            getThreads(MAIN_BIGCORENO, bigmem=True)
+        params:
+            gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
+        conda:
+            ENVDIR + "/IMP_assembly.yaml"
+        log:
+            "logs/assembly/metaspades_assembly_from_preprocessing.{type}.log"
+        message:
+            "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
+        shadow: "copy-minimal"
         shell:
             METASPADES_ASSEMBLY_SHELL
 else:
     rule metaspades_assembly_from_preprocessing:
         input:
-            'Preprocessing/{type}.r1.preprocessed.fq',
-            'Preprocessing/{type}.r2.preprocessed.fq',
-            'Preprocessing/{type}.se.preprocessed.fq'
+            'Preprocessing/{type}.r1.preprocessed.fq.gz',
+            'Preprocessing/{type}.r2.preprocessed.fq.gz',
+            'Preprocessing/{type}.se.preprocessed.fq.gz'
         output:
             directory('Assembly/intermediary/{type}.metaspades_preprocessed.1'),
             'Assembly/intermediary/{type}.metaspades_preprocessed.1/contigs.fasta',
-            'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa'
+            'Assembly/intermediary/{type}.metaspades_preprocessed.1.fa',
         resources:
-            runtime = "120:00:00",
-            mem = BIGMEMCORE
-        threads: getThreads(BIGCORENO)
-        conda: ENVDIR + "/IMP_assembly.yaml"
-        log: "logs/assembly_metaspades_assembly_from_preprocessing.{type}.log"
-        message: "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
+            runtime = MEDIUM_RUNTIME,
+            mem_mb = MAIN_BIGMEMCORE_MB
+        threads:
+            getThreads(MAIN_BIGCORENO, bigmem=True)
+        params:
+            gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
+        conda:
+            ENVDIR + "/IMP_assembly.yaml"
+        log:
+            "logs/assembly/metaspades_assembly_from_preprocessing.{type}.log"
+        message:
+            "metaspades_assembly_from_preprocessing: Performing {wildcards.type} assembly step 1 from preprocessed reads using MetaSpades"
+        shadow: "copy-minimal"
         shell:
             METASPADES_ASSEMBLY_SHELL
 
@@ -69,11 +83,18 @@ rule metaspades_assembly_from_unmapped:
         'Assembly/intermediary/{type}.metaspades_unmapped.2/contigs.fasta',
         'Assembly/intermediary/{type}.metaspades_unmapped.2.fa'
     resources:
-        runtime = "120:00:00",
-        mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
-    conda: ENVDIR + "/IMP_assembly.yaml"
-    log: "logs/assembly_metaspades_assembly_from_unmapped.{type}.log"
-    message: "metaspades_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using METASPADES"
+        runtime = LONG_RUNTIME,
+        mem_mb = MAIN_BIGMEMCORE_MB
+    threads:
+        getThreads(MAIN_BIGCORENO, bigmem=True)
+    params:
+        gb_mem_total = int(MAIN_BIGMEMTOTAL * to_gb_dict[config['cluster_specs']["mem_unit"]])
+    conda:
+        ENVDIR + "/IMP_assembly.yaml"
+    log:
+        "logs/assembly/metaspades_assembly_from_unmapped.{type}.log"
+    message:
+        "metaspades_assembly_from_unmapped: Performing {wildcards.type} assembly step 2 from unmapped reads using METASPADES"
+    shadow: "copy-minimal"
     shell:
         METASPADES_ASSEMBLY_SHELL

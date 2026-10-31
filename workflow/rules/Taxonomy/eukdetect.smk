@@ -61,13 +61,13 @@ rule ED_filter:
 
 def alninputs(wildcards):
     if wildcards.sample == "mg" and len(MG)==2:
-        input = ["Preprocessing/mg.r1.preprocessed.fq","Preprocessing/mg.r2.preprocessed.fq"]
+        input = ["Preprocessing/mg.r1.preprocessed.fq.gz","Preprocessing/mg.r2.preprocessed.fq.gz"]
     if wildcards.sample == "mt" and len(MT)==2:
-        input = ["Preprocessing/mt.r1.preprocessed.fq","Preprocessing/mt.r2.preprocessed.fq"] 
+        input = ["Preprocessing/mt.r1.preprocessed.fq.gz","Preprocessing/mt.r2.preprocessed.fq.gz"] 
     if wildcards.sample == "mg" and len(MG)==1:
-        input = "Preprocessing/mg.se.preprocessed.fq"
+        input = "Preprocessing/mg.se.preprocessed.fq.gz"
     if wildcards.sample == "mt" and len(MT)==1:
-        input = "Preprocessing/mt.se.preprocessed.fq"
+        input = "Preprocessing/mt.se.preprocessed.fq.gz"
     return input
 
 def construct_input(wildcards,input):
@@ -101,16 +101,17 @@ rule ED_runaln:
     output:
         "Analysis/taxonomy/EukDetect/aln/{sample}_aln_q30_lenfilter.sorted.bam"
     params:
-        inputstring = lambda wildcards,input: construct_input(wildcards,input),                            
+        inputstring = lambda wildcards,input: construct_input(wildcards,input),
         minreadlen = config["eukdetect"]["min_readlen"],
         db = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna"
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_eukdetect_aln.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log: "logs/analysis/eukdetect_aln.{sample}.log"
     message: "runaln: Running mapping for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         bowtie2 --quiet --omit-sec-seq --no-discordant --no-unal -x {params.db} {params.inputstring} 2>> {log} |\
@@ -127,11 +128,12 @@ rule ED_bam2fastq:
         temp("Analysis/taxonomy/EukDetect/aln/{sample}_aln_q30_lenfilter.fq")
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_eukdetect_bam2fastq.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log: "logs/analysis/eukdetect_bam2fastq.{sample}.log"
     message: "bam2fastq: Running bam2fastq for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         bedtools bamtofastq -i {input.bam} -fq {output} &>> {log}
@@ -144,11 +146,12 @@ rule ED_find_low_complexity:
         temp("Analysis/taxonomy/EukDetect/aln/{sample}_low_complexity.txt")
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-#    log: "logs/analysis_eukdetect_find_low_complexity.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+#    log: "logs/analysis/eukdetect_find_low_complexity.{sample}.log"
     message: "find_low_complexity: Finding low complexity for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         cat {input.fq} | kz | awk '{{ if ($4<0.5) print $1 }}' > {output}
@@ -162,11 +165,12 @@ rule ED_remove_low_complexity:
         temp("Analysis/taxonomy/EukDetect/aln/{sample}_aln_q30_lenfilter_complexity.sorted.bam")
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_eukdetect_remove_low_complexity.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log: "logs/analysis/eukdetect_remove_low_complexity.{sample}.log"
     message: "remove_low_complexity: Removing low complexity for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         samtools view -h {input.inbam} 2>> {log} | grep -v -f {input.drop_complex} 2>> {log} |\
@@ -181,11 +185,12 @@ rule ED_fixmate:
         temp("Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexity_fixmate.bam")
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE 
-    log: "logs/analysis_eukdetect_fixmate.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log: "logs/analysis/eukdetect_fixmate.{sample}.log"
     message: "fixmate: Running fixmate for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         samtools sort -n {input.inbam} 2>> {log} | samtools fixmate -m - {output} 2>> {log}
@@ -198,11 +203,12 @@ rule ED_markdup:
         temp("Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexity_rmdup.bam")
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_eukdetect_markdup.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log: "logs/analysis/eukdetect_markdup.{sample}.log"
     message: "markdup: Running markdup for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         samtools sort {input} 2>> {log} | samtools markdup -r -s - {output} 2>> {log}
@@ -215,15 +221,16 @@ rule ED_rmsort:
         "Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexityfilter_dupfilter.sorted.bam"
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_eukdetect_rmsort.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log: "logs/analysis/eukdetect_rmsort.{sample}.log"
     message: "rmsort: Running rmsort for eukdetect on {wildcards.sample} reads."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         samtools sort -o {output} {input} &>> {log}
-        """	
+        """
 
 if not 'assembly' in IMP_STEPS and not 'analysis' in IMP_STEPS:
     rule ED_index:
@@ -233,11 +240,12 @@ if not 'assembly' in IMP_STEPS and not 'analysis' in IMP_STEPS:
             bai = "Analysis/taxonomy/EukDetect/filtering/{sample}_aln_q30_lenfilter_complexityfilter_dupfilter.sorted.bam.bai"
         threads: 1
         resources:
-            runtime = "12:00:00",
-            mem = MEMCORE
-        log: "logs/analysis_eukdetect_index.{sample}.log"
+            runtime = SHORT_RUNTIME,
+            mem_mb = MAIN_MEMCORE_MB
+        log: "logs/analysis/eukdetect_index.{sample}.log"
         message: "index: Indexing bam for eukdetect on {wildcards.sample} reads."
         conda: ENVDIR + "/eukdetect.yaml"
+        shadow: "copy-minimal"
         shell:
             """
             samtools index {input.bam} {output.bai} &>> {log}
@@ -254,11 +262,12 @@ rule ED_countreads:
         ref = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/all_buscos_v4.fna"
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_eukdetect_countreads.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log: "logs/analysis/eukdetect_countreads.{sample}.log"
     message: "countreads: Counting {wildcards.sample} reads for eukdetect."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         python {params.countscript} {input.bam} {params.ref} > {output.counts} 2>> {log}
@@ -278,11 +287,12 @@ rule ED_taxonomize:
         taxdb = DBPATH + "/" + config["eukdetect"]["database_dir"] + "/taxa.sqlite"
     threads: 1
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_eukdetect_taxonomize.{sample}.log"
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log: "logs/analysis/eukdetect_taxonomize.{sample}.log"
     message: "taxonomize: Taxonomy of {wildcards.sample} reads for eukdetect."
     conda: ENVDIR + "/eukdetect.yaml"
+    shadow: "copy-minimal"
     shell:
         """
         python {params.script} --dbfile {params.taxdb} --taxid_link {params.taxid_link} \
@@ -301,5 +311,6 @@ rule ED_taxonomize:
 #output:
 #taxonomy ="{output_dir}/{sample}_hit_taxonomy_filterpass.txt",
 #readcounts = "{output_dir}/{sample}_stats_per_filtered_taxid.txt"
+#shadow: "copy-minimal"
 #shell:
 #"python {input.script} {input.taxid_link} {input.taxdb} {input.inherited_markers} {input.counts} {output.taxonomy} {output.readcounts}"

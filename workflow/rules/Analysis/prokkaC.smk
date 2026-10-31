@@ -1,3 +1,5 @@
+import math
+
 rule annotate:
     input:
         'Assembly/%s.assembly.merged.fa' % ASS
@@ -8,23 +10,42 @@ rule annotate:
         "Analysis/annotation/prokka.ffn",
         "Analysis/annotation/prokka.fsa",
         "Analysis/annotation/prokka.gff.gz"
-    threads: getThreads(12) 
+    threads:
+        # Ensure at least 50gb of mem
+        max(int(math.ceil(50 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    log: "logs/analysis_annotate.log"
-    conda: ENVDIR + "/IMP_annotation.yaml"
-    message: "annotate: Running prokkaC."
+        runtime = MEDIUM_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log:
+        "logs/analysis/annotate.log"
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
+    message:
+        "annotate: Running prokkaC."
+    shadow: "copy-minimal"
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
         export LC_ALL=en_US.utf-8
-        if [ ! -f $CONDA_PREFIX/db/hmm/HAMAP.hmm.h3m ]; then
-          {BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db --setupdb
-        fi 
-	{BINDIR}/prokkaC --dbdir $CONDA_PREFIX/db --force --outdir Analysis/annotation --prefix prokka --noanno --cpus {threads} --metagenome {input[0]} >> {log} 2>&1
         
-	# Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
+        if [ ! -f ${{CONDA_PREFIX}}/db/hmm/HAMAP.hmm.h3m ]; then
+          {BINDIR}/prokkaC --dbdir ${{CONDA_PREFIX}}/db \
+                           --setupdb
+        fi 
+        
+        {BINDIR}/prokkaC --dbdir ${{CONDA_PREFIX}}/db \
+                         --force \
+                         --outdir Analysis/annotation \
+                         --prefix prokka \
+                         --noanno \
+                         --cpus {threads} \
+                         --metagenome {input[0]} >> {log} 2>&1
+
+        #remove partial fasta files
+        rm -f Analysis/annotation/prokka.fna_*.fasta
+        
+        # Prokka gives a gff file with a long header and with all the contigs at the bottom.  The command below removes the
         # And keeps only the gff table.
 
         LN=`grep -Hn "^>" Analysis/annotation/prokka.gff | head -n1 | cut -f2 -d ":" || if [[ $? -eq 141 ]]; then true; else exit $?; fi`

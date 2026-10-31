@@ -1,6 +1,7 @@
 rule trimmomatic_adapters:
     output:
         touch("adapters/adapters.done")
+    shadow: "copy-minimal"
     shell:
         """
         wget --no-check-certificate {config[trimmomatic][pkg_url]} -O Trimmomatic-Src-0.32.zip
@@ -13,18 +14,22 @@ rule trimmomatic_adapters:
 rule sortmerna_databases:
     output:
         expand("sortmerna/{files}.fasta", files=config["sortmerna"]["files"])
+    params:
+        tmp_dir=TMPDIR,
+        pkg_url=config["sortmerna"]["pkg_url"],
+    shadow: "copy-minimal"
     shell:
         """
-        TMPD=$(mktemp -d -t --tmpdir={tmp} "XXXXXX")
-        wget {pkg_url} --no-check-certificate -O $TMPD/sortmerna.tgz
+        export TMPDIR="{params.tmp_dir}"
+        TMPD=$(mktemp -d -t "XXXXXX")
+
+        wget {params.pkg_url} --no-check-certificate -O $TMPD/sortmerna.tgz
         tar -xzf  $TMPD/sortmerna.tgz --strip-components=1 -C $TMPD
+
         mkdir -p sortmerna
         mv $TMPD/rRNA_databases/*.fasta sortmerna/.
         rm -rf $TMPD
-        """.format(
-            pkg_url=config["sortmerna"]["pkg_url"],
-            tmp=TMPDIR
-        )
+        """
 
 
 rule sortmerna_databases_index:
@@ -49,10 +54,13 @@ if 'url' in config['filtering'] and config['filtering']['url']:
             'filtering/{filter}.fa'.format(filter=FILTER)
             #expand("filtering/{filter}.{ext}", filter=FILTER, ext=['fa'])
         params:
+            tmp_dir=TMPDIR,
             filter = FILTER
+        shadow: "copy-minimal"
         shell:
             """
-            TMPD=$(mktemp -d -t --tmpdir={TMPDIR} "XXXXXX")
+            export TMPDIR="{params.tmp_dir}"
+            TMPD=$(mktemp -d -t "XXXXXX")
             wget {config[filtering][url]} --no-check-certificate -O $TMPD/{params.filter}.fa.gz
             gunzip $TMPD/{params.filter}.fa.gz
             mkdir -p filtering
@@ -66,6 +74,7 @@ if 'path' in config['filtering'] and config['filtering']['path']:
             'filtering/{filter}.fa'.format(filter=FILTER)
         params:
             filter = FILTER
+        shadow: "copy-minimal"
         shell:
             """
             cp {config[filtering][path]} filtering/{params.filter}.fa
@@ -79,9 +88,10 @@ rule filtrering_database_index:
         "{fasta}"
     output:
         "{fasta}.bwt.2bit.64"
+    shadow: "copy-minimal"
     shell:
         """
-        bwa index {wildcards.fasta}
+        bwa-mem2 index {wildcards.fasta}
         """
 
 
@@ -89,6 +99,7 @@ rule kegg_information:
     output:
         "ec2pathway.txt",
         "pathway2hierarchy.txt"
+    shadow: "copy-minimal"
     shell:
         """
         wget --no-check-certificate {config[kegg][db_ec2pthy]} -O ec2pathway.txt.tmp
@@ -102,6 +113,9 @@ rule prokka_databases:
     output:
         expand("{db}", db=config["prokka"]["databases"]),
         "hmm/essentials_genes.hmm"
+    params:
+        tmp_dir=TMPDIR
+    shadow: "copy-minimal"
     shell:
         """
         ### prokka by default will look databases where is located the binary.
@@ -114,7 +128,9 @@ rule prokka_databases:
             PP=$PWD/{DBPATH};
         fi
         cd $(dirname $(which prokka))/.. && ln -fs $PP db
+
         echo "Softlinking $(dirname $(which prokka))/../db to $PP"
+        export TMPDIR="{params.tmp_dir}"
         TMPDIR=$(mktemp -d -t "XXXXXX")
         wget {config[prokka][pkg_url]} --no-check-certificate -O $TMPDIR/prokka.tgz
         tar -xzf $TMPDIR/prokka.tgz --strip-components=1 -C $TMPDIR
@@ -128,6 +144,7 @@ rule prokka_databases:
 rule checkm_data:
     output:
         "checkM/selected_marker_sets.tsv"
+    shadow: "copy-minimal"
     shell:
         """
         wget -c --no-check-certificate {config[checkm][data_url]} -O checkm_data.tgz

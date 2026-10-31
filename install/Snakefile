@@ -4,6 +4,7 @@
 import os
 import re
 import pandas
+from snakemake.utils import validate
 
 # utils
 include:
@@ -12,9 +13,16 @@ include:
 ##################################################
 # CONFIG
 
+# config validation
+validate(config, srcdir("../schemas/schema.install.yaml"))
+
 # paths
 ENV_DIR = srcdir("envs")
 SRC_DIR = srcdir("scripts")
+CONDA_DIR = workflow.conda_prefix if workflow.conda_prefix else srcdir("../conda")
+SUBMOD_DIR = srcdir("../submodules")
+INSTALL_DIR = srcdir("")
+MAIN_ENV_DIR = srcdir("../workflow/envs")
 
 # default executable for snakemake
 shell.executable("bash")
@@ -24,35 +32,76 @@ workdir:
     config["db_path"]
 
 ##################################################
-# TARGETS
+# TARGETS & RULES
 
-TARGETS = [
-    os.path.join("adapters", "trimmomatic.done"),
-    os.path.join("sortmerna", "sortmerna.done"),
-#    "gtdbtk", # NOTE: comment out for quick tests (big archive, many files),
-    "mantis/setup.done",
-] + [ # genomes
-    "filtering/{}.fa".format(genome) for genome in config["genomes"].keys()
-] + flatten_list([ # Kraken2 databases
-    expand("{kdb}/{fname}", kdb=kdb, fname=get_kraken2db_file_names()) for kdb in config["kraken2"].keys()
-])
+include:
+        "rules/binning.smk"
 
-# TODO: other targets?
+include:
+        "rules/mummer4.smk"
+
+include:
+        "rules/motus.smk"
+
+include:
+        "rules/cdhit.smk"
+
+TARGETS = ["checkm/checkm_db.ready", os.path.join(SUBMOD_DIR, "binny/setup.done"), "SemiBin_setup.done",
+           os.path.join(SUBMOD_DIR, "ESOM/setup.done"), "qm.ready", "motus_db_download.done",
+           os.path.join(SUBMOD_DIR, "cdhit", "cd-hit-est")]
+
+# adapters, Trimmomatic
+if "trimmomatic" in config:
+    include:
+        "rules/trimmomatic.smk"
+    TARGETS.append("adapters/trimmomatic.done")
+
+# rRNA filtering, SortMeRNA
+if "sortmerna" in config:
+    include:
+        "rules/sortmerna.smk"
+    TARGETS.append("sortmerna/sortmerna.done")
+
+# reads filtering, reference genomes
+if "genomes" in config:
+    include:
+        "rules/genomes.smk"
+    TARGETS += expand(
+        "filtering/{genome}.fa",
+        genome=config["genomes"].keys()
+    )
+
+# taxonomy, Kraken2 databases
+if "kraken2" in config:
+    include:
+        "rules/kraken2.smk"
+    TARGETS += flatten_list([expand(
+        "{kdb}/{fname}",
+        kdb=kdb, fname=get_kraken2db_file_names()
+    ) for kdb in config["kraken2"].keys()])
+
+# taxonomy, GTDBtk
+# NOTE: big archive, many files
+if "gtdbtk" in config:
+    include:
+        "rules/gtdbtk.smk"
+    TARGETS.append("gtdbtk/release207_v2")
+
+# annotation, Mantis
+if "mantis" in config:
+    assert config["mantis"]["default"] or config["mantis"]["custom"], \
+        "mantis in config but no default or custom databases given"
+    include:
+        "rules/mantis.smk"
+    TARGETS.append("mantis/setup.done")
+
+# TODO: Grab KrakenTools
 
 ##################################################
 # RULES
 
 # Main rule
+localrules: ALL
 rule ALL:
     input:
         TARGETS
-
-# other rules
-include:
-    "rules/preprocessing.smk"
-
-include:
-    "rules/taxonomy.smk"
-
-include:
-    "rules/analysis.smk"

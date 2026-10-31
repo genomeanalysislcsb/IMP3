@@ -1,34 +1,79 @@
+import math
+
 rule call_contig_depth:
     input:
-        "Assembly/{type}.reads.sorted.bam",
-        "Assembly/%s.assembly.merged.fa" % ASS,
-        "Assembly/%s.assembly.merged.fa.fai" % ASS,
-        "Assembly/%s.assembly.merged.fa.bed3" % ASS
+        bam = "Assembly/{type}.reads.sorted.bam",
+        bam_index = "Assembly/{type}.reads.sorted.bam.bai",
+        assembly = f"Assembly/{ASS}.assembly.merged.fa",
+        assembly_fai = f"Assembly/{ASS}.assembly.merged.fa.fai",
+        assembly_bed = f"Assembly/{ASS}.assembly.merged.fa.bed3"
     output:
-        "Stats/{type}/%s.assembly.contig_coverage.txt" % ASS,
-        "Stats/{type}/%s.assembly.contig_depth.txt" % ASS,
-        report("Stats/{type}/%s.assembly.contig_flagstat.txt" % ASS,category="Assembly")
+        glob_dist = f"Stats/{{type}}/{ASS}.assembly.mosdepth.global.dist.txt",
+        summary = f"Stats/{{type}}/{ASS}.assembly.mosdepth.summary.txt",
+        region_dist = f"Stats/{{type}}/{ASS}.assembly.mosdepth.region.dist.txt",
+        per_base = f"Stats/{{type}}/{ASS}.assembly.per-base.bed.gz",
+        regions = f"Stats/{{type}}/{ASS}.assembly.regions.bed.gz",
+        breadth = f"Stats/{{type}}/{ASS}.assembly.thresholds.bed.gz",
+        read_count = f"Stats/{{type}}/{ASS}.assembly.contig_read_count.txt",
+        contig_depth = f"Stats/{{type}}/{ASS}.assembly.contig_depth.txt",
+        report = report(f"Stats/{{type}}/{ASS}.assembly.contig_flagstat.txt", category="Assembly")
     resources:
-        runtime = "12:00:00",
-        mem = BIGMEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/analysis_call_contig_depth.{type}.log"
-    message: "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        # Ensure at least 50gb of mem
+        max(int(math.ceil(50 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 4)
+    params:
+        tmp_dir = TMPDIR,
+        ass_type = ASS,
+        ome = lambda wildcards: wildcards.type,
+        stats_dir = lambda wildcards: f"Stats/{wildcards.type}",
+        ass_dir = "Assembly"
+    conda:
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
+    log:
+        "logs/analysis/call_contig_depth.{type}.log"
+    message:
+        "call_contig_depth: Getting data on assembly coverage with {wildcards.type} reads."
+    shadow: "copy-minimal"
     shell:
         """
-        coverageBed -b {input[0]} -a {input[3]} -sorted > {output[0]} 2>> {log}
-        echo "Coverage calculation done" >> {log}
-        echo "Running BEDTools for average depth in each position" >> {log}
-        TMP_DEPTH=$(mktemp --tmpdir={TMPDIR} -t "depth_file_XXXXXX.txt")
-        genomeCoverageBed -ibam {input[0]} | grep -v "genome" > $TMP_DEPTH
-        echo "Depth calculation done" >> {log}
+        ### Calculate coverage ###
+        echo "Calculating contig base coverage ..." >> {log} 2>&1
+        export MOSDEPTH_PRECISION=6
 
-        ## This method of depth calculation was adapted and modified from the CONCOCT code
-	{SRCDIR}/calcAvgCoverage.pl $TMP_DEPTH {input[1]} > {output[1]}	
+        mosdepth --fast-mode \
+                 --by {input.assembly_bed} \
+                 --threads 4 \
+                 --thresholds 1,10,30 \
+                 {params.stats_dir}/{params.ass_type}.assembly \
+                 {input.bam} >> {log} 2>&1
 
-        echo "Remove the temporary file" >> {log}
-        rm $TMP_DEPTH
-        echo "flagstat" >> {log}
-        samtools flagstat {input[0]} 2>> {log} | cut -f1 -d ' ' > {output[2]}
+        ### Calculate read counts ###
+        echo "Calculating contig read counts ..." >> {log} 2>&1
+        hts_nim_tools count-reads --threads 4 \
+                                  {input.assembly_bed} \
+                                  {input.bam} 2>> {log}\
+          | sort -k1,1V > {output.read_count} 2>> {log} 
+
+        ### Calculate average read coverage depth ###
+        echo "Running BEDTools for average depth in each position ..." >> {log}
+        export TMPDIR="{params.tmp_dir}"
+        TMP_DEPTH=$(mktemp "depth_file_XXXXXX.txt")
+
+        genomeCoverageBed -ibam {input.bam} 2>> {log} | grep -v "genome" > ${{TMP_DEPTH}} 2>> {log}
+
+        echo "Calculating average contig coverage ..." >> {log}
+        # This method of depth calculation was adapted and modified from the CONCOCT code
+        perl {SRCDIR}/calcAvgCoverage.pl ${{TMP_DEPTH}} {input.assembly} > {output.contig_depth} 2>> {log}
+
+        ### Clean up ###
+        echo "Removing temporary files ..." >> {log}
+        rm -f ${{TMP_DEPTH}} >> {log} 2>&1
+
+        ### Calculate mappoing stats ###
+        echo "Running samtools flagstat ..." >> {log}
+        samtools flagstat {input.bam} 2>> {log} | cut -f1 -d ' ' > {output.report} 2>> {log}
+
+        echo "Done." >> {log}
         """

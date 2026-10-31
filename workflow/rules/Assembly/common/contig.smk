@@ -1,20 +1,31 @@
-rule tar_intermediary:
+rule tar_assembly_intermediary:
     input:
-        "Assembly/%s.assembly.merged.fa" % ASS
+        # Make sure its done at the very end
+        check = "status/workflow.done",
+        assembly = "Assembly/%s.assembly.merged.fa" % ASS
     output:
         "Assembly/intermediary.tar.gz"
-    threads: 1
+    threads:
+        getThreads(128, bigmem=False, high_mem_cluster=False)
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
+        runtime = SHORTISH_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
     params:
         intermediary = "Assembly/intermediary/"
-    log: "logs/assembly_tar_intermediary.log"
-    message: "tar_intermediary: Compressing intermediary steps of assembly."
+    log:
+        "logs/assembly/tar_assembly_intermediary.log"
+    message:
+        "tar_intermediary: Compressing intermediary steps of assembly."
+    shadow: "copy-minimal"
     shell:
-       """
-       tar czf {output} {params.intermediary} && rm -r {params.intermediary} >> {log} 2>&1
-       """
+        """
+        echo "Compressing assembly intermediary dir ..." >> {log}
+
+        tar -cf - -C Assembly/ intermediary/  2>> {log} | pigz -p {threads} -c > {output} 2>> {log} \
+            && rm -rf {params.intermediary} >> {log} 2>&1
+
+        echo "Done." >> {log}
+        """
 
 rule contig_fasta_indexing:
     input:
@@ -22,12 +33,17 @@ rule contig_fasta_indexing:
     output:
         "Assembly/%s.assembly.merged.fa.fai" % ASS
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_mapping.yaml"
-    log: "logs/assembly_contig_fasta_indexing.log"
-    message: "contig_fasta_indexing: Indexing assembly."
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        8
+    conda:
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
+    log:
+        "logs/assembly/contig_fasta_indexing.log"
+    message:
+        "contig_fasta_indexing: Indexing assembly."
+    shadow: "copy-minimal"
     shell:
         """
         samtools faidx {input[0]} > {log} 2>&1
@@ -40,12 +56,16 @@ rule contig_fasta2bed_conversion:
     output:
         "Assembly/%s.assembly.merged.fa.bed3" % ASS
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: 1
-#    log: "logs/assembly_fastabed.log"
-    message: "contig_fasta2bed_conversion: Writing bed file for assembly."
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        4
+    log:
+        "logs/assembly/convert_fasta2bed.log"
+    message:
+        "contig_fasta2bed_conversion: Writing bed file for assembly."
+    shadow: "copy-minimal"
     shell:
         """
-        cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output}
+        cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output} 2> {log}
         """

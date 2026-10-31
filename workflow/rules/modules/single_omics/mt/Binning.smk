@@ -1,31 +1,37 @@
 # include rules for the Binning part of the workflow
 
-## DAStool
+# DAStool
 include:
     '../../../Binning/DAStool/dastool.smk'
 
-inputs_binning = ["Binning/selected_DASTool_summary.txt"]
+# MetaWrap
+include:
+    '../../../Binning/MetaWrap/metawrap.smk'
+
+mw_min_comp = config['binning']['MetaWrap']['min_completeness']
+mw_max_cont = config['binning']['MetaWrap']['max_contamination']
+inputs_binning = ["Binning/DASTool/selected_DASTool_summary.txt",  # "Binning/DASTool.tar.gz",
+                  "Binning/MetaWrap/bins.stats"]
 
 ## MaxBin doesn't work without mg coverage
 ## MetaBAT
 if "MetaBAT" in BIN_STEPS:
-    inputs_binning.append("Binning/MetaBAT/metabat_res")
+    inputs_binning.append("Binning/MetaBAT/contig2bin.tsv")
+    # inputs_binning.append("Binning/MetaBAT.tar.gz")
     include:
         '../../../Binning/MetaBAT/metabat.mt.smk'
-## binny doesn't work without mg coverage
-if "binny" in BIN_STEPS:
-    inputs_binning.append("Binning/binny/mt.vizbin.with-contig-names.points")
-    include:
-        '../../../Binning/binny/vizbin.smk'
 
 
 ## GRiD isn't run, but it contains a rule used by GTDBtk
-include:
-    '../../../Binning/GRiD/grid_dynamic.smk'
+# include:
+#     '../../../Binning/GRiD/grid_dynamic.smk'
 
-if not 'taxonomy' in IMP_STEPS:
-    inputs_binning.append("Binning/per_bin_results.tar.gz")
+# if not 'taxonomy' in IMP_STEPS:
+#     inputs_binning.append("Binning/per_bin_results.tar.gz")
 
+## tar annotation
+# if 'analysis' in IMP_STEPS:
+#     inputs_binning.append("Analysis/annotation/intermediary.tar.gz")
 
 ## master command
 rule BINNING:

@@ -41,6 +41,7 @@ rule git_download:
         commit=smk_get_git_commit,
     message:
         "Git: download {params.url}, commit {params.commit}"
+    shadow: "copy-minimal"
     shell:
         "git clone {params.url} {output} && "
         "cd {output} && "

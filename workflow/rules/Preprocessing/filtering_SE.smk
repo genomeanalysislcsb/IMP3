@@ -1,47 +1,66 @@
-rule reads_filtering:
+checkpoint reads_filtering_se:
     input:
-        reads=filtering_reads_se_input,
-        ref=filtering_filter
+        reads = filtering_reads_se_input,
+        ref = filtering_filter
     output:
-        'Preprocessing/{type}.se.{filterstep}.fq'
+        temp('Preprocessing/{type}.se.{filterstep}.fq.gz')
     log:
-        "logs/preprocessing_{type}_filtering.{filterstep}.log"
+        "logs/preprocessing/{type}_filtering.{filterstep}.log"
     wildcard_constraints:
         type = "|".join(TYPES),
-        filterstep = "|".join(["trimmed(\.rna_filtered)?\." + "\.".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
+        filterstep = "|".join(["trimmed(__rrna_proc)?__" + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
-        runtime = "24:00:00",
-        mem = BIGMEMCORE
-    threads: getThreads(BIGCORENO)
+        runtime = SHORT_RUNTIME,
+        mem_mb = MAIN_BIGMEMCORE_MB
+    threads:
+        getThreads(MAIN_BIGCORENO, bigmem=True)
+    params:
+        mem = str(max(int(MAIN_BIGMEMCORE_MB * 0.75), 1)) + 'M',
+        tmp_dir=TMPDIR
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
         "reads_filtering: Filtering {wildcards.type} reads to get {wildcards.filterstep}."
+    shadow: "copy-minimal"
     shell:
         """
-        bwa mem -v 1 -t {threads} {input.ref[0]} {input.reads} 2> {log} | \
-          samtools view --threads {threads} -bS - 2>> {log} | \
-          samtools view --threads {threads} -uf 4 - 2>> {log} | \
-          bamToFastq -i stdin -fq {output} >> {log} 2>&1
+        bwa-mem2 mem -v 1 \
+                     -t {threads} \
+                     {input.ref[0]} \
+                     {input.reads} 2> {log} | \
+        samtools fastq -0 {output} \
+                       -f 4 \
+                       --threads 32 \
+                       -n \
+                       - 2>> {log}
         """
 
-localrules: symlink_preprocessed_reads_files
-rule symlink_preprocessed_reads_files:
+rule make_preprocessed_reads_files_se:
     input:
-        expand("Preprocessing/mg.{read}.fq", read=['r1', 'r2']),
-        lambda wildcards: expand(
-            "Preprocessing/{{type}}.{read}.{filtered}.fq",
-            filtered=('trimmed.' if wildcards.type == 'mg' else 'trimmed.rna_filtered.') + \
-                ".".join([s + "_filtered" for s in FILTER]),
-            read=['se']
-        )
+        # check = se_filter_checkpoint,
+        fake_pe = expand("Preprocessing/{{type}}.{read}.fq", read=['r1', 'r2']),
+        final_filter = lambda wildcards: expand("Preprocessing/{{type}}.{read}.{filtered}.fq.gz",
+                                 filtered=('trimmed.' if wildcards.type == 'mg' \
+                                           else 'trimmed__rrna_proc__') \
+                                           + "__".join([s + "_filtered" for s in FILTER]),
+                                 read=['se'])
     output:
-        expand('Preprocessing/{{type}}.{read}.preprocessed.fq', read=['r1', 'r2', 'se'])
+        expand('Preprocessing/{{type}}.{read}.preprocessed.fq.gz', read=['se'])
     wildcard_constraints:
         type = "|".join(TYPES),
-    threads: 1
+    threads:
+        getThreads(4)
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    log:
+        "logs/preprocessing/{type}_make_preprocessed_reads_files.log"
     message:
-        "symlink_preprocessed_reads_files: link to preprocessed {wildcards.type} reads"
-    run:
-        for i,o in zip(input,output):
-            shell("ln -fs $(echo {i} | cut -f 2 -d /) {o} && touch -h {o}")
+        "make_preprocessed_reads_files_se: Create final preprocessed {wildcards.type} reads file"
+    shadow: "minimal"
+    shell:
+        """
+        echo "Creating final preprocessed {wildcards.type} reads file ..." > {log}
+        cp {input.final_filter} {output} >> {log} 2>&1
+        echo "Done." >> {log}
+        """

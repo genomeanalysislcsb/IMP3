@@ -1,24 +1,35 @@
+import math
+
 rule assembly_contig_length:
     input:
         "Assembly/%s.assembly.merged.fa" % ASS
     output:
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),
-        "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS),
+        "Stats/%s/%s.assembly.gc_content.txt" % (ASS,ASS)
     resources:
-        runtime = "8:00:00",
-        mem = MEMCORE
-    threads: 1
-    conda: ENVDIR + "/IMP_annotation.yaml"
-    log: "logs/analysis_assembly_contig_length.log"
-    message: "assembly_contig_length: Getting data on assembly length and GC content."
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        # Ensure at least 20gb of mem
+        max(int(math.ceil(20 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))), 1)
+    params:
+        tmp_dir=TMPDIR
+    conda:
+        os.path.join(ENVDIR, "IMP_annotation.yaml")
+    log:
+        "logs/analysis/assembly_contig_length.log"
+    message:
+        "assembly_contig_length: Getting data on assembly length and GC content."
+    shadow: "copy-minimal"
     shell:
         """
-        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export PATH=${{CONDA_PREFIX}}/bin:$PATH
+        export PERL5LIB=${{CONDA_PREFIX}}/lib/perl5/site_perl
         perl {SRCDIR}/fastaNamesSizes.pl {input} > {output[0]} 2>> {log}
 
         echo "Obtaining GC content" >> {log}
-        # AHB TMP_GC=$(mktemp --tmpdir={TMPDIR} -t "gc_out_XXXXXX.txt")
-        TMP_GC=$(mktemp --tmpdir=Analysis -t "gc_out_XXXXXX.txt")
+        export TMPDIR="{params.tmp_dir}"
+        TMP_GC=$(mktemp "gc_out_XXXXXX.txt")
         perl {SRCDIR}/get_GC_content.pl {input} $TMP_GC >> {log} 2>&1
 
         # The program above provides a file gc_out.txt. This command cleans the output

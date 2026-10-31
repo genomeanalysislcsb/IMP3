@@ -1,39 +1,68 @@
 # include rules for the Binning part of the workflow
 
-## DAStool
+# DAStool
 include:
     '../../../Binning/DAStool/dastool.smk'
 
-inputs_binning = ["Binning/selected_DASTool_summary.txt","status/binning_GRiD.done"]
+# MetaWrap
+include:
+    '../../../Binning/MetaWrap/metawrap.smk'
+
+mw_min_comp = config['binning']['MetaWrap']['min_completeness']
+mw_max_cont = config['binning']['MetaWrap']['max_contamination']
+inputs_binning = ["status/binning_GTDBtk.done","Binning/MetaWrap/bins.stats"]
+
+## abawaca
+if "abawaca" in BIN_STEPS:
+    inputs_binning.append("Binning/abawaca/contig2bin.tsv")
+    include:
+        '../../../Binning/abawaca/abawaca.smk'
+
+## CONCOCT
+if "CONCOCT" in BIN_STEPS:
+    inputs_binning.append("Binning/CONCOCT/contig2bin.tsv")
+    include:
+        '../../../Binning/CONCOCT/concoct.smk'
+
+## binny
+if "binny" in BIN_STEPS:
+    inputs_binning.append("Binning/binny/contig2bin.tsv")
+    include:
+        '../../../Binning/binny/binny_subworkflow.smk'
 
 ## MaxBin
 if "MaxBin" in BIN_STEPS:
-    inputs_binning.append("Binning/MaxBin/maxbin_res.log")
+    inputs_binning.append("Binning/MaxBin/maxbin_res.summary")
     include:
         '../../../Binning/MaxBin/maxbin.smk'
     include:
         '../../../Binning/MaxBin/get_contig2bin.smk'
+
 ## MetaBAT
 if "MetaBAT" in BIN_STEPS:
-    inputs_binning.append("Binning/MetaBAT/metabat_res")
+    inputs_binning.append("Binning/MetaBAT/contig2bin.tsv")
     include:
         '../../../Binning/MetaBAT/metabat.smk'
-## binny
-if "binny" in BIN_STEPS:
-    inputs_binning.append("Binning/binny/scaffold2bin.tsv")
+
+## MetaDecoder
+if "MetaDecoder" in BIN_STEPS:
+    inputs_binning.append("Binning/MetaDecoder/contig2bin.tsv")
     include:
-        '../../../Binning/binny/vizbin.smk'
+        '../../../Binning/MetaDecoder/metadecoder.smk'
+## SemiBin
+if "SemiBin" in BIN_STEPS:
+    inputs_binning.append("Binning/SemiBin/contig2bin.tsv")
     include:
-        '../../../Binning/binny/binny.smk'
+        '../../../Binning/SemiBin/semibin.smk'
+## COMEBin
+if "COMEBin" in BIN_STEPS:
+    inputs_binning.append("Binning/COMEBin/contig2bin.tsv")
     include:
-        '../../../Binning/binny/binny2dastool.smk'
+        '../../../Binning/COMEBin/comebin.smk'
+
 ## GRiD
-include:
-    '../../../Binning/GRiD/grid_dynamic.smk'
-
-if not 'taxonomy' in IMP_STEPS:
-    inputs_binning.append("Binning/per_bin_results.tar.gz")
-
+# include:
+#     '../../../Binning/GRiD/grid_dynamic.smk'
 
 ## master command
 rule BINNING:

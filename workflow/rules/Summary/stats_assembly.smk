@@ -1,7 +1,7 @@
 #require assembly to be analysed, if assembly is not done within IMP
 rule ASSEMBLY:
     input:
-        expand("Stats/{type}/{ass}.assembly.contig_coverage.txt",type=TYPES,ass=ASS),
+        expand("Stats/{type}/{ass}.assembly.thresholds.bed.gz",type=TYPES,ass=ASS),
         expand("Stats/{type}/{ass}.assembly.contig_depth.txt",type=TYPES,ass=ASS),
         expand("Stats/{type}/{ass}.assembly.contig_flagstat.txt",type=TYPES,ass=ASS),
         "Stats/%s/%s.assembly.length.txt" % (ASS,ASS),

@@ -1,44 +1,128 @@
+import math
+
 localrules: allmotu
 
 rule allmotu:
     input:
-        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv", type=TYPES)
+        expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{out_type}.tsv", type=TYPES, out_type=["counts", "rel_abun"])
     output:
         touch("status/taxonomy_mOTUs.done")
-    threads: 1
+    threads:
+        1
     message:
         "allmotu: mOTUs done?"
+
+rule get_motus_db:
+    output:
+        os.path.join(ENVDIR, 'motus.ready')
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        4
+    conda:
+        os.path.join(ENVDIR, "IMP_motus.yaml")
+    log:
+        os.path.join(ENVDIR, "logs/motus_downloadDB.log")
+    message:
+        "motus: Downloading mOTUs database."
+    shadow: "copy-minimal"
+    shell:
+        """
+        motus downloadDB > {log} 2>&1 \
+         && touch {output} >> {log} 2>&1
+        """
+
+def set_motu_runtime(wildcards, attempt):
+    if attempt == 1:
+        return VERY_SHORT_RUNTIME
+    elif attempt == 2:
+        return SHORTISH_RUNTIME
+    else:
+        return MEDIUM_RUNTIME
 
 # https://github.com/motu-tool/mOTUs/wiki
 rule motus:
     input:
-        r1="Preprocessing/{type}.r1.preprocessed.fq",
-        r2="Preprocessing/{type}.r2.preprocessed.fq",
-        se="Preprocessing/{type}.se.preprocessed.fq"
+        db_ready = os.path.join(ENVDIR, 'motus.ready'),
+        r1="Preprocessing/{type}.r1.preprocessed.fq.gz",
+        r2="Preprocessing/{type}.r2.preprocessed.fq.gz",
+        se="Preprocessing/{type}.se.preprocessed.fq.gz"
     output:
-        report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv",category="Taxonomy")
-    threads: getThreads(6)
+        report("Analysis/taxonomy/mOTUs/{type}.mOTU.counts.tsv", category="Taxonomy")
+    threads:
+        # Ensure at least 150gb of mem
+        max(int(math.ceil(150 / (int(MAIN_MEMCORE[:-1]) * to_gb_dict[config['cluster_specs']["mem_unit"]]))),1)
     params:
         # https://github.com/motu-tool/mOTUs/wiki/Parameters-to-change-the-resulting-profiles
         # -A: print all tax. levels together
         # -c: return counts
-        params="-A -c"
+        extra_params = "-A -c",
+        min_markers = config["motus"]["min_markers"],
+        sample = config["sample"],
+        min_size = lambda wildcards: config["motus"][f"min_read_len_{wildcards.type}"]
+        # database = os.path.join(DBPATH, 'motus')
     resources:
-        runtime = "12:00:00",
-        mem = MEMCORE
+        runtime = set_motu_runtime,
+        mem_mb = MAIN_MEMCORE_MB
+    retries:
+        3
     conda:
-        os.path.join(ENVDIR, "IMP_taxonomy.yaml")
+        os.path.join(ENVDIR, "IMP_motus.yaml")
     log:
-        "logs/analysis_motus.{type}.log"
+        "logs/analysis/taxonomy/motus.{type}.counts.log"
     message:
-        "motus: Running mOTUs on {wildcards.type} reads."
+        "motus: Running mOTUs (counts) on {wildcards.type} reads."
+    shadow: "copy-minimal"
     shell:
         """
-        if [ -s {input.se} ] && [ -s {input.r1} ] && [ -s {input.r2} ]; then
-            motus profile -f {input.r1} -r {input.r2} -s {input.se} -o {output} {params.params} -t {threads} >& {log}
-        elif [ -s {input.se} ]; then
-            motus profile -s {input.se} -o {output} {params.params} -t {threads} >& {log}
+        # Define check for gzipped data content
+        check_empty() {{
+            ! gzip -cd "$1" 2>/dev/null | read -n 1
+        }}
+
+        if ! check_empty {input.r1} && ! check_empty {input.r2} && ! check_empty {input.se}; then
+            # All three files have data
+            motus profile -f {input.r1} \
+                          -r {input.r2} \
+                          -s {input.se} \
+                          -o {output} \
+                          -n {params.sample} \
+                          {params.extra_params} \
+                          -g {params.min_markers} \
+                          -l {params.min_size} \
+                          -t {threads} >& {log}
+        elif ! check_empty {input.se}; then
+            # Only SE has data (or R1/R2 are empty)
+            motus profile -s {input.se} \
+                          -o {output} \
+                          -n {params.sample} \
+                          {params.extra_params} \
+                          -g {params.min_markers} \
+                          -l {params.min_size} \
+                          -t {threads} >& {log}
         else
-            motus profile -f {input.r1} -r {input.r2} -o {output} {params.params} -t {threads} >& {log}
+            # Default to PE (assuming R1/R2 have data if SE does not)
+            motus profile -f {input.r1} \
+                          -r {input.r2} \
+                          -o {output} \
+                          -n {params.sample} \
+                          {params.extra_params} \
+                          -g {params.min_markers} \
+                          -l {params.min_size} \
+                          -t {threads} >& {log}
         fi 
         """
+
+use rule motus as motus_rel_ab with:
+    output:
+        report("Analysis/taxonomy/mOTUs/{type}.mOTU.rel_abun.tsv",category="Taxonomy")
+    params:
+        extra_params = "-p -A",
+        min_markers = config["motus"]["min_markers"],
+        sample = config["sample"],
+        min_size = lambda wildcards: config["motus"][f"min_read_len_{wildcards.type}"]
+    log:
+        "logs/analysis/taxonomy/motus.{type}.rel_abun.log"
+    message:
+        "motus: Running mOTUs (relative abundance) on {wildcards.type} reads."

@@ -1,0 +1,11 @@
+name: IMP_metadecoder
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - pip
+  - python=3.9
+  - seqkit=2.8.2
+  - pip:
+    - https://github.com/liu-congcong/MetaDecoder/releases/download/v1.2.1/metadecoder-1.2.1-py3-none-any.whl

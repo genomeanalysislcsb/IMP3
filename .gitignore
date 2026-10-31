@@ -1,39 +1,19 @@
-.*
-!.gitlab/
-!.gitignore
-!.gitlab-ci.yml
-*~
-docs/build
-conf/userconfig.imp.json
-output/*
-*stderr
-*stdout
-db
-__pycache__
-gitold/
-databases/*
-runIMP3
-IMP_DBs
-IMP_DBs/*
-tmp/*
-IMPnew/*
-IMPAnna/*
-lib/*
-docker/*
-conda/*
-test/*
-dependencies/*
-rules/Archiving/*
-READMEconda
+# third-party tools and databases installed by install/Snakefile
+submodules/
 conda/
-test/*
-test*
-oldrules/*
-IMP2to3/*
-rules/CRISPR
-condai/
-runIMP3_tmux.sh
-config/config.test.yaml
-testoutput/
-runIMP3_multi_tmux.sh
-IMP3.initialised/ 
+# run artefacts
+.snakemake/
+logs/
+**/logs/
+*.log
+status/
+# large bundled example data / binaries
+workflow/bin/fetchMG/example_datasets/
+workflow/bin/VizBin-dist.jar
+# project-specific sample lists
+sample_lists/
+# docs build
+site/
+__pycache__/
+*.pyc
+.DS_Store

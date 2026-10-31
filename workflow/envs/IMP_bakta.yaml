@@ -1,0 +1,9 @@
+name: IMP_bakta
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - bakta=1.9.3
+  - pigz=2.8
+  - seqkit=2.8.1

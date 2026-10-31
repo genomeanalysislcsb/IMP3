@@ -2,44 +2,11 @@ name: IMP_assembly
 channels:
   - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
-  - _libgcc_mutex=0.1=conda_forge
-  - _openmp_mutex=4.5=1_gnu
-  - bzip2=1.0.8=h516909a_1
-  - c-ares=1.16.1=h516909a_3
-  - ca-certificates=2020.6.20=hecda079_0
-  - cap3=10.2011=1
-  - certifi=2020.6.20=py38h924ce5b_2
-  - flye=2.8.1=py38h1c8e9b9_1
-  - htslib=1.11=hd3b49d5_0
-  - krb5=1.17.1=hfafb76e_3
-  - ld_impl_linux-64=2.34=hc38a660_9
-  - libcurl=7.71.1=hcdd3856_8
-  - libdeflate=1.6=h516909a_0
-  - libedit=3.1.20191231=he28a2e2_2
-  - libev=4.33=h516909a_1
-  - libffi=3.2.1=he1b5a44_1007
-  - libgcc-ng=9.3.0=h24d8f2e_16
-  - libgomp=9.3.0=h24d8f2e_16
-  - libnghttp2=1.41.0=h8cfc5f6_2
-  - libssh2=1.9.0=hab1572f_5
-  - libstdcxx-ng=9.3.0=hdf63c60_16
-  - llvm-meta=7.0.0=0
-  - megahit=1.2.9=h8b12597_0
-  - ncurses=6.2=he1b5a44_1
-  - openmp=7.0.0=h2d50403_0
-  - openssl=1.1.1h=h516909a_0
-  - pip=20.2.3=py_0
-  - python=3.8.5=h1103e12_7_cpython
-  - python_abi=3.8=1_cp38
-  - readline=8.0=he28a2e2_2
-  - samtools=1.11=h6270b1f_0
-  - seqkit=0.14.0=0
-  - setuptools=49.6.0=py38h32f6830_0
-  - spades=3.13.1=h2d02072_2
-  - sqlite=3.33.0=h4cf870e_0
-  - tk=8.6.10=hed695b0_0
-  - wheel=0.35.1=pyh9f0ad1d_0
-  - xz=5.2.5=h516909a_1
-  - zlib=1.2.11=h516909a_1009
+  - cap3=10.2011
+  - flye=2.9
+  - megahit=1.2.9
+  - samtools=1.15
+  - seqkit=2.2.0
+  - spades=3.15.4

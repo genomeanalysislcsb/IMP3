@@ -1,0 +1,10 @@
+name: IMP_compress
+channels:
+  - conda-forge
+dependencies:
+  - tar
+  - gzip
+  - findutils
+  - file
+  - grep
+  - coreutils

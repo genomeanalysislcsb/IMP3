@@ -145,8 +145,8 @@ ygb <- colorRampPalette(brewer.pal(8,"YlGnBu")[2:8])
 ###################################################################################################
 
 stats_image         <- snakemake@input[["stats"]] #"Stats/all_stats.Rdata"
-bin_memberships     <- snakemake@input[["bins"]]  # Binning/*/scaffold2bin.tsv
-mag_memberships     <- snakemake@input[["dastool"]]  # Binning/selected_DASTool_scaffolds2bin.txt
+bin_memberships     <- snakemake@input[["bins"]]  # Binning/*/contig2bin.tsv
+mag_memberships     <- snakemake@input[["metawrap"]]  # Binning/MetaWrap/bins.contigs
 if(file.exists("Binning/binny"))  vizbin_file         <- snakemake@input[["vizbin"]] #"Binning/binny/ASS.vizbin.with-contig-names.points",
 outplot             <- snakemake@output # "Visualization/Binning_alluvial.png"
                                         #"Visualization/Binning_{type}_depth.png"

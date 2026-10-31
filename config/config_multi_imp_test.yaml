@@ -1,0 +1,233 @@
+steps: "preprocessing"
+sample_input_tsv: '/mnt/isilon/projects/ecosystem_biology/local_tools/multi_imp_tests/samples_v2.tsv' ### USER_INPUT ####
+email: ""
+sessionName: ""
+sessionKind: ""
+settingsLocked: "false"
+preprocessing_filtering: true
+cluster_specs:  ### USER_INPUT ####
+  # Choose between: K, M, G, T
+  mem_unit: "M"
+  main_cluster:
+    mem_total: 224000
+    mem_per_core: 1750
+    big_mem_total: 224000
+    big_mem_cores: 128
+    big_mem_per_core: 1750
+    # Set maximum n cores to use for jobs
+    cores_max: 32
+    big_mem_cores_max: 32
+  high_mem_cluster:
+    mem_total: 126000
+    mem_per_core: 4500
+    big_mem_total: 2950000
+    big_mem_cores: 112
+    big_mem_per_core: 26339
+    # Set maximum n cores to use for jobs
+    cores_max: 28
+    big_mem_cores_max: 32
+tmp_dir: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_tmp"  ### USER_INPUT ####
+raws:
+  # Metagenomics: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mg.r1.fq /mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mg.r2.fq"  ### USER_INPUT ####
+  # Metatranscriptomics: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mt.r1.fq /mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mt.r2.fq"  ### USER_INPUT ####
+  Metagenomics: ""  ### USER_INPUT ####
+  Metatranscriptomics: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/must_bloodrna_m1_1_v1_subsample/mt.r1.fq.gz /mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/must_bloodrna_m1_1_v1_subsample/mt.r2.fq.gz"  ### USER_INPUT ####
+  LongReads: ""
+  LongReadTech: ""
+  Contigs: ""
+  Alignment_metagenomics: ""
+  Alignment_metatranscriptomics: ""
+  Gff: ""
+sample: imp3_test  ### USER_INPUT ####
+outputdir: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_multi_imp"  ### USER_INPUT ####
+summarydir: ""
+# Options stats, vis
+summary_steps: "stats"
+mongo_user: "myUserAdmin"
+mongo_port: 16626
+mongo_password: "testMongo"
+compress_level: "mid"
+db_path: "/mnt/isilon/projects/ecosystem_biology/databases/imp3_sl"  ### USER_INPUT ####
+trimmomatic:
+  adapter: 
+    mg: "TruSeq3-PE"
+    mt: "TruSeq3-PE"
+  leading: 20
+  minlen: 40
+  palindrome_clip_threshold: 30
+  simple_clip_threshold: 10
+  trailing: 20
+  seed_mismatch: 2
+  window_size: 1
+  window_quality: 3
+  strictness: 0.5
+  target_length: 40
+nextseq: false
+filtering:
+  filter: "PhiX T2TCHM13v2genomic T2TCHM13v2transcripts"
+# Keep rRNA reads in preprocessed reads
+keep_rrnas: false
+sortmerna:
+  files:
+    - rfam-5.8s-database-id98
+    - silva-arc-16s-id95
+    - silva-bac-16s-id90
+    - silva-euk-18s-id95
+    - rfam-5s-database-id98
+    - silva-arc-23s-id98
+    - silva-bac-23s-id98
+    - silva-euk-28s-id98
+assembly: 
+  hybrid: true
+  assembler: megahit
+  # how to do merge(assembly A, assembly B from reads not mapping to A);
+  # none or "" = use only assembly A or choose between: concat, flye, cap3, quickmerge
+  merge: "quickmerge" # quickmerge
+  kmer_list: 21,29,39,59,79,99,119,141
+  mink: 25
+  maxk: 99
+  step: 4
+  cap3:
+    identity: 98
+    overlap: 100
+  quickmerge:
+    min_overlap: 250
+    # Default: 0
+    len_cutoff: 0
+    # Overlap cutoff used in selection of anchor contigs.
+    # Ratio overlapping region/non-overlapping region (?).
+    # Default: 5.0
+    hco: 5.0
+    # Overlap cutoff for contigs used for extension of the anchor contig
+    # hco represents high confidence overlaps and used for seeding of the merging process.
+    # 'c' is used to filter out overall alignments.
+    # any alignment under 'c' will never be considered for merging.
+    # so 'hco' is a subset of 'c'.
+    # Default: 1.5
+    c: 1.5
+# mantis (default) / hmmer
+annotation: "mantis"
+mantis:
+  # default HMMs
+  # set to null (i.e.: ncbi_ref_folder: null), if no database, otherwise provide a path
+  default:
+    kofam_ref_folder: "/mnt/isilon/projects/ecosystem_biology/databases/imp3/mantis/kofam"  ### USER_INPUT ####
+    ncbi_ref_folder: null  ### USER_INPUT ####
+    nog_ref_folder: null  ### USER_INPUT ####
+    pfam_ref_folder: null  ### USER_INPUT ####
+    tcdb_ref_folder: null  ### USER_INPUT ####
+  # custom HMMs (list)
+  custom:
+    # - "/path/to/custom/references/"
+  # weights: <name>_hmm_folder --> <name>_weight
+  weights:
+    ncbi_weight: 0.9
+    nog_weight: 0.8
+    pfam_weight: 0.9
+    uniprot_ec_weight: 0.9
+# Choose between nothing and one or multiple of: KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM
+# e.g. "KEGG essential Pfam_A"
+hmm_DBs: ""
+hmm_settings: 
+  KEGG:
+    cutoff: ""
+    trim: "--trimall"
+  essential:
+    cutoff: "--cut_tc"
+    trim: ""
+  metacyc:
+    cutoff: ""
+    trim: "--trimall"
+  Cas:
+    cutoff: ""
+    trim: ""
+  Pfam_A:
+    cutoff: "--cut_tc"
+    trim: ""
+  SwissProt:
+    cutoff: ""
+    trim: "--trimall"
+  TIGRPFAM:
+    cutoff: ""
+    trim: ""
+  dbCAN:
+    cutoff: ""
+    trim: ""
+  Resfams:
+    cutoff: ""
+    trim: ""
+# Choose between nothing and one or multiple of: COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552
+# e.g. "COG0012 COG0018 COG0215"
+COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
+featureCountsStranding:
+  mt: 2
+  mg: 0
+proteomics:
+  filter_N_peptides: 2
+  host_proteome: ""
+  insert_variants: false
+binning:
+  # Options: abawaca COMEBin CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
+  # NOTE: IMP supports a maximum of six binners only atm.
+  binners: "MetaDecoder"
+  abawaca:
+    esom_min: 2500
+    esom_max: 5000
+  binny:
+    kmers: '2,3,4'
+    mask_disruptive_sequences: 'True'
+    extract_scmags: 'True'
+    coassembly_mode: 'auto'
+    NX_value: 90
+    min_cont_length_cutoff: 2250
+    max_cont_length_cutoff: 2250
+    min_cont_length_cutoff_marker: 2250
+    max_cont_length_cutoff_marker: 2250
+    max_n_contigs: 5.0e5
+    # 0: 'domain', 1: 'phylum', 2: 'class', 3: 'order', 4: 'family', 5: 'genus', 6: 'species'
+    max_marker_lineage_depth_lvl: 2
+    distance_metric: 'manhattan'
+    embedding:
+      max_iterations: 5
+    clustering:
+      hdbscan_epsilon_range: '0.250,0.000'
+      hdbscan_min_samples_range: '1,5,10'
+      include_depth_initial: 'False'
+      include_depth_main: 'False'
+    bin_quality:
+      min_completeness: 82.5
+      start_completeness: 92.5
+      purity: 95
+  CONCOCT:
+    cutoff: 2000
+  MaxBin:
+    cutoff: 1000
+  MetaBAT:
+    # Minimum is 1500
+    cutoff: 1500
+  MetaDecoder:
+    # Minimum is 2000
+    cutoff: 2000
+  SemiBin:
+    # Choose between: global human_gut human_oral mouse_gut pig_gut dog_gut cat_gut wastewater ocean soil
+    # leave empty to create my_built_environment and after use that as param
+    model: 'global'
+    cutoff: 2000
+  DAS_Tool:
+    score_threshhold: 0.6
+  MetaWrap:
+    min_completeness: 60
+    max_contamination: 10
+kraken:
+  confidence: 0.501
+  krakendb: 20230502_kraken_nt  ### USER_INPUT #### minikraken2_v2_8GB_201904_UPDATE
+eukdetect:
+  run_eukdetect: false
+  eukdetect_dir: ../EukDetect
+  database_dir: eukdetect_database_v1
+  # eukdetect does not recommend pre-trimming, but I don't see why we should keep stuff we don't want
+  min_readlen: 60
+locked_normalMem: 0
+locked_bigMem: 0
+locked_bigCores: 0
+locked_bigTotal: 0 
