@@ -31,7 +31,7 @@ Set in `cluster_profile/config.yaml` (lines marked `### USER_INPUT ####`): `cond
 
 ## Many samples
 
-`runscripts/` holds helpers used on the ULHPC:
+`runscripts/` holds helper scripts for Slurm clusters (adapt the paths inside them):
 
 | script | purpose |
 |---|---|
@@ -56,7 +56,7 @@ snakemake -s Snakefile --configfile sample.yaml --use-conda --conda-prefix conda
 
 The cluster config (YAML) holds the submission command and the argument names, with a default section and
 sections for rules that need large-memory nodes. Templates: `config/slurm.config.yaml`,
-`config/slurm_simple.config.yaml`, `config/slurm_simple_ul_hybrid_cluster.config.yaml` (ULHPC),
+`config/slurm_simple.config.yaml`, `config/slurm_simple_ul_hybrid_cluster.config.yaml` (example for a cluster with normal and large-memory nodes),
 `config/pbs.config.yaml` and `config/sge.config.yaml`.
 
 ```yaml

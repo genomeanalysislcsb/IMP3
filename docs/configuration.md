@@ -13,10 +13,10 @@ test sample). Lines marked `### USER_INPUT ####` must be set for every installat
 | key | example | meaning |
 |---|---|---|
 | `steps` | `"preprocessing assembly analysis binning taxonomy summary"` | steps to run |
-| `sample` | `bhc01` | sample name, prefixed to the contig names; punctuation becomes `_`; empty = the last two parts of `outputdir` |
-| `outputdir` | `/path/IMP/bhc01` | output folder of the sample |
-| `tmp_dir` | `/scratch/.../tmp` | temporary files |
-| `db_path` | `/path/databases/imp3` | databases from the install workflow |
+| `sample` | `sample01` | sample name, prefixed to the contig names; punctuation becomes `_`; empty = the last two parts of `outputdir` |
+| `outputdir` | `/path/to/IMP3_outputs/sample01` | output folder of the sample |
+| `tmp_dir` | `/path/to/tmp` | temporary files |
+| `db_path` | `/path/to/IMP3_databases` | databases from the install workflow |
 | `raws.*` | | input files, see [Inputs](inputs.md) |
 | `summary_steps` | `"stats"` | `stats`, `vis` |
 | `compress_level` | `mid` | how much of the intermediate output is compressed at the end |
