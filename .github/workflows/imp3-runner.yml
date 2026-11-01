@@ -1,0 +1,15 @@
+name: imp3 runner
+on:
+  push:
+    paths: ["imp3", "profiles/**", "test/test_imp3_runner.sh", ".github/workflows/imp3-runner.yml"]
+  pull_request:
+    paths: ["imp3", "profiles/**", "test/test_imp3_runner.sh"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install pyyaml
+      - run: bash test/test_imp3_runner.sh

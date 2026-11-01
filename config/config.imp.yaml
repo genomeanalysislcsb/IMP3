@@ -26,6 +26,11 @@ cluster_specs:  ### USER_INPUT ####
     cores_max: 28
     big_mem_cores_max: 32
 tmp_dir: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_tmp"  ### USER_INPUT ####
+# root of the per-run temporary directory (default /dev/shm, i.e. RAM); set e.g. /tmp or a local scratch on machines
+# with little shared memory
+tmp_root: "/dev/shm"
+# IMP3 container (Apptainer/Singularity .sif with all conda environments); "" = conda environments on the host
+container: ""
 raws:
   # Metagenomics: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mg.r1.fq /mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mg.r2.fq"  ### USER_INPUT ####
   # Metatranscriptomics: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mt.r1.fq /mnt/isilon/projects/ecosystem_biology/user/ohickl/test_imp3_data/mibipa_1226_1_subsample/mt.r2.fq"  ### USER_INPUT ####

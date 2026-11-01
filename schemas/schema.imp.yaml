@@ -42,6 +42,10 @@ properties:
         minimum: 1
   tmp_dir:
     type: string
+  tmp_root:
+    type: string
+  container:
+    type: string
   raws:
     type: object
     properties:

@@ -1,0 +1,663 @@
+#!/usr/bin/env python3
+"""imp3: run IMP3 for many samples on a Slurm cluster or a single machine, natively or in the IMP3 container.
+
+  imp3 init PROJECT [--executor slurm|local] [--site ulhpc|generic] [--container imp3.sif] ...
+  imp3 run [-p PROJECT] [--samples S1,S2] [--submit] [--dry-run] [-- extra snakemake options]
+  imp3 status [-p PROJECT]
+  imp3 containerize --envs PREFIX [-o build_dir]     (Apptainer definition from existing conda environments)
+
+A project is a folder with imp3.yaml (settings), a sample config template, a Snakemake profile and, per sample,
+a generated config (config/imp_config_<sample>.yaml), the results (imp/<sample>) and run logs (imp_run_logs/).
+Needs Python >= 3.8 with PyYAML (part of every Snakemake environment) and Snakemake 7.32 on the PATH.
+"""
+import argparse
+import concurrent.futures as cf
+import datetime
+import glob
+import hashlib
+import os
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+
+IMP3_DIR = os.path.dirname(os.path.realpath(__file__))
+TEMPLATES = os.path.join(IMP3_DIR, "profiles")
+SETTINGS = "imp3.yaml"
+DONE = "status/all.done"
+
+try:
+    import yaml
+except ImportError:                                          # pragma: no cover
+    sys.exit("imp3: needs PyYAML (activate the Snakemake environment of IMP3)")
+
+
+def say(msg):
+    sys.stderr.write("[imp3] %s\n" % msg)
+
+
+# ----------------------------------------------------------------------------------------------------------- settings
+DEFAULTS = {
+    "imp3_dir": IMP3_DIR,          # IMP3 checkout (Snakefile)
+    "db_path": "",                 # IMP3 databases
+    "reads": "samples",            # folder with one sub-folder per sample (files with mg / mt in the name)
+    "sample_sheet": "",            # or a TSV: sample, mg_r1, mg_r2, mt_r1, mt_r2 (other columns ignored)
+    "config_template": "sample_config.yaml",
+    "executor": "slurm",           # slurm | local
+    "profile": "profile",          # Snakemake profile folder of the project
+    "conda_prefix": "",            # conda environments of IMP3 (native runs)
+    "container": "",               # IMP3 .sif: every rule runs in the container (needs apptainer / singularity)
+    "bind": [],                    # extra folders visible in the container (reads, databases, IMP3 and the project
+                                   # are bound automatically)
+    "gpu": "auto",                 # local: GPUs for COMEBin (auto = nvidia-smi), 0 = none
+    "cores": 0,                    # local: cores (0 = all)
+    "mem_gb": 0,                   # local: memory for IMP3 (0 = 90 % of the machine)
+    "tmp_root": "",                # root of the per-run temp dir ("" = /dev/shm, IMP3's default)
+    "parallel_samples": 10,        # samples (Snakemake masters) at the same time
+    "submit_master": "--time 5-00:00:00 --qos long --cpus-per-task 1 --mem 8G",   # sbatch options for --submit
+    "pre_commands": [],            # shell lines before Snakemake, e.g. "module load tools/Singularity"
+    "snakemake_args": "",          # extra Snakemake options for every run
+}
+
+
+def load_settings(project):
+    p = os.path.join(project, SETTINGS)
+    if not os.path.exists(p):
+        sys.exit("imp3: %s not found (create a project with 'imp3 init %s')" % (p, project))
+    s = dict(DEFAULTS)
+    s.update(yaml.safe_load(open(p)) or {})
+    s["project"] = os.path.abspath(project)
+    for k in ("imp3_dir", "reads", "sample_sheet", "config_template", "profile", "conda_prefix", "container",
+              "db_path"):
+        if s.get(k):
+            s[k] = os.path.normpath(os.path.join(s["project"], os.path.expandvars(os.path.expanduser(str(s[k])))))
+    if isinstance(s.get("bind"), str):
+        s["bind"] = [x for x in re.split(r"[,\s]+", s["bind"]) if x]
+    if isinstance(s.get("pre_commands"), str):
+        s["pre_commands"] = [s["pre_commands"]] if s["pre_commands"] else []
+    return s
+
+
+# ----------------------------------------------------------------------------------------------------------- samples
+READ_EXT = re.compile(r"\.(f(ast)?q)(\.gz|\.bz2)?$", re.I)
+
+
+def natural(s):
+    return [int(t) if t.isdigit() else t.lower() for t in re.split(r"(\d+)", s)]
+
+
+def reads_in_folder(folder, omic):
+    """read files of one omic in a sample folder: names containing mg / mt (not as part of a word), sorted so that
+    R1 comes before R2"""
+    out = []
+    for f in sorted(os.listdir(folder), key=natural):
+        p = os.path.join(folder, f)
+        if not (os.path.isfile(p) and READ_EXT.search(f)):
+            continue
+        if re.search(r"(^|[^a-z])%s([^a-z]|$)" % omic, f.lower()):
+            out.append(os.path.abspath(p))
+    return out
+
+
+def discover_samples(s):
+    """{sample: {"mg": [r1, r2], "mt": [...]}} from the sample sheet or the reads folder"""
+    out = {}
+    if s.get("sample_sheet"):
+        import csv
+        base = os.path.dirname(s["sample_sheet"])
+        with open(s["sample_sheet"], newline="") as fh:
+            rows = [r for r in csv.reader(fh, delimiter="\t") if r and not r[0].startswith("#")]
+        hdr = [h.strip().lower() for h in rows[0]]
+        for r in rows[1:]:
+            d = dict(zip(hdr, [x.strip() for x in r]))
+            sid = d.get("sample") or d.get("sample_id") or r[0]
+            ab = lambda x: x if not x or os.path.isabs(x) else os.path.normpath(os.path.join(base, x))
+            out[sid] = {"mg": [ab(d[k]) for k in ("mg_r1", "mg_r2") if d.get(k)],
+                        "mt": [ab(d[k]) for k in ("mt_r1", "mt_r2") if d.get(k)]}
+        return out
+    if not os.path.isdir(s["reads"]):
+        sys.exit("imp3: reads folder %s not found (set 'reads' or 'sample_sheet' in imp3.yaml)" % s["reads"])
+    for d in sorted(os.listdir(s["reads"]), key=natural):
+        p = os.path.join(s["reads"], d)
+        if os.path.isdir(p):
+            out[d] = {"mg": reads_in_folder(p, "mg"), "mt": reads_in_folder(p, "mt")}
+    return out
+
+
+# ----------------------------------------------------------------------------------------------------------- local machine
+def machine():
+    cores = os.cpu_count() or 1
+    mem_mb = 0
+    try:
+        for ln in open("/proc/meminfo"):
+            if ln.startswith("MemTotal:"):
+                mem_mb = int(ln.split()[1]) // 1024
+    except OSError:
+        pass
+    gpus = 0
+    if shutil.which("nvidia-smi"):
+        try:
+            gpus = len([x for x in subprocess.check_output(["nvidia-smi", "-L"], text=True,
+                                                            stderr=subprocess.DEVNULL).splitlines() if x.strip()])
+        except (subprocess.CalledProcessError, OSError):
+            gpus = 0
+    return cores, mem_mb, gpus
+
+
+def local_resources(s):
+    """(cores, memory MB, gpus) IMP3 may use on this machine"""
+    c, m, g = machine()
+    cores = int(s.get("cores") or 0) or c
+    mem = int(float(s.get("mem_gb") or 0) * 1024) or int(m * 0.9)
+    gpu = g if str(s.get("gpu", "auto")).lower() == "auto" else int(s.get("gpu") or 0)
+    return cores, mem, gpu
+
+
+def local_cluster_specs(cores, mem_mb):
+    """IMP3 asks memory per core (cluster_specs); on one machine every rule gets the same memory per core, so that
+    cores x memory per core never exceeds the machine"""
+    per_core = max(int(mem_mb // max(cores, 1)), 1)
+    spec = {"mem_total": per_core * cores, "mem_per_core": per_core, "big_mem_total": per_core * cores,
+            "big_mem_cores": cores, "big_mem_per_core": per_core, "cores_max": cores, "big_mem_cores_max": cores}
+    return {"mem_unit": "M", "main_cluster": dict(spec), "high_mem_cluster": dict(spec)}
+
+
+# ----------------------------------------------------------------------------------------------------------- config
+def sample_config(s, sample, reads):
+    """config of one sample: the template with __SAMPLE__, __IMP_OUT__, __IMP_DB__, __MG_READS__, __MT_READS__
+    replaced, plus the settings of the project (container, tmp root, local cluster_specs)"""
+    txt = open(s["config_template"]).read()
+    rep = {"__SAMPLE__": sample, "__IMP_OUT__": os.path.join(s["project"], "imp"), "__IMP_DB__": s["db_path"],
+           "__MG_READS__": " ".join(reads["mg"]), "__MT_READS__": " ".join(reads["mt"])}
+    for k, v in rep.items():
+        txt = txt.replace(k, v)
+    cfg = yaml.safe_load(txt) or {}
+    if s.get("container"):
+        cfg["container"] = s["container"]
+    if s.get("tmp_root"):
+        cfg["tmp_root"] = s["tmp_root"]
+    if s["executor"] == "local":
+        cores, mem, _ = local_resources(s)
+        cfg["cluster_specs"] = local_cluster_specs(cores, mem)
+    os.makedirs(os.path.join(s["project"], "config"), exist_ok=True)
+    out = os.path.join(s["project"], "config", "imp_config_%s.yaml" % sample)
+    with open(out, "w") as fh:
+        fh.write("# generated by imp3 run from %s on %s - edit the template, not this file\n"
+                 % (s["config_template"], datetime.date.today()))
+        yaml.safe_dump(cfg, fh, sort_keys=False, default_flow_style=False)
+    return out, cfg
+
+
+# ----------------------------------------------------------------------------------------------------------- container
+READY_MARKERS = ["submodules/comebin.ready", "submodules/bakta.ready", "workflow/envs/binny.ready",
+                 "workflow/envs/qm.ready", "workflow/envs/motus.ready", "workflow/envs/genome_updater.ready",
+                 "workflow/envs/bakta.ready"]
+READY_DIRS = ["submodules/comebin", "submodules/bakta"]
+
+
+def container_markers(s):
+    """the setup rules of IMP3 patch the conda environments; in the container this was done when the image was built,
+    so their marker files must exist next to the Snakefile (created only if missing: an existing marker keeps its
+    time stamp, results are not rerun)"""
+    made = []
+    for d in READY_DIRS:
+        p = os.path.join(s["imp3_dir"], d)
+        if not os.path.exists(p):
+            os.makedirs(p, exist_ok=True)
+            made.append(d)
+    for f in READY_MARKERS:
+        p = os.path.join(s["imp3_dir"], f)
+        if not os.path.exists(p):
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            open(p, "a").close()
+            made.append(f)
+    if made:
+        say("container: created setup markers %s" % ", ".join(made))
+
+
+SYSTEM_DIRS = {"/", "/tmp", "/dev/shm", "/home", "/mnt", "/scratch", "/work", "/opt", "/usr", "/var"}
+
+
+def binds(s, cfg, reads):
+    """folders the rules need inside the container"""
+    paths = [s["imp3_dir"], s["project"], s["db_path"]] + list(s.get("bind") or [])
+    for r in reads["mg"] + reads["mt"]:
+        paths += [os.path.dirname(r), os.path.dirname(os.path.realpath(r))]
+
+    def walk(x):
+        if isinstance(x, dict):
+            for v in x.values():
+                yield from walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                yield from walk(v)
+        elif isinstance(x, str) and x.startswith("/") and " " not in x:
+            yield x
+    for p in walk({k: v for k, v in cfg.items() if k not in ("raws", "container", "tmp_dir", "tmp_root")}):
+        p = os.path.expandvars(p)
+        if os.path.exists(p):
+            paths.append(p if os.path.isdir(p) else os.path.dirname(p))
+    if cfg.get("tmp_root") and not str(cfg["tmp_root"]).startswith(("/dev/shm", "/tmp")):
+        paths.append(cfg["tmp_root"])
+    out = []
+    for p in sorted({os.path.normpath(p) for p in paths if p}, key=len):
+        if p in SYSTEM_DIRS or p.split("/")[1] in ("dev", "proc", "sys", "etc", "usr", "bin", "lib", "lib64",
+                                                     "conda-envs", "opt") and p.count("/") <= 2:
+            continue
+        if not any(p == q or p.startswith(q.rstrip("/") + "/") for q in out):
+            out.append(p)
+    return out
+
+
+# ----------------------------------------------------------------------------------------------------------- run
+def snakemake_cmd(s, cfg_file, cfg, reads, extra, dry):
+    cmd = ["snakemake", "--snakefile", os.path.join(s["imp3_dir"], "Snakefile"), "--configfile", cfg_file,
+           "--profile", s["profile"]]
+    if s.get("conda_prefix") and not s.get("container"):
+        cmd += ["--conda-prefix", s["conda_prefix"]]
+    if s.get("container"):
+        args = "--nv " + " ".join("--bind %s" % shlex.quote(b) for b in binds(s, cfg, reads))
+        cmd += ["--use-conda", "--use-singularity", "--singularity-args", args]
+    if s["executor"] == "local":
+        cores, mem, gpu = local_resources(s)
+        cmd += ["--cores", str(cores)]
+        if gpu:
+            cmd += ["--resources", "gpu=%d" % gpu]
+    if s.get("snakemake_args"):
+        cmd += shlex.split(s["snakemake_args"])
+    cmd += list(extra or [])
+    if dry:
+        cmd += ["--dry-run", "--quiet"]
+    return cmd
+
+
+def shell_line(s, cmd):
+    pre = " && ".join(s.get("pre_commands") or [])
+    line = " ".join(shlex.quote(c) for c in cmd)
+    return (pre + " && " + line) if pre else line
+
+
+def next_log(s, sample):
+    d = os.path.join(s["project"], "imp_run_logs")
+    os.makedirs(d, exist_ok=True)
+    n = 1
+    while os.path.exists(os.path.join(d, "imp_%s_%03d.log" % (sample, n))):
+        n += 1
+    return os.path.join(d, "imp_%s_%03d.log" % (sample, n))
+
+
+def run_sample(s, sample, reads, extra, dry):
+    cfg_file, cfg = sample_config(s, sample, reads)
+    if s.get("container"):
+        container_markers(s)
+    cmd = snakemake_cmd(s, cfg_file, cfg, reads, extra, dry)
+    if dry:
+        print("# %s\n%s" % (sample, shell_line(s, cmd)))
+        r = subprocess.run(["bash", "-c", shell_line(s, cmd)], cwd=s["project"])
+        return sample, r.returncode
+    log = next_log(s, sample)
+    unlock = [c for c in cmd if c not in ("--dry-run", "--quiet")] + ["--unlock", "--quiet"]
+    subprocess.run(["bash", "-c", shell_line(s, unlock)], cwd=s["project"], stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL)
+    with open(log, "w") as fh:
+        fh.write("== %s: IMP3 for sample %s\n== %s\n" % (datetime.datetime.now().isoformat(timespec="seconds"),
+                                                        sample, shell_line(s, cmd)))
+        fh.flush()
+        r = subprocess.run(["bash", "-c", shell_line(s, cmd)], cwd=s["project"], stdout=fh,
+                           stderr=subprocess.STDOUT)
+    say("%s finished with exit code %d (log %s)" % (sample, r.returncode, os.path.relpath(log, s["project"])))
+    return sample, r.returncode
+
+
+def submit_master(s, sample, extra):
+    """one Slurm job per sample that runs its Snakemake master (instead of a tmux session on the login node)"""
+    logdir = os.path.join(s["project"], "slurm_logs")
+    os.makedirs(logdir, exist_ok=True)
+    me = [sys.executable, os.path.realpath(__file__), "run", "-p", s["project"], "--samples", sample,
+          "--foreground"] + (["--"] + list(extra) if extra else [])
+    wrap = shell_line(dict(s, pre_commands=[]), me)
+    cmd = ["sbatch", "--job-name", "imp3_%s" % sample, "--output", os.path.join(logdir, "imp3_master_%s_%%j.out" % sample)]
+    cmd += shlex.split(s.get("submit_master") or "") + ["--wrap", wrap]
+    out = subprocess.run(cmd, cwd=s["project"], capture_output=True, text=True)
+    say("%s: %s" % (sample, (out.stdout or out.stderr).strip()))
+    return out.returncode
+
+
+def cmd_run(a):
+    s = load_settings(a.project)
+    samples = discover_samples(s)
+    if a.samples:
+        want = [x for x in re.split(r"[,\s]+", a.samples) if x]
+        miss = [x for x in want if x not in samples]
+        if miss:
+            sys.exit("imp3: samples not found: %s" % ", ".join(miss))
+        samples = {k: samples[k] for k in want}
+    todo = {k: v for k, v in samples.items()
+            if a.force or not os.path.exists(os.path.join(s["project"], "imp", k, DONE))}
+    empty = [k for k, v in todo.items() if not (v["mg"] or v["mt"])]
+    for k in empty:
+        say("%s: no read files found - skipped" % k)
+        todo.pop(k)
+    say("%d samples, %d to run: %s" % (len(samples), len(todo), " ".join(todo) or "-"))
+    if not todo:
+        return 0
+    extra = a.extra
+    if a.submit and not a.dry_run:
+        if not shutil.which("sbatch"):
+            sys.exit("imp3: --submit needs sbatch (Slurm)")
+        return max(submit_master(s, k, extra) for k in todo)
+    n = 1 if a.foreground or a.dry_run else max(1, min(int(a.jobs or s["parallel_samples"]), len(todo)))
+    if s["executor"] == "local" and not a.jobs:
+        n = 1                      # one machine: one sample after the other, each with all cores
+    codes = []
+    with cf.ThreadPoolExecutor(max_workers=n) as ex:
+        for _, rc in ex.map(lambda kv: run_sample(s, kv[0], kv[1], extra, a.dry_run), todo.items()):
+            codes.append(rc)
+    return max(codes)
+
+
+# ----------------------------------------------------------------------------------------------------------- status
+def cmd_status(a):
+    s = load_settings(a.project)
+    samples = discover_samples(s)
+    rows = []
+    for k in samples:
+        out = os.path.join(s["project"], "imp", k)
+        logs = sorted(glob.glob(os.path.join(s["project"], "imp_run_logs", "imp_%s_*.log" % k)))
+        steps = sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(out, "status", "*.done")))
+        locked = bool(glob.glob(os.path.join(out, ".snakemake", "locks", "*")))
+        if os.path.exists(os.path.join(out, DONE)):
+            st = "done"
+        elif locked:
+            st = "running"
+        elif logs:
+            tail = open(logs[-1], errors="replace").read()[-20000:]
+            st = "failed" if re.search(r"Exiting because a job execution failed|Error in rule|"
+                                       r"WorkflowError|MissingInputException", tail) else "stopped"
+        else:
+            st = "not started"
+        rows.append((k, st, ",".join(x for x in steps if x not in ("all",)) or "-",
+                     os.path.relpath(logs[-1], s["project"]) if logs else "-"))
+    w = max([len(r[0]) for r in rows] + [6])
+    print("%-*s  %-11s  %-60s  %s" % (w, "sample", "status", "steps done", "last log"))
+    for r in rows:
+        print("%-*s  %-11s  %-60s  %s" % (w, r[0], r[1], r[2][:60], r[3]))
+    from collections import Counter
+    c = Counter(r[1] for r in rows)
+    print("\n" + ", ".join("%s %d" % (k, v) for k, v in sorted(c.items())))
+    return 0
+
+
+# ----------------------------------------------------------------------------------------------------------- init
+def fill(text, values):
+    for k, v in values.items():
+        text = text.replace("__%s__" % k, str(v))
+    return text
+
+
+def cmd_init(a):
+    p = os.path.abspath(a.project)
+    os.makedirs(p, exist_ok=True)
+    if os.path.exists(os.path.join(p, SETTINGS)) and not a.force:
+        sys.exit("imp3: %s exists (use --force to overwrite the settings and profile)" % os.path.join(p, SETTINGS))
+    for d in ("samples", "config", "imp", "imp_run_logs", "slurm_logs"):
+        os.makedirs(os.path.join(p, d), exist_ok=True)
+    # sample config template
+    tmpl = os.path.join(p, "sample_config.yaml")
+    src = a.config_template or os.path.join(IMP3_DIR, "profiles", "sample_config.template.yaml")
+    if not os.path.exists(tmpl) or a.force:
+        shutil.copy(src, tmpl)
+    # profile
+    prof = os.path.join(p, "profile")
+    os.makedirs(prof, exist_ok=True)
+    vals = {"IMP3_DIR": IMP3_DIR, "CONDA_PREFIX": a.conda_prefix or os.path.join(IMP3_DIR, "conda"),
+            "PROJECT": p, "CORES": a.cores or 128, "JOBS": a.jobs or 50}
+    if a.executor == "slurm":
+        site = os.path.join(TEMPLATES, "slurm", "cluster.%s.yaml" % a.site)
+        if not os.path.exists(site):
+            sys.exit("imp3: unknown site %s (profiles/slurm/cluster.<site>.yaml)" % a.site)
+        shutil.copy(site, os.path.join(prof, "cluster.yaml"))
+        vals["CLUSTER_CONFIG"] = os.path.join(prof, "cluster.yaml")
+        txt = open(os.path.join(TEMPLATES, "slurm", "config.yaml")).read()
+    else:
+        txt = open(os.path.join(TEMPLATES, "local", "config.yaml")).read()
+    with open(os.path.join(prof, "config.yaml"), "w") as fh:
+        fh.write(fill(txt, vals))
+    st = {
+        "imp3_dir": IMP3_DIR,
+        "db_path": a.db or "/path/to/imp3_databases",
+        "reads": "samples",
+        "sample_sheet": "",
+        "config_template": "sample_config.yaml",
+        "executor": a.executor,
+        "profile": "profile",
+        "conda_prefix": "" if a.container else vals["CONDA_PREFIX"],
+        "container": a.container or "",
+        "bind": [],
+        "parallel_samples": 10 if a.executor == "slurm" else 1,
+        "submit_master": DEFAULTS["submit_master"],
+        "pre_commands": ["module load tools/Singularity"] if (a.container and a.site == "ulhpc") else [],
+        "tmp_root": "" if a.executor == "slurm" else "/tmp",
+        "gpu": "auto", "cores": 0, "mem_gb": 0,
+        "snakemake_args": "",
+    }
+    with open(os.path.join(p, SETTINGS), "w") as fh:
+        fh.write(SETTINGS_HEADER)
+        yaml.safe_dump(st, fh, sort_keys=False, default_flow_style=False)
+    say("project %s: edit imp3.yaml (db_path, reads) and sample_config.yaml, put the reads in samples/<sample>/ "
+        "(file names with mg / mt), then: imp3 run -p %s --dry-run" % (p, a.project))
+    return 0
+
+
+SETTINGS_HEADER = """# IMP3 project settings (imp3 run / imp3 status). Paths are absolute or relative to this folder.
+#   imp3_dir         IMP3 checkout (Snakefile)
+#   db_path          IMP3 databases (__IMP_DB__ in the sample config template)
+#   reads            one sub-folder per sample with its read files (names containing mg / mt, R1 before R2)
+#   sample_sheet     instead of reads: TSV with sample, mg_r1, mg_r2, mt_r1, mt_r2
+#   config_template  IMP3 config with __SAMPLE__ __IMP_OUT__ __IMP_DB__ __MG_READS__ __MT_READS__
+#   executor         slurm (every rule a job) | local (this machine)
+#   conda_prefix     conda environments of IMP3 (native runs)
+#   container        IMP3 .sif: all rules in the container (needs apptainer/singularity); conda_prefix unused
+#   bind             extra folders the container must see
+#   parallel_samples Snakemake masters at the same time (local: 1, one sample after the other)
+#   submit_master    sbatch options when the masters run as Slurm jobs (imp3 run --submit)
+#   pre_commands     shell lines before Snakemake, e.g. module load tools/Singularity
+#   tmp_root         root of IMP3's temporary folder ("" = /dev/shm)
+#   gpu, cores, mem_gb   local machine: GPUs (auto), cores and memory IMP3 may use (0 = all / 90 %)
+#   snakemake_args   extra Snakemake options for every run
+"""
+
+
+# ----------------------------------------------------------------------------------------------------------- containerize
+def native_hash(prefix, content, deploy=None):
+    """Snakemake 7 hash of a conda environment created on the host (snakemake/deployment/conda.py, Env.hash)"""
+    m = hashlib.md5()
+    m.update(os.path.realpath(prefix).encode())
+    if deploy:
+        m.update(deploy)
+    m.update(content)
+    return m.hexdigest()
+
+
+def content_hash(content, deploy=None):
+    """Snakemake 7 hash of a conda environment in a containerized image (Env.content_hash -> /conda-envs/<hash>)"""
+    m = hashlib.md5()
+    m.update(content)
+    if deploy:
+        m.update(deploy)
+    return m.hexdigest()
+
+
+def env_files(imp3_dir):
+    """environment files of IMP3 and of the Snakemake modules it uses (binny in submodules/binny)"""
+    out = []
+    files = sorted(glob.glob(os.path.join(imp3_dir, "workflow", "envs", "*.yaml")))
+    files += sorted(f for f in glob.glob(os.path.join(imp3_dir, "submodules", "**", "envs", "*.y*ml"), recursive=True)
+                    if "/.snakemake/" not in f and "/test" not in f)
+    for f in files:
+        dep = os.path.splitext(f)[0] + ".post-deploy.sh"
+        out.append((f, open(f, "rb").read(), open(dep, "rb").read() if os.path.exists(dep) else None))
+    return out
+
+
+def cmd_containerize(a):
+    """Apptainer definition with the conda environments of an existing IMP3 installation (as tested on the cluster),
+    packed with conda-pack and placed where Snakemake looks for them in a containerized image"""
+    prefix = os.path.realpath(a.envs)
+    out = os.path.abspath(a.output)
+    os.makedirs(os.path.join(out, "envs"), exist_ok=True)
+    rows, missing = [], []
+    for f, content, deploy in env_files(a.imp3_dir):
+        h = native_hash(prefix, content, deploy)
+        cand = [os.path.join(prefix, x) for x in (h, h[:8], h + "_")]
+        found = next((c for c in cand if os.path.isdir(c) and os.path.exists(os.path.join(c, "conda-meta"))), None)
+        target = content_hash(content, deploy)
+        if found:
+            rows.append((os.path.relpath(f, a.imp3_dir), found, target))
+        else:
+            missing.append(os.path.relpath(f, a.imp3_dir))
+    if not rows:
+        sys.exit("imp3: no IMP3 environment of %s found in %s (wrong prefix or IMP3 checkout?)" % (a.imp3_dir, prefix))
+    with open(os.path.join(out, "envs.tsv"), "w") as fh:
+        fh.write("env_file\tsource_env\tcontainer_env\n")
+        for r in rows:
+            fh.write("%s\t%s\t/conda-envs/%s\n" % r)
+    # pack script (conda-pack rewrites the prefix to /conda-envs/<hash>; no conda-unpack needed)
+    pack = ["#!/bin/bash", "# packs the IMP3 conda environments for the container (needs conda-pack)", "set -euo pipefail",
+            'cd "$(dirname "$0")"', "command -v conda-pack >/dev/null || { echo 'conda-pack not found: "
+            "micromamba install -c conda-forge conda-pack' >&2; exit 1; }"]
+    for name, src, target in rows:
+        pack.append('[ -s envs/%s.tar ] || conda-pack -p %s -o envs/%s.tar --dest-prefix /conda-envs/%s '
+                    '--format tar --ignore-missing-files --ignore-editable-packages -j -1   # %s'
+                    % (target, shlex.quote(src), target, target, name))
+        pack.append("cp %s envs/%s.environment.yaml" % (shlex.quote(os.path.join(a.imp3_dir, name)), target))
+    with open(os.path.join(out, "pack_envs.sh"), "w") as fh:
+        fh.write("\n".join(pack) + "\n")
+    os.chmod(os.path.join(out, "pack_envs.sh"), 0o755)
+    version = open(os.path.join(a.imp3_dir, "VERSION")).read().strip() if os.path.exists(
+        os.path.join(a.imp3_dir, "VERSION")) else "?"
+    envhash = hashlib.sha256(b"".join(c for _, c, _ in env_files(a.imp3_dir))).hexdigest()
+    with open(os.path.join(out, "imp3.def"), "w") as fh:
+        fh.write(DEF_TEMPLATE.format(base=a.base, version=version, envhash=envhash,
+                                     n=len(rows), date=datetime.date.today()))
+    with open(os.path.join(out, "build.sh"), "w") as fh:
+        fh.write(BUILD_SH.replace("__IMP3_DIR__", shlex.quote(a.imp3_dir)))
+    os.chmod(os.path.join(out, "build.sh"), 0o755)
+    say("%d environments -> %s (envs.tsv); not installed under the prefix: %s"
+        % (len(rows), out, ", ".join(missing) or "none"))
+    say("next: cd %s && ./build.sh   (packs the environments, then apptainer build imp3.sif imp3.def)" % out)
+    return 0
+
+
+DEF_TEMPLATE = r"""Bootstrap: docker
+From: {base}
+
+# IMP3 container: every conda environment of IMP3, as installed and tested on the cluster ({n} environments),
+# at /conda-envs/<hash> where Snakemake 7 looks for them in a containerized image. Databases, reads, the IMP3
+# checkout and the project are bound at run time (imp3 run does that). Generated by 'imp3 containerize' on {date}.
+
+%labels
+    org.opencontainers.image.title IMP3
+    org.opencontainers.image.version {version}
+    org.opencontainers.image.source https://github.com/genomeanalysislcsb/IMP3
+    io.github.snakemake.containerized true
+    io.github.snakemake.conda_env_hash {envhash}
+
+%files
+    envs /opt/imp3-envs
+
+%post
+    set -e
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update && apt-get install -y --no-install-recommends rsync pigz bc file unzip wget curl git procps \
+        less ca-certificates && rm -rf /var/lib/apt/lists/*
+    # tools of the rules without their own environment (shell one-liners, python helpers)
+    /opt/conda/bin/mamba install -y -n base -c conda-forge -c bioconda python=3.11 pandas numpy pyyaml biopython \
+        samtools seqkit && /opt/conda/bin/mamba clean -a -y
+    mkdir -p /conda-envs
+    for t in /opt/imp3-envs/*.tar; do
+        h=$(basename "$t" .tar)
+        mkdir -p /conda-envs/$h
+        tar -xf "$t" -C /conda-envs/$h
+        cp /opt/imp3-envs/$h.environment.yaml /conda-envs/$h/environment.yaml
+        rm -f "$t"
+    done
+    rm -rf /opt/imp3-envs
+    chmod -R a+rX /conda-envs
+
+%environment
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    export PATH=/opt/conda/bin:$PATH
+
+%test
+    test -d /conda-envs && ls /conda-envs | head
+    /opt/conda/bin/conda --version
+
+%help
+    IMP3 container. Run IMP3 with 'imp3 run' (container: /path/to/imp3.sif in imp3.yaml), or directly:
+    snakemake ... --use-conda --use-singularity --singularity-args "--nv --bind <db>,<reads>,<imp3>,<project>"
+    with 'container: /path/to/imp3.sif' in the IMP3 config.
+"""
+
+BUILD_SH = r"""#!/bin/bash
+# 1) pack the conda environments, 2) build the image. Needs conda-pack, and apptainer (or singularity) with
+# --fakeroot or root. Space: about twice the size of the environments in this folder and in APPTAINER_TMPDIR.
+set -euo pipefail
+cd "$(dirname "$0")"
+./pack_envs.sh
+APP=$(command -v apptainer || command -v singularity)
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$PWD/tmp}; mkdir -p "$APPTAINER_TMPDIR"
+$APP build ${BUILD_ARGS:---fakeroot} imp3.sif imp3.def
+# third-party code IMP3 reads on the host (binny module, its database, ESOM, forks): ship with the image
+if [ -d __IMP3_DIR__/submodules ]; then
+    tar -czf imp3_submodules.tar.gz -C __IMP3_DIR__ submodules
+    echo "other sites: tar -xzf imp3_submodules.tar.gz -C /path/to/IMP3"
+fi
+echo "built $(pwd)/imp3.sif"
+"""
+
+
+# ----------------------------------------------------------------------------------------------------------- main
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="imp3", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd")
+    p = sub.add_parser("init", help="create a project folder (settings, sample config template, Snakemake profile)")
+    p.add_argument("project")
+    p.add_argument("--executor", choices=("slurm", "local"), default="slurm")
+    p.add_argument("--site", default="generic", help="Slurm cluster config: generic | ulhpc (profiles/slurm/cluster.<site>.yaml)")
+    p.add_argument("--container", default="", help="IMP3 .sif: run every rule in the container")
+    p.add_argument("--conda-prefix", default="", help="conda environments of IMP3 (native runs)  [IMP3/conda]")
+    p.add_argument("--db", default="", help="IMP3 database folder")
+    p.add_argument("--config-template", default="", help="your IMP3 config template (with __SAMPLE__ etc.)")
+    p.add_argument("--cores", type=int, default=0, help="slurm: total cores of all jobs of one sample [128]")
+    p.add_argument("--jobs", type=int, default=0, help="slurm: jobs of one sample at the same time [50]")
+    p.add_argument("--force", action="store_true")
+    p = sub.add_parser("run", help="run IMP3 for the samples that are not finished")
+    p.add_argument("-p", "--project", default=".")
+    p.add_argument("--samples", default="", help="only these samples (comma-separated)")
+    p.add_argument("-j", "--jobs", type=int, default=0, help="samples at the same time [parallel_samples]")
+    p.add_argument("--submit", action="store_true", help="submit every sample's master as a Slurm job (no tmux)")
+    p.add_argument("--foreground", action="store_true", help=argparse.SUPPRESS)
+    p.add_argument("-n", "--dry-run", action="store_true", help="show what would run")
+    p.add_argument("--force", action="store_true", help="also samples with status/all.done")
+    p.add_argument("extra", nargs=argparse.REMAINDER, help="after --: extra Snakemake options, e.g. -- --until assembly")
+    p = sub.add_parser("status", help="state of every sample")
+    p.add_argument("-p", "--project", default=".")
+    p = sub.add_parser("containerize", help="Apptainer definition from the conda environments of an installation")
+    p.add_argument("--envs", required=True, help="conda prefix of the IMP3 environments (as in the Snakemake profile)")
+    p.add_argument("--imp3-dir", default=IMP3_DIR, help="IMP3 checkout the environments belong to")
+    p.add_argument("-o", "--output", default="imp3_container", help="build folder")
+    p.add_argument("--base", default="condaforge/miniforge3:24.11.3-0", help="base image (docker)")
+    a = ap.parse_args(argv)
+    if getattr(a, "extra", None) and a.extra[:1] == ["--"]:
+        a.extra = a.extra[1:]
+    if not a.cmd:
+        ap.print_help()
+        return 0
+    return {"init": cmd_init, "run": cmd_run, "status": cmd_status, "containerize": cmd_containerize}[a.cmd](a)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

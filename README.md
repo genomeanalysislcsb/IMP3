@@ -12,7 +12,8 @@ into MAGs (CheckM2, GTDB-Tk) and per-sample statistics. Runs on metagenomes or m
   [Databases](https://genomeanalysislcsb.github.io/IMP3/databases/)
 - [Inputs](https://genomeanalysislcsb.github.io/IMP3/inputs/) ·
   [Configuration](https://genomeanalysislcsb.github.io/IMP3/configuration/) ·
-  [Running](https://genomeanalysislcsb.github.io/IMP3/running/)
+  [Running](https://genomeanalysislcsb.github.io/IMP3/running/) ·
+  [Many samples, any machine](https://genomeanalysislcsb.github.io/IMP3/portable/)
 - [Workflow steps](https://genomeanalysislcsb.github.io/IMP3/steps/overview/) ·
   [Output files](https://genomeanalysislcsb.github.io/IMP3/outputs/) ·
   [FAQ](https://genomeanalysislcsb.github.io/IMP3/faq/)
@@ -23,6 +24,16 @@ conda env create -n snakemake_env -f requirements.yaml          # Snakemake 7.32
 conda activate snakemake_env
 snakemake -s install/Snakefile --configfile config/config.install.yaml --use-conda --conda-prefix conda --cores 8   # tools + databases
 snakemake --profile cluster_profile/ --configfile config/my_sample.yaml                        # one sample
+```
+
+Many samples, on a Slurm cluster or a single machine, with the conda environments or the IMP3
+Apptainer/Singularity container ([details](https://genomeanalysislcsb.github.io/IMP3/portable/)):
+
+```bash
+./imp3 init my_project --executor slurm --site generic --db /path/to/imp3_db   # or --executor local, --container imp3.sif
+cd my_project                       # reads in samples/<sample>/ (file names with mg / mt)
+/path/to/IMP3/imp3 run --dry-run && /path/to/IMP3/imp3 run   # --submit: masters as Slurm jobs instead of tmux
+/path/to/IMP3/imp3 status
 ```
 
 > **Snakemake 7 note:** IMP3 needs a patched `unshadow_output` in Snakemake's `dag.py` for the shadow directive;

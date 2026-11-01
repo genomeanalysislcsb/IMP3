@@ -31,6 +31,7 @@ nav:
       - Inputs: inputs.md
       - Configuration: configuration.md
       - Running: running.md
+      - Many samples, any machine (imp3, container): portable.md
   - Workflow steps:
       - Overview: steps/overview.md
       - Preprocessing: steps/preprocessing.md

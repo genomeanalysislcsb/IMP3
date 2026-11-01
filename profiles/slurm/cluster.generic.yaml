@@ -1,0 +1,31 @@
+# Slurm submission per IMP3 rule (one cluster). Adapt partitions / QOS / account to your cluster.
+# Every key is pasted into the sbatch call; leave a key "" if your cluster does not need it.
+__default__:
+  call: "sbatch"
+  nodes: "--nodes 1-1"
+  ntasks: "--ntasks 1"
+  clusters: ""                       # e.g. "--clusters mycluster" with Slurm multi-cluster
+  partition: "--partition batch"
+  qos: ""                            # e.g. "--qos normal"
+  account: ""                        # e.g. "--account myproject"
+  mem_per_cpu: "--mem-per-cpu "      # IMP3 asks memory per core (MB)
+  runtime: "--time "
+  threads: "--cpus-per-task "
+  stdout: "--output logs_cluster_jobs/IMP3.{rule}.%j.stdout"
+
+# rules with a large memory need (Kraken2 on a large database): a large-memory partition
+kraken_contigs:
+  partition: "--partition bigmem"
+kraken_reads:
+  partition: "--partition bigmem"
+kraken_reads_se:
+  partition: "--partition bigmem"
+
+# COMEBin trains on a GPU
+comebin_train:
+  partition: "--partition gpu"
+  threads: "--gres gpu:1 --cpus-per-task "
+
+# long rules, if your default QOS is too short
+# megahit_assembly_from_preprocessing:
+#   qos: "--qos long"

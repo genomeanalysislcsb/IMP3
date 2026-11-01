@@ -1,0 +1,73 @@
+# Slurm submission per IMP3 rule on the ULHPC (aion + iris, Slurm multi-cluster): bigmem rules on iris bigmem,
+# COMEBin training on an iris GPU (volta). Copied from config/slurm_simple_ul_hybrid_cluster.config.yaml.
+__default__:
+  nodes: "--nodes 1-1"
+  ntasks: "--ntasks 1"
+  clusters: "--clusters 'aion'"
+  partition: "--partition batch"
+  qos: "--qos normal"
+  account: ""
+  call: "sbatch"
+  mem_per_cpu: "--mem-per-cpu "
+  runtime: "--time "
+  threads: "--cpus-per-task "
+  stdout: "--output logs_cluster_jobs/IMP3.{rule}.%j.stdout"
+
+kraken_contigs:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+
+kraken_reads:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+
+kraken_reads_se:
+  clusters: "--clusters 'iris'"
+  partition: "--partition bigmem"
+
+# If bakta times out
+# annotate:
+#   qos: "--qos long"
+
+# Only if aion oom
+# mantis_annot:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
+
+# call_gene_depth:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
+
+# call_contig_depth:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
+
+# filter_rrna_pe:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
+#   qos: "--qos long"
+
+# filter_rrna_se:
+#   clusters: "--clusters 'iris'"
+#   partition: "--partition bigmem"
+
+# COMEBin gpu configuration
+comebin_train:
+  clusters: "--clusters 'iris'"
+  partition: "--partition gpu"
+  threads: "--constraint volta --gpus 1 --cpus-per-task "
+
+# comebin_bin:
+#   qos: "--qos long"
+
+# megahit_assembly_from_preprocessing:
+# qos: "--qos long"
+
+# megahit_assembly_from_unmapped:
+#   qos: "--qos long"
+
+# megahit_hybrid_assembly_1:
+#   qos: "--qos long"
+
+# megahit_hybrid_assembly_2:
+#   qos: "--qos long"

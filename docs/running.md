@@ -1,5 +1,9 @@
 # Running IMP3
 
+!!! tip "Many samples"
+    For many samples, on a Slurm cluster or one machine, with or without the IMP3 container, use the
+    [`imp3` command](portable.md). This page shows the underlying Snakemake calls.
+
 ## Locally or in one job
 
 ```bash

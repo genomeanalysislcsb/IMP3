@@ -9,10 +9,13 @@ RETRY_DELAY = 10  # Delay (in seconds) between retries
 
 def get_sacct_output(jobid, cluster):
     # Verify clujster is a single string with no spaces and jobid is a number
-    if not cluster.isalnum() or not jobid.isdigit():
+    if (cluster and not cluster.replace("-", "").replace("_", "").isalnum()) or not jobid.isdigit():
         print(f"WARNING: Unexpected format in job info: {jobid} {cluster}", file=sys.stderr)
 
-    cmd_sacct = ["sacct", "--allclusters", "--clusters", cluster, "--jobs", jobid, "--format", "State", "--noheader"]
+    # with Slurm multi-cluster the job id is only unique per cluster; on a single cluster there is no cluster part
+    cmd_sacct = ["sacct", "--jobs", jobid, "--format", "State", "--noheader"]
+    if cluster:
+        cmd_sacct[1:1] = ["--clusters", cluster]
     try:
         output_sacct = subprocess.check_output(cmd_sacct).decode('utf-8').strip()
     except subprocess.CalledProcessError:

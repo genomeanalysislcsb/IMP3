@@ -222,8 +222,10 @@ basename = os.path.basename(base_tmpdir)
 unique_id = str(uuid.uuid4())[:8]
 unique_tmpdir = f"{basename}_{unique_id}"
 
-# Create full path in /dev/shm
-TMPDIR = os.path.join('/dev/shm', unique_tmpdir)
+# Create full path below the tmp root: /dev/shm (default, RAM), or `tmp_root` in the config / $IMP3_TMP_ROOT for
+# machines with little shared memory (workstations, containers)
+TMP_ROOT = os.path.expandvars(str(config.get('tmp_root') or os.environ.get('IMP3_TMP_ROOT') or '/dev/shm'))
+TMPDIR = os.path.join(TMP_ROOT, unique_tmpdir)
 
 # Create the temporary directory if it doesn't exist
 os.makedirs(TMPDIR, exist_ok=True)

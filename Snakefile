@@ -11,6 +11,12 @@ include:
 include:
     "workflow/rules/ini/config.smk"
 
+# Optional: run every rule in the IMP3 container (Apptainer/Singularity image with all conda environments, see
+# docs/portable.md). Set `container: /path/to/imp3.sif` in the config and run with --use-conda --use-singularity.
+if config.get('container'):
+    containerized:
+        config['container']
+
 # set working directory and dump output
 workdir:
     OUTPUTDIR

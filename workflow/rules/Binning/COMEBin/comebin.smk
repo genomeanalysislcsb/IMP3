@@ -83,7 +83,10 @@ rule comebin_train:
     resources:
         runtime = set_runtime_cb,
         # TODO: Make GPU node resource settings in config
-        mem_mb = 27000
+        mem_mb = 27000,
+        # one GPU: limits GPU jobs with `--resources gpu=N` on a single machine; on Slurm the GPU partition comes from
+        # the cluster config (comebin_train)
+        gpu = 1
     retries:
         3
     conda:
