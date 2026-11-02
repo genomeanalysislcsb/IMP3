@@ -145,16 +145,19 @@ The image is built from the conda environments of an existing installation, e.g.
 contains exactly the tested environments:
 
 ```bash
-micromamba install -n imp_sm_classic -c conda-forge conda-pack     # once, in the Snakemake environment
 /path/to/IMP3/imp3 containerize --envs /path/to/imp3_envs -o imp3_container
 cd imp3_container && ./build.sh
 ```
 
 `imp3 containerize` finds the environment of every `workflow/envs/*.yaml` (and of the binny module in
-`submodules/binny`) under the prefix (Snakemake's hash of the prefix and the environment file), lists them in `envs.tsv` and writes `pack_envs.sh` (conda-pack, with the prefix
-rewritten to `/conda-envs/<hash>`), `imp3.def` (miniforge base, the packed environments, tools for the rules without
-an environment) and `build.sh`. Environments that are not installed (e.g. binners never used) are reported and left
-out; a rule that needs one fails in the container.
+`submodules/binny`) under the prefix (Snakemake's hash of the prefix and the environment file), lists them in
+`envs.tsv` and writes `pack_envs.sh`, `imp3.def` (miniforge base, the environments, tools for the rules without an
+environment) and `build.sh`. The environments are copied unchanged (tar) to their original path in the image, e.g.
+`/mnt/.../envs/<hash>`, and linked from `/conda-envs/<hash>`: nothing inside them has to be rewritten, so they are
+exactly the tested ones (relocating them with conda-pack needs the original package caches, which older
+installations often no longer have). At run time, do not bind a host folder over that original path at another
+site; on the cluster itself the same environments are there, so it does no harm. Environments that are not
+installed (e.g. binners never used) are reported and left out; a rule that needs one fails in the container.
 
 `build.sh` needs apptainer with `--fakeroot` (or root; `BUILD_ARGS=` to change), and free space of about twice the
 environments in the build folder and `APPTAINER_TMPDIR`. The image is large (tens of GB); build it once and copy

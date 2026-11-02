@@ -71,5 +71,5 @@ P
 "$I" containerize --envs "$P" -o "$T/c" >/dev/null 2>&1
 H=$(python3 -c "import hashlib;print(hashlib.md5(open('$T/imp3/workflow/envs/IMP_mapping.yaml','rb').read()).hexdigest())")
 grep -q "IMP_mapping.yaml.*/conda-envs/$H" "$T/c/envs.tsv" && bash -n "$T/c/pack_envs.sh" && bash -n "$T/c/build.sh" \
-    && grep -q "dest-prefix /conda-envs/$H" "$T/c/pack_envs.sh" && ok "containerize" || fail "containerize"
+    && grep -q "tar -C / -cf envs/$H.tar.part" "$T/c/pack_envs.sh" && ok "containerize" || fail "containerize"
 echo "all tests passed"
