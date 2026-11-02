@@ -95,7 +95,10 @@ if "mantis" in config:
         "rules/mantis.smk"
     TARGETS.append("mantis/setup.done")
 
-# TODO: Grab KrakenTools
+# Kraken2 report tools (combine_kreports.py)
+include:
+    "rules/krakentools.smk"
+TARGETS.append(os.path.join(SUBMOD_DIR, "KrakenTools", "combine_kreports.py"))
 
 ##################################################
 # RULES

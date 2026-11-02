@@ -2,8 +2,8 @@
 
 IMP3 needs Linux, conda (or mamba / micromamba), Snakemake 7 and, depending on the databases, up to ~1 TB of disk
 space and ~450 GB of memory for the largest Kraken2 databases. All tools run in conda environments that Snakemake
-creates; third-party tools that are not on conda (binny, the Bakta fork, COMEBin, CD-HIT, ESOM, KrakenTools) are
-fetched by the install workflow into `submodules/`.
+creates; third-party code that is not on conda goes to `submodules/` (not part of the repository): see
+[Third-party code](#third-party-code-submodules).
 
 Run all commands from the IMP3 folder.
 
@@ -84,6 +84,42 @@ The first run also builds the remaining conda environments. On a Slurm cluster u
 
 Copy `config/config.imp.yaml`, set the [inputs](inputs.md) and the [configuration](configuration.md), and
 [run](running.md) it.
+
+## Third-party code (`submodules/`)
+
+Code that is not on conda lives in `submodules/` of the IMP3 folder. It is not part of the repository (third-party
+licences); it is fetched either by the install workflow (step 3) or by setup rules on the first run, which need
+internet access on the node where they run.
+
+| folder | content | installed by | needed for |
+|---|---|---|---|
+| `binny/` | binny (fork, branch `imp`), with its marker database | install workflow (`binny_setup`) | binner `binny` |
+| `ESOM/` | ESOM wrapper (tetramerFreqs/Binning) | install workflow (`abawaca_setup`) | binner `abawaca` |
+| `cdhit/` | CD-HIT, compiled for long sequences | install workflow (`cdhit_compile`) | assembly merging |
+| `KrakenTools/` | `combine_kreports.py` | install workflow (`krakentools_download`) | Kraken2 reports |
+| `comebin/`, `comebin.ready` | COMEBin fork (improved clustering); patches the COMEBin environment | first run (`setup_comebin_scripts_from_fork`) | binner `COMEBin` |
+| `bakta/`, `bakta.ready` | Bakta fork (dynamic database fetch); patches the Bakta environment | first run (`setup_bakta_functions_from_fork`) | annotation |
+
+The first run also leaves marker files in `workflow/envs/` (`qm.ready`, `motus.ready`, `genome_updater.ready`, ...):
+setup steps that patched an environment or downloaded into it (quickmerge wrapper, mOTUs database). Delete a marker
+to redo its step.
+
+Check an installation:
+
+```bash
+ls submodules/   # binny  cdhit  ESOM  KrakenTools  (after the first run also: bakta  comebin  *.ready)
+```
+
+A second IMP3 checkout of the same version (e.g. a new clone next to a working installation) can reuse all of it:
+
+```bash
+cp -a /path/to/old/IMP3/submodules /path/to/new/IMP3/
+cp -n /path/to/old/IMP3/workflow/envs/*.ready /path/to/new/IMP3/workflow/envs/
+```
+
+The conda environments are reused as well if the new checkout uses the same `--conda-prefix` and its
+`workflow/envs/*.yaml` are unchanged. With the [IMP3 container](portable.md#the-imp3-container), another site gets
+`submodules/` as `imp3_submodules.tar.gz` next to the image.
 
 ## Snakemake 7 shadow patch
 

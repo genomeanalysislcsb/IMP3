@@ -77,3 +77,8 @@ mantis:
     nog_weight: 0.8
     pfam_weight: 0.9
     uniprot_ec_weight: 0.9
+
+# KrakenTools (combine_kreports.py), cloned into submodules/KrakenTools; ref: tag or commit ("" = latest)
+krakentools:
+  url: "https://github.com/jenniferlu717/KrakenTools.git"
+  ref: ""

@@ -23,6 +23,13 @@ sortmerna:
         $ref: "#/definitions/url_obj"
   gtdbtk:
     $ref: "#/definitions/url_obj"
+  krakentools:
+    type: object
+    properties:
+      url:
+        type: string
+      ref:
+        type: string
   mantis:
     type: object
     properties:
