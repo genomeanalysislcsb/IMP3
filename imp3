@@ -621,8 +621,14 @@ BUILD_SH = r"""#!/bin/bash
 # --fakeroot or root. Space: about twice the size of the environments in this folder and in APPTAINER_TMPDIR.
 set -euo pipefail
 cd "$(dirname "$0")"
+APP=$(command -v apptainer || command -v singularity || true)
+if [ -z "$APP" ]; then
+    echo "build.sh: neither apptainer nor singularity found in PATH (module load it first, e.g. module load tools/Apptainer)" >&2
+    exit 1
+fi
+echo "packing the environments (pack_envs.sh) ..."
 ./pack_envs.sh
-APP=$(command -v apptainer || command -v singularity)
+echo "building imp3.sif with $APP ..."
 export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$PWD/tmp}; mkdir -p "$APPTAINER_TMPDIR"
 $APP build ${BUILD_ARGS:---fakeroot} imp3.sif imp3.def
 # third-party code IMP3 reads on the host (binny module, its database, ESOM, forks): ship with the image
