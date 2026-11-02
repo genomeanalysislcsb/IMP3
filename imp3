@@ -587,9 +587,10 @@ From: {base}
     export DEBIAN_FRONTEND=noninteractive
     apt-get update && apt-get install -y --no-install-recommends rsync pigz bc file unzip wget curl git procps \
         less ca-certificates && rm -rf /var/lib/apt/lists/*
-    # tools of the rules without their own environment (shell one-liners, python helpers)
-    /opt/conda/bin/mamba install -y -n base -c conda-forge -c bioconda python=3.11 pandas numpy pyyaml biopython \
-        samtools seqkit && /opt/conda/bin/mamba clean -a -y
+    # tools of the rules without their own environment (shell one-liners, python helpers), in their own environment:
+    # installing them into base updates libraries that base's mamba / conda need
+    /opt/conda/bin/conda create -y -p /opt/imp3-tools -c conda-forge -c bioconda python=3.11 pandas numpy pyyaml \
+        biopython samtools seqkit && /opt/conda/bin/conda clean -a -y
     mkdir -p /conda-envs
     # environments at their original path (unchanged), /conda-envs/<hash> -> original path
     while IFS="$(printf '\t')" read -r h src; do
@@ -604,7 +605,7 @@ From: {base}
 %environment
     export LC_ALL=C.UTF-8
     export LANG=C.UTF-8
-    export PATH=/opt/conda/bin:$PATH
+    export PATH=/opt/imp3-tools/bin:/opt/conda/bin:$PATH
 
 %test
     test -d /conda-envs && ls /conda-envs | head
