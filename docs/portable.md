@@ -132,6 +132,8 @@ pre_commands: ["module load tools/Singularity"]     # if apptainer / singularity
 - sets `container:` in the sample config (the Snakefile declares it as `containerized:`);
 - binds the IMP3 folder, the project, the databases, the read folders and every existing path of the config
   (Mantis folders, proteomics files), plus `bind:`;
+- keeps these paths as written (only symlinked files are followed): on a site with several clusters, use paths that
+  exist on all of them, e.g. `/work/projects/...` on ULHPC rather than `/mnt/aiongpfs/...` (aion only);
 - adds `--nv`, so COMEBin sees the GPU of a GPU node (a warning on nodes without GPU, harmless);
 - creates the marker files of IMP3's setup rules (`submodules/comebin.ready`, ...) if missing: the setup was done when
   the image was built.

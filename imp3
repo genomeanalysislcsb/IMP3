@@ -23,7 +23,20 @@ import shutil
 import subprocess
 import sys
 
-IMP3_DIR = os.path.dirname(os.path.realpath(__file__))
+
+
+def follow_links(path):
+    """resolve symlinks of the file itself, but keep the folder names as given (e.g. /work/projects on ULHPC, which
+    is /mnt/aiongpfs/projects on aion only): container binds must exist on every cluster the jobs run on"""
+    p = os.path.abspath(path)
+    for _ in range(40):
+        if not os.path.islink(p):
+            break
+        p = os.path.normpath(os.path.join(os.path.dirname(p), os.readlink(p)))
+    return p
+
+
+IMP3_DIR = os.path.dirname(follow_links(__file__))
 TEMPLATES = os.path.join(IMP3_DIR, "profiles")
 SETTINGS = "imp3.yaml"
 DONE = "status/all.done"
@@ -232,7 +245,7 @@ def binds(s, cfg, reads):
     """folders the rules need inside the container"""
     paths = [s["imp3_dir"], s["project"], s["db_path"]] + list(s.get("bind") or [])
     for r in reads["mg"] + reads["mt"]:
-        paths += [os.path.dirname(r), os.path.dirname(os.path.realpath(r))]
+        paths += [os.path.dirname(os.path.abspath(r)), os.path.dirname(follow_links(r))]
 
     def walk(x):
         if isinstance(x, dict):
@@ -323,7 +336,7 @@ def submit_master(s, sample, extra):
     """one Slurm job per sample that runs its Snakemake master (instead of a tmux session on the login node)"""
     logdir = os.path.join(s["project"], "slurm_logs")
     os.makedirs(logdir, exist_ok=True)
-    me = [sys.executable, os.path.realpath(__file__), "run", "-p", s["project"], "--samples", sample,
+    me = [sys.executable, follow_links(__file__), "run", "-p", s["project"], "--samples", sample,
           "--foreground"] + (["--"] + list(extra) if extra else [])
     wrap = shell_line(dict(s, pre_commands=[]), me)
     cmd = ["sbatch", "--job-name", "imp3_%s" % sample, "--output", os.path.join(logdir, "imp3_master_%s_%%j.out" % sample)]
