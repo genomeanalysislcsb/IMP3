@@ -594,7 +594,8 @@ From: {base}
     mkdir -p /conda-envs
     # environments at their original path (unchanged), /conda-envs/<hash> -> original path
     while IFS="$(printf '\t')" read -r h src; do
-        tar -xf /opt/imp3-envs/$h.tar -C /
+        # fakeroot: the owners of the cluster (uids outside the build namespace) cannot be set; root owns them
+        tar --no-same-owner -xf /opt/imp3-envs/$h.tar -C /
         chmod -R a+rX "$src"
         ln -sfn "$src" /conda-envs/$h
         cp /opt/imp3-envs/$h.environment.yaml "$src/environment.imp3.yaml"
