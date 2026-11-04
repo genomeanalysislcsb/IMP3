@@ -303,6 +303,9 @@ kraken:
   krakendb: k2_core_nt_20250609  ### USER_INPUT ####
   report_minimizer: true
   min_hit_groups: 3
+  # true: kraken2 --memory-mapping on a whole regular node; only if the database fits into its memory (core_nt,
+  # ~280 GB, does not fit an aion node: keep false and the big-memory nodes)
+  memory_mapping: false
   report_min_reads: 10
   report_min_unique_minimizers: 1000
 bracken:

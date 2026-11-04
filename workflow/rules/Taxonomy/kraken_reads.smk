@@ -15,7 +15,7 @@ rule kraken_reads:
         "Analysis/taxonomy/kraken/{type}.pe.kraken.report"
     resources:
         runtime = SHORT_RUNTIME,
-        mem_mb = HIGH_MEM_BIGMEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB if KRAKEN_MMAP else HIGH_MEM_BIGMEMCORE_MB
     params:
         tmp_out = lambda wildcards: f"Analysis/taxonomy/kraken/{wildcards.type}.pe.kraken.output",
         confidence = config['kraken']['confidence'],
@@ -26,7 +26,7 @@ rule kraken_reads:
         # rrna_r2 = "Preprocessing/mt.r2.trimmed.rrna.fq",
         keep_rrnas = KEEP_RRNAs
     threads:
-        getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
+        getThreads(128) if KRAKEN_MMAP else getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
@@ -79,7 +79,7 @@ rule kraken_reads:
         fi
 
         echo "Running kraken2 on paired-end reads..." >> {log}
-        kraken2 --db {params.database} \
+        kraken2 --db {params.database} {KRAKEN_MMAP_OPT} \
                 --confidence {params.confidence} \
                 --threads {threads} \
                 --paired \
@@ -109,7 +109,7 @@ rule kraken_reads_se:
         report("Analysis/taxonomy/kraken/{type}.se.kraken.report",category="Taxonomy")
     resources:
         runtime = VERY_SHORT_RUNTIME,
-        mem_mb = HIGH_MEM_BIGMEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB if KRAKEN_MMAP else HIGH_MEM_BIGMEMCORE_MB
     params:
         tmp_out = lambda wildcards: os.path.join("Analysis/taxonomy/kraken", f"{wildcards.type}.se.kraken.output"),
         confidence = config['kraken']['confidence'],
@@ -119,7 +119,7 @@ rule kraken_reads_se:
         # rrna_se = "Preprocessing/mt.se.trimmed.rrna.fq",
         keep_rrnas = KEEP_RRNAs
     threads:
-        getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
+        getThreads(128) if KRAKEN_MMAP else getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
@@ -179,7 +179,7 @@ rule kraken_reads_se:
         echo "Data detected. Proceeding to kraken2." >> {log}
 
         echo "Running kraken2 on single-end reads..." >> {log}
-        kraken2 --db {params.database} \
+        kraken2 --db {params.database} {KRAKEN_MMAP_OPT} \
                 --confidence {params.confidence} \
                 --threads {threads} \
                 --use-names \

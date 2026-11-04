@@ -67,6 +67,7 @@ or `T`.
 | `kraken.krakendb` | e.g. `k2_nt_20231129` | Kraken2 database (NCBI nt, standard, or GTDB-based) |
 | `kraken.confidence` | 0.501 | Kraken2 confidence |
 | `kraken.min_hit_groups` | 3 | minimum hit groups |
+| `kraken.memory_mapping` | `false` | `kraken2 --memory-mapping`: database not loaded into memory, regular nodes (see [Taxonomy](steps/taxonomy.md)) |
 | `bracken.levels` | `D P C O F G S` | Bracken ranks |
 | `motus`, `eukdetect` | | mOTUs and EukDetect settings |
 

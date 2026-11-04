@@ -19,7 +19,7 @@ rule kraken2_base:
         # This param is optional
         tmp_out = lambda wildcards, output: str(output[0]).replace(".gz", "")
     threads:
-        getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
+        getThreads(128) if KRAKEN_MMAP else getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
     conda:
         os.path.join(ENVDIR, "IMP_taxonomy.yaml")
     log:
@@ -29,7 +29,7 @@ rule kraken2_base:
     shadow: "copy-minimal"
     shell:
         """
-        kraken2 --db {params.database} \\
+        kraken2 --db {params.database} {KRAKEN_MMAP_OPT} \\
                 --threads {threads} \\
                 --confidence {config[kraken][confidence]} \\
                 --minimum-hit-groups {config[kraken][min_hit_groups]} \\
@@ -98,7 +98,7 @@ rule make_report_base:
         "Base rule: Generating combined kraken report."
     shell:
         """
-        kraken2 --db {params.database} \\
+        kraken2 --db {params.database} {KRAKEN_MMAP_OPT} \\
                 --report {output} \\
                 {params.report_minimizer} \\
                 {input} > {log} 2>&1

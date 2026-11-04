@@ -10,7 +10,7 @@ rule kraken_contigs:
         "Analysis/taxonomy/kraken/%s.kraken.contig.unfiltered.report" % ASS
     resources:
         runtime = VERY_SHORT_RUNTIME,
-        mem_mb = HIGH_MEM_BIGMEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB if KRAKEN_MMAP else HIGH_MEM_BIGMEMCORE_MB
     params:
         tmp_out = lambda wildcards: f"Analysis/taxonomy/kraken/{ASS}.kraken.contig.output",
         confidence = config['kraken']['confidence'],
@@ -18,7 +18,7 @@ rule kraken_contigs:
         report_minimizer = '--report-minimizer-data' if config['kraken']['report_minimizer'] else '',
         min_hit_groups = config['kraken']['min_hit_groups']
     threads:
-        getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
+        getThreads(128) if KRAKEN_MMAP else getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
     conda:
         ENVDIR + "/IMP_taxonomy.yaml"
     log:
@@ -28,7 +28,7 @@ rule kraken_contigs:
     shadow: "copy-minimal"
     shell:
         """
-        kraken2 --db {params.database} \
+        kraken2 --db {params.database} {KRAKEN_MMAP_OPT} \
                 --confidence {params.confidence} \
                 --threads {threads} \
                 --use-names \

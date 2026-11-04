@@ -13,6 +13,8 @@ __default__:
   threads: "--cpus-per-task "
   stdout: "--output logs_cluster_jobs/IMP3.{rule}.%j.stdout"
 
+# Kraken2 loads its database (core_nt ~280 GB): iris bigmem. With kraken.memory_mapping: true and a database that
+# fits into an aion node (< ~200 GB, e.g. k2_standard), remove these three to run Kraken2 on aion
 kraken_contigs:
   clusters: "--clusters 'iris'"
   partition: "--partition bigmem"

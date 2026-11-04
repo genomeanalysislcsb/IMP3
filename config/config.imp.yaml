@@ -305,6 +305,9 @@ kraken:
   krakendb: k2_nt_20231129  ### USER_INPUT #### minikraken2_v2_8GB_201904_UPDATE
   report_minimizer: true
   min_hit_groups: 3
+  # true: kraken2 --memory-mapping on a whole regular node; only if the database fits into its memory (core_nt,
+  # ~280 GB, does not fit an aion node: keep false and the big-memory nodes)
+  memory_mapping: false
 bracken:
   # Choose between: D for Domain, P for Phylum, C for Class, O for Order, F for Family, G for Genus, S for Species
   # e.g. "D P C O F G S"

@@ -151,6 +151,12 @@ NORMALIZE_MT_READ_COVERAGE = str(config["read_coverage_normalization"]['normaliz
 # Importing filter from the configuration file and splitting it
 FILTER = config['filtering']['filter'].split()
 # Importing assembler from the configuration file
+# kraken.memory_mapping: true -> kraken2 --memory-mapping: the database is read through the page cache instead of
+# being loaded into the job's memory, and the Kraken2 rules take a whole regular node. Only sensible when the
+# database fits into a regular node's memory (otherwise it is re-read from disk all the time). Default false: the
+# database is loaded, threads sized from its size and the big-memory specs
+KRAKEN_MMAP = str(config.get('kraken', {}).get('memory_mapping', False)).lower() in ['true', '1', 'yes', 'y', 't']
+KRAKEN_MMAP_OPT = '--memory-mapping' if KRAKEN_MMAP else ''
 IMP_ASSEMBLER = config['assembly']['assembler']
 # metaSPAdes (and with it the long-read hybrid assembly) was removed: its hybrid rules never worked, and MEGAHIT
 # covers metaG, metaT and the hybrid assembly
