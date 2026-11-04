@@ -132,10 +132,14 @@ pre_commands: ["module load tools/Singularity"]     # if apptainer / singularity
 - sets `container:` in the sample config (the Snakefile declares it as `containerized:`);
 - binds the IMP3 folder, the project, the databases, the read folders and every existing path of the config
   (Mantis folders, proteomics files), plus `bind:`;
-- keeps these paths as written (only symlinked files are followed): on a site with several clusters, use paths that
+- keeps these paths as written (only symlinked files are followed, through every link of a chain, each folder bound): on a site with several clusters, use paths that
   exist on all of them, e.g. `/work/projects/...` on ULHPC rather than `/mnt/aiongpfs/...` (aion only);
 - binds each as `path:path`: without a destination Apptainer resolves symlinks in the path and mounts the folder
   at its real path, so e.g. `/work/projects/...` would not exist in the container;
+- needs the bind destinations in the image: Apptainer installations without overlay/underlay (e.g. ULHPC) skip a
+  bind whose destination folder does not exist in the image, and the files are then "not found" in the rules. The
+  image has `/work/projects`, `/scratch/users`, `/mnt/aiongpfs`, `/mnt/lscratch`, `/mnt/irisgpfs` and `/home/users`;
+  for other roots, add them to the image (see below) or use `bind:` with paths below these;
 - adds `--nv`, so COMEBin sees the GPU of a GPU node (a warning on nodes without GPU, harmless);
 - creates the marker files of IMP3's setup rules (`submodules/comebin.ready`, ...) if missing: the setup was done when
   the image was built.
@@ -167,6 +171,19 @@ installed (e.g. binners never used) are reported and left out; a rule that needs
 environments in the build folder and `APPTAINER_TMPDIR`. The image is large (tens of GB); build it once and copy
 the `.sif` to other sites. It must belong to the same IMP3 version: the environment hashes come from the files in
 `workflow/envs`.
+
+To add mount points to an existing image without repacking the environments (a few minutes):
+
+```bash
+cat > mounts.def <<'EOF'
+Bootstrap: localimage
+From: imp3.sif
+
+%post
+    mkdir -p /work/projects /scratch/users
+EOF
+apptainer build --fakeroot imp3_mounts.sif mounts.def
+```
 
 `build.sh` also writes `imp3_submodules.tar.gz`: the third-party code in `submodules/` that Snakemake reads on the
 host (the binny module and its marker database, the Bakta and COMEBin forks, ESOM). It is not part of the

@@ -40,15 +40,23 @@ def logical_abspath(path):
     return os.path.abspath(path)
 
 
-def follow_links(path):
-    """resolve symlinks of the file itself, but keep the folder names as given (e.g. /work/projects on ULHPC, which
-    is /mnt/aiongpfs/projects on aion only): container binds must exist on every cluster the jobs run on"""
+def link_chain(path):
+    """the file and every symlink it points through, up to the real file; folder names kept as given (e.g.
+    /work/projects on ULHPC, which is /mnt/aiongpfs/projects on aion only): container binds must exist on every
+    cluster the jobs run on"""
     p = logical_abspath(path)
+    chain = [p]
     for _ in range(40):
         if not os.path.islink(p):
             break
         p = os.path.normpath(os.path.join(os.path.dirname(p), os.readlink(p)))
-    return p
+        chain.append(p)
+    return chain
+
+
+def follow_links(path):
+    """resolve symlinks of the file itself, keeping the folder names as given"""
+    return link_chain(path)[-1]
 
 
 IMP3_DIR = os.path.dirname(follow_links(__file__))
@@ -260,7 +268,8 @@ def binds(s, cfg, reads):
     """folders the rules need inside the container"""
     paths = [s["imp3_dir"], s["project"], s["db_path"]] + list(s.get("bind") or [])
     for r in reads["mg"] + reads["mt"]:
-        paths += [os.path.dirname(logical_abspath(r)), os.path.dirname(follow_links(r))]
+        # every hop of a symlink chain (project -> /scratch -> /work/projects/...): the container resolves each one
+        paths += [os.path.dirname(p) for p in link_chain(r)]
 
     def walk(x):
         if isinstance(x, dict):
@@ -621,7 +630,9 @@ From: {base}
     # installing them into base updates libraries that base's mamba / conda need
     /opt/conda/bin/conda create -y -p /opt/imp3-tools -c conda-forge -c bioconda python=3.11 pandas numpy pyyaml \
         biopython samtools seqkit && /opt/conda/bin/conda clean -a -y
-    mkdir -p /conda-envs
+    # mount points of the cluster file systems: Apptainer without overlay/underlay (ULHPC) skips a --bind whose
+    # destination does not exist in the image, so /work/projects and /scratch must exist here
+    mkdir -p /conda-envs /work/projects /scratch/users /mnt/aiongpfs /mnt/lscratch /mnt/irisgpfs /home/users
     # environments at their original path (unchanged), /conda-envs/<hash> -> original path
     while IFS="$(printf '\t')" read -r h src; do
         # fakeroot: the owners of the cluster (uids outside the build namespace) cannot be set; root owns them
@@ -640,6 +651,7 @@ From: {base}
 
 %test
     test -d /conda-envs && ls /conda-envs | head
+    test -d /work/projects && test -d /scratch/users
     /opt/conda/bin/conda --version
 
 %help

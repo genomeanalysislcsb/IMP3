@@ -3,7 +3,7 @@
 # bash test/test_imp3_runner.sh   (needs python3 with PyYAML)
 set -euo pipefail
 IMP3=$(cd "$(dirname "$0")/.." && pwd)
-T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
+T=$(mktemp -d); H1=$(mktemp -d); H2=$(mktemp -d); trap 'rm -rf "$T" "$H1" "$H2"' EXIT
 mkdir -p "$T/bin"
 cat > "$T/bin/snakemake" <<'S'
 #!/bin/bash
@@ -49,6 +49,12 @@ mkdir -p "$T/l/samples/A"; touch "$T/l/samples/A/mg.r1.fq.gz" "$T/l/samples/A/mg
 "$I" run -p "$T/l" >/dev/null 2>&1
 tail -1 "$CALLS" | grep -q -- "--use-conda --use-singularity --singularity-args --nv --bind /data/db:/data/db --bind $T" && ok "container args" || fail "container args"
 tail -1 "$CALLS" | grep -q -- "--cores [0-9]* --resources gpu=1" && ok "local cores + gpu" || fail "local"
+# reads through a chain of links (project -> H1 -> H2): every hop's folder is bound
+mkdir -p "$T/l/samples/B" "$H1/hop" "$H2/raw"; for r in r1 r2; do touch "$H2/raw/B_$r.fastq.gz"
+  ln -s "$H2/raw/B_$r.fastq.gz" "$H1/hop/mg.$r.fq.gz"; ln -s "$H1/hop/mg.$r.fq.gz" "$T/l/samples/B/mg.$r.fq.gz"; done
+"$I" run -p "$T/l" --samples B >/dev/null 2>&1
+tail -1 "$CALLS" | grep -q -- "--bind $H1/hop:$H1/hop" && tail -1 "$CALLS" | grep -q -- "--bind $H2/raw:$H2/raw" \
+  && ok "binds along a symlink chain" || fail "symlink chain binds"
 [ -f "$T/imp3/submodules/comebin.ready" ] && [ -f "$T/imp3/workflow/envs/binny.ready" ] && ok "setup markers" || fail "markers"
 python3 - "$T/l/config/imp_config_A.yaml" <<'P' && ok "local cluster_specs valid for getThreads" || fail "cluster_specs"
 import sys, yaml, math
