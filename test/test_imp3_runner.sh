@@ -42,6 +42,7 @@ grep -q -- "--profile $T/p/profile --conda-prefix" "$CALLS" && ok "slurm: profil
 "$I" status -p "$T/p" | grep -q "^S1 *done" && ok "status" || fail "status"
 rm -rf "$T/p/imp/S1"; "$I" run -p "$T/p" --submit >/dev/null 2>&1
 grep -q "SBATCH --job-name imp3_S1 .*--wrap .*imp3 run -p $T/p --samples S1 --foreground" "$CALLS" && ok "submit master" || fail "submit"
+"$I" status -p "$T/p" | grep -q "^S1 *submitted" && ok "status: submitted until the master starts" || fail "status submitted"
 
 "$I" init "$T/u" --site ulhpc --container /img/imp3.sif --db /data/db >/dev/null 2>&1
 grep -q '^tmp_root: /scratch/users/$USER/imp3_tmp' "$T/u/imp3.yaml" && grep -q "container_mounts:" "$T/u/imp3.yaml" \
@@ -111,4 +112,15 @@ grep -q "mkdir -p /conda-envs /work/projects /scratch/users" "$T/c2/imp3.def" &&
     || fail "containerize --mounts"
 ! "$I" containerize --envs "$P" -o "$T/c3" --mounts "$T" >/dev/null 2>&1 && ok "--mounts over the environments refused" \
     || fail "--mounts check"
+# tools: programs of the rules, checked in the container (stub apptainer runs the check on this machine)
+"$I" tools --imp3-dir "$IMP3" --list | grep -q "^IMP_assembly_merge.yaml.*parallel" && ok "tools --list" || fail "tools --list"
+cat > "$T/bin/apptainer" <<'S'
+#!/bin/bash
+while [ "$1" != "exec" ]; do shift; done; shift 2; exec "$@"
+S
+chmod +x "$T/bin/apptainer"
+out=$("$I" tools --imp3-dir "$IMP3" --container /img/imp3.sif 2>&1 || true)
+grep -q "environments not in the image" <<< "$out" && grep -q "program calls checked in /img/imp3.sif" <<< "$out" \
+  && ok "tools check in the container" || fail "tools check"
+rm "$T/bin/apptainer"
 echo "all tests passed"

@@ -5,6 +5,7 @@
   imp3 run [-p PROJECT] [--samples S1,S2] [--submit] [--dry-run] [-- extra snakemake options]
   imp3 status [-p PROJECT]
   imp3 containerize --envs PREFIX [-o build_dir]     (Apptainer definition from existing conda environments)
+  imp3 tools [-p PROJECT | --container imp3.sif] [--list]   (programs of the rules present in the container?)
 
 A project is a folder with imp3.yaml (settings), a sample config template, a Snakemake profile and, per sample,
 a generated config (config/imp_config_<sample>.yaml), the results (imp/<sample>) and run logs (imp_run_logs/).
@@ -436,6 +437,11 @@ def submit_master(s, sample, extra):
     out = subprocess.run(cmd, cwd=s["project"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          universal_newlines=True)
     say("%s: %s" % (sample, (out.stdout or out.stderr).strip()))
+    if out.returncode == 0:              # imp3 status: 'submitted' until the master writes its run log
+        d = os.path.join(s["project"], "imp_run_logs")
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "imp_%s.submitted" % sample), "w") as fh:
+            fh.write(out.stdout)
     return out.returncode
 
 
@@ -482,8 +488,11 @@ def cmd_status(a):
         logs = sorted(glob.glob(os.path.join(s["project"], "imp_run_logs", "imp_%s_*.log" % k)))
         steps = sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(out, "status", "*.done")))
         locked = bool(glob.glob(os.path.join(out, ".snakemake", "locks", "*")))
+        sub = os.path.join(s["project"], "imp_run_logs", "imp_%s.submitted" % k)
         if os.path.exists(os.path.join(out, DONE)):
             st = "done"
+        elif os.path.exists(sub) and (not logs or os.path.getmtime(sub) > os.path.getmtime(logs[-1])):
+            st = "submitted"
         elif locked:
             st = "running"
         elif logs:
@@ -764,6 +773,140 @@ echo "built $(pwd)/imp3.sif"
 """
 
 
+# ----------------------------------------------------------------------------------------------------------- tools
+SH_BUILTINS = set("""if then else elif fi for while until do done case esac in function return exit break continue
+echo printf cd export source . set unset local read shift test [ [[ ] ]] true false eval exec trap wait time declare
+typeset let alias ulimit umask pwd command type hash readonly getopts mapfile : ! { } ( ) shopt select""".split())
+
+
+def rule_blocks(text):
+    """(rule name, body) of every rule / checkpoint of a Snakemake file (also indented ones, e.g. in if blocks)"""
+    parts = re.split(r"\n[ \t]*(?:rule|checkpoint)\s+(\w+)\s*:", "\n" + text)
+    return [(parts[i], parts[i + 1]) for i in range(1, len(parts), 2)]
+
+
+def rule_shell(body, text=""):
+    m = re.search(r"\n\s*shell:\s*\n?\s*[rf]?(\"\"\"|''')(.*?)\1", body, re.S)
+    if m:
+        return m.group(2)
+    m = re.search(r"\n\s*shell:\s*[rf]?(\"|')(.*?)(?<!\\)\1", body, re.S)
+    if m:
+        return m.group(2)
+    m = re.search(r"\n\s*shell:\s*\n?\s*([A-Za-z_]\w*)\s*\n", body + "\n")      # shell: NAME (a string of the file)
+    if m:
+        v = re.search(r"(?m)^%s\s*=\s*[rf]?(\"\"\"|''')(.*?)\1" % m.group(1), text, re.S)
+        return v.group(2) if v else None
+    return None
+
+
+def rule_env(body):
+    m = re.search(r"\n\s*conda:\s*\n?\s*(.+)", body)
+    if not m:
+        return None
+    f = re.search(r"[\"']([\w.\-/]+\.ya?ml)[\"']", m.group(1))
+    return os.path.basename(f.group(1)) if f else None
+
+
+def shell_commands(sh):
+    """programs a rule's shell block calls (heuristic: the first word of every command, without shell built-ins,
+    functions defined in the block, variables, paths and Snakemake placeholders)"""
+    sh = re.sub(r"\\\n", " ", sh)
+    funcs = set(re.findall(r"(?:^|\n)\s*(?:function\s+)?(\w+)\s*\(\)\s*\{", sh))
+    sh = re.sub(r"<<-?\s*['\"]?(\w+)['\"]?.*?\n\s*\1\s*(\n|$)", "\n", sh, flags=re.S)       # here documents
+    sh = re.sub(r"(?m)^\s*#.*$", "", sh)
+    sh = re.sub(r"'[^'\n]*'", "''", sh)
+    # double-quoted text (echo messages): only its command substitutions count
+    sh = re.sub(r"\"([^\"\n]*)\"", lambda m: " ; ".join(re.findall(r"\$\(([^)]*)\)", m.group(1))) or "\"\"", sh)
+    cmds = set()
+    for seg in re.split(r"\n|\|\||&&|\||;|\$\(|`|\bthen\b|\bdo\b|\belse\b|\(|\)", sh):
+        toks = seg.strip().split()
+        while toks and (re.match(r"^\w+=", toks[0]) or toks[0] in ("!", "time", "nice", "exec", "command", "env")):
+            toks = toks[1:]
+        if not toks:
+            continue
+        w = toks[0]
+        if (w in SH_BUILTINS or w in funcs or "/" in w or "{" in w or w.startswith(("$", "-", ".")) or w.isdigit()
+                or not re.match(r"^[A-Za-z0-9_][A-Za-z0-9_.+\-]*$", w) or w.endswith(".")):
+            continue
+        cmds.add(w)
+    return cmds
+
+
+def rule_tools(imp3_dir):
+    """{environment file name or None (no environment): {program: [rules]}}"""
+    files = glob.glob(os.path.join(imp3_dir, "workflow", "**", "*.smk"), recursive=True)
+    files += [os.path.join(imp3_dir, "Snakefile")]
+    out = {}
+    for f in sorted(files):
+        text = open(f, errors="replace").read()
+        for name, body in rule_blocks(text):
+            sh = rule_shell(body, text)
+            if sh:
+                env = rule_env(body)
+                for c in shell_commands(sh):
+                    out.setdefault(env, {}).setdefault(c, []).append(name)
+    return out
+
+
+def cmd_tools(a):
+    """checks that every program the rules call is in the container: in the rule's environment, or (no environment
+    or not in it) on the image's PATH"""
+    imp3_dir = os.path.abspath(a.imp3_dir)
+    tools = rule_tools(imp3_dir)
+    envs = {os.path.basename(f): "/conda-envs/" + content_hash(c, d) for f, c, d in env_files(imp3_dir)}
+    if a.list:
+        for env in sorted(tools, key=lambda x: x or ""):
+            print("%s\t%s" % (env or "-", " ".join(sorted(tools[env]))))
+        return 0
+    sif = a.container
+    s = {"pre_commands": []}
+    if not sif:
+        s = load_settings(a.project)
+        sif = s.get("container")
+    if not sif:
+        sys.exit("imp3 tools: no container (--container, or container: in imp3.yaml of the project)")
+    lines = ["base_missing=''"]
+    for env in sorted(tools, key=lambda x: x or ""):
+        cmds = " ".join(sorted(tools[env]))
+        if env is None:
+            lines.append("for c in %s; do command -v \"$c\" >/dev/null || echo \"MISSING - $c\"; done" % cmds)
+            continue
+        path = envs.get(env)
+        if not path:
+            lines.append("echo 'UNKNOWN %s'" % env)
+            continue
+        lines.append("if [ -d %s ]; then ( source /opt/conda/bin/activate %s >/dev/null 2>&1; for c in %s; do "
+                     "command -v \"$c\" >/dev/null || echo \"MISSING %s $c\"; done ); else echo 'NOENV %s'; fi"
+                     % (path, path, cmds, env, env))
+    lines.append("echo IMP3_TOOLS_CHECKED")
+    script = "\n".join(lines)
+    line = ('APP=$(command -v apptainer || command -v singularity) && "$APP" -s exec %s bash -c %s'
+            % (shlex.quote(sif), shlex.quote(script)))
+    r = subprocess.run(["bash", "-c", shell_line(s, ["true"]) + " && " + line], stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, universal_newlines=True)
+    if "IMP3_TOOLS_CHECKED" not in r.stdout:
+        sys.exit("imp3 tools: could not run the container %s:\n%s" % (sif, (r.stderr or r.stdout)[-2000:]))
+    missing, noenv = {}, []
+    for x in r.stdout.splitlines():
+        p = x.split()
+        if p[:1] == ["MISSING"]:
+            missing.setdefault(p[1], []).append(p[2])
+        elif p[:1] in (["NOENV"], ["UNKNOWN"]):
+            noenv.append(p[1])
+    n = sum(len(v) for v in tools.values())
+    if noenv:
+        say("environments not in the image (their rules cannot run in it): %s" % ", ".join(sorted(noenv)))
+    for env in sorted(missing):
+        for c in sorted(missing[env]):
+            rules = tools[None if env == "-" else env][c]
+            say("missing %-28s %-22s rules: %s" % (c, "(no environment)" if env == "-" else "(" + env + ")",
+                                                   ", ".join(sorted(set(rules))[:4])))
+    say("%d program calls checked in %s: %d missing%s" % (
+        n, sif, sum(len(v) for v in missing.values()),
+        "" if not missing else " (some may be shell functions or words the scan took for programs; check the rule)"))
+    return 1 if missing else 0
+
+
 # ----------------------------------------------------------------------------------------------------------- main
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="imp3", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -790,6 +933,11 @@ def main(argv=None):
     p.add_argument("extra", nargs=argparse.REMAINDER, help="after --: extra Snakemake options, e.g. -- --until assembly")
     p = sub.add_parser("status", help="state of every sample")
     p.add_argument("-p", "--project", default=".")
+    p = sub.add_parser("tools", help="check that the programs the rules call are in the container")
+    p.add_argument("-p", "--project", default=".")
+    p.add_argument("--container", default="", help="the .sif to check  [container: of the project]")
+    p.add_argument("--imp3-dir", default=IMP3_DIR, help="IMP3 checkout whose rules are scanned")
+    p.add_argument("--list", action="store_true", help="only list the programs per environment (no container)")
     p = sub.add_parser("containerize", help="Apptainer definition from the conda environments of an installation")
     p.add_argument("--envs", required=True, help="conda prefix of the IMP3 environments (as in the Snakemake profile)")
     p.add_argument("--imp3-dir", default=IMP3_DIR, help="IMP3 checkout the environments belong to")
@@ -807,7 +955,8 @@ def main(argv=None):
     if not a.cmd:
         ap.print_help()
         return 0
-    return {"init": cmd_init, "run": cmd_run, "status": cmd_status, "containerize": cmd_containerize}[a.cmd](a)
+    return {"init": cmd_init, "run": cmd_run, "status": cmd_status, "containerize": cmd_containerize,
+            "tools": cmd_tools}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -180,6 +180,21 @@ host (the binny module and its marker database, the Bakta and COMEBin forks, ESO
 repository; at another site unpack it into the IMP3 checkout of the same version
 (`tar -xzf imp3_submodules.tar.gz -C /path/to/IMP3`), next to the `.sif`.
 
+### Checking an image
+
+`imp3 tools` scans the shell commands of all rules and checks, in the container, that every program they call is
+there: in the rule's environment, or on the image's PATH for rules without one (system tools such as `parallel`,
+`pigz`, `rsync`). Run it after building an image and after IMP3 updates:
+
+```bash
+imp3 tools -p PROJECT                  # the container of the project
+imp3 tools --container imp3.sif        # any image
+imp3 tools --list                      # only the programs per environment (no container)
+```
+
+It also lists the environments that are not in the image (their rules cannot run in it). The scan is a heuristic:
+a reported program can be a shell function or a word it took for a command; check the rule it names.
+
 ### Mount points
 
 Many Apptainer installations can create a bind destination that does not exist in the image (overlay); others,
