@@ -64,6 +64,7 @@ node, as before). `imp3 run --submit` instead submits every master as a long Slu
 | `conda_prefix` | – | conda environments of IMP3 (native runs) |
 | `container` | – | IMP3 `.sif`: every rule runs in the container |
 | `bind` | – | extra folders the container must see (reads, databases, IMP3 and the project are bound automatically) |
+| `container_mounts` | – | mount points built into the image (see *Mount points*); folders below them are bound as the mount point |
 | `parallel_samples` | 10 (local: 1) | Snakemake masters at the same time |
 | `submit_master` | `--time 5-00:00:00 --qos long --cpus-per-task 1 --mem 8G` | `sbatch` options for `imp3 run --submit` |
 | `pre_commands` | – | shell lines before Snakemake, e.g. `module load tools/Singularity` |
@@ -136,10 +137,8 @@ pre_commands: ["module load tools/Singularity"]     # if apptainer / singularity
   exist on all of them, e.g. `/work/projects/...` on ULHPC rather than `/mnt/aiongpfs/...` (aion only);
 - binds each as `path:path`: without a destination Apptainer resolves symlinks in the path and mounts the folder
   at its real path, so e.g. `/work/projects/...` would not exist in the container;
-- needs the bind destinations in the image: Apptainer installations without overlay/underlay (e.g. ULHPC) skip a
-  bind whose destination folder does not exist in the image, and the files are then "not found" in the rules. The
-  image has `/work/projects`, `/scratch/users`, `/mnt/aiongpfs`, `/mnt/lscratch`, `/mnt/irisgpfs` and `/home/users`;
-  for other roots, add them to the image (see below) or use `bind:` with paths below these;
+- checks once, with the image, that every bound folder is visible in the container, and stops a sample that would
+  not find its files (see *Mount points* below); without apptainer on the node it only says so;
 - adds `--nv`, so COMEBin sees the GPU of a GPU node (a warning on nodes without GPU, harmless);
 - creates the marker files of IMP3's setup rules (`submodules/comebin.ready`, ...) if missing: the setup was done when
   the image was built.
@@ -172,7 +171,30 @@ environments in the build folder and `APPTAINER_TMPDIR`. The image is large (ten
 the `.sif` to other sites. It must belong to the same IMP3 version: the environment hashes come from the files in
 `workflow/envs`.
 
-To add mount points to an existing image without repacking the environments (a few minutes):
+`build.sh` also writes `imp3_submodules.tar.gz`: the third-party code in `submodules/` that Snakemake reads on the
+host (the binny module and its marker database, the Bakta and COMEBin forks, ESOM). It is not part of the
+repository; at another site unpack it into the IMP3 checkout of the same version
+(`tar -xzf imp3_submodules.tar.gz -C /path/to/IMP3`), next to the `.sif`.
+
+### Mount points
+
+Many Apptainer installations can create a bind destination that does not exist in the image (overlay); others,
+e.g. on ULHPC, cannot and skip such a bind without an error, so the rules do not find their files. There, the
+image needs the top folders of the site's file systems, and IMP3 binds those instead of the single folders:
+
+```bash
+imp3 containerize --envs ... --mounts /work/projects,/scratch/users     # created in the image (label imp3.mounts)
+```
+
+```yaml
+# imp3.yaml
+container_mounts: [/work/projects, /scratch/users]     # imp3 init --site ulhpc --container ... sets these
+```
+
+A folder below a mount point is then bound as the mount point (e.g. `/work/projects`); other folders are bound as
+they are. The mount points must not contain the environments' original path (`containerize` refuses that). An
+image built at one site carries that site's mount points; at another site without overlay, add yours in a thin
+layer on top of it (a few minutes, the environments are not repacked):
 
 ```bash
 cat > mounts.def <<'EOF'
@@ -180,15 +202,13 @@ Bootstrap: localimage
 From: imp3.sif
 
 %post
-    mkdir -p /work/projects /scratch/users
+    mkdir -p /data/projects /scratch
 EOF
-apptainer build --fakeroot imp3_mounts.sif mounts.def
+apptainer build --fakeroot imp3_site.sif mounts.def
 ```
 
-`build.sh` also writes `imp3_submodules.tar.gz`: the third-party code in `submodules/` that Snakemake reads on the
-host (the binny module and its marker database, the Bakta and COMEBin forks, ESOM). It is not part of the
-repository; at another site unpack it into the IMP3 checkout of the same version
-(`tar -xzf imp3_submodules.tar.gz -C /path/to/IMP3`), next to the `.sif`.
+and set `container` and `container_mounts` in `imp3.yaml` accordingly. `apptainer inspect --labels imp3.sif` shows
+the mount points of an image. Sites with overlay need none of this.
 
 ## Notes
 

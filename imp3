@@ -21,6 +21,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import threading
 import sys
 
 
@@ -95,6 +96,8 @@ DEFAULTS = {
     "container": "",               # IMP3 .sif: every rule runs in the container (needs apptainer / singularity)
     "bind": [],                    # extra folders visible in the container (reads, databases, IMP3 and the project
                                    # are bound automatically)
+    "container_mounts": [],        # mount points built into the image (imp3 containerize --mounts): paths below
+                                   # them are bound as the mount point (needed where Apptainer has no overlay)
     "gpu": "auto",                 # local: GPUs for COMEBin (auto = nvidia-smi), 0 = none
     "cores": 0,                    # local: cores (0 = all)
     "mem_gb": 0,                   # local: memory for IMP3 (0 = 90 % of the machine)
@@ -286,8 +289,14 @@ def binds(s, cfg, reads):
             paths.append(p if os.path.isdir(p) else os.path.dirname(p))
     if cfg.get("tmp_root") and not str(cfg["tmp_root"]).startswith(("/dev/shm", "/tmp")):
         paths.append(cfg["tmp_root"])
+    # below a mount point of the image: bind the mount point (Apptainer without overlay, e.g. ULHPC, skips a bind
+    # whose destination folder does not exist in the image)
+    roots = [os.path.normpath(m) for m in (s.get("container_mounts") or []) if m]
+    def root(p):
+        p = os.path.normpath(p)
+        return next((m for m in sorted(roots, key=len) if p == m or p.startswith(m.rstrip("/") + "/")), p)
     out = []
-    for p in sorted({os.path.normpath(p) for p in paths if p}, key=len):
+    for p in sorted({root(p) for p in paths if p}, key=len):
         if p in SYSTEM_DIRS or p.split("/")[1] in ("dev", "proc", "sys", "etc", "usr", "bin", "lib", "lib64",
                                                      "conda-envs", "opt") and p.count("/") <= 2:
             continue
@@ -335,10 +344,47 @@ def next_log(s, sample):
     return os.path.join(d, "imp_%s_%03d.log" % (sample, n))
 
 
+_CHECKED, _CHECK_LOCK = set(), threading.Lock()
+
+
+def check_binds(s, bind_list):
+    """the bound folders as the rules see them: a bind whose destination is not in the image is skipped silently by
+    Apptainer without overlay; returns the folders missing in the container ([] when they are all there or the check
+    cannot run, e.g. no apptainer on this node)"""
+    with _CHECK_LOCK:
+        todo = [b for b in bind_list if b not in _CHECKED]
+        if not todo:
+            return []
+        args = " ".join("--bind %s" % shlex.quote("%s:%s" % (b, b)) for b in todo)
+        test = 'for d in "$@"; do [ -d "$d" ] || echo "MISSING $d"; done; echo IMP3_BINDS_CHECKED'
+        line = ('APP=$(command -v apptainer || command -v singularity) && "$APP" -s exec %s %s sh -c %s sh %s'
+                % (args, shlex.quote(s["container"]), shlex.quote(test), " ".join(shlex.quote(b) for b in todo)))
+        try:
+            r = subprocess.run(["bash", "-c", shell_line(s, ["true"]) + " && " + line], capture_output=True,
+                               text=True, timeout=600)
+            out = r.stdout
+        except Exception:                                    # pragma: no cover
+            out = ""
+        if "IMP3_BINDS_CHECKED" not in out:
+            say("could not check the container binds here (no apptainer / singularity?); the jobs will tell")
+            _CHECKED.update(todo)
+            return []
+        missing = [x[8:] for x in out.splitlines() if x.startswith("MISSING ")]
+        _CHECKED.update(b for b in todo if b not in missing)
+        return missing
+
+
 def run_sample(s, sample, reads, extra, dry):
     cfg_file, cfg = sample_config(s, sample, reads)
     if s.get("container"):
         container_markers(s)
+        missing = check_binds(s, binds(s, cfg, reads))
+        if missing:
+            say("%s: not visible in the container: %s. This Apptainer cannot create bind destinations that the image "
+                "lacks (no overlay). Build their roots into the image (imp3 containerize --mounts, or a layer on the "
+                "existing image, see docs/portable.md) and list them under container_mounts in imp3.yaml"
+                % (sample, ", ".join(missing)))
+            return sample, 1
     cmd = snakemake_cmd(s, cfg_file, cfg, reads, extra, dry)
     if dry:
         print("# %s\n%s" % (sample, shell_line(s, cmd)))
@@ -484,6 +530,7 @@ def cmd_init(a):
         "conda_prefix": "" if a.container else vals["CONDA_PREFIX"],
         "container": a.container or "",
         "bind": [],
+        "container_mounts": ["/work/projects", "/scratch/users"] if (a.container and a.site == "ulhpc") else [],
         "parallel_samples": 10 if a.executor == "slurm" else 1,
         "submit_master": DEFAULTS["submit_master"],
         "pre_commands": ["module load tools/Singularity"] if (a.container and a.site == "ulhpc") else [],
@@ -509,6 +556,8 @@ SETTINGS_HEADER = """# IMP3 project settings (imp3 run / imp3 status). Paths are
 #   conda_prefix     conda environments of IMP3 (native runs)
 #   container        IMP3 .sif: all rules in the container (needs apptainer/singularity); conda_prefix unused
 #   bind             extra folders the container must see
+#   container_mounts mount points built into the image (imp3 containerize --mounts); folders below them are bound
+#                    as the mount point. Needed where Apptainer cannot create missing bind destinations (no overlay)
 #   parallel_samples Snakemake masters at the same time (local: 1, one sample after the other)
 #   submit_master    sbatch options when the masters run as Slurm jobs (imp3 run --submit)
 #   pre_commands     shell lines before Snakemake, e.g. module load tools/Singularity
@@ -557,6 +606,13 @@ def cmd_containerize(a):
     no longer have)."""
     prefix = os.path.realpath(a.envs)
     out = logical_abspath(a.output)
+    mounts = [os.path.normpath(m) for m in re.split(r"[,\s]+", a.mounts or "") if m]
+    bad = [m for m in mounts if not m.startswith("/") or m.split("/")[1] in ("dev", "proc", "sys", "etc", "usr", "bin",
+                                                                            "lib", "lib64", "opt", "conda-envs")
+           or any(src == m or src.startswith(m.rstrip("/") + "/") for src in [prefix])]
+    if bad:
+        sys.exit("imp3: --mounts: %s are system folders or contain the environments (%s); binding them at run time "
+                 "would hide the environments" % (", ".join(bad), prefix))
     os.makedirs(os.path.join(out, "envs"), exist_ok=True)
     rows, missing = [], []
     for f, content, deploy in env_files(a.imp3_dir):
@@ -591,7 +647,7 @@ def cmd_containerize(a):
         os.path.join(a.imp3_dir, "VERSION")) else "?"
     envhash = hashlib.sha256(b"".join(c for _, c, _ in env_files(a.imp3_dir))).hexdigest()
     with open(os.path.join(out, "imp3.def"), "w") as fh:
-        fh.write(DEF_TEMPLATE.format(base=a.base, version=version, envhash=envhash,
+        fh.write(DEF_TEMPLATE.format(base=a.base, version=version, envhash=envhash, mounts=" ".join(mounts),
                                      n=len(rows), date=datetime.date.today()))
     with open(os.path.join(out, "build.sh"), "w") as fh:
         fh.write(BUILD_SH.replace("__IMP3_DIR__", shlex.quote(a.imp3_dir)))
@@ -617,6 +673,7 @@ From: {base}
     org.opencontainers.image.source https://github.com/genomeanalysislcsb/IMP3
     io.github.snakemake.containerized true
     io.github.snakemake.conda_env_hash {envhash}
+    imp3.mounts {mounts}
 
 %files
     envs /opt/imp3-envs
@@ -630,9 +687,9 @@ From: {base}
     # installing them into base updates libraries that base's mamba / conda need
     /opt/conda/bin/conda create -y -p /opt/imp3-tools -c conda-forge -c bioconda python=3.11 pandas numpy pyyaml \
         biopython samtools seqkit && /opt/conda/bin/conda clean -a -y
-    # mount points of the cluster file systems: Apptainer without overlay/underlay (ULHPC) skips a --bind whose
-    # destination does not exist in the image, so /work/projects and /scratch must exist here
-    mkdir -p /conda-envs /work/projects /scratch/users /mnt/aiongpfs /mnt/lscratch /mnt/irisgpfs /home/users
+    # mount points of the site's file systems (imp3 containerize --mounts): Apptainer without overlay skips a bind
+    # whose destination does not exist in the image
+    mkdir -p /conda-envs {mounts}
     # environments at their original path (unchanged), /conda-envs/<hash> -> original path
     while IFS="$(printf '\t')" read -r h src; do
         # fakeroot: the owners of the cluster (uids outside the build namespace) cannot be set; root owns them
@@ -651,7 +708,6 @@ From: {base}
 
 %test
     test -d /conda-envs && ls /conda-envs | head
-    test -d /work/projects && test -d /scratch/users
     /opt/conda/bin/conda --version
 
 %help
@@ -715,6 +771,9 @@ def main(argv=None):
     p.add_argument("--imp3-dir", default=IMP3_DIR, help="IMP3 checkout the environments belong to")
     p.add_argument("-o", "--output", default="imp3_container", help="build folder")
     p.add_argument("--base", default="condaforge/miniforge3:24.11.3-0", help="base image (docker)")
+    p.add_argument("--mounts", default="", help="mount points of your site's file systems to create in the image, "
+                   "e.g. /work/projects,/scratch/users (needed where Apptainer has no overlay; then list them under "
+                   "container_mounts in imp3.yaml)")
     a = ap.parse_args(argv)
     if getattr(a, "extra", None):
         if a.extra[:1] != ["--"]:

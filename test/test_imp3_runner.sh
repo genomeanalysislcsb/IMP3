@@ -55,6 +55,22 @@ mkdir -p "$T/l/samples/B" "$H1/hop" "$H2/raw"; for r in r1 r2; do touch "$H2/raw
 "$I" run -p "$T/l" --samples B >/dev/null 2>&1
 tail -1 "$CALLS" | grep -q -- "--bind $H1/hop:$H1/hop" && tail -1 "$CALLS" | grep -q -- "--bind $H2/raw:$H2/raw" \
   && ok "binds along a symlink chain" || fail "symlink chain binds"
+# mount points of the image: folders below them are bound as the mount point
+python3 - "$T/l/imp3.yaml" "$H1" <<'P'
+import sys, yaml
+c = yaml.safe_load(open(sys.argv[1])); c["container_mounts"] = [sys.argv[2]]; yaml.safe_dump(c, open(sys.argv[1], "w"))
+P
+"$I" run -p "$T/l" --samples B --force >/dev/null 2>&1
+tail -1 "$CALLS" | grep -q -- "--bind $H1:$H1" && ! tail -1 "$CALLS" | grep -q -- "--bind $H1/hop" \
+  && ok "container_mounts: bound as the mount point" || fail "container_mounts"
+# bind check in the image (stub apptainer): a folder missing in the container stops the sample before Snakemake
+printf '#!/bin/bash\n[ -n "${STUB_MISSING:-}" ] && echo "MISSING $STUB_MISSING"; echo IMP3_BINDS_CHECKED\n' > "$T/bin/apptainer"
+chmod +x "$T/bin/apptainer"; n=$(wc -l < "$CALLS")
+out=$(STUB_MISSING="$H2/raw" "$I" run -p "$T/l" --samples B --force 2>&1 || true)
+grep -q "not visible in the container: $H2/raw" <<< "$out" && [ "$(wc -l < "$CALLS")" = "$n" ] \
+  && ok "bind check stops the sample" || fail "bind check"
+"$I" run -p "$T/l" --samples B --force >/dev/null 2>&1 && ok "bind check passes" || fail "bind check pass"
+rm "$T/bin/apptainer"
 [ -f "$T/imp3/submodules/comebin.ready" ] && [ -f "$T/imp3/workflow/envs/binny.ready" ] && ok "setup markers" || fail "markers"
 python3 - "$T/l/config/imp_config_A.yaml" <<'P' && ok "local cluster_specs valid for getThreads" || fail "cluster_specs"
 import sys, yaml, math
@@ -78,4 +94,9 @@ P
 H=$(python3 -c "import hashlib;print(hashlib.md5(open('$T/imp3/workflow/envs/IMP_mapping.yaml','rb').read()).hexdigest())")
 grep -q "IMP_mapping.yaml.*/conda-envs/$H" "$T/c/envs.tsv" && bash -n "$T/c/pack_envs.sh" && bash -n "$T/c/build.sh" \
     && grep -q "tar -C / -cf envs/$H.tar.part" "$T/c/pack_envs.sh" && ok "containerize" || fail "containerize"
+"$I" containerize --envs "$P" -o "$T/c2" --mounts /work/projects,/scratch/users >/dev/null 2>&1
+grep -q "mkdir -p /conda-envs /work/projects /scratch/users" "$T/c2/imp3.def" && ok "containerize --mounts" \
+    || fail "containerize --mounts"
+! "$I" containerize --envs "$P" -o "$T/c3" --mounts "$T" >/dev/null 2>&1 && ok "--mounts over the environments refused" \
+    || fail "--mounts check"
 echo "all tests passed"
