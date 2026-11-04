@@ -704,7 +704,7 @@ From: {base}
 %post
     set -e
     export DEBIAN_FRONTEND=noninteractive
-    apt-get update && apt-get install -y --no-install-recommends rsync pigz bc file unzip wget curl git procps \
+    apt-get update && apt-get install -y --no-install-recommends rsync pigz parallel bc file unzip wget curl git procps \
         less ca-certificates && rm -rf /var/lib/apt/lists/*
     # tools of the rules without their own environment (shell one-liners, python helpers), in their own environment:
     # installing them into base updates libraries that base's mamba / conda need
@@ -732,6 +732,7 @@ From: {base}
 %test
     test -d /conda-envs && ls /conda-envs | head
     /opt/conda/bin/conda --version
+    parallel --version | head -1
 
 %help
     IMP3 container. Run IMP3 with 'imp3 run' (container: /path/to/imp3.sif in imp3.yaml), or directly:
