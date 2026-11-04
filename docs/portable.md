@@ -134,6 +134,8 @@ pre_commands: ["module load tools/Singularity"]     # if apptainer / singularity
   (Mantis folders, proteomics files), plus `bind:`;
 - keeps these paths as written (only symlinked files are followed): on a site with several clusters, use paths that
   exist on all of them, e.g. `/work/projects/...` on ULHPC rather than `/mnt/aiongpfs/...` (aion only);
+- binds each as `path:path`: without a destination Apptainer resolves symlinks in the path and mounts the folder
+  at its real path, so e.g. `/work/projects/...` would not exist in the container;
 - adds `--nv`, so COMEBin sees the GPU of a GPU node (a warning on nodes without GPU, harmless);
 - creates the marker files of IMP3's setup rules (`submodules/comebin.ready`, ...) if missing: the setup was done when
   the image was built.

@@ -47,7 +47,7 @@ grep -q "SBATCH --job-name imp3_S1 .*--wrap .*imp3 run -p $T/p --samples S1 --fo
 "$I" init "$T/l" --executor local --container /img/imp3.sif --db /data/db >/dev/null 2>&1
 mkdir -p "$T/l/samples/A"; touch "$T/l/samples/A/mg.r1.fq.gz" "$T/l/samples/A/mg.r2.fq.gz"
 "$I" run -p "$T/l" >/dev/null 2>&1
-tail -1 "$CALLS" | grep -q -- "--use-conda --use-singularity --singularity-args --nv --bind /data/db --bind $T" && ok "container args" || fail "container args"
+tail -1 "$CALLS" | grep -q -- "--use-conda --use-singularity --singularity-args --nv --bind /data/db:/data/db --bind $T" && ok "container args" || fail "container args"
 tail -1 "$CALLS" | grep -q -- "--cores [0-9]* --resources gpu=1" && ok "local cores + gpu" || fail "local"
 [ -f "$T/imp3/submodules/comebin.ready" ] && [ -f "$T/imp3/workflow/envs/binny.ready" ] && ok "setup markers" || fail "markers"
 python3 - "$T/l/config/imp_config_A.yaml" <<'P' && ok "local cluster_specs valid for getThreads" || fail "cluster_specs"

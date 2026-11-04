@@ -294,7 +294,9 @@ def snakemake_cmd(s, cfg_file, cfg, reads, extra, dry):
     if s.get("conda_prefix") and not s.get("container"):
         cmd += ["--conda-prefix", s["conda_prefix"]]
     if s.get("container"):
-        args = "--nv " + " ".join("--bind %s" % shlex.quote(b) for b in binds(s, cfg, reads))
+        # src:dest with the same name: without a destination Apptainer resolves symlinks in the source and mounts the
+        # folder at its real path (/work/projects -> /mnt/aiongpfs/projects on aion), so /work/... would not exist
+        args = "--nv " + " ".join("--bind %s" % shlex.quote("%s:%s" % (b, b)) for b in binds(s, cfg, reads))
         cmd += ["--use-conda", "--use-singularity", "--singularity-args", args]
     if s["executor"] == "local":
         cores, mem, gpu = local_resources(s)
@@ -702,7 +704,10 @@ def main(argv=None):
     p.add_argument("-o", "--output", default="imp3_container", help="build folder")
     p.add_argument("--base", default="condaforge/miniforge3:24.11.3-0", help="base image (docker)")
     a = ap.parse_args(argv)
-    if getattr(a, "extra", None) and a.extra[:1] == ["--"]:
+    if getattr(a, "extra", None):
+        if a.extra[:1] != ["--"]:
+            ap.error("unexpected %r: Snakemake options go after '--' (imp3 run -- --until assembly); "
+                     "did you mean --%s?" % (" ".join(a.extra), a.extra[0].lstrip("-")))
         a.extra = a.extra[1:]
     if not a.cmd:
         ap.print_help()
