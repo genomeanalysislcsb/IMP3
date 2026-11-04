@@ -25,10 +25,25 @@ import sys
 
 
 
+def logical_abspath(path):
+    """absolute path as the user's shell names it: relative paths are joined to $PWD (e.g. /work/projects/...)
+    rather than to the physical working directory (os.getcwd(): /mnt/aiongpfs/projects/... on aion), so paths
+    written into configs and container binds exist on every cluster"""
+    if os.path.isabs(path):
+        return os.path.normpath(path)
+    pwd = os.environ.get("PWD")
+    try:
+        if pwd and os.path.isabs(pwd) and os.path.samefile(pwd, os.getcwd()):
+            return os.path.normpath(os.path.join(pwd, path))
+    except OSError:
+        pass
+    return os.path.abspath(path)
+
+
 def follow_links(path):
     """resolve symlinks of the file itself, but keep the folder names as given (e.g. /work/projects on ULHPC, which
     is /mnt/aiongpfs/projects on aion only): container binds must exist on every cluster the jobs run on"""
-    p = os.path.abspath(path)
+    p = logical_abspath(path)
     for _ in range(40):
         if not os.path.islink(p):
             break
@@ -89,7 +104,7 @@ def load_settings(project):
         sys.exit("imp3: %s not found (create a project with 'imp3 init %s')" % (p, project))
     s = dict(DEFAULTS)
     s.update(yaml.safe_load(open(p)) or {})
-    s["project"] = os.path.abspath(project)
+    s["project"] = logical_abspath(project)
     for k in ("imp3_dir", "reads", "sample_sheet", "config_template", "profile", "conda_prefix", "container",
               "db_path"):
         if s.get(k):
@@ -118,7 +133,7 @@ def reads_in_folder(folder, omic):
         if not (os.path.isfile(p) and READ_EXT.search(f)):
             continue
         if re.search(r"(^|[^a-z])%s([^a-z]|$)" % omic, f.lower()):
-            out.append(os.path.abspath(p))
+            out.append(logical_abspath(p))
     return out
 
 
@@ -245,7 +260,7 @@ def binds(s, cfg, reads):
     """folders the rules need inside the container"""
     paths = [s["imp3_dir"], s["project"], s["db_path"]] + list(s.get("bind") or [])
     for r in reads["mg"] + reads["mt"]:
-        paths += [os.path.dirname(os.path.abspath(r)), os.path.dirname(follow_links(r))]
+        paths += [os.path.dirname(logical_abspath(r)), os.path.dirname(follow_links(r))]
 
     def walk(x):
         if isinstance(x, dict):
@@ -420,7 +435,7 @@ def fill(text, values):
 
 
 def cmd_init(a):
-    p = os.path.abspath(a.project)
+    p = logical_abspath(a.project)
     os.makedirs(p, exist_ok=True)
     if os.path.exists(os.path.join(p, SETTINGS)) and not a.force:
         sys.exit("imp3: %s exists (use --force to overwrite the settings and profile)" % os.path.join(p, SETTINGS))
@@ -530,7 +545,7 @@ def cmd_containerize(a):
     them in a containerized image. No relocation (conda-pack needs the package caches, which old installations often
     no longer have)."""
     prefix = os.path.realpath(a.envs)
-    out = os.path.abspath(a.output)
+    out = logical_abspath(a.output)
     os.makedirs(os.path.join(out, "envs"), exist_ok=True)
     rows, missing = [], []
     for f, content, deploy in env_files(a.imp3_dir):
