@@ -45,9 +45,10 @@ grep -q "SBATCH --job-name imp3_S1 .*--wrap .*imp3 run -p $T/p --samples S1 --fo
 
 # local project with container
 "$I" init "$T/l" --executor local --container /img/imp3.sif --db /data/db >/dev/null 2>&1
+grep -q "^tmp_root: /tmp" "$T/l/imp3.yaml" && sed -i "s|^tmp_root: /tmp|tmp_root: /dev/shm|" "$T/l/imp3.yaml"   # test folders are in /tmp
 mkdir -p "$T/l/samples/A"; touch "$T/l/samples/A/mg.r1.fq.gz" "$T/l/samples/A/mg.r2.fq.gz"
 "$I" run -p "$T/l" >/dev/null 2>&1
-tail -1 "$CALLS" | grep -q -- "--use-conda --use-singularity --singularity-args --nv --bind /data/db:/data/db --bind $T" && ok "container args" || fail "container args"
+tail -1 "$CALLS" | grep -q -- "--use-conda --use-singularity --singularity-args --nv --bind /dev/shm:/dev/shm --bind /data/db:/data/db --bind $T" && ok "container args" || fail "container args"
 tail -1 "$CALLS" | grep -q -- "--cores [0-9]* --resources gpu=1" && ok "local cores + gpu" || fail "local"
 # reads through a chain of links (project -> H1 -> H2): every hop's folder is bound
 mkdir -p "$T/l/samples/B" "$H1/hop" "$H2/raw"; for r in r1 r2; do touch "$H2/raw/B_$r.fastq.gz"
@@ -75,7 +76,7 @@ rm "$T/bin/apptainer"
 python3 - "$T/l/config/imp_config_A.yaml" <<'P' && ok "local cluster_specs valid for getThreads" || fail "cluster_specs"
 import sys, yaml, math
 c = yaml.safe_load(open(sys.argv[1]))
-assert c["container"] == "/img/imp3.sif" and c["tmp_root"] == "/tmp"
+assert c["container"] == "/img/imp3.sif" and c["tmp_root"] == "/dev/shm"
 for k in ("main_cluster", "high_mem_cluster"):
     s = c["cluster_specs"][k]
     assert math.floor(s["big_mem_total"] / s["big_mem_per_core"]) == s["big_mem_cores"]

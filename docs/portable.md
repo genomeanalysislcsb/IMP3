@@ -132,7 +132,8 @@ pre_commands: ["module load tools/Singularity"]     # if apptainer / singularity
 
 - sets `container:` in the sample config (the Snakefile declares it as `containerized:`);
 - binds the IMP3 folder, the project, the databases, the read folders and every existing path of the config
-  (Mantis folders, proteomics files), plus `bind:`;
+  (Mantis folders, proteomics files), plus `bind:`, and the root of `tmp_root` (`/dev/shm` by default: IMP3's
+  temporary folder and Snakemake's shadow folders; some sites give the container a private `/dev/shm`);
 - keeps these paths as written (only symlinked files are followed, through every link of a chain, each folder bound): on a site with several clusters, use paths that
   exist on all of them, e.g. `/work/projects/...` on ULHPC rather than `/mnt/aiongpfs/...` (aion only);
 - binds each as `path:path`: without a destination Apptainer resolves symlinks in the path and mounts the folder

@@ -295,7 +295,10 @@ def binds(s, cfg, reads):
     def root(p):
         p = os.path.normpath(p)
         return next((m for m in sorted(roots, key=len) if p == m or p.startswith(m.rstrip("/") + "/")), p)
-    out = []
+    # IMP3's temporary folder and Snakemake's shadow folders live under tmp_root (default /dev/shm): bound
+    # explicitly, since sites may give the container a private /dev/shm or /tmp ('mount dev = minimal')
+    tmp = str(cfg.get("tmp_root") or "/dev/shm")
+    out = [b for b in ("/dev/shm", "/tmp") if tmp == b or tmp.startswith(b + "/")]
     for p in sorted({root(p) for p in paths if p}, key=len):
         if p in SYSTEM_DIRS or p.split("/")[1] in ("dev", "proc", "sys", "etc", "usr", "bin", "lib", "lib64",
                                                      "conda-envs", "opt") and p.count("/") <= 2:
