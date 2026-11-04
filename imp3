@@ -20,6 +20,7 @@ import hashlib
 import os
 import re
 import shlex
+import socket
 import shutil
 import subprocess
 import tempfile
@@ -415,12 +416,23 @@ def run_sample(s, sample, reads, extra, dry):
     unlock = [c for c in cmd if c not in ("--dry-run", "--quiet")] + ["--unlock", "--quiet"]
     subprocess.run(["bash", "-c", shell_line(s, unlock)], cwd=s["project"], stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL)
-    with open(log, "w") as fh:
-        fh.write("== %s: IMP3 for sample %s\n== %s\n" % (datetime.datetime.now().isoformat(timespec="seconds"),
-                                                        sample, shell_line(s, cmd)))
-        fh.flush()
-        r = subprocess.run(["bash", "-c", shell_line(s, cmd)], cwd=s["project"], stdout=fh,
-                           stderr=subprocess.STDOUT)
+    # imp3 status: this master is running (host, pid, Slurm job), removed when it ends
+    marker = os.path.join(s["project"], "imp_run_logs", "imp_%s.running" % sample)
+    with open(marker, "w") as fh:
+        fh.write("%s %d %s %s\n" % (socket.gethostname(), os.getpid(), os.environ.get("SLURM_JOB_ID", "-"),
+                                    os.path.basename(log)))
+    try:
+        with open(log, "w") as fh:
+            fh.write("== %s: IMP3 for sample %s\n== %s\n" % (datetime.datetime.now().isoformat(timespec="seconds"),
+                                                            sample, shell_line(s, cmd)))
+            fh.flush()
+            r = subprocess.run(["bash", "-c", shell_line(s, cmd)], cwd=s["project"], stdout=fh,
+                               stderr=subprocess.STDOUT)
+    finally:
+        try:
+            os.remove(marker)
+        except OSError:
+            pass
     say("%s finished with exit code %d (log %s)" % (sample, r.returncode, os.path.relpath(log, s["project"])))
     return sample, r.returncode
 
@@ -479,6 +491,30 @@ def cmd_run(a):
 
 
 # ----------------------------------------------------------------------------------------------------------- status
+def master_alive(marker):
+    """True / False if the master of a .running marker is (not) alive, None if this cannot be checked here"""
+    try:
+        host, pid, job = open(marker).read().split()[:3]
+    except (OSError, ValueError):
+        return None
+    if job != "-" and shutil.which("squeue"):
+        for args in (["-M", "all"], []):
+            r = subprocess.run(["squeue", "-h", "-j", job, "-o", "%T"] + args, stdout=subprocess.PIPE,
+                               stderr=subprocess.DEVNULL, universal_newlines=True)
+            if r.returncode == 0:
+                return any(x.strip() in ("RUNNING", "COMPLETING", "PENDING", "CONFIGURING")
+                           for x in r.stdout.splitlines())
+    if host == socket.gethostname():
+        try:
+            os.kill(int(pid), 0)
+            return True
+        except ProcessLookupError:
+            return False
+        except (PermissionError, ValueError):
+            return None
+    return None
+
+
 def cmd_status(a):
     s = load_settings(a.project)
     samples = discover_samples(s)
@@ -487,26 +523,28 @@ def cmd_status(a):
         out = os.path.join(s["project"], "imp", k)
         logs = sorted(glob.glob(os.path.join(s["project"], "imp_run_logs", "imp_%s_*.log" % k)))
         steps = sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(out, "status", "*.done")))
-        locked = bool(glob.glob(os.path.join(out, ".snakemake", "locks", "*")))
         sub = os.path.join(s["project"], "imp_run_logs", "imp_%s.submitted" % k)
+        run = os.path.join(s["project"], "imp_run_logs", "imp_%s.running" % k)
+        alive = master_alive(run) if os.path.exists(run) else False
+        tail = open(logs[-1], errors="replace").read()[-20000:] if logs else ""
+        errors = bool(re.search(r"Error in rule|WorkflowError|MissingInputException", tail))
         if os.path.exists(os.path.join(out, DONE)):
             st = "done"
         elif os.path.exists(sub) and (not logs or os.path.getmtime(sub) > os.path.getmtime(logs[-1])):
             st = "submitted"
-        elif locked:
-            st = "running"
+        elif alive or (alive is None and os.path.exists(run)):
+            # keep-going: a failed rule does not stop the master; 'running?' = master on another machine
+            st = ("running" if alive else "running?") + ("+err" if errors else "")
         elif logs:
-            tail = open(logs[-1], errors="replace").read()[-20000:]
-            st = "failed" if re.search(r"Exiting because a job execution failed|Error in rule|"
-                                       r"WorkflowError|MissingInputException", tail) else "stopped"
+            st = "failed" if errors or "Exiting because a job execution failed" in tail else "stopped"
         else:
             st = "not started"
         rows.append((k, st, ",".join(x for x in steps if x not in ("all",)) or "-",
                      os.path.relpath(logs[-1], s["project"]) if logs else "-"))
     w = max([len(r[0]) for r in rows] + [6])
-    print("%-*s  %-11s  %-60s  %s" % (w, "sample", "status", "steps done", "last log"))
+    print("%-*s  %-12s  %-60s  %s" % (w, "sample", "status", "steps done", "last log"))
     for r in rows:
-        print("%-*s  %-11s  %-60s  %s" % (w, r[0], r[1], r[2][:60], r[3]))
+        print("%-*s  %-12s  %-60s  %s" % (w, r[0], r[1], r[2][:60], r[3]))
     from collections import Counter
     c = Counter(r[1] for r in rows)
     print("\n" + ", ".join("%s %d" % (k, v) for k, v in sorted(c.items())))

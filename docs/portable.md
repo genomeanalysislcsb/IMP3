@@ -47,6 +47,10 @@ cd my_project
 /path/to/IMP3/imp3 status                   # done / running / failed / stopped per sample, steps done, last log
 ```
 
+`imp3 status` states: `submitted` (master submitted, not started yet), `running` (its master is alive: Slurm job or
+process; `running?` when that cannot be checked from this machine), `+err` (a rule failed; with keep-going the
+master runs the other rules on), `failed`, `stopped`, `done`.
+
 On a cluster, `imp3 run` runs the Snakemake masters on the machine where it is started (e.g. in tmux on a login
 node, as before). `imp3 run --submit` instead submits every master as a long Slurm job (`submit_master` options,
 1 core), so nothing has to keep running on the login node; each master then submits the rules as usual.

@@ -43,6 +43,15 @@ grep -q -- "--profile $T/p/profile --conda-prefix" "$CALLS" && ok "slurm: profil
 rm -rf "$T/p/imp/S1"; "$I" run -p "$T/p" --submit >/dev/null 2>&1
 grep -q "SBATCH --job-name imp3_S1 .*--wrap .*imp3 run -p $T/p --samples S1 --foreground" "$CALLS" && ok "submit master" || fail "submit"
 "$I" status -p "$T/p" | grep -q "^S1 *submitted" && ok "status: submitted until the master starts" || fail "status submitted"
+# running master (marker with host + pid), errors of keep-going, stale marker
+rm -f "$T/p/imp_run_logs/imp_S1.submitted"; mkdir -p "$T/p/imp/S1"
+printf "== x\nError in rule trimming:\n" > "$T/p/imp_run_logs/imp_S1_099.log"
+sleep 30 & SP=$!
+echo "$(python3 -c 'import socket;print(socket.gethostname())') $SP - imp_S1_099.log" > "$T/p/imp_run_logs/imp_S1.running"
+"$I" status -p "$T/p" | grep -q "^S1 *running+err" && ok "status: running (with errors, keep-going)" || fail "status running"
+kill $SP; wait $SP 2>/dev/null || true
+"$I" status -p "$T/p" | grep -q "^S1 *failed" && ok "status: stale marker -> failed" || fail "status stale"
+rm -f "$T/p/imp_run_logs/imp_S1.running" "$T/p/imp_run_logs/imp_S1_099.log"
 
 "$I" init "$T/u" --site ulhpc --container /img/imp3.sif --db /data/db >/dev/null 2>&1
 grep -q '^tmp_root: /scratch/users/$USER/imp3_tmp' "$T/u/imp3.yaml" && grep -q "container_mounts:" "$T/u/imp3.yaml" \
