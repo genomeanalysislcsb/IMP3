@@ -47,6 +47,8 @@ not part of this repository.
 - [IMP explorer](https://github.com/genomeanalysislcsb/imp-explorer): study-level interactive exploration of IMP3 results
 - [sRNA-IMP](https://github.com/genomeanalysislcsb/sRNA-IMP): small-RNA analysis on the IMP3 assembly
 
+Known open points (removed or postponed features): [TODO.md](TODO.md).
+
 ## History and licence
 
 IMP3 continues IMP ([Narayanasamy et al. 2016](https://doi.org/10.1186/s13059-016-1116-8)). Development moved from
