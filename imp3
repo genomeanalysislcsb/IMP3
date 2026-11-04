@@ -713,8 +713,14 @@ From: {base}
 %post
     set -e
     export DEBIAN_FRONTEND=noninteractive
-    apt-get update && apt-get install -y --no-install-recommends rsync pigz parallel bc file unzip wget curl git procps \
-        less ca-certificates && rm -rf /var/lib/apt/lists/*
+    # system tools the rules call outside their environments (imp3 tools lists them). Separate commands: with
+    # 'a && b' a failing apt-get does not stop the build (set -e). Sandbox user root: fakeroot builds cannot switch
+    # to the _apt user
+    A="-o APT::Sandbox::User=root"
+    apt-get $A update
+    apt-get $A install -y --no-install-recommends rsync pigz parallel bc file unzip wget curl git procps less tree \
+        ca-certificates
+    rm -rf /var/lib/apt/lists/*
     # tools of the rules without their own environment (shell one-liners, python helpers), in their own environment:
     # installing them into base updates libraries that base's mamba / conda need
     /opt/conda/bin/conda create -y -p /opt/imp3-tools -c conda-forge -c bioconda python=3.11 pandas numpy pyyaml \
@@ -741,7 +747,7 @@ From: {base}
 %test
     test -d /conda-envs && ls /conda-envs | head
     /opt/conda/bin/conda --version
-    parallel --version | head -1
+    for c in rsync pigz parallel bc file unzip wget curl git tree; do command -v $c >/dev/null || {{ echo "missing $c"; exit 1; }}; done
 
 %help
     IMP3 container. Run IMP3 with 'imp3 run' (container: /path/to/imp3.sif in imp3.yaml), or directly:
