@@ -27,12 +27,6 @@ megahit_assembly_from_preprocessing:
 megahit_assembly_from_unmapped:
   partition: "-l highmem"
 
-metaspades_assembly_from_preprocessing:
-  partition: "-l highmem"
-
-metaspades_assembly_from_unmapped:
-  partition: "-l highmem"
-
 cap3:
   partition: "-l highmem"
 
@@ -46,12 +40,6 @@ megahit_hybrid_assembly_1:
   partition: "-l highmem"
 
 megahit_hybrid_assembly_2:
-  partition: "-l highmem"
-
-metaspades_hybrid_assembly_1:
-  partition: "-l highmem"
-
-metaspades_hybrid_assembly_2:
   partition: "-l highmem"
 
 collapse_hybrid_assemblies:

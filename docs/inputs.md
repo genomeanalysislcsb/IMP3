@@ -32,18 +32,6 @@ raws:
   Metatranscriptomics: "/path/mt.r1.fq.gz /path/mt.r2.fq.gz /path/mt.se.fq.gz"
 ```
 
-## Long reads
-
-Preprocessed long metaG reads, used together with short metaG reads in a metaSPAdes hybrid assembly
-(`assembly.assembler: metaspades`):
-
-```yaml
-raws:
-  Metagenomics: "/path/mg.r1.fastq.gz /path/mg.r2.fastq.gz"
-  LongReads: "/path/longreads.fastq"
-  LongReadTech: "nanopore"        # or pacbio
-```
-
 ## Existing assembly
 
 To annotate and bin an assembly made elsewhere, give the contigs (FASTA headers = contig names only, no spaces)

@@ -44,14 +44,6 @@ megahit_assembly_from_unmapped:
   partition: "bigmem"
   qos: "long"
 
-metaspades_assembly_from_preprocessing:
-  partition: "bigmem"
-  qos: "long"
-
-metaspades_assembly_from_unmapped:
-  partition: "bigmem"
-  qos: "long"
-
 merge_assembly_cap3:
   partition: "bigmem"
   qos: "long"
@@ -75,14 +67,6 @@ megahit_hybrid_assembly_1:
   qos: "long"
 
 megahit_hybrid_assembly_2:
-  partition: "bigmem"
-  qos: "long"
-
-metaspades_hybrid_assembly_1:
-  partition: "bigmem"
-  qos: "long"
-
-metaspades_hybrid_assembly_2:
   partition: "bigmem"
   qos: "long"
 

@@ -47,7 +47,7 @@ or `T`.
 | key | default | meaning |
 |---|---|---|
 | `assembly.hybrid` | true | assemble mg and mt reads together |
-| `assembly.assembler` | `megahit` | `megahit` or `metaspades` |
+| `assembly.assembler` | `megahit` | `megahit` (metaSPAdes was removed) |
 | `assembly.merge` | `quickmerge` | merging of the assembly rounds |
 | `assembly.kmer_list`, `mink`, `maxk`, `step` | 21–141 | k-mers |
 

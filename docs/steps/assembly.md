@@ -28,19 +28,14 @@ flowchart TB
 4. The contigs of both hybrid rounds are merged (`assembly.merge`: **quickmerge** or CAP3).
 5. Both omics are mapped to the final contigs with BWA-MEM2.
 
-The assembler is **MEGAHIT** (default) or metaSPAdes (`assembly.assembler`); the k-mer settings are under
-`assembly`.
+The assembler is **MEGAHIT**; the k-mer settings are under `assembly`. (metaSPAdes, and with it the long-read
+hybrid assembly, was removed.)
 
 ## Single-omic assembly (metaG or metaT)
 
 With one kind of reads (or both but `hybrid: false`, then the metaG reads are assembled): assemble, map back,
 assemble the unmapped reads again, merge both contig sets, map the reads to the final contigs. In the non-hybrid
 case with both omics, metaG and metaT reads are both mapped to the metagenomic assembly.
-
-## Short + long metaG reads
-
-With `LongReads` and `assembler: metaspades`, metaSPAdes co-assembles long and short metaG reads in the first
-round; only the short reads are mapped back and used in the second round.
 
 ## After the assembly
 

@@ -22,6 +22,6 @@ MIT licence, © Helmholtz Centre for Environmental Research (UFZ) & Luxembourg C
 ## Citing the tools
 
 When you publish IMP3 results, cite IMP and the tools of the steps you ran. The main ones:
-fastp, BWA-MEM2, SortMeRNA, MEGAHIT / metaSPAdes, quickmerge / CAP3, Bakta, Mantis, HMMER, featureCounts,
+fastp, BWA-MEM2, SortMeRNA, MEGAHIT, quickmerge / CAP3, Bakta, Mantis, HMMER, featureCounts,
 Kraken2, Bracken, mOTUs, GTDB-Tk, CheckM2, DAS Tool, MetaWrap and the binners you used (CONCOCT, MetaBAT 2,
 MetaDecoder, SemiBin, COMEBin, binny, MaxBin).

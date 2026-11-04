@@ -152,6 +152,13 @@ NORMALIZE_MT_READ_COVERAGE = str(config["read_coverage_normalization"]['normaliz
 FILTER = config['filtering']['filter'].split()
 # Importing assembler from the configuration file
 IMP_ASSEMBLER = config['assembly']['assembler']
+# metaSPAdes (and with it the long-read hybrid assembly) was removed: its hybrid rules never worked, and MEGAHIT
+# covers metaG, metaT and the hybrid assembly
+if IMP_ASSEMBLER != 'megahit':
+    raise Exception("assembly: assembler: %s is not supported; use megahit (metaSPAdes was removed)" % IMP_ASSEMBLER)
+if LONG:
+    raise Exception("raws: LongReads: long reads were only used by the metaSPAdes assembly, which was removed; "
+                    "leave LongReads empty")
 # Importing binners from the configuration file and splitting them
 BIN_STEPS = config['binning']['binners'].split()
 # Checking if the number of binning methods exceeds the maximum limit of 6
