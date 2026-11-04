@@ -145,7 +145,9 @@ if __name__ == '__main__':
     mantis = read_mantis_consensus(snakemake.input.mantis)
 
     # # Fill NAs in Links col to prevent breaking of processing
-    mantis['Links'].fillna('Annotation_status:Unannotated', inplace=True)
+    # (assignment, not inplace=True on the column: with pandas' copy-on-write, the default from pandas 3, an
+    # inplace fillna on mantis['Links'] does not change mantis)
+    mantis['Links'] = mantis['Links'].fillna('Annotation_status:Unannotated')
     # print(mantis[mantis['Links'] == 'Unannotated'])
 
     # check attribute keys appearing in given input files: there should be no overlap
