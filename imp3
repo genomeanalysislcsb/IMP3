@@ -333,7 +333,13 @@ def snakemake_cmd(s, cfg_file, cfg, reads, extra, dry):
 
 
 def shell_line(s, cmd):
-    pre = " && ".join(s.get("pre_commands") or [])
+    pre = list(s.get("pre_commands") or [])
+    if s.get("container"):
+        # RHEL-like hosts export a bash function 'which' (/etc/profile.d/which2.sh: which --tty-only --read-alias ...);
+        # bash in the container imports it and the image's which rejects those options ('Illegal option --'), e.g.
+        # in COMEBin's run_comebin_train.sh. Unset after the pre_commands (source /etc/profile defines it again)
+        pre.append("unset -f which")
+    pre = " && ".join(pre)
     line = " ".join(shlex.quote(c) for c in cmd)
     return (pre + " && " + line) if pre else line
 

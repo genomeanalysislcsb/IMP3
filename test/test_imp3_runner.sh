@@ -63,6 +63,10 @@ mkdir -p "$T/l/samples/A"; touch "$T/l/samples/A/mg.r1.fq.gz" "$T/l/samples/A/mg
 "$I" run -p "$T/l" >/dev/null 2>&1
 tail -1 "$CALLS" | grep -q -- "--use-conda --use-singularity --singularity-args --nv --bind /data/db:/data/db --bind $T" && ok "container args" || fail "container args"
 tail -1 "$CALLS" | grep -q -- "--cores [0-9]* --resources gpu=1" && ok "local cores + gpu" || fail "local"
+which() { echo "exported which"; }; export -f which
+"$I" run -p "$T/l" --force -n 2>&1 | grep -q "unset -f which && snakemake" && ok "container: exported which function unset" \
+  || fail "unset which"
+unset -f which
 # reads through a chain of links (project -> H1 -> H2): every hop's folder is bound
 mkdir -p "$T/l/samples/B" "$H1/hop" "$H2/raw"; for r in r1 r2; do touch "$H2/raw/B_$r.fastq.gz"
   ln -s "$H2/raw/B_$r.fastq.gz" "$H1/hop/mg.$r.fq.gz"; ln -s "$H1/hop/mg.$r.fq.gz" "$T/l/samples/B/mg.$r.fq.gz"; done
