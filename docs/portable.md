@@ -132,14 +132,17 @@ pre_commands: ["module load tools/Singularity"]     # if apptainer / singularity
 
 - sets `container:` in the sample config (the Snakefile declares it as `containerized:`);
 - binds the IMP3 folder, the project, the databases, the read folders and every existing path of the config
-  (Mantis folders, proteomics files), plus `bind:`, and the root of `tmp_root` (`/dev/shm` by default: IMP3's
-  temporary folder and Snakemake's shadow folders; some sites give the container a private `/dev/shm`);
+  (Mantis folders, proteomics files), plus `bind:`;
 - keeps these paths as written (only symlinked files are followed, through every link of a chain, each folder bound): on a site with several clusters, use paths that
   exist on all of them, e.g. `/work/projects/...` on ULHPC rather than `/mnt/aiongpfs/...` (aion only);
 - binds each as `path:path`: without a destination Apptainer resolves symlinks in the path and mounts the folder
   at its real path, so e.g. `/work/projects/...` would not exist in the container;
 - checks once, with the image, that every bound folder is visible in the container, and stops a sample that would
   not find its files (see *Mount points* below); without apptainer on the node it only says so;
+- checks that the temporary folder (`tmp_root`, default `/dev/shm`: IMP3's temporary files and Snakemake's shadow
+  folders) is the same inside the container. Some sites give the container its own empty `/dev/shm` (ULHPC), and
+  shadow rules then fail with empty logs; set `tmp_root` to a shared file system there, e.g.
+  `/scratch/users/$USER/imp3_tmp` (`imp3 init --site ulhpc --container ...` does);
 - adds `--nv`, so COMEBin sees the GPU of a GPU node (a warning on nodes without GPU, harmless);
 - creates the marker files of IMP3's setup rules (`submodules/comebin.ready`, ...) if missing: the setup was done when
   the image was built.

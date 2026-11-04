@@ -21,6 +21,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import tempfile
 import threading
 import sys
 
@@ -287,18 +288,15 @@ def binds(s, cfg, reads):
         p = os.path.expandvars(p)
         if os.path.exists(p):
             paths.append(p if os.path.isdir(p) else os.path.dirname(p))
-    if cfg.get("tmp_root") and not str(cfg["tmp_root"]).startswith(("/dev/shm", "/tmp")):
-        paths.append(cfg["tmp_root"])
+    if cfg.get("tmp_root") and not tmp_root(cfg).startswith(("/dev/shm", "/tmp")):
+        paths.append(tmp_root(cfg))
     # below a mount point of the image: bind the mount point (Apptainer without overlay, e.g. ULHPC, skips a bind
     # whose destination folder does not exist in the image)
     roots = [os.path.normpath(m) for m in (s.get("container_mounts") or []) if m]
     def root(p):
         p = os.path.normpath(p)
         return next((m for m in sorted(roots, key=len) if p == m or p.startswith(m.rstrip("/") + "/")), p)
-    # IMP3's temporary folder and Snakemake's shadow folders live under tmp_root (default /dev/shm): bound
-    # explicitly, since sites may give the container a private /dev/shm or /tmp ('mount dev = minimal')
-    tmp = str(cfg.get("tmp_root") or "/dev/shm")
-    out = [b for b in ("/dev/shm", "/tmp") if tmp == b or tmp.startswith(b + "/")]
+    out = []
     for p in sorted({root(p) for p in paths if p}, key=len):
         if p in SYSTEM_DIRS or p.split("/")[1] in ("dev", "proc", "sys", "etc", "usr", "bin", "lib", "lib64",
                                                      "conda-envs", "opt") and p.count("/") <= 2:
@@ -350,18 +348,25 @@ def next_log(s, sample):
 _CHECKED, _CHECK_LOCK = set(), threading.Lock()
 
 
-def check_binds(s, bind_list):
+def tmp_root(cfg):
+    """root of IMP3's temporary folder and Snakemake's shadow folders, as workflow/rules/ini/config.smk sets it"""
+    return os.path.expandvars(str(cfg.get("tmp_root") or os.environ.get("IMP3_TMP_ROOT") or "/dev/shm"))
+
+
+def check_binds(s, bind_list, probes=()):
     """the bound folders as the rules see them: a bind whose destination is not in the image is skipped silently by
-    Apptainer without overlay; returns the folders missing in the container ([] when they are all there or the check
-    cannot run, e.g. no apptainer on this node)"""
+    Apptainer without overlay; probes: further folders that must be visible without a bind (a fresh folder under
+    the temporary root: some sites give the container a private /dev/shm). Returns the folders missing in the
+    container ([] when they are all there or the check cannot run, e.g. no apptainer on this node)"""
     with _CHECK_LOCK:
         todo = [b for b in bind_list if b not in _CHECKED]
-        if not todo:
+        if not todo and not probes:
             return []
         args = " ".join("--bind %s" % shlex.quote("%s:%s" % (b, b)) for b in todo)
         test = 'for d in "$@"; do [ -d "$d" ] || echo "MISSING $d"; done; echo IMP3_BINDS_CHECKED'
         line = ('APP=$(command -v apptainer || command -v singularity) && "$APP" -s exec %s %s sh -c %s sh %s'
-                % (args, shlex.quote(s["container"]), shlex.quote(test), " ".join(shlex.quote(b) for b in todo)))
+                % (args, shlex.quote(s["container"]), shlex.quote(test),
+                   " ".join(shlex.quote(b) for b in list(todo) + list(probes))))
         try:
             r = subprocess.run(["bash", "-c", shell_line(s, ["true"]) + " && " + line], capture_output=True,
                                text=True, timeout=600)
@@ -381,7 +386,19 @@ def run_sample(s, sample, reads, extra, dry):
     cfg_file, cfg = sample_config(s, sample, reads)
     if s.get("container"):
         container_markers(s)
-        missing = check_binds(s, binds(s, cfg, reads))
+        tmp = tmp_root(cfg)
+        os.makedirs(tmp, exist_ok=True)
+        probe = tempfile.mkdtemp(prefix=".imp3_check_", dir=tmp)
+        try:
+            missing = check_binds(s, binds(s, cfg, reads), [probe])
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+        if probe in missing:
+            say("%s: the temporary folder %s is not shared with the container on this site (e.g. a private /dev/shm "
+                "in the container); IMP3's temporary files and Snakemake's shadow folders would not be found. Set "
+                "tmp_root in imp3.yaml to a folder on a shared file system, e.g. /scratch/users/$USER/imp3_tmp"
+                % (sample, tmp))
+            return sample, 1
         if missing:
             say("%s: not visible in the container: %s. This Apptainer cannot create bind destinations that the image "
                 "lacks (no overlay). Build their roots into the image (imp3 containerize --mounts, or a layer on the "
@@ -537,7 +554,9 @@ def cmd_init(a):
         "parallel_samples": 10 if a.executor == "slurm" else 1,
         "submit_master": DEFAULTS["submit_master"],
         "pre_commands": ["module load tools/Singularity"] if (a.container and a.site == "ulhpc") else [],
-        "tmp_root": "" if a.executor == "slurm" else "/tmp",
+        # ULHPC: the container gets a private /dev/shm, so the temporary files go to the scratch file system
+        "tmp_root": ("/scratch/users/$USER/imp3_tmp" if (a.container and a.site == "ulhpc") else
+                     "" if a.executor == "slurm" else "/tmp"),
         "gpu": "auto", "cores": 0, "mem_gb": 0,
         "snakemake_args": "",
     }
@@ -564,7 +583,8 @@ SETTINGS_HEADER = """# IMP3 project settings (imp3 run / imp3 status). Paths are
 #   parallel_samples Snakemake masters at the same time (local: 1, one sample after the other)
 #   submit_master    sbatch options when the masters run as Slurm jobs (imp3 run --submit)
 #   pre_commands     shell lines before Snakemake, e.g. module load tools/Singularity
-#   tmp_root         root of IMP3's temporary folder ("" = /dev/shm)
+#   tmp_root         root of IMP3's temporary folder ("" = /dev/shm); with a container it must be visible inside
+#                    it (imp3 run checks), e.g. /scratch/users/$USER/imp3_tmp where /dev/shm is private there
 #   gpu, cores, mem_gb   local machine: GPUs (auto), cores and memory IMP3 may use (0 = all / 90 %)
 #   snakemake_args   extra Snakemake options for every run
 """
