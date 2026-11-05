@@ -793,9 +793,12 @@ From: {base}
         ca-certificates
     rm -rf /var/lib/apt/lists/*
     # tools of the rules without their own environment (shell one-liners, python helpers), in their own environment:
-    # installing them into base updates libraries that base's mamba / conda need
-    /opt/conda/bin/conda create -y -p /opt/imp3-tools -c conda-forge -c bioconda python=3.11 pandas numpy pyyaml \
-        biopython samtools seqkit && /opt/conda/bin/conda clean -a -y
+    # installing them into base updates libraries that base's mamba / conda need. Versions pinned to the Snakemake
+    # environment of the native runs (python, pandas, numpy, pyyaml), so scripts behave the same (pandas 3 changed
+    # inplace operations on columns)
+    /opt/conda/bin/conda create -y -p /opt/imp3-tools -c conda-forge -c bioconda python=3.11 pandas=2.2.3 \
+        numpy=2.2.3 pyyaml=6.0.2 biopython=1.84 samtools=1.21 seqkit=2.8.2
+    /opt/conda/bin/conda clean -a -y
     # mount points of the site's file systems (imp3 containerize --mounts): Apptainer without overlay skips a bind
     # whose destination does not exist in the image
     mkdir -p /conda-envs {mounts}
@@ -818,6 +821,7 @@ From: {base}
 %test
     test -d /conda-envs && ls /conda-envs | head
     /opt/conda/bin/conda --version
+    /opt/imp3-tools/bin/python -c "import pandas; assert pandas.__version__.startswith('2.'), pandas.__version__"
     for c in rsync pigz parallel bc file unzip wget curl git tree; do command -v $c >/dev/null || {{ echo "missing $c"; exit 1; }}; done
 
 %help
