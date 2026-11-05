@@ -53,7 +53,7 @@ rule mapping_on_assembly:
 
         # map paired and sort
         echo "###### Mapping PE reads and sorting them. ######" >> {log} 2>&1
-        bwa-mem2 mem -v 1 \
+        bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                      -t $bwa_threads \
                      -M \
                      -R '@RG\tID:{params.sample}\tSM:{params.ome}\tPL:platform\tLB:library' \
@@ -68,7 +68,7 @@ rule mapping_on_assembly:
 
         # map se and sort
         echo "###### Mapping SE reads and sorting them. ######" >> {log} 2>&1
-        bwa-mem2 mem -v 1 \
+        bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                      -t $bwa_threads \
                      -M \
                      -R '@RG\tID:{params.sample}\tSM:{params.ome}\tPL:platform\tLB:library' \

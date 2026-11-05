@@ -198,6 +198,11 @@ to_mb_dict = {'K': 1e-3, 'M': 1e0, 'G': 1e3, 'T': 1e6}
 
 # Importing cluster specifications from the configuration file
 MAIN_BIGCORENO = config['cluster_specs']['main_cluster']['big_mem_cores']
+# bwa-mem2 reads in batches of 10 Mbp x threads unless -K is given, and its pairing statistics are per batch: the
+# filtering and mapping results then depend on the number of threads (a 64-core run removed 2.9 % more read pairs
+# as human than the 128-core runs). A fixed batch makes them independent of the threads; the default is the batch
+# of a 128-thread run, so results of the usual 128-core runs stay the same
+BWA_BATCH = int(config.get('bwa_batch_bases', 1280000000))
 MAIN_BIGMEMTOTAL = config['cluster_specs']['main_cluster']['big_mem_total']
 MAIN_MEMCORE = str(config['cluster_specs']['main_cluster']['mem_per_core']) + config['cluster_specs']['mem_unit']
 MAIN_BIGMEMCORE = str(config['cluster_specs']['main_cluster']['big_mem_per_core']) + config['cluster_specs']['mem_unit']

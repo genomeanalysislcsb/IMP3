@@ -24,7 +24,7 @@ checkpoint reads_filtering_se:
     shadow: "copy-minimal"
     shell:
         """
-        bwa-mem2 mem -v 1 \
+        bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                      -t {threads} \
                      {input.ref[0]} \
                      {input.reads} 2> {log} | \

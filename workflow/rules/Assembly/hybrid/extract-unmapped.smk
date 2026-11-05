@@ -5,7 +5,7 @@ EXTRACT_UNMAPPED_SHELL = """
                          TMP_FILE=$(mktemp "alignment_XXXXXX.bam")
 
                          echo "Getting unmapped PE reads." >> {log} 2>&1
-                         bwa-mem2 mem -v 1 \
+                         bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                                       -t {threads} \
                                       {input[3]} \
                                       {input[0]} \
@@ -52,7 +52,7 @@ EXTRACT_UNMAPPED_SHELL = """
                          if [[ -s {input[2]} ]]; then
                            echo "Getting unmapped SE reads." >> {log} 2>&1
                             
-                           bwa-mem2 mem -v 1 \
+                           bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                                         -t {threads} \
                                         {input[3]} \
                                         {input[2]} 2>> {log} | \

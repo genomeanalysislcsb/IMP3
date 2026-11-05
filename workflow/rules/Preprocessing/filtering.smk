@@ -29,7 +29,7 @@ rule reads_filtering:
         
         echo "Mapping PE reads." >> {log} 2>&1
 
-        bwa-mem2 mem -v 1 \
+        bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                      -t {threads} \
                      {input.ref[0]} \
                      {input.reads[0]} \
@@ -82,7 +82,7 @@ rule reads_filtering:
         if [[ -s {input.reads[2]} ]]; then
             echo "Mapping SE reads." >> {log} 2>&1
 
-            bwa-mem2 mem -v 1 \
+            bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                         -t {threads} \
                         {input.ref[0]} \
                         {input.reads[2]} 2>> {log} | \

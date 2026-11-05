@@ -2,7 +2,7 @@ SAMTOOLS_MEM = str(round(float(MAIN_BIGMEMCORE[:-1]) * 0.75 - 0.5)) + config['cl
 
 EXTRACT_UNMAPPED_SHELL = """
                          echo "Mapping SE reads." >> {log} 2>&1
-                         bwa-mem2 mem -v 1 \
+                         bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                                       -t {threads} \
                                       {input[1]} \
                                       {input[0]} 2>> {log} | \

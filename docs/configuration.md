@@ -58,6 +58,7 @@ or `T`.
 | `mantis.default.*_ref_folder` | KOfam | reference folders (KOfam, NCBI, eggNOG, Pfam, TCDB) |
 | `hmm_DBs`, `hmm_settings` | | extra HMM databases and their cut-offs |
 | `featureCountsStranding` | `mt: 2`, `mg: 0` | strandedness for featureCounts |
+| `bwa_batch_bases` | 1280000000 | bwa-mem2 `-K`: bases per batch, so that read filtering and mapping do not depend on the number of threads (default = the batch of a 128-thread run) |
 
 ## Taxonomy
 
