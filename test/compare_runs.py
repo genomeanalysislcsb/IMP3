@@ -257,7 +257,7 @@ def main(argv=None):
             print("  %s: cannot read (%s)" % (r, e))
             continue
         both = pd.DataFrame({"ref": x, "new": y}).fillna(0)
-        rho = both["ref"].corr(both["new"], method="spearman") if len(both) > 2 else float("nan")
+        rho = both["ref"].rank().corr(both["new"].rank()) if len(both) > 2 else float("nan")   # Spearman without scipy
         print("  %-40s terms %6d %6d  reads %10d %10d (%s)  Spearman %.3f" % (
             os.path.basename(r), int((x > 0).sum()), int((y > 0).sum()), int(x.sum()), int(y.sum()),
             rel(x.sum(), y.sum()), rho))
