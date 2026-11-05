@@ -21,3 +21,6 @@ missing; remove it when it is done (the commit says so).
   (`annotation: hmmer`, not in `IMP_annotation.yaml`), `java` (VizBin), and the database setup rules
   (`bwa-mem2`, `prokka`, `mongod`, `checkm2`). Either add them to their environments / the image or remove the
   rules that are no longer used.
+- Tool caches in the sample folder: in the container Snakemake sets `--home` to the sample's output folder, so
+  matplotlib, Java, Keras and GNU parallel leave `.cache/`, `.java/`, `.keras/`, `.parallel/` there (harmless, a few
+  files). Could point HOME to the run's temporary folder instead.

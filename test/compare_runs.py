@@ -4,6 +4,7 @@
   python test/compare_runs.py REFERENCE_DIR NEW_DIR [--top 15] [--out report.tsv]
 
 Compares: status markers, files (missing / new, size changes of large outputs), assembly (contigs, length, N50),
+bins per binner (number, total size, size distribution),
 Stats/all_stats.tsv, final bins (CheckM2 quality tiers), Bracken profiles per rank (Bray-Curtis, top taxa),
 Mantis featureCounts per database (terms, reads, Spearman). Needs Python 3 with pandas.
 Small differences are expected (multi-threaded assemblers and binners are not deterministic); look for missing
@@ -12,6 +13,7 @@ import argparse
 import glob
 import gzip
 import os
+import re
 import sys
 
 import pandas as pd
@@ -30,7 +32,7 @@ def section(t):
 def files(d):
     out = {}
     for root, dirs, fs in os.walk(d):
-        dirs[:] = [x for x in dirs if x not in SKIP_DIRS]
+        dirs[:] = [x for x in dirs if x not in SKIP_DIRS and not x.startswith(".")]
         for f in fs:
             p = os.path.join(root, f)
             try:
@@ -65,7 +67,7 @@ def fasta_stats(p):
 
 def first(d, patterns):
     for pat in patterns:
-        hits = sorted(glob.glob(os.path.join(d, pat)))
+        hits = sorted(glob.glob(os.path.join(d, pat)) + glob.glob(os.path.join(d, pat + ".gz")))
         if hits:
             return hits[0]
     return None
@@ -120,24 +122,42 @@ def main(argv=None):
 
     section("files (without %s)" % ", ".join(SKIP_DIRS))
     fr, fn = files(R), files(N)
-    miss, new = sorted(set(fr) - set(fn)), sorted(set(fn) - set(fr))
-    print("%d files in reference, %d in new; %d missing in new, %d only in new" % (len(fr), len(fn), len(miss), len(new)))
-    for p in miss[:40]:
+
+    def is_bin(p):          # bin FASTAs: names and sizes differ between runs (binners are not deterministic)
+        return p.startswith("Binning/") and "/bins/" in p
+    print("%d files in reference, %d in new (bin FASTAs: per binner, see below)" % (len(fr), len(fn)))
+    miss = sorted(p for p in set(fr) - set(fn) if not is_bin(p))
+    new = sorted(p for p in set(fn) - set(fr) if not is_bin(p))
+    for p in miss[:60]:
         print("  missing  %s  (%.1f MB)" % (p, fr[p] / 1e6))
-    if len(miss) > 40:
-        print("  ... %d more" % (len(miss) - 40))
+    if len(miss) > 60:
+        print("  ... %d more" % (len(miss) - 60))
     if miss:
-        problems.append("%d files missing in new" % len(miss))
-    for p in new[:15]:
+        problems.append("%d files missing in new: %s" % (len(miss), ", ".join(miss[:5]) + (" ..." if len(miss) > 5 else "")))
+    for p in new[:30]:
         print("  new      %s" % p)
-    big = [(p, fr[p], fn[p]) for p in set(fr) & set(fn) if max(fr[p], fn[p]) >= a.min_size * 1e6
+    if len(new) > 30:
+        print("  ... %d more new" % (len(new) - 30))
+    binners = sorted({p.split("/")[1] for p in list(fr) + list(fn) if is_bin(p)})
+    bin_rows = []
+    for b in binners:
+        row = [b]
+        for d, f in ((R, fr), (N, fn)):
+            sizes = [fasta_stats(os.path.join(d, p))["total_bp"] for p in sorted(f)
+                     if is_bin(p) and p.split("/")[1] == b and re.search(r"\.(fa|fasta|fna)(\.gz)?$", p)
+                     and p.count("/") == 3]          # Binning/<binner>/bins/<bin>.fa(.gz), not per-bin subfolders
+            row.append(sizes)
+        bin_rows.append(row)
+        if row[1] and not row[2]:
+            problems.append("no %s bins in new" % b)
+    big = [(p, fr[p], fn[p]) for p in set(fr) & set(fn) if not is_bin(p) and max(fr[p], fn[p]) >= a.min_size * 1e6
            and abs(fn[p] - fr[p]) > a.size_change * max(fr[p], 1)]
     for p, x, y in sorted(big):
         print("  size     %s  %.1f -> %.1f MB (%s)" % (p, x / 1e6, y / 1e6, rel(x, y)))
 
     section("assembly")
-    pr = first(R, ["Assembly/*.assembly.merged.fa", "Assembly/*.assembly.merged.fa.gz"])
-    pn = first(N, ["Assembly/*.assembly.merged.fa", "Assembly/*.assembly.merged.fa.gz"])
+    pr = first(R, ["Assembly/*.assembly.merged.fa"])
+    pn = first(N, ["Assembly/*.assembly.merged.fa"])
     if pr and pn:
         x, y = fasta_stats(pr), fasta_stats(pn)
         for k in x:
@@ -148,7 +168,7 @@ def main(argv=None):
             problems.append("no assembly in new")
 
     section("Stats/all_stats.tsv")
-    ar, an = os.path.join(R, "Stats", "all_stats.tsv"), os.path.join(N, "Stats", "all_stats.tsv")
+    ar, an = first(R, ["Stats/all_stats.tsv"]) or "-", first(N, ["Stats/all_stats.tsv"]) or "-"
     if os.path.exists(ar) and os.path.exists(an):
         x, y = pd.read_csv(ar, sep="\t"), pd.read_csv(an, sep="\t")
         keys = [c for c in ("type", "step") if c in x.columns and c in y.columns]
@@ -161,23 +181,49 @@ def main(argv=None):
     else:
         print("  not in %s" % ", ".join(n for n, p in (("reference", ar), ("new", an)) if not os.path.exists(p)))
 
-    section("final bins (CheckM2 tiers)")
-    br = first(R, ["Stats/all_bin_stats.tsv", "Stats/*/*.bins.tsv"])
-    bn = first(N, ["Stats/all_bin_stats.tsv", "Stats/*/*.bins.tsv"])
-    if br and bn:
-        x, y = tiers(pd.read_csv(br, sep="\t")), tiers(pd.read_csv(bn, sep="\t"))
-        if x and y:
-            for k in x:
-                print("  %-14s %6s %6s" % (k, x[k], y[k]))
-        else:
-            print("  no completeness / contamination columns in %s" % os.path.basename(br))
+    section("bins per binner (bin names and contents differ between runs: number and size distribution)")
+    if bin_rows:
+        print("  %-12s %17s %17s   %-41s %17s" % ("", "bins", "total Mb", "median Mb (IQR)", "bins >= 1 Mb"))
+        print("  %-12s %8s %8s %8s %8s   %-20s %-20s %8s %8s" % ("binner", "ref", "new", "ref", "new", "ref", "new",
+                                                              "ref", "new"))
+        for b, x, y in bin_rows:
+            def q(v, f):
+                return pd.Series(v).quantile(f) / 1e6 if v else 0
+            print("  %-12s %8d %8d %8.1f %8.1f   %-20s %-20s %8d %8d" % (
+                b, len(x), len(y), sum(x) / 1e6, sum(y) / 1e6,
+                "%.2f (%.2f-%.2f)" % (q(x, .5), q(x, .25), q(x, .75)), "%.2f (%.2f-%.2f)" % (q(y, .5), q(y, .25), q(y, .75)),
+                sum(1 for v in x if v >= 1e6), sum(1 for v in y if v >= 1e6)))
     else:
-        print("  bin table missing: %s" % ("reference" if not br else "new"))
+        print("  no Binning/<binner>/bins/ folders")
+
+    section("final bins (CheckM2 tiers)")
+    pats = ["Stats/all_bin_stats.tsv", "Stats/*/*.bins.tsv", "Binning/MetaWrap/*checkm2*/quality_report.tsv",
+            "Binning/*/*checkm2*/quality_report.tsv", "Binning/*/quality_report.tsv"]
+    br, bn = first(R, pats), first(N, pats)
+    t = {}
+    for name, p in (("reference", br), ("new", bn)):
+        if p:
+            try:
+                t[name] = tiers(pd.read_csv(p, sep="\t"))
+            except Exception as e:
+                t[name] = None
+                print("  %s: cannot read %s (%s)" % (name, p, e))
+            print("  %-9s %s" % (name, os.path.relpath(p, R if name == "reference" else N)))
+        else:
+            print("  %-9s no bin table (%s)" % (name, ", ".join(pats)))
+    if t.get("reference") or t.get("new"):
+        keys = list((t.get("reference") or t.get("new")).keys())
+        for k in keys:
+            print("  %-14s %6s %6s" % (k, (t.get("reference") or {}).get(k, "-"), (t.get("new") or {}).get(k, "-")))
 
     section("Bracken profiles (fraction of reads)")
-    for pr in sorted(glob.glob(os.path.join(R, "Analysis", "taxonomy", "bracken", "*", "*.bracken"))):
+    if not glob.glob(os.path.join(R, "Analysis", "taxonomy", "bracken", "*", "*.bracken*")):
+        print("  no Analysis/taxonomy/bracken/<omic>/<rank>.bracken in the reference; found: %s" % (", ".join(
+            os.path.relpath(p, R) for p in sorted(glob.glob(os.path.join(R, "Analysis", "taxonomy", "*", "*bracken*")))[:8])
+            or "-"))
+    for pr in sorted(glob.glob(os.path.join(R, "Analysis", "taxonomy", "bracken", "*", "*.bracken*"))):
         r = os.path.relpath(pr, R)
-        pn = os.path.join(N, r)
+        pn = first(N, [r[:-3] if r.endswith(".gz") else r]) or os.path.join(N, r)
         if not os.path.exists(pn):
             print("  %s: missing in new" % r)
             continue
@@ -188,15 +234,19 @@ def main(argv=None):
             print("  %s: cannot read (%s)" % (r, e))
             continue
         print("  %-40s taxa %5d %5d  Bray-Curtis %.3f" % (r, len(x), len(y), bray_curtis(x, y)))
-        if r.endswith(("/G.bracken", "/S.bracken")):
+        if r.endswith(("/G.bracken", "/S.bracken", "/G.bracken.gz", "/S.bracken.gz")):
             t = pd.DataFrame({"ref": x, "new": y}).fillna(0).sort_values("ref", ascending=False).head(a.top)
             for name, row in t.iterrows():
                 print("      %-40s %7.4f %7.4f" % (str(name)[:40], row["ref"], row["new"]))
 
     section("Mantis featureCounts per database")
-    for pr in sorted(glob.glob(os.path.join(R, "Analysis", "annotation", "*.mantis.*.counts.tsv"))):
+    if not glob.glob(os.path.join(R, "Analysis", "annotation", "*.mantis.*.counts.tsv*")):
+        print("  no Analysis/annotation/<omic>.mantis.<db>.counts.tsv in the reference; found: %s" % (", ".join(
+            os.path.relpath(p, R) for p in sorted(glob.glob(os.path.join(R, "Analysis", "annotation", "*counts*")))[:8])
+            or "-"))
+    for pr in sorted(glob.glob(os.path.join(R, "Analysis", "annotation", "*.mantis.*.counts.tsv*"))):
         r = os.path.relpath(pr, R)
-        pn = os.path.join(N, r)
+        pn = first(N, [r[:-3] if r.endswith(".gz") else r]) or os.path.join(N, r)
         if not os.path.exists(pn):
             print("  %s: missing in new" % r)
             continue
