@@ -50,6 +50,21 @@ grep -q "^custom_ref=$B/database/hmms/checkm_tf/checkm_filtered_tf.hmm$" "$B/con
 rm -rf "$T/p/imp/S1"; "$I" run -p "$T/p" --submit >/dev/null 2>&1
 grep -q "SBATCH --job-name imp3_S1 .*--wrap .*imp3 run -p $T/p --samples S1 --foreground" "$CALLS" && ok "submit master" || fail "submit"
 "$I" status -p "$T/p" | grep -q "^S1 *submitted" && ok "status: submitted until the master starts" || fail "status submitted"
+# max_threads: cores_max of the sample config capped
+"$I" run -p "$T/p" --samples S2 --force --max-threads 16 >/dev/null 2>&1
+python3 - "$T/p/config/imp_config_S2.yaml" <<'P' && ok "--max-threads caps cores_max" || fail "max threads"
+import sys, yaml
+c = yaml.safe_load(open(sys.argv[1]))["cluster_specs"]
+assert all(c[k]["cores_max"] <= 16 and c[k]["big_mem_cores_max"] <= 16 for k in ("main_cluster", "high_mem_cluster"))
+P
+# master as a Slurm job on another cluster: found in the user's squeue list
+mkdir -p "$T/p/imp/S1"; rm -f "$T/p/imp_run_logs/imp_S1.submitted"; printf "== x\n" > "$T/p/imp_run_logs/imp_S1_098.log"
+printf '#!/bin/bash\necho "CLUSTER: iris"; echo "6283057 RUNNING"\n' > "$T/bin/squeue"; chmod +x "$T/bin/squeue"
+echo "otherhost 1 6283057 imp_S1_098.log" > "$T/p/imp_run_logs/imp_S1.running"
+"$I" status -p "$T/p" | grep -q "^S1 *running " && ok "status: master job found with squeue -M all" || fail "status squeue"
+printf '#!/bin/bash\necho "CLUSTER: iris"\n' > "$T/bin/squeue"
+"$I" status -p "$T/p" | grep -q "^S1 *stopped" && ok "status: master job gone -> stopped" || fail "status squeue gone"
+rm -f "$T/bin/squeue" "$T/p/imp_run_logs/imp_S1.running" "$T/p/imp_run_logs/imp_S1_098.log"
 # running master (marker with host + pid), errors of keep-going, stale marker
 rm -f "$T/p/imp_run_logs/imp_S1.submitted"; mkdir -p "$T/p/imp/S1"
 printf "== x\nError in rule trimming:\n" > "$T/p/imp_run_logs/imp_S1_099.log"

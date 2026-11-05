@@ -68,6 +68,7 @@ node, as before). `imp3 run --submit` instead submits every master as a long Slu
 | `conda_prefix` | – | conda environments of IMP3 (native runs) |
 | `container` | – | IMP3 `.sif`: every rule runs in the container |
 | `bind` | – | extra folders the container must see (reads, databases, IMP3 and the project are bound automatically) |
+| `max_threads` | 0 | most threads any rule may use (0 = IMP3's own, up to 128); e.g. 16 for small test data, so the jobs do not wait for whole nodes. `imp3 run --max-threads N` for one run |
 | `container_mounts` | – | mount points built into the image (see *Mount points*); folders below them are bound as the mount point |
 | `parallel_samples` | 10 (local: 1) | Snakemake masters at the same time |
 | `submit_master` | `--time 5-00:00:00 --qos long --cpus-per-task 1 --mem 8G` | `sbatch` options for `imp3 run --submit` |

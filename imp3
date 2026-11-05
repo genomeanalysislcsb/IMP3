@@ -105,6 +105,7 @@ DEFAULTS = {
     "cores": 0,                    # local: cores (0 = all)
     "mem_gb": 0,                   # local: memory for IMP3 (0 = 90 % of the machine)
     "tmp_root": "",                # root of the per-run temp dir ("" = /dev/shm, IMP3's default)
+    "max_threads": 0,              # most threads any rule may use (0 = IMP3's own, up to 128); e.g. 16 for test data
     "parallel_samples": 10,        # samples (Snakemake masters) at the same time
     "submit_master": "--time 5-00:00:00 --qos long --cpus-per-task 1 --mem 8G",   # sbatch options for --submit
     "pre_commands": [],            # shell lines before Snakemake, e.g. "module load tools/Singularity"
@@ -231,6 +232,16 @@ def sample_config(s, sample, reads):
     if s["executor"] == "local":
         cores, mem, _ = local_resources(s)
         cfg["cluster_specs"] = local_cluster_specs(cores, mem)
+    # max_threads: no rule asks for more threads (getThreads caps at cores_max; memory is per thread, so it shrinks
+    # too), e.g. for small test data, where IMP3's fixed thread counts (up to 128) only wait longer in the queue
+    mt = int(s.get("max_threads") or 0)
+    if mt > 0:
+        for k in ("main_cluster", "high_mem_cluster"):
+            spec = (cfg.get("cluster_specs") or {}).get(k)
+            if isinstance(spec, dict):
+                for c in ("cores_max", "big_mem_cores_max"):
+                    if c in spec:
+                        spec[c] = min(int(spec[c]), mt)
     os.makedirs(os.path.join(s["project"], "config"), exist_ok=True)
     out = os.path.join(s["project"], "config", "imp_config_%s.yaml" % sample)
     with open(out, "w") as fh:
@@ -474,8 +485,10 @@ def submit_master(s, sample, extra):
     """one Slurm job per sample that runs its Snakemake master (instead of a tmux session on the login node)"""
     logdir = os.path.join(s["project"], "slurm_logs")
     os.makedirs(logdir, exist_ok=True)
-    me = [sys.executable, follow_links(__file__), "run", "-p", s["project"], "--samples", sample,
-          "--foreground"] + (["--"] + list(extra) if extra else [])
+    me = [sys.executable, follow_links(__file__), "run", "-p", s["project"], "--samples", sample, "--foreground"]
+    if int(s.get("max_threads") or 0):
+        me += ["--max-threads", str(int(s["max_threads"]))]
+    me += (["--"] + list(extra) if extra else [])
     wrap = shell_line(dict(s, pre_commands=[]), me)
     cmd = ["sbatch", "--job-name", "imp3_%s" % sample, "--output", os.path.join(logdir, "imp3_master_%s_%%j.out" % sample)]
     cmd += shlex.split(s.get("submit_master") or "") + ["--wrap", wrap]
@@ -492,6 +505,8 @@ def submit_master(s, sample, extra):
 
 def cmd_run(a):
     s = load_settings(a.project)
+    if a.max_threads is not None:
+        s["max_threads"] = a.max_threads
     samples = discover_samples(s)
     if a.samples:
         want = [x for x in re.split(r"[,\s]+", a.samples) if x]
@@ -531,12 +546,17 @@ def master_alive(marker):
     except (OSError, ValueError):
         return None
     if job != "-" and shutil.which("squeue"):
+        # the user's jobs on all clusters (squeue -j fails for a job of another cluster of a multi-cluster Slurm)
+        user = os.environ.get("USER") or ""
         for args in (["-M", "all"], []):
-            r = subprocess.run(["squeue", "-h", "-j", job, "-o", "%T"] + args, stdout=subprocess.PIPE,
+            r = subprocess.run(["squeue", "-h", "-u", user, "-o", "%i %T"] + args, stdout=subprocess.PIPE,
                                stderr=subprocess.DEVNULL, universal_newlines=True)
             if r.returncode == 0:
-                return any(x.strip() in ("RUNNING", "COMPLETING", "PENDING", "CONFIGURING")
-                           for x in r.stdout.splitlines())
+                for x in r.stdout.splitlines():
+                    p = x.split()
+                    if len(p) == 2 and p[0].split(";")[0] == job:
+                        return p[1] in ("RUNNING", "COMPLETING", "PENDING", "CONFIGURING")
+                return False
     if host == socket.gethostname():
         try:
             os.kill(int(pid), 0)
@@ -637,7 +657,7 @@ def cmd_init(a):
         # ULHPC: the container gets a private /dev/shm, so the temporary files go to the scratch file system
         "tmp_root": ("/scratch/users/$USER/imp3_tmp" if (a.container and a.site == "ulhpc") else
                      "" if a.executor == "slurm" else "/tmp"),
-        "gpu": "auto", "cores": 0, "mem_gb": 0,
+        "gpu": "auto", "cores": 0, "mem_gb": 0, "max_threads": 0,
         "snakemake_args": "",
     }
     with open(os.path.join(p, SETTINGS), "w") as fh:
@@ -666,6 +686,7 @@ SETTINGS_HEADER = """# IMP3 project settings (imp3 run / imp3 status). Paths are
 #   tmp_root         root of IMP3's temporary folder ("" = /dev/shm); with a container it must be visible inside
 #                    it (imp3 run checks), e.g. /scratch/users/$USER/imp3_tmp where /dev/shm is private there
 #   gpu, cores, mem_gb   local machine: GPUs (auto), cores and memory IMP3 may use (0 = all / 90 %)
+#   max_threads      most threads per rule (0 = IMP3's own, up to 128): e.g. 16 for small test data
 #   snakemake_args   extra Snakemake options for every run
 """
 
@@ -1011,6 +1032,7 @@ def main(argv=None):
     p.add_argument("--foreground", action="store_true", help=argparse.SUPPRESS)
     p.add_argument("-n", "--dry-run", action="store_true", help="show what would run")
     p.add_argument("--force", action="store_true", help="also samples with status/all.done")
+    p.add_argument("--max-threads", type=int, default=None, help="most threads per rule for this run [max_threads]")
     p.add_argument("extra", nargs=argparse.REMAINDER, help="after --: extra Snakemake options, e.g. -- --until assembly")
     p = sub.add_parser("status", help="state of every sample")
     p.add_argument("-p", "--project", default=".")
