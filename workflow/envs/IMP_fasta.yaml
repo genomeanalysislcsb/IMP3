@@ -1,7 +1,0 @@
-name: IMP_fasta
-channels:
-  - conda-forge
-  - bioconda
-  - nodefaults
-dependencies:
-  - fastx_toolkit=0.0.14

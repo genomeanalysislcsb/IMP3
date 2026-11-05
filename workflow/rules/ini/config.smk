@@ -147,7 +147,21 @@ PREPROCESSING_FILTERING = config['preprocessing_filtering']
 FILTER_STEPS = config['filtering']['filter'].split()
 # Importing rrna_filtering from the configuration file and ensure type boolean
 KEEP_RRNAs = str(config['keep_rrnas']).lower() in ['true', '1', 'yes', 'y', 't']
-NORMALIZE_MT_READ_COVERAGE = str(config["read_coverage_normalization"]['normalize_read_coverage']).lower() in ['true', '1', 'yes', 'y', 't']
+# Removed options (their conda environments were never installed): stop with a clear message if a config asks for them
+_removed = []
+if str(config.get("read_coverage_normalization", {}).get("normalize_read_coverage", False)).lower() in ['true', '1', 'yes', 'y', 't']:
+    _removed.append("read_coverage_normalization: normalize_read_coverage (BBNorm)")
+if str(config.get("eukdetect", {}).get("run_eukdetect", False)).lower() in ['true', '1', 'yes', 'y', 't']:
+    _removed.append("eukdetect: run_eukdetect")
+if config.get("annotation", "mantis") != "mantis":
+    _removed.append("annotation: %s (only mantis)" % config.get("annotation"))
+if "DB" in str(config.get("summary_steps", "")).split():
+    _removed.append("summary_steps: DB (MongoDB)")
+for _b in ("MaxBin", "abawaca"):
+    if _b in str(config.get("binning", {}).get("binners", "")).split():
+        _removed.append("binning: binners: %s" % _b)
+if _removed:
+    raise Exception("These IMP3 options were removed, change them in the config: " + "; ".join(_removed))
 # Importing filter from the configuration file and splitting it
 FILTER = config['filtering']['filter'].split()
 # Importing assembler from the configuration file

@@ -12,7 +12,6 @@ workflow (`install/Snakefile`) downloads and prepares them; some are downloaded 
 | analysis | extra HMM collections | by hand | `hmm_DBs`, `hmm_settings` |
 | taxonomy | Kraken2 database (e.g. MiniKraken, PlusPFP, NCBI nt, GTDB) + Bracken k-mer files | install workflow (`kraken2`) | `kraken.krakendb` |
 | taxonomy | mOTUs database | install workflow / first use | `motus` |
-| taxonomy | EukDetect BUSCO database (optional) | by hand | `eukdetect.database_dir` |
 | binning | CheckM2 database | main workflow on first use (`get_checkm2_db`) | – |
 | binning / taxonomy | GTDB-Tk reference data | install workflow (`gtdbtk`) | – |
 

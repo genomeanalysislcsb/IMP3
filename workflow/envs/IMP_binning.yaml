@@ -1,9 +1,0 @@
-name: IMP_binning
-channels:
-  - conda-forge
-  - shengwei
-  - bioconda
-  - nodefaults
-dependencies:
-  - abawaca=1.07
-  - perl-bioperl-core

@@ -43,9 +43,6 @@ outputdir: "/mnt/isilon/projects/ecosystem_biology/user/ohickl/test_multi_imp"  
 summarydir: ""
 # Options stats, vis
 summary_steps: "stats"
-mongo_user: "myUserAdmin"
-mongo_port: 16626
-mongo_password: "testMongo"
 compress_level: "mid"
 db_path: "/mnt/isilon/projects/ecosystem_biology/databases/imp3_sl"  ### USER_INPUT ####
 trimmomatic:
@@ -127,35 +124,6 @@ mantis:
     uniprot_ec_weight: 0.9
 # Choose between nothing and one or multiple of: KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM
 # e.g. "KEGG essential Pfam_A"
-hmm_DBs: ""
-hmm_settings: 
-  KEGG:
-    cutoff: ""
-    trim: "--trimall"
-  essential:
-    cutoff: "--cut_tc"
-    trim: ""
-  metacyc:
-    cutoff: ""
-    trim: "--trimall"
-  Cas:
-    cutoff: ""
-    trim: ""
-  Pfam_A:
-    cutoff: "--cut_tc"
-    trim: ""
-  SwissProt:
-    cutoff: ""
-    trim: "--trimall"
-  TIGRPFAM:
-    cutoff: ""
-    trim: ""
-  dbCAN:
-    cutoff: ""
-    trim: ""
-  Resfams:
-    cutoff: ""
-    trim: ""
 # Choose between nothing and one or multiple of: COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552
 # e.g. "COG0012 COG0018 COG0215"
 COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
@@ -167,12 +135,9 @@ proteomics:
   host_proteome: ""
   insert_variants: false
 binning:
-  # Options: abawaca COMEBin CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
+  # Options: COMEBin CONCOCT binny MetaBAT MetaDecoder SemiBin
   # NOTE: IMP supports a maximum of six binners only atm.
   binners: "MetaDecoder"
-  abawaca:
-    esom_min: 2500
-    esom_max: 5000
   binny:
     kmers: '2,3,4'
     mask_disruptive_sequences: 'True'
@@ -200,8 +165,6 @@ binning:
       purity: 95
   CONCOCT:
     cutoff: 2000
-  MaxBin:
-    cutoff: 1000
   MetaBAT:
     # Minimum is 1500
     cutoff: 1500
@@ -221,12 +184,6 @@ binning:
 kraken:
   confidence: 0.501
   krakendb: 20230502_kraken_nt  ### USER_INPUT #### minikraken2_v2_8GB_201904_UPDATE
-eukdetect:
-  run_eukdetect: false
-  eukdetect_dir: ../EukDetect
-  database_dir: eukdetect_database_v1
-  # eukdetect does not recommend pre-trimming, but I don't see why we should keep stuff we don't want
-  min_readlen: 60
 locked_normalMem: 0
 locked_bigMem: 0
 locked_bigCores: 0

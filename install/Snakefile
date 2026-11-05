@@ -47,7 +47,7 @@ include:
         "rules/cdhit.smk"
 
 TARGETS = ["checkm/checkm_db.ready", os.path.join(SUBMOD_DIR, "binny/setup.done"), "SemiBin_setup.done",
-           os.path.join(SUBMOD_DIR, "ESOM/setup.done"), "qm.ready", "motus_db_download.done",
+           "qm.ready", "motus_db_download.done",
            os.path.join(SUBMOD_DIR, "cdhit", "cd-hit-est")]
 
 # adapters, Trimmomatic

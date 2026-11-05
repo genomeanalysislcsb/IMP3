@@ -21,7 +21,7 @@ read pairs.
 | file | content |
 |---|---|
 | `Stats/all_stats.tsv` | one table of the run: reads per preprocessing step, mapping, Kraken / mOTUs counts, annotation counts, assembly and bin numbers (`type`, `step`, `number`) |
-| `Stats/all_bin_stats.tsv`, `Stats/mgmt/mgmt.bins.tsv` | final bins: CheckM2 completeness / contamination, N50, size, GC, GTDB-Tk classification and closest reference, GRiD |
+| `Stats/all_bin_stats.tsv`, `Stats/mgmt/mgmt.bins.tsv` | final bins: CheckM2 completeness / contamination, N50, size, GC, GTDB-Tk classification and closest reference |
 | `Stats/{mg,mt}/{omic}.read_stats.tsv` | seqkit statistics of raw and trimmed reads |
 | `Stats/{mg,mt}/{omic}.r{1,2}_nonpareil.diversity.txt` | Nonpareil sequence diversity |
 | `Stats/{mg,mt}/mgmt.assembly.contig_read_count.txt` | reads per contig (contig, start, end, reads) |

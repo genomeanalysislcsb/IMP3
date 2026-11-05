@@ -40,9 +40,6 @@ outputdir: "/mnt/lscratch/users/ohickl/prospectomics/tests/imp_test_se"  ### USE
 summarydir: ""
 # Options stats, vis
 summary_steps: "stats"
-mongo_user: "myUserAdmin"
-mongo_port: 16626
-mongo_password: "testMongo"
 compress_level: "mid"
 db_path: "/mnt/lscratch/users/ohickl/databases/imp3"  ### USER_INPUT ####
 # Read trimming and quality control
@@ -122,10 +119,6 @@ filtering:
 # Keep rRNA reads in preprocessed reads
 keep_rrnas: false
 # Normalize read coverage for MT reads
-read_coverage_normalization:
-  normalize_read_coverage: false
-  target_cov: 50
-  min_cov: 2
 assembly: 
   hybrid: true
   assembler: megahit
@@ -176,35 +169,6 @@ mantis:
     uniprot_ec_weight: 0.9
 # Choose between nothing and one or multiple of: KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM
 # e.g. "KEGG essential Pfam_A"
-hmm_DBs: ""
-hmm_settings: 
-  KEGG:
-    cutoff: ""
-    trim: "--trimall"
-  essential:
-    cutoff: "--cut_tc"
-    trim: ""
-  metacyc:
-    cutoff: ""
-    trim: "--trimall"
-  Cas:
-    cutoff: ""
-    trim: ""
-  Pfam_A:
-    cutoff: "--cut_tc"
-    trim: ""
-  SwissProt:
-    cutoff: ""
-    trim: "--trimall"
-  TIGRPFAM:
-    cutoff: ""
-    trim: ""
-  dbCAN:
-    cutoff: ""
-    trim: ""
-  Resfams:
-    cutoff: ""
-    trim: ""
 # Choose between nothing and one or multiple of: COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552
 # e.g. "COG0012 COG0018 COG0215"
 COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
@@ -223,12 +187,9 @@ proteomics:
   # Path to CRAP common contaminants database
   crap_db: "/mnt/lscratch/users/ohickl/databases/imp3/proteomics/20240515_CCP_cRAP.fasta"  ### USER_INPUT ####
 binning:
-  # Options: abawaca COMEBin CONCOCT binny MaxBin MetaBAT MetaDecoder SemiBin
+  # Options: COMEBin CONCOCT binny MetaBAT MetaDecoder SemiBin
   # NOTE: IMP supports a maximum of six binners only atm.
   binners: "COMEBin"
-  abawaca:
-    esom_min: 2500
-    esom_max: 5000
   comebin:
     cutoff: 1000
   binny:
@@ -257,8 +218,6 @@ binning:
       start_completeness: 92.5
       purity: 95
   CONCOCT:
-    cutoff: 1000
-  MaxBin:
     cutoff: 1000
   MetaBAT:
     # Minimum is 1500
@@ -293,12 +252,6 @@ motus:
   min_read_len_mg: 75
   min_read_len_mt: 75
   min_markers: 3
-eukdetect:
-  run_eukdetect: false
-  eukdetect_dir: ../EukDetect
-  database_dir: eukdetect_database_v1
-  # eukdetect does not recommend pre-trimming, but I don't see why we should keep stuff we don't want
-  min_readlen: 60
 locked_normalMem: 0
 locked_bigMem: 0
 locked_bigCores: 0

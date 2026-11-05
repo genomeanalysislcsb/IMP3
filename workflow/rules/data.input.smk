@@ -345,7 +345,7 @@ rule check_ann_input:
         mem_mb = MAIN_MEMCORE_MB
     message: "Checking annotation."
     conda:
-        os.path.join(ENVDIR, "IMP_bioperl.yaml")
+        os.path.join(ENVDIR, "IMP_taxonomy.yaml")   # perl-bioperl (Bio::DB::Fasta)
     shadow: "copy-minimal"
     shell:
         """

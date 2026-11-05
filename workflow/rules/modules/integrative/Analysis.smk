@@ -24,11 +24,6 @@ rule ANALYSIS:
                type=TYPES,
                db=["ID", "Name"],
                feature=["CRISPR", "CDS", "crispr-repeat", "crispr-spacer", "ncRNA", "oriC", "oriT", "regulatory_region", "rRNA", "tmRNA", "tRNA"]),
-        expand("Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.per_contig.counts.tsv",
-               type=TYPES,
-               db=config["hmm_DBs"].split())
-            if config["annotation"] == "hmmer"
-            else [],
         aggregate_mantis_fc_per_contig
             if config["annotation"] == "mantis"
             else [],
@@ -37,11 +32,6 @@ rule ANALYSIS:
                type=TYPES,
                db=["ID", "Name"],
                feature=["CRISPR", "CDS", "crispr-repeat", "crispr-spacer", "ncRNA", "oriC", "oriT", "regulatory_region", "rRNA", "tmRNA", "tRNA"]),
-        expand("Analysis/annotation/{type}.hmmer.{db}.counts.tsv",
-               type=TYPES,
-               db=config["hmm_DBs"].split())
-            if config["annotation"] == "hmmer"
-            else [],
         aggregate_mantis_fc
             if config["annotation"] == "mantis"
             else [],

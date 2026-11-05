@@ -8,7 +8,7 @@
 - **IMP3** re-implemented IMP in Snakemake with conda environments and extended it with binning, read- and
   contig-based taxonomy, long reads and modular steps (first documentation 2020, Anna Heintz-Buschart).
 - **IMP3 3.0** (current) replaced Trimmomatic by fastp and Prokka by Bakta, added Mantis annotation, several
-  binners with DAS Tool / MetaWrap refinement, CheckM2, GTDB-Tk, GRiD, mOTUs, Nonpareil and per-sample
+  binners with DAS Tool / MetaWrap refinement, CheckM2, GTDB-Tk, mOTUs, Nonpareil and per-sample
   statistics tables.
 
 The development history moved from the LCSB GitLab to
@@ -22,6 +22,6 @@ MIT licence, © Helmholtz Centre for Environmental Research (UFZ) & Luxembourg C
 ## Citing the tools
 
 When you publish IMP3 results, cite IMP and the tools of the steps you ran. The main ones:
-fastp, BWA-MEM2, SortMeRNA, MEGAHIT, quickmerge / CAP3, Bakta, Mantis, HMMER, featureCounts,
+fastp, BWA-MEM2, SortMeRNA, MEGAHIT, quickmerge / CAP3, Bakta, Mantis, featureCounts,
 Kraken2, Bracken, mOTUs, GTDB-Tk, CheckM2, DAS Tool, MetaWrap and the binners you used (CONCOCT, MetaBAT 2,
-MetaDecoder, SemiBin, COMEBin, binny, MaxBin).
+MetaDecoder, SemiBin, COMEBin, binny).

@@ -34,7 +34,6 @@ preparation, so rRNA reads are left out of the assembly; they are kept in `Prepr
 
 ## Optional and QC steps
 
-- **Coverage normalisation** of metaT reads with BBNorm (`read_coverage_normalization`), for very deep libraries.
 - **FastQC** on raw and preprocessed reads, **Nonpareil** sequence-coverage estimates of the metagenome
   (`Stats/mg/mg.r{1,2}_nonpareil.*`), and read statistics per step (`Stats/{omic}/{omic}.read_stats.tsv`).
 

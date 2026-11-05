@@ -36,10 +36,6 @@ else:
 include: "../../Taxonomy/mOTUlink.smk"
 include: "../../Taxonomy/mOTUs.smk"
 include: "../../Taxonomy/gtdbtk_bins.smk"
-if config['eukdetect']['run_eukdetect']:
-    include:
-        "../../Taxonomy/eukdetect.smk"
-
 
 # --- Master Rule: TAXONOMY ---
 # This rule aggregates all the final outputs from the taxonomy module.
@@ -53,8 +49,6 @@ if MG or MT:
     tax_ctrl.extend(expand("Analysis/taxonomy/kraken/{type}.kraken.report", type=TYPES))
     tax_ctrl.append(expand("status/{type}.bracken.done", type=TYPES))
     tax_ctrl.append(expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{out_type}.tsv", type=TYPES, out_type=["counts", "rel_abun"]))
-    if config['eukdetect']['run_eukdetect']:
-        tax_ctrl.append("status/eukdetect.done")
 
 if "assembly" in IMP_STEPS:
     tax_ctrl.append("Analysis/taxonomy/kraken/%s.kraken.contig.report" % ASS)

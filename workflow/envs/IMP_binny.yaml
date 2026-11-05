@@ -1,8 +1,0 @@
-name: IMP_binny
-channels:
-  - conda-forge
-  - bioconda
-  - nodefaults
-dependencies:
-  - binny=2.2.18
-  - seqkit=2.8.2

@@ -39,7 +39,7 @@ cd my_project                       # reads in samples/<sample>/ (file names wit
 > **Snakemake 7 note:** IMP3 needs a patched `unshadow_output` in Snakemake's `dag.py` for the shadow directive;
 > see [Installation](https://genomeanalysislcsb.github.io/IMP3/installation/#snakemake-7-and-the-shadow-directive).
 
-Third-party tools (binny, Bakta, COMEBin, CD-HIT, ESOM, KrakenTools) are installed by the install workflow and are
+Third-party tools (binny, Bakta, COMEBin, CD-HIT, KrakenTools) are installed by the install workflow and are
 not part of this repository.
 
 ## Downstream

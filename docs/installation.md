@@ -94,7 +94,6 @@ internet access on the node where they run.
 | folder | content | installed by | needed for |
 |---|---|---|---|
 | `binny/` | binny (fork, branch `imp`), with its marker database | install workflow (`binny_setup`) | binner `binny` |
-| `ESOM/` | ESOM wrapper (tetramerFreqs/Binning) | install workflow (`abawaca_setup`) | binner `abawaca` |
 | `cdhit/` | CD-HIT, compiled for long sequences | install workflow (`cdhit_compile`) | assembly merging |
 | `KrakenTools/` | `combine_kreports.py` | install workflow (`krakentools_download`) | Kraken2 reports |
 | `comebin/`, `comebin.ready` | COMEBin fork (improved clustering); patches the COMEBin environment | first run (`setup_comebin_scripts_from_fork`) | binner `COMEBin` |
@@ -107,7 +106,7 @@ to redo its step.
 Check an installation:
 
 ```bash
-ls submodules/   # binny  cdhit  ESOM  KrakenTools  (after the first run also: bakta  comebin  *.ready)
+ls submodules/   # binny  cdhit  KrakenTools  (after the first run also: bakta  comebin  *.ready)
 ```
 
 A second IMP3 checkout of the same version (e.g. a new clone next to a working installation) can reuse all of it:

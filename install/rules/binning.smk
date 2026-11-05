@@ -133,29 +133,3 @@ rule semibin_setup:
             check_install >> {log} 2>&1 && \
         touch {output.semibin_install_done}
         """
-
-##################################################
-# abawaca
-##################################################
-
-rule abawaca_setup:
-    output:
-        esom_dir=directory(os.path.join(SUBMOD_DIR, "ESOM")),
-        out=os.path.join(SUBMOD_DIR, "ESOM/setup.done")
-    log:
-        os.path.join(INSTALL_DIR, "logs/abawaca_setup.log")
-    threads:
-        1
-    conda:
-        os.path.join(MAIN_ENV_DIR, "IMP_binning.yaml")
-    message:
-        "abawaca: Setting up ESOM for abawaca"
-    shadow: "copy-minimal"
-    shell:
-        """
-        # Get ESOM and stop it from messing with fasta headers
-        echo "Downloading ESOM for abawaca." >> {log} 2>&1
-        git clone --quiet https://github.com/tetramerFreqs/Binning {output.esom_dir} >> {log} 2>&1 && \
-        sed -i '286,292d' {output.esom_dir}/esomWrapper.pl && \
-        touch {output.out}
-        """

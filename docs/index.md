@@ -14,9 +14,9 @@ assembly. It works with metaG and metaT together, with either one alone, and wit
 |---|---|---|
 | [Preprocessing](steps/preprocessing.md) | **fastp**, BWA-MEM2 (PhiX and host filtering), SortMeRNA (rRNA, metaT), BBNorm (optional), Nonpareil, FastQC | trimmed, filtered reads per omic |
 | [Assembly](steps/assembly.md) | **MEGAHIT**, iterative hybrid metaG + metaT assembly, **quickmerge** or CAP3, BWA-MEM2 | one assembly per sample, reads mapped back |
-| [Analysis](steps/analysis.md) | **Bakta** gene calling, **Mantis** (KOfam, Pfam, eggNOG, NCBI, TCDB), HMMER, featureCounts, mosdepth, bcftools | annotation, counts per gene and function, coverage, variants |
-| [Taxonomy](steps/taxonomy.md) | **Kraken2 + Bracken** (reads and contigs), **mOTUs**, EukDetect (optional), GTDB-Tk (bins) | community composition |
-| [Binning](steps/binning.md) | CONCOCT, MetaBAT 2, MetaDecoder, SemiBin, COMEBin, binny, MaxBin → DAS Tool, **MetaWrap** refinement with CheckM2 (GRiD optional) | MAGs with quality and taxonomy |
+| [Analysis](steps/analysis.md) | **Bakta** gene calling, **Mantis** (KOfam, Pfam, eggNOG, NCBI, TCDB), featureCounts, mosdepth, bcftools | annotation, counts per gene and function, coverage, variants |
+| [Taxonomy](steps/taxonomy.md) | **Kraken2 + Bracken** (reads and contigs), **mOTUs**, GTDB-Tk (bins) | community composition |
+| [Binning](steps/binning.md) | CONCOCT, MetaBAT 2, MetaDecoder, SemiBin, COMEBin, binny → DAS Tool, **MetaWrap** refinement with CheckM2 | MAGs with quality and taxonomy |
 | [Summary](steps/summary.md) | R / Python summaries | `Stats/all_stats.tsv`, `Stats/all_bin_stats.tsv` |
 
 ## Getting started

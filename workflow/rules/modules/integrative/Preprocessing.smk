@@ -39,22 +39,10 @@ PREP_IN = [expand([
         "Stats/{type}/{type}.read_stats.tsv"], type=TYPES),
         expand('Stats/mg/mg.{read}_nonpareil.diversity.txt',read=["r1","r2"])]
 
-# include MT read coverafe normalization or not
-if NORMALIZE_MT_READ_COVERAGE:
-    include:
-        "../../Preprocessing/normalize_coverage.smk"
-
-    MT_R1_ASSEMBLY = 'Preprocessing/mt.r1.preprocessed.normalized.fq'
-    MT_R2_ASSEMBLY = 'Preprocessing/mt.r2.preprocessed.normalized.fq'
-    MT_SE_ASSEMBLY = 'Preprocessing/mt.se.preprocessed.normalized.fq'
-
-    PREP_IN.append(temp('Preprocessing/mt.r1.preprocessed.normalized.fq'))
-    PREP_IN.append(temp('Preprocessing/mt.r2.preprocessed.normalized.fq'))
-    PREP_IN.append(temp('Preprocessing/mt.se.preprocessed.normalized.fq'))
-else:
-    MT_R1_ASSEMBLY = 'Preprocessing/mt.r1.preprocessed.fq.gz'
-    MT_R2_ASSEMBLY = 'Preprocessing/mt.r2.preprocessed.fq.gz'
-    MT_SE_ASSEMBLY = 'Preprocessing/mt.se.preprocessed.fq.gz'
+# metaT reads for the assembly (coverage normalization with BBNorm was removed)
+MT_R1_ASSEMBLY = 'Preprocessing/mt.r1.preprocessed.fq.gz'
+MT_R2_ASSEMBLY = 'Preprocessing/mt.r2.preprocessed.fq.gz'
+MT_SE_ASSEMBLY = 'Preprocessing/mt.se.preprocessed.fq.gz'
 
 # master command
 rule PREPROCESSING:

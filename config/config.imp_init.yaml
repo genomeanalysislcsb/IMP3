@@ -23,9 +23,6 @@ sample: test
 outputdir: "IMP3.initialised"
 summarydir: ""
 summary_steps: "stats vis"
-mongo_user: "myUserAdmin"
-mongo_port: 16626
-mongo_password: "testMongo"
 compress_level: "mid"
 db_path: "../DBs"
 trimmomatic:
@@ -65,35 +62,6 @@ assembly:
   cap3:
     identity: 98
     overlap: 100
-hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
-hmm_settings: 
-  KEGG:
-    cutoff: ""
-    trim: "--trimall"
-  essential:
-    cutoff: "--cut_tc"
-    trim: ""
-  metacyc:
-    cutoff: ""
-    trim: "--trimall"
-  Cas:
-    cutoff: ""
-    trim: ""
-  Pfam_A:
-    cutoff: "--cut_tc"
-    trim: ""
-  SwissProt:
-    cutoff: ""
-    trim: "--trimall"
-  TIGRPFAM:
-    cutoff: ""
-    trim: ""
-  dbCAN:
-    cutoff: ""
-    trim: ""
-  Resfams:
-    cutoff: ""
-    trim: ""
 COGS: "COG0012 COG0018 COG0215 COG0525 COG0541 COG0016 COG0172 COG0495 COG0533 COG0552"
 featureCountsStranding:
   mt: 2
@@ -103,9 +71,7 @@ proteomics:
   host_proteome: ""
   insert_variants: false
 binning:
-  binners: "MaxBin MetaBAT binny"
-  MaxBin:
-    cutoff: 1000
+  binners: "MetaBAT binny"
   MetaBAT:
     cutoff: 1500
   binny:
@@ -116,13 +82,8 @@ binning:
     kmer: 5
     perp: 30
     cutoff: 1000
-annotation: "mantis" # hmmer (default) / mantis
+annotation: "mantis"
 krakendb: minikraken2
-eukdetect:
-  run_eukdetect: false
-  eukdetect_dir: ../EukDetect
-  database_dir: eukdetect_database_v1
-  min_readlen: 60 #eukdetect does not recommend pre-trimming, but I don't see why we should keep stuff we don't want
 locked_normalMem: 0
 locked_bigMem: 0
 locked_bigCores: 0

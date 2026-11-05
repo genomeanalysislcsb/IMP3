@@ -3,6 +3,18 @@
 Open points that are known but not scheduled. Add an item when something is removed, postponed or found
 missing; remove it when it is done (the commit says so).
 
+## Removed, could come back
+
+- Removed together with their (never installed) environments: MaxBin and abawaca binners, BBNorm coverage
+  normalization of metaT reads, EukDetect, HMMER annotation (`annotation: hmmer`, `hmm_DBs`), the MongoDB summary
+  (`summary_steps: DB`), and GRiD (already disabled). Old rules are in the history before the commit that removed
+  them; configs that ask for them stop with a message.
+
+## Inputs
+
+- metaG single-end reads: the Snakefile includes `modules/single_omics/mg/Preprocessing_SE.smk`, which does not
+  exist (there is a half-finished `PreprocessingSE.smk` that asks for r1/r2 files); mg-only single-end runs stop.
+
 ## Assembly
 
 - **metaSPAdes as assembler (removed in 04d0fa5).** Bring it back as an alternative to MEGAHIT, at least for
@@ -17,10 +29,6 @@ missing; remove it when it is done (the commit says so).
 
 ## Container
 
-- Rules that `imp3 tools` reports as missing in the image but that a normal run does not need: `hmmsearch`
-  (`annotation: hmmer`, not in `IMP_annotation.yaml`), `java` (VizBin), and the database setup rules
-  (`bwa-mem2`, `prokka`, `mongod`, `checkm2`). Either add them to their environments / the image or remove the
-  rules that are no longer used.
 - Tool caches in the sample folder: in the container Snakemake sets `--home` to the sample's output folder, so
   matplotlib, Java, Keras and GNU parallel leave `.cache/`, `.java/`, `.keras/`, `.parallel/` there (harmless, a few
   files). Could point HOME to the run's temporary folder instead.

@@ -198,9 +198,6 @@ text_files_to_compress_analysis = []
 if 'analysis' in IMP_STEPS:
     text_files_to_compress_analysis.append("Analysis/annotation/annotation_CDS_RNA_hmms.gff")
     # From featureCount.smk
-    text_files_to_compress_analysis.extend(expand("Analysis/annotation/{type}.hmmer.{db}.counts.tsv",
-                                         type=TYPES,
-                                         db=config["hmm_DBs"].split()) if config["annotation"] == "hmmer" else [])
 
     text_files_to_compress_analysis.append(aggregate_mantis_fc if config["annotation"] == "mantis" else [])
 

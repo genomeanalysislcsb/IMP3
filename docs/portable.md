@@ -180,7 +180,7 @@ the `.sif` to other sites. It must belong to the same IMP3 version: the environm
 `workflow/envs`.
 
 `build.sh` also writes `imp3_submodules.tar.gz`: the third-party code in `submodules/` that Snakemake reads on the
-host (the binny module and its marker database, the Bakta and COMEBin forks, ESOM). It is not part of the
+host (the binny module and its marker database, the Bakta and COMEBin forks). It is not part of the
 repository; at another site unpack it into the IMP3 checkout of the same version
 (`tar -xzf imp3_submodules.tar.gz -C /path/to/IMP3`), next to the `.sif`.
 

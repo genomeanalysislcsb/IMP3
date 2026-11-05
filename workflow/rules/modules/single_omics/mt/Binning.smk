@@ -13,7 +13,6 @@ mw_max_cont = config['binning']['MetaWrap']['max_contamination']
 inputs_binning = ["Binning/DASTool/selected_DASTool_summary.txt",  # "Binning/DASTool.tar.gz",
                   "Binning/MetaWrap/bins.stats"]
 
-## MaxBin doesn't work without mg coverage
 ## MetaBAT
 if "MetaBAT" in BIN_STEPS:
     inputs_binning.append("Binning/MetaBAT/contig2bin.tsv")

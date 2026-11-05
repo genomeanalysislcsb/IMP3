@@ -10,13 +10,12 @@ including partial genes at contig ends, rRNA, tRNA, tmRNA, ncRNA and regulatory 
 oriT sites. Bakta's own functional annotation is kept in `Analysis/annotation/bakta/`; IMP3 uses the filtered gene
 set (`annotation.filt.gff`, `annotation.faa`) for the functional annotation below.
 
-## Functional annotation (Mantis, HMMER)
+## Functional annotation (Mantis)
 
 [Mantis](https://github.com/PedroQueirosLab/mantis) annotates every protein against all configured reference
 databases and builds a consensus: KEGG orthologs, modules, pathways, BRITE, reactions and reaction classes, EC
 numbers, Pfam, TIGRFAM, COG / arCOG, eggNOG, GO, CAZy, TCDB and essential genes (`mantis` in the
-[config](../configuration.md#annotation-and-functions)). Extra HMM collections (`hmm_DBs`) are searched with
-`hmmsearch`. All annotations are merged into `Analysis/annotation/annotation_CDS_RNA_hmms.gff.gz`.
+[config](../configuration.md#annotation-and-functions)). All annotations are merged into `Analysis/annotation/annotation_CDS_RNA_hmms.gff.gz`.
 
 ## Read counts
 

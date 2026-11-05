@@ -26,16 +26,8 @@ PREP_IN = ["Stats/mt/mt.se_fastqc.html",
            "Stats/mt/mt.read_stats.tsv",]
 
 
-# include MT read coverafe normalization or not
-if NORMALIZE_MT_READ_COVERAGE:
-    include:
-        "../../../Preprocessing/normalize_coverage.smk"
-
-    MT_SE_ASSEMBLY = 'Preprocessing/mt.se.preprocessed.normalized.fq'
-
-    PREP_IN.append(temp('Preprocessing/mt.se.preprocessed.normalized.fq'))
-else:
-    MT_SE_ASSEMBLY = 'Preprocessing/mt.se.preprocessed.fq.gz'
+# metaT reads for the assembly (coverage normalization with BBNorm was removed)
+MT_SE_ASSEMBLY = 'Preprocessing/mt.se.preprocessed.fq.gz'
 
 # master command
 rule PREPROCESSING:

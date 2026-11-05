@@ -26,11 +26,6 @@ def get_annotation_files(wildcards):
         for t in TYPES:
             files += expand("Analysis/annotation/{type}.mantis.{ref}.counts.tsv", type=TYPES, ref=refs)
             files += expand("Analysis/annotation/{type}.mantis.{ref}.counts.tsv.summary", type=TYPES, ref=refs)
-    elif ann == "hmmer":
-        hmmer_dbs = config["hmm_DBs"].split()
-        for t in TYPES:
-            for db in hmmer_dbs:
-                files.append(f"Analysis/annotation/{t}.hmmer.{db}.counts.tsv.summary")
     return files
 
 def get_binning_contigs(wildcards):
@@ -89,7 +84,7 @@ rule gather_stats:
         ass = ASS,
         types = TYPES,
         ann = config["annotation"],
-        hmmer_dbs = config['hmm_DBs'].split() if config['annotation'] == "hmmer" else "",
+        hmmer_dbs = "",                     # HMMER annotation was removed (Mantis only)
         mantis_dir = "Analysis/annotation/" if config["annotation"] == "mantis" else ""
     log:
         "logs/misc/gather_stats.log"

@@ -77,14 +77,6 @@ properties:
     type: string
   summary_steps:
     type: string
-  mongo_user:
-    type: string
-  mongo_port:
-    type:
-      - string
-      - number
-  mongo_password:
-    type: string
   compress_level:
     type: string
   db_path:
@@ -183,14 +175,9 @@ properties:
   annotation:
     type: string
     enum:
-      - "hmmer"
       - "mantis"
-    default: "hmmer"
+    default: "mantis"
   mantis:
-    type: object
-  hmm_DBs:
-    type: string
-  hmm_settings:
     type: object
   COGS:
     type: string
@@ -220,12 +207,6 @@ properties:
     properties:
       binners:
         type: string
-      MaxBin:
-        type: object
-        properties:
-          cutoff:
-            type: number
-            minimum: 1
       MetaBAT:
         type: object
         properties:
@@ -258,15 +239,3 @@ properties:
             minimum: 1
   krakendb:
     type: string
-  eukdetect:
-    type: object
-    properties:
-      run_eukdetect:
-        type: boolean
-      eukdetect_dir:
-        type: string
-      database_dir:
-        type: string
-      min_readlen:
-        type: number
-        min: 60

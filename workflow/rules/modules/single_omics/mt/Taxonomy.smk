@@ -20,18 +20,12 @@ if 'binning' in IMP_STEPS:
     include:
         "../../../Taxonomy/gtdbtk_bins.smk"
 
-if config['eukdetect']['run_eukdetect']:
-    include:
-        "../../../Taxonomy/eukdetect.smk"
-
 # master command
 if MT:
     # Since we now combine both reports we need to track only the report here
     tax_ctrl = expand("Analysis/taxonomy/kraken/{type}.kraken.{outfile}",type=TYPES,outfile="report")
     tax_ctrl.append(expand("status/{type}.bracken.done",type=TYPES)),
     tax_ctrl.append(expand("Analysis/taxonomy/mOTUs/{type}.mOTU.{out_type}.tsv", type=TYPES, out_type=["counts", "rel_abun"]))
-    if config['eukdetect']['run_eukdetect']:
-        tax_ctrl.append("status/eukdetect.done")
 if "assembly" in IMP_STEPS:
     tax_ctrl.append("Analysis/taxonomy/kraken/%s.kraken.contig.output.gz" % ASS)
     if "analysis" in IMP_STEPS:

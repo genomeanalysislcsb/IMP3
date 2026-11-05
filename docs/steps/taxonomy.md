@@ -10,7 +10,6 @@ MAGs get a GTDB taxonomy (see [Binning](binning.md)). Output: `Analysis/taxonomy
 | Kraken2 on contigs | the assembly; per-contig taxonomic entropy | `kraken/mgmt.kraken.contig.*` |
 | [mOTUs](https://github.com/motu-tool/mOTUs) | preprocessed reads | `mOTUs/{omic}.mOTU.{counts,rel_abun}.tsv` |
 | mOTU links | marker genes on the contigs (fetchMG) linked to mOTUs | `mOTU_links/` |
-| [EukDetect](https://github.com/allind/EukDetect) (optional) | reads against BUSCO genes of eukaryotes | `eukdetect/` |
 
 Kraken2 settings: `kraken.krakendb`, `kraken.confidence` (default 0.501), `kraken.min_hit_groups` (3). The database
 decides the names (NCBI or GTDB): see [Databases](../databases.md#choosing-the-kraken2-database). An experimental

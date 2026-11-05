@@ -15,7 +15,7 @@ rule get_checkm2_db:
     output:
         checkm2_db = f"{DBPATH}/checkm2/uniref100.KO.1.dmnd"
     conda:
-        os.path.join(ENVDIR, "IMP_preprocessing.yaml")
+        os.path.join(ENVDIR, "IMP_metawrap.yaml")
     log:
         os.path.join(ENVDIR, "logs/checkm2_downloadDB.log")
     shadow: "copy-minimal"

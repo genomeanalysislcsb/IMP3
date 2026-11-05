@@ -40,7 +40,6 @@ or `T`.
 | `preprocessing_filtering`, `filtering.filter` | `PhiX T2TCHM13v2genomic T2TCHM13v2transcripts` | references whose reads are removed |
 | `keep_rrnas` | false | keep rRNA reads in the preprocessed mt reads |
 | `sortmerna.files` | SILVA / Rfam rRNA sets | rRNA databases |
-| `read_coverage_normalization` | off | normalise mt read coverage |
 
 ## Assembly
 
@@ -69,13 +68,13 @@ or `T`.
 | `kraken.min_hit_groups` | 3 | minimum hit groups |
 | `kraken.memory_mapping` | `false` | `kraken2 --memory-mapping`: database not loaded into memory, regular nodes (see [Taxonomy](steps/taxonomy.md)) |
 | `bracken.levels` | `D P C O F G S` | Bracken ranks |
-| `motus`, `eukdetect` | | mOTUs and EukDetect settings |
+| `motus` | | mOTUs settings |
 
 ## Binning
 
 | key | default | meaning |
 |---|---|---|
-| `binning.binners` | e.g. `MetaDecoder` | binners to run (CONCOCT, MetaBAT, MetaDecoder, SemiBin, COMEBin, binny, MaxBin) |
+| `binning.binners` | e.g. `MetaDecoder` | binners to run (CONCOCT, MetaBAT, MetaDecoder, SemiBin, COMEBin, binny) |
 | `binning.<binner>.cutoff` | 1000–2000 | minimum contig length per binner |
 | `binning.DAS_Tool.score_threshhold` | 0.6 | DAS Tool score |
 | `binning.MetaWrap.min_completeness`, `max_contamination` | 60, 10 | MetaWrap refinement |

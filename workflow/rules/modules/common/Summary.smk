@@ -19,10 +19,6 @@ if "stats" in SUM_STEPS:
         include:
             '../../Summary/stats_assembly.smk'
 
-if "DB" in SUM_STEPS:
-    include:
-        '../../Summary/mongoDB.smk'
-    sum_target.append("status/DB_filling.done")
 
 
 # if "vis" in SUM_STEPS:
