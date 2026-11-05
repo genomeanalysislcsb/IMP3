@@ -80,6 +80,11 @@ def rel(a, b):
         return ""
 
 
+def mantis_counts(p):
+    d = pd.read_csv(p, sep="\t", comment="#")
+    return pd.to_numeric(d.iloc[:, -1], errors="coerce").fillna(0).groupby(d["Geneid"]).sum()
+
+
 def bray_curtis(a, b):
     idx = a.index.union(b.index)
     a, b = a.reindex(idx, fill_value=0), b.reindex(idx, fill_value=0)
@@ -228,8 +233,9 @@ def main(argv=None):
             print("  %s: missing in new" % r)
             continue
         try:
-            x = pd.read_csv(pr, sep="\t").set_index("name")["fraction_total_reads"]
-            y = pd.read_csv(pn, sep="\t").set_index("name")["fraction_total_reads"]
+            # names can repeat (same name, different taxid): summed per name
+            x = pd.read_csv(pr, sep="\t").groupby("name")["fraction_total_reads"].sum()
+            y = pd.read_csv(pn, sep="\t").groupby("name")["fraction_total_reads"].sum()
         except Exception as e:
             print("  %s: cannot read (%s)" % (r, e))
             continue
@@ -251,8 +257,9 @@ def main(argv=None):
             print("  %s: missing in new" % r)
             continue
         try:
-            x = pd.to_numeric(pd.read_csv(pr, sep="\t", comment="#").set_index("Geneid").iloc[:, -1], errors="coerce")
-            y = pd.to_numeric(pd.read_csv(pn, sep="\t", comment="#").set_index("Geneid").iloc[:, -1], errors="coerce")
+            # a term can have several rows (featureCounts meta-features): summed per term
+            x = mantis_counts(pr)
+            y = mantis_counts(pn)
         except Exception as e:
             print("  %s: cannot read (%s)" % (r, e))
             continue
