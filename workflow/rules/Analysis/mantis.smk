@@ -43,7 +43,10 @@ rule mantis_annot:
         odir=lambda wildcards, output: os.path.dirname(output.outtab),
         # mantis_params="-gff -km -da heuristic",
         mantis_params=config['mantis']['params'],
-        mem_avail_gb = math.floor(float(MAIN_BIGMEMTOTAL) * to_gb_dict[config['cluster_specs']['mem_unit']] * 0.55),
+        # memory Mantis may plan with: 55 % of what this job gets (threads x memory per core), not of a whole node:
+        # with fewer threads (retries, small samples, max_threads) Mantis otherwise planned with more memory than the
+        # job has, and Slurm killed workers (oom_kill), which fails the job even when Mantis finished
+        mem_avail_gb = lambda wildcards, threads: max(math.floor(threads * MAIN_BIGMEMCORE_MB / 1024 * 0.55), 4),
         # mem_avail_gb = math.floor(float(HIGH_MEM_BIGMEMTOTAL) * to_gb_dict[config['cluster_specs']['mem_unit']] * 0.75),
         node_tmp_dir="/dev/shm",
         sub_threads = 12
