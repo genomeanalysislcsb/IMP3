@@ -67,7 +67,7 @@ rule fastqc_preprocessed:
           fastqc --outdir {params.out_dir} \
                  --format fastq \
                  --threads {threads} \
-                 --memory {resources.mem_mb} \
+                 --memory $(( {resources.mem_mb} < 10000 ? {resources.mem_mb} : 10000 )) \
                  --dir {params.tmp_dir} \
                  {input.reads_r1} \
                  {input.reads_r2} \
@@ -77,7 +77,7 @@ rule fastqc_preprocessed:
           fastqc --outdir {params.out_dir} \
                  --format fastq \
                  --threads {threads} \
-                 --memory {resources.mem_mb} \
+                 --memory $(( {resources.mem_mb} < 10000 ? {resources.mem_mb} : 10000 )) \
                  --dir {params.tmp_dir} \
                  {input.reads_r1} \
                  {input.reads_r2} >> {log} 2>&1

@@ -179,7 +179,15 @@ def discover_samples(s):
 
 # ----------------------------------------------------------------------------------------------------------- local machine
 def machine():
-    cores = os.cpu_count() or 1
+    """cores, memory (MB) and GPUs this process may use: inside a Slurm job (or another cgroup) that is the
+    allocation, not the whole node (a bigmem job with 64 of 112 cores: Bakta refused 112 threads)"""
+    try:
+        cores = len(os.sched_getaffinity(0))
+    except (AttributeError, OSError):
+        cores = os.cpu_count() or 1
+    for v in ("SLURM_CPUS_ON_NODE",):
+        if os.environ.get(v, "").isdigit():
+            cores = min(cores, int(os.environ[v]))
     mem_mb = 0
     try:
         for ln in open("/proc/meminfo"):
@@ -187,6 +195,20 @@ def machine():
                 mem_mb = int(ln.split()[1]) // 1024
     except OSError:
         pass
+    limits = []
+    if os.environ.get("SLURM_MEM_PER_NODE", "").isdigit():
+        limits.append(int(os.environ["SLURM_MEM_PER_NODE"]))
+    elif os.environ.get("SLURM_MEM_PER_CPU", "").isdigit():
+        limits.append(int(os.environ["SLURM_MEM_PER_CPU"]) * cores)
+    for f in ("/sys/fs/cgroup/memory.max", "/sys/fs/cgroup/memory/memory.limit_in_bytes"):
+        try:
+            v = open(f).read().strip()
+            if v.isdigit() and int(v) < 1 << 60:
+                limits.append(int(v) // (1024 * 1024))
+        except OSError:
+            pass
+    if limits and mem_mb:
+        mem_mb = min([mem_mb] + limits)
     gpus = 0
     if shutil.which("nvidia-smi"):
         try:
@@ -521,6 +543,9 @@ def cmd_run(a):
         say("%s: no read files found - skipped" % k)
         todo.pop(k)
     say("%d samples, %d to run: %s" % (len(samples), len(todo), " ".join(todo) or "-"))
+    if s["executor"] == "local":
+        c, m, g = local_resources(s)
+        say("this machine (or Slurm allocation): %d cores, %.0f GB for IMP3, %d GPU(s)" % (c, m / 1024, g))
     if not todo:
         return 0
     extra = a.extra

@@ -85,6 +85,8 @@ mkdir -p "$T/l/samples/A"; touch "$T/l/samples/A/mg.r1.fq.gz" "$T/l/samples/A/mg
 "$I" run -p "$T/l" >/dev/null 2>&1
 tail -1 "$CALLS" | grep -q -- "--use-conda --use-singularity --singularity-args --nv --bind /data/db:/data/db --bind $T" && ok "container args" || fail "container args"
 tail -1 "$CALLS" | grep -q -- "--cores [0-9]* --resources gpu=1" && ok "local cores + gpu" || fail "local"
+out=$(SLURM_CPUS_ON_NODE=1 SLURM_MEM_PER_CPU=2048 "$I" run -p "$T/l" --force -n 2>&1 || true)
+grep -q "1 cores, 2 GB for IMP3" <<< "$out" && ok "local: resources of the Slurm allocation" || fail "local slurm allocation"
 which() { echo "exported which"; }; export -f which
 "$I" run -p "$T/l" --force -n 2>&1 | grep -q "unset -f which && snakemake" && ok "container: exported which function unset" \
   || fail "unset which"
