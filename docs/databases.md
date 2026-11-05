@@ -6,7 +6,6 @@ workflow (`install/Snakefile`) downloads and prepares them; some are downloaded 
 | used by | database | installed by | config key |
 |---|---|---|---|
 | preprocessing | PhiX genome (and host genomes, e.g. human T2T-CHM13 genome + transcripts) | `genomes` in `config.install.yaml` | `filtering.filter` |
-| preprocessing (metaT) | SortMeRNA rRNA sets (SILVA 16S/18S/23S/28S, Rfam 5S/5.8S) | install workflow | `sortmerna.files` |
 | analysis | Bakta database | main workflow on first use (`get_bakta_db`) | – |
 | analysis | Mantis references (KOfam, Pfam, eggNOG/NOG, NCBI, TCDB) | install workflow (`mantis_setup`) | `mantis.default.*_ref_folder` |
 | analysis | extra HMM collections | by hand | `hmm_DBs`, `hmm_settings` |

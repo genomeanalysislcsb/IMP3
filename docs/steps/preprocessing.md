@@ -7,7 +7,7 @@ rRNA and non-rRNA reads. Output: `Preprocessing/{mg,mt}.{r1,r2,se}.preprocessed.
 flowchart LR
   raw[(raw reads)] --> fp[fastp<br/>trim, filter, merge] --> flt[BWA-MEM2 against<br/>PhiX, host genome,<br/>host transcripts]
   flt --> mg[(mg preprocessed)]
-  flt --> sm[SortMeRNA<br/>metaT only] --> mt[(mt preprocessed)]
+  flt --> sm[RiboDetector<br/>metaT only] --> mt[(mt preprocessed)]
   sm --> rr[(mt rRNA reads)]
 ```
 
@@ -25,10 +25,10 @@ references in `filtering.filter` (default `PhiX T2TCHM13v2genomic T2TCHM13v2tran
 Pairs and singletons are mapped separately; a pair is removed if either read maps. Only unmapped reads are kept;
 the host reads and alignments are not.
 
-## rRNA reads of the metatranscriptome (SortMeRNA)
+## rRNA reads of the metatranscriptome (RiboDetector)
 
-[SortMeRNA](https://github.com/biocore/sortmerna) separates rRNA reads from the other metaT reads (databases in
-`sortmerna.files`). rRNA is abundant, assembles poorly and is depleted with varying success during library
+[RiboDetector](https://github.com/hzi-bifo/RiboDetector) separates rRNA reads from the other metaT reads (a deep
+learning model, no database). rRNA is abundant, assembles poorly and is depleted with varying success during library
 preparation, so rRNA reads are left out of the assembly; they are kept in `Preprocessing/mt.*.trimmed.rrna.fq.gz`.
 `keep_rrnas: true` keeps them in the preprocessed reads.
 

@@ -49,6 +49,9 @@ not part of this repository.
 
 Known open points (removed or postponed features): [TODO.md](TODO.md).
 
+When you publish results, cite IMP and the tools you ran: references in
+[History and credits](https://genomeanalysislcsb.github.io/IMP3/about/#citing-the-tools).
+
 ## History and licence
 
 IMP3 continues IMP ([Narayanasamy et al. 2016](https://doi.org/10.1186/s13059-016-1116-8)). Development moved from

@@ -12,7 +12,7 @@ assembly. It works with metaG and metaT together, with either one alone, and wit
 
 | step | tools (default in bold) | details |
 |---|---|---|
-| [Preprocessing](steps/preprocessing.md) | **fastp**, BWA-MEM2 (PhiX and host filtering), SortMeRNA (rRNA, metaT), BBNorm (optional), Nonpareil, FastQC | trimmed, filtered reads per omic |
+| [Preprocessing](steps/preprocessing.md) | **fastp**, BWA-MEM2 (PhiX and host filtering), RiboDetector (rRNA, metaT), Nonpareil, FastQC | trimmed, filtered reads per omic |
 | [Assembly](steps/assembly.md) | **MEGAHIT**, iterative hybrid metaG + metaT assembly, **quickmerge** or CAP3, BWA-MEM2 | one assembly per sample, reads mapped back |
 | [Analysis](steps/analysis.md) | **Bakta** gene calling, **Mantis** (KOfam, Pfam, eggNOG, NCBI, TCDB), featureCounts, mosdepth, bcftools | annotation, counts per gene and function, coverage, variants |
 | [Taxonomy](steps/taxonomy.md) | **Kraken2 + Bracken** (reads and contigs), **mOTUs**, GTDB-Tk (bins) | community composition |

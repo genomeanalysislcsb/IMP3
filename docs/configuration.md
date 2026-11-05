@@ -39,7 +39,7 @@ or `T`.
 | `fastp.merging.merge` | true | merge overlapping pairs |
 | `preprocessing_filtering`, `filtering.filter` | `PhiX T2TCHM13v2genomic T2TCHM13v2transcripts` | references whose reads are removed |
 | `keep_rrnas` | false | keep rRNA reads in the preprocessed mt reads |
-| `sortmerna.files` | SILVA / Rfam rRNA sets | rRNA databases |
+| `sortmerna.files` | SILVA / Rfam rRNA sets | not used: rRNA reads are found with RiboDetector, which needs no database |
 
 ## Assembly
 
