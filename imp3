@@ -267,6 +267,32 @@ def container_markers(s):
         say("container: created setup markers %s" % ", ".join(made))
 
 
+def fix_submodule_paths(s):
+    """binny's setup writes absolute paths of its marker HMMs into submodules/binny/config/binny_mantis.cfg (the
+    checkout where it was installed, e.g. /mnt/aiongpfs/... on aion). In a copied or unpacked submodules folder,
+    and in the container, those paths do not exist: point them to this IMP3 checkout when the files are there"""
+    cfg = os.path.join(s["imp3_dir"], "submodules", "binny", "config", "binny_mantis.cfg")
+    if not os.path.exists(cfg):
+        return
+    with _CHECK_LOCK:
+        txt = open(cfg).read()
+        new = txt
+        for old in sorted(set(re.findall(r"(/[^\s=]*?/submodules/binny/)", txt))):
+            here = os.path.join(s["imp3_dir"], "submodules", "binny") + "/"
+            if old == here:
+                continue
+            refs = re.findall(re.escape(old) + r"[^\s]+", txt)
+            if refs and all(os.path.exists(r.replace(old, here, 1)) for r in refs):
+                new = new.replace(old, here)
+        if new != txt:
+            if not os.path.exists(cfg + ".orig"):
+                shutil.copy2(cfg, cfg + ".orig")
+            with open(cfg, "w") as fh:
+                fh.write(new)
+            say("binny_mantis.cfg: marker HMM paths set to %s (original in binny_mantis.cfg.orig)"
+                % os.path.join(s["imp3_dir"], "submodules", "binny"))
+
+
 SYSTEM_DIRS = {"/", "/tmp", "/dev/shm", "/home", "/mnt", "/scratch", "/work", "/opt", "/usr", "/var"}
 
 
@@ -392,6 +418,7 @@ def check_binds(s, bind_list, probes=()):
 
 def run_sample(s, sample, reads, extra, dry):
     cfg_file, cfg = sample_config(s, sample, reads)
+    fix_submodule_paths(s)
     if s.get("container"):
         container_markers(s)
         tmp = tmp_root(cfg)

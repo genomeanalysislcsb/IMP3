@@ -24,6 +24,11 @@ I="$T/imp3/imp3"
 ok() { echo "ok    $1"; }
 fail() { echo "FAIL  $1"; exit 1; }
 
+# binny_mantis.cfg written by binny's setup in another checkout: paths moved to this one
+B="$T/imp3/submodules/binny"; mkdir -p "$B/config" "$B/database/hmms/checkm_tf" "$B/database/hmms/checkm_pf"
+touch "$B/database/hmms/checkm_tf/checkm_filtered_tf.hmm" "$B/database/hmms/checkm_pf/checkm_filtered_pf.hmm"
+printf 'nog_ref_folder=NA\ncustom_ref=/old/imp3/submodules/binny/database/hmms/checkm_tf/checkm_filtered_tf.hmm\ncustom_ref=/old/imp3/submodules/binny/database/hmms/checkm_pf/checkm_filtered_pf.hmm\n' > "$B/config/binny_mantis.cfg"
+
 # slurm project, two samples
 "$I" init "$T/p" --site generic --db /data/db >/dev/null 2>&1
 for s in S1 S2; do mkdir -p "$T/p/samples/$s"; touch "$T/p/samples/$s/${s}_mg_R1.fq.gz" "$T/p/samples/$s/${s}_mg_R2.fq.gz"; done
@@ -38,6 +43,8 @@ assert len(c["raws"]["Metatranscriptomics"].split()) == 2 and "readme" not in st
 assert c["outputdir"].endswith("/p/imp/S2") and c["db_path"] == "/data/db" and c["sample"] == "S2"
 P
 grep -q -- "--profile $T/p/profile --conda-prefix" "$CALLS" && ok "slurm: profile + conda prefix" || fail "slurm cmd"
+grep -q "^custom_ref=$B/database/hmms/checkm_tf/checkm_filtered_tf.hmm$" "$B/config/binny_mantis.cfg" \
+  && grep -q "/old/imp3" "$B/config/binny_mantis.cfg.orig" && ok "binny_mantis.cfg: paths of this checkout" || fail "binny cfg"
 "$I" run -p "$T/p" 2>&1 | grep -q "0 to run" && ok "finished samples skipped" || fail "skip"
 "$I" status -p "$T/p" | grep -q "^S1 *done" && ok "status" || fail "status"
 rm -rf "$T/p/imp/S1"; "$I" run -p "$T/p" --submit >/dev/null 2>&1
@@ -49,7 +56,7 @@ printf "== x\nError in rule trimming:\n" > "$T/p/imp_run_logs/imp_S1_099.log"
 sleep 30 & SP=$!
 echo "$(python3 -c 'import socket;print(socket.gethostname())') $SP - imp_S1_099.log" > "$T/p/imp_run_logs/imp_S1.running"
 "$I" status -p "$T/p" | grep -q "^S1 *running+err" && ok "status: running (with errors, keep-going)" || fail "status running"
-kill $SP; wait $SP 2>/dev/null || true
+kill $SP; wait $SP 2>/dev/null || true; while kill -0 $SP 2>/dev/null; do sleep 0.2; done
 "$I" status -p "$T/p" | grep -q "^S1 *failed" && ok "status: stale marker -> failed" || fail "status stale"
 rm -f "$T/p/imp_run_logs/imp_S1.running" "$T/p/imp_run_logs/imp_S1_099.log"
 
