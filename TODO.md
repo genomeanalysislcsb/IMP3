@@ -24,3 +24,4 @@ missing; remove it when it is done (the commit says so).
 - Tool caches in the sample folder: in the container Snakemake sets `--home` to the sample's output folder, so
   matplotlib, Java, Keras and GNU parallel leave `.cache/`, `.java/`, `.keras/`, `.parallel/` there (harmless, a few
   files). Could point HOME to the run's temporary folder instead.
+  The container run also left `nltk_data/` (NLTK stopwords downloaded by a tool) in the sample folder.

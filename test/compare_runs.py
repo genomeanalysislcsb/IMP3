@@ -81,8 +81,12 @@ def rel(a, b):
 
 
 def mantis_counts(p):
+    """featureCounts table: Geneid, Chr, Start, End, Strand, Length, then one count column per BAM (summed)"""
     d = pd.read_csv(p, sep="\t", comment="#")
-    return pd.to_numeric(d.iloc[:, -1], errors="coerce").fillna(0).groupby(d["Geneid"]).sum()
+    cols = list(d.columns)
+    counts = cols[cols.index("Length") + 1:] if "Length" in cols else cols[-1:]
+    v = d[counts].apply(pd.to_numeric, errors="coerce").fillna(0).sum(axis=1)
+    return v.groupby(d["Geneid"]).sum()
 
 
 def bray_curtis(a, b):
@@ -250,7 +254,8 @@ def main(argv=None):
         print("  no Analysis/annotation/<omic>.mantis.<db>.counts.tsv in the reference; found: %s" % (", ".join(
             os.path.relpath(p, R) for p in sorted(glob.glob(os.path.join(R, "Analysis", "annotation", "*counts*")))[:8])
             or "-"))
-    for pr in sorted(glob.glob(os.path.join(R, "Analysis", "annotation", "*.mantis.*.counts.tsv*"))):
+    for pr in sorted(p for p in glob.glob(os.path.join(R, "Analysis", "annotation", "*.mantis.*.counts.tsv*"))
+                     if ".summary" not in p):
         r = os.path.relpath(pr, R)
         pn = first(N, [r[:-3] if r.endswith(".gz") else r]) or os.path.join(N, r)
         if not os.path.exists(pn):
@@ -260,14 +265,13 @@ def main(argv=None):
             # a term can have several rows (featureCounts meta-features): summed per term
             x = mantis_counts(pr)
             y = mantis_counts(pn)
+            both = pd.DataFrame({"ref": x, "new": y}).fillna(0)
+            rho = both["ref"].rank().corr(both["new"].rank()) if len(both) > 2 else float("nan")   # Spearman, no scipy
+            print("  %-40s terms %6d %6d  reads %10d %10d (%s)  Spearman %.3f" % (
+                os.path.basename(r), int((x > 0).sum()), int((y > 0).sum()), int(x.sum()), int(y.sum()),
+                rel(x.sum(), y.sum()), rho))
         except Exception as e:
-            print("  %s: cannot read (%s)" % (r, e))
-            continue
-        both = pd.DataFrame({"ref": x, "new": y}).fillna(0)
-        rho = both["ref"].rank().corr(both["new"].rank()) if len(both) > 2 else float("nan")   # Spearman without scipy
-        print("  %-40s terms %6d %6d  reads %10d %10d (%s)  Spearman %.3f" % (
-            os.path.basename(r), int((x > 0).sum()), int((y > 0).sum()), int(x.sum()), int(y.sum()),
-            rel(x.sum(), y.sum()), rho))
+            print("  %s: cannot compare (%s: %s)" % (r, type(e).__name__, e))
 
     section("summary")
     print("\n".join("  - " + p for p in problems) if problems else "  no missing steps or files")
