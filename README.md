@@ -49,6 +49,9 @@ not part of this repository.
 
 Known open points (removed or postponed features): [TODO.md](TODO.md).
 
+The Apptainer image with all environments of a release is on Zenodo:
+[doi:10.5281/zenodo.24003090](https://doi.org/10.5281/zenodo.24003090) (see [Many samples, any machine](https://genomeanalysislcsb.github.io/IMP3/portable/#download-the-image)).
+
 When you publish results, cite IMP and the tools you ran: references in
 [History and credits](https://genomeanalysislcsb.github.io/IMP3/about/#citing-the-tools).
 

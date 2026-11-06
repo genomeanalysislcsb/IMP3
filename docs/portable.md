@@ -169,6 +169,27 @@ One Apptainer/Singularity image holds every conda environment of IMP3, as instal
 Snakemake looks for them in a containerized image. Snakemake itself runs on the host; every rule runs in the
 container (`--use-conda --use-singularity`). Nothing is installed at run time.
 
+### Download the image
+
+The image of each IMP3 release is on Zenodo, with the archive of the third-party code in `submodules/` and the
+checksums: [doi:10.5281/zenodo.24003090](https://doi.org/10.5281/zenodo.24003090) (all versions; the record of
+3.0.0 is [zenodo.24003091](https://zenodo.org/records/24003091)). Image and IMP3 checkout must be the same
+release: the environment hashes in the image belong to the workflow version.
+
+```bash
+R=https://zenodo.org/records/24003091/files
+wget $R/imp3_3.0.0.sif $R/imp3_submodules_3.0.0.tar.gz $R/SHA256SUMS
+sha256sum -c SHA256SUMS                                 # both files: OK
+git clone https://github.com/genomeanalysislcsb/IMP3 && cd IMP3 && git checkout v3.0.0
+tar -xzf ../imp3_submodules_3.0.0.tar.gz -C .           # submodules/ next to the Snakefile
+./imp3 init my_project --container ../imp3_3.0.0.sif --db /path/to/imp3_databases     # + --executor local
+```
+
+The databases are not in the image (several hundred GB): see [Databases](databases.md). Without overlay support
+in Apptainer, add your site's top folders to the image first (see *Mount points*).
+
+### Using the image
+
 ```yaml
 # imp3.yaml
 container: /path/to/imp3.sif
