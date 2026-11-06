@@ -28,6 +28,7 @@ were in `binning.binners`). The versions are in the environment files (`workflow
 
 | tool | reference |
 |---|---|
+| IMP3 (code) | IMP3, version used (e.g. 3.0.0). Zenodo, [doi:10.5281/zenodo.24005283](https://doi.org/10.5281/zenodo.24005283); Apptainer image [doi:10.5281/zenodo.24003090](https://doi.org/10.5281/zenodo.24003090) |
 | IMP | Narayanasamy S *et al.* IMP: a pipeline for reproducible reference-independent integrated metagenomic and metatranscriptomic analyses. *Genome Biology* 17, 260 (2016). [doi:10.1186/s13059-016-1116-8](https://doi.org/10.1186/s13059-016-1116-8) |
 | Snakemake | Mölder F *et al.* Sustainable data analysis with Snakemake. *F1000Research* 10, 33 (2021). [doi:10.12688/f1000research.29032.2](https://doi.org/10.12688/f1000research.29032.2) |
 | Apptainer / Singularity (container runs) | Kurtzer GM, Sochat V, Bauer MW. Singularity: scientific containers for mobility of compute. *PLoS ONE* 12, e0177459 (2017). [doi:10.1371/journal.pone.0177459](https://doi.org/10.1371/journal.pone.0177459) |
