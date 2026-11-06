@@ -108,17 +108,59 @@ nodes of your cluster.
 
 ## On one machine
 
+A workstation, a cloud VM or a single node of a cluster, without Slurm submissions: Snakemake runs every rule on
+this machine. With the container (recommended) or with the conda environments of an installation:
+
 ```bash
+/path/to/IMP3/imp3 init my_project --executor local --container /path/to/imp3.sif --db /path/to/imp3_db
 /path/to/IMP3/imp3 init my_project --executor local --db /path/to/imp3_db --conda-prefix /path/to/imp3_envs
+cd my_project      # reads in samples/<sample>/, check sample_config.yaml (krakendb, binners, steps)
+/path/to/IMP3/imp3 run --dry-run && /path/to/IMP3/imp3 run
 ```
 
-`imp3 run` then starts Snakemake with `--cores` (all, or `cores:`) and replaces `cluster_specs` by the machine: every
-rule gets the same memory per core, so cores × memory per core never exceeds the machine (`mem_gb`, default 90 % of
-the RAM). With a GPU (`nvidia-smi`; `gpu: 0` to switch off) COMEBin trains on it (`--resources gpu=N`, one COMEBin
-at a time per GPU); without one COMEBin runs on the CPU (slow), or drop it from `binning: binners`.
+`imp3 run` starts Snakemake with `--cores` and replaces `cluster_specs` by the machine: every rule gets the same
+memory per core, so cores × memory per core never exceeds it. It uses what this process may use: inside a Slurm job
+or another cgroup that is the allocation, not the whole node, and it prints what it found
+(`this machine (or Slurm allocation): 64 cores, 900 GB for IMP3, 0 GPU(s)`). `cores:` and `mem_gb:` in
+`imp3.yaml` set smaller values; by default all cores and 90 % of the memory. Samples run one after the other, each
+with all cores.
 
-Samples run one after the other, each with all cores. The largest Kraken2 databases need ~450 GB of memory: on a
-smaller machine use a smaller Kraken2 database.
+**GPU and COMEBin.** With a GPU (`nvidia-smi`; `gpu: 0` switches it off) COMEBin trains on it, one COMEBin at a time
+per GPU. Without one, COMEBin trains on the CPU: it runs, but takes many hours per sample. Either accept that, or
+remove `COMEBin` from `binning.binners` (DAS Tool and MetaWrap then combine the other binners; the final bins can
+differ a little).
+
+**Resources.** Measured with one metaG sample (GF06, 40 M read pairs) in the container on one node with 64 cores:
+
+| part | needs |
+|---|---|
+| whole run | about 7 hours on 64 cores |
+| Kraken2 with NCBI core_nt (279 GB) | ~350 GB memory while it runs |
+| rest of the workflow (assembly, Mantis, binning, GTDB-Tk) | up to ~120 GB |
+| databases | several hundred GB of disk |
+| temporary files | `tmp_root` (default `/tmp`), tens of GB per sample |
+
+With less memory, use a smaller Kraken2 database (e.g. a standard 8–80 GB database) and, if it still does not fit,
+`kraken.memory_mapping: true` (Kraken2 reads the database from disk instead of loading it; only fast if it fits in
+the page cache). Fewer binners and fewer samples at a time also help. A full run with core_nt needs a large server
+(≥ 512 GB).
+
+**Same results as on the cluster.** bwa-mem2 reads in a fixed batch size (`bwa_batch_bases`), so the read filtering
+and mapping do not depend on the number of cores; the metaG + metaT test sample gave identical read numbers on one
+machine and with the 128-core Slurm jobs. Assembly and binning still vary a little from run to run, as on the cluster.
+
+### Inside one Slurm job
+
+The same mode runs a whole sample inside one Slurm allocation (e.g. a big-memory node), without submitting jobs:
+
+```bash
+#!/bin/bash -l
+#SBATCH -N 1 --ntasks 1 -c 64 --mem 1000G -t 20:00:00
+module load tools/Apptainer          # or what your site needs
+/path/to/IMP3/imp3 run -p /path/to/my_project --foreground
+```
+
+Ask for cores and memory explicitly (`-c`, `--mem`): with `-N 1` alone Slurm gives one core.
 
 ## The IMP3 container
 
