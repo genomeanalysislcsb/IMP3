@@ -464,7 +464,7 @@ def run_sample(s, sample, reads, extra, dry):
         if probe in missing:
             say("%s: the temporary folder %s is not shared with the container on this site (e.g. a private /dev/shm "
                 "in the container); IMP3's temporary files and Snakemake's shadow folders would not be found. Set "
-                "tmp_root in imp3.yaml to a folder on a shared file system, e.g. /scratch/users/$USER/imp3_tmp"
+                "tmp_root in imp3.yaml to a folder on a shared file system, e.g. $SCRATCH/imp3_tmp"
                 % (sample, tmp))
             return sample, 1
         if missing:
@@ -636,6 +636,33 @@ def fill(text, values):
     return text
 
 
+def image_mounts(sif):
+    """mount points built into an IMP3 image (label imp3.mounts, written by imp3 containerize --mounts);
+    None when no apptainer / singularity is available here (e.g. an HPC access node) or the image has no label"""
+    for exe in ("apptainer", "singularity"):
+        if not shutil.which(exe):
+            continue
+        try:
+            out = subprocess.run([exe, "inspect", "--labels", sif], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                 universal_newlines=True, timeout=120).stdout
+        except (OSError, subprocess.SubprocessError):
+            return None
+        m = re.search(r"^imp3\.mounts:\s*(.+)$", out, re.M)
+        return m.group(1).split() if m else []
+    return None
+
+
+def default_tmp_root(project, container, executor):
+    """local runs: /tmp. Slurm with a container: $SCRATCH/imp3_tmp where the cluster defines $SCRATCH (kept as the
+    variable, expanded at run time), else <project>/tmp; both are on a shared file system, unlike a container's
+    private /dev/shm. Slurm without a container: "" (IMP3's /dev/shm)"""
+    if executor != "slurm":
+        return "/tmp"
+    if container:
+        return "$SCRATCH/imp3_tmp" if os.environ.get("SCRATCH") else os.path.join(project, "tmp")
+    return ""
+
+
 def cmd_init(a):
     p = logical_abspath(a.project)
     os.makedirs(p, exist_ok=True)
@@ -664,6 +691,15 @@ def cmd_init(a):
         txt = open(os.path.join(TEMPLATES, "local", "config.yaml")).read()
     with open(os.path.join(prof, "config.yaml"), "w") as fh:
         fh.write(fill(txt, vals))
+    # container mount points: from the image label; without apptainer here (access node) the ULHPC defaults for
+    # --site ulhpc, else none (imp3 run checks the binds on a node with apptainer and names what is missing)
+    mounts = []
+    if a.container:
+        mounts = image_mounts(a.container)
+        if mounts is None:
+            mounts = ["/work/projects", "/scratch/users"] if a.site == "ulhpc" else []
+            say("could not read the image labels here (no apptainer / singularity); container_mounts: %s"
+                % (", ".join(mounts) or "none"))
     st = {
         "imp3_dir": IMP3_DIR,
         "db_path": a.db or "/path/to/imp3_databases",
@@ -675,7 +711,7 @@ def cmd_init(a):
         "conda_prefix": "" if a.container else vals["CONDA_PREFIX"],
         "container": a.container or "",
         "bind": [],
-        "container_mounts": ["/work/projects", "/scratch/users"] if (a.container and a.site == "ulhpc") else [],
+        "container_mounts": mounts,
         "parallel_samples": 10 if a.executor == "slurm" else 1,
         "submit_master": DEFAULTS["submit_master"],
         # ULHPC: Apptainer is a module on the compute nodes; non-interactive Slurm job shells need /etc/profile for
@@ -684,9 +720,8 @@ def cmd_init(a):
         "pre_commands": (["set +u", "source /etc/profile",
                           "if type module >/dev/null 2>&1; then module load tools/Apptainer; fi"]
                          if (a.container and a.site == "ulhpc") else []),
-        # ULHPC: the container gets a private /dev/shm, so the temporary files go to the scratch file system
-        "tmp_root": ("/scratch/users/$USER/imp3_tmp" if (a.container and a.site == "ulhpc") else
-                     "" if a.executor == "slurm" else "/tmp"),
+        # a container may get a private /dev/shm: temporary files on a shared file system ($SCRATCH or the project)
+        "tmp_root": default_tmp_root(p, a.container, a.executor),
         "gpu": "auto", "cores": 0, "mem_gb": 0, "max_threads": 0,
         "snakemake_args": "",
     }
@@ -714,7 +749,7 @@ SETTINGS_HEADER = """# IMP3 project settings (imp3 run / imp3 status). Paths are
 #   submit_master    sbatch options when the masters run as Slurm jobs (imp3 run --submit)
 #   pre_commands     shell lines before Snakemake, e.g. module load tools/Apptainer
 #   tmp_root         root of IMP3's temporary folder ("" = /dev/shm); with a container it must be visible inside
-#                    it (imp3 run checks), e.g. /scratch/users/$USER/imp3_tmp where /dev/shm is private there
+#                    it (imp3 run checks); imp3 init: $SCRATCH/imp3_tmp if $SCRATCH is set, else <project>/tmp
 #   gpu, cores, mem_gb   local machine: GPUs (auto), cores and memory IMP3 may use (0 = all / 90 %)
 #   max_threads      most threads per rule (0 = IMP3's own, up to 128): e.g. 16 for small test data
 #   snakemake_args   extra Snakemake options for every run

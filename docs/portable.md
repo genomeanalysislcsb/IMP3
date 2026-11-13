@@ -210,8 +210,8 @@ pre_commands: ["set +u", "source /etc/profile", "if type module >/dev/null 2>&1;
   not find its files (see *Mount points* below); without apptainer on the node it only says so;
 - checks that the temporary folder (`tmp_root`, default `/dev/shm`: IMP3's temporary files and Snakemake's shadow
   folders) is the same inside the container. Some sites give the container its own empty `/dev/shm` (ULHPC), and
-  shadow rules then fail with empty logs; set `tmp_root` to a shared file system there, e.g.
-  `/scratch/users/$USER/imp3_tmp` (`imp3 init --site ulhpc --container ...` does);
+  shadow rules then fail with empty logs; set `tmp_root` to a shared file system there. `imp3 init --executor slurm --container ...`
+  writes `$SCRATCH/imp3_tmp` where the cluster defines `$SCRATCH` (expanded at run time), else `<project>/tmp`;
 - adds `--nv`, so COMEBin sees the GPU of a GPU node (a warning on nodes without GPU, harmless);
 - creates the marker files of IMP3's setup rules (`submodules/comebin.ready`, ...) if missing: the setup was done when
   the image was built.
@@ -276,7 +276,7 @@ imp3 containerize --envs ... --mounts /work/projects,/scratch/users     # create
 
 ```yaml
 # imp3.yaml
-container_mounts: [/work/projects, /scratch/users]     # imp3 init --site ulhpc --container ... sets these
+container_mounts: [/work/projects, /scratch/users]     # imp3 init --container ... reads them from the image label imp3.mounts
 ```
 
 A folder below a mount point is then bound as the mount point (e.g. `/work/projects`); other folders are bound as

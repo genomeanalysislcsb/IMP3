@@ -75,9 +75,12 @@ kill $SP; wait $SP 2>/dev/null || true; while kill -0 $SP 2>/dev/null; do sleep 
 "$I" status -p "$T/p" | grep -q "^S1 *failed" && ok "status: stale marker -> failed" || fail "status stale"
 rm -f "$T/p/imp_run_logs/imp_S1.running" "$T/p/imp_run_logs/imp_S1_099.log"
 
-"$I" init "$T/u" --site ulhpc --container /img/imp3.sif --db /data/db >/dev/null 2>&1
-grep -q '^tmp_root: /scratch/users/$USER/imp3_tmp' "$T/u/imp3.yaml" && grep -q "container_mounts:" "$T/u/imp3.yaml" \
-  && ok "init ulhpc container: tmp_root on scratch" || fail "init ulhpc"
+SCRATCH=/scratch/x "$I" init "$T/u" --site ulhpc --container /img/imp3.sif --db /data/db >/dev/null 2>&1
+grep -q '^tmp_root: \$SCRATCH/imp3_tmp' "$T/u/imp3.yaml" && grep -q "container_mounts:" "$T/u/imp3.yaml" \
+  && ok "init ulhpc container: tmp_root on \$SCRATCH" || fail "init ulhpc"
+env -u SCRATCH "$I" init "$T/u2" --executor slurm --site generic --container /img/imp3.sif --db /data/db >/dev/null 2>&1
+grep -q "^tmp_root: $T/u2/tmp" "$T/u2/imp3.yaml" && ok "init container without \$SCRATCH: tmp_root in the project" \
+  || fail "init generic container tmp_root"
 
 # local project with container
 "$I" init "$T/l" --executor local --container /img/imp3.sif --db /data/db >/dev/null 2>&1
