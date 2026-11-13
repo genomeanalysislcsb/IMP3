@@ -83,7 +83,8 @@ node, as before). `imp3 run --submit` instead submits every master as a Slurm jo
 the job state, `use-conda`) and `profile/cluster.yaml`, the `sbatch` options per rule:
 
 - `--site ulhpc`: aion for most rules, iris `bigmem` for Kraken2, an iris volta GPU for COMEBin training
-  (Slurm multi-cluster);
+  (Slurm multi-cluster); for large samples Mantis may need iris `bigmem` too (commented block "Only if aion oom" in
+  `profile/cluster.yaml`, see the [FAQ](faq.md));
 - `--site generic`: one cluster with the partitions `batch`, `bigmem` and `gpu` (`--gres gpu:1`) and empty `qos` /
   `account`: adapt them to your cluster.
 
