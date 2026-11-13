@@ -72,7 +72,7 @@ node, as before). `imp3 run --submit` instead submits every master as a long Slu
 | `container_mounts` | – | mount points built into the image (see *Mount points*); folders below them are bound as the mount point |
 | `parallel_samples` | 10 (local: 1) | Snakemake masters at the same time |
 | `submit_master` | `--time 5-00:00:00 --qos long --cpus-per-task 1 --mem 8G` | `sbatch` options for `imp3 run --submit` |
-| `pre_commands` | – | shell lines before Snakemake, e.g. `module load tools/Apptainer` (ULHPC default with `--site ulhpc --container`: `set +u`, `source /etc/profile`, `module load tools/Apptainer`) |
+| `pre_commands` | – | shell lines before Snakemake, e.g. `module load tools/Apptainer` (ULHPC default with `--site ulhpc --container`: `set +u`, `source /etc/profile` and `module load tools/Apptainer` where `module` exists, i.e. on the compute nodes; the access nodes have neither `module` nor Apptainer, so a dry run there skips the bind check) |
 | `tmp_root` | `/dev/shm` (local: `/tmp`) | root of IMP3's temporary folder |
 | `cores`, `mem_gb`, `gpu` | all, 90 %, auto | local: what IMP3 may use on the machine |
 | `snakemake_args` | – | extra Snakemake options for every run |
@@ -193,7 +193,7 @@ in Apptainer, add your site's top folders to the image first (see *Mount points*
 ```yaml
 # imp3.yaml
 container: /path/to/imp3.sif
-pre_commands: ["set +u", "source /etc/profile", "module load tools/Apptainer"]   # if apptainer is a module (ULHPC)
+pre_commands: ["set +u", "source /etc/profile", "if type module >/dev/null 2>&1; then module load tools/Apptainer; fi"]   # apptainer as a module (ULHPC compute nodes)
 ```
 
 `imp3 run` then

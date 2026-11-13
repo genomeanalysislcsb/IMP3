@@ -678,9 +678,11 @@ def cmd_init(a):
         "container_mounts": ["/work/projects", "/scratch/users"] if (a.container and a.site == "ulhpc") else [],
         "parallel_samples": 10 if a.executor == "slurm" else 1,
         "submit_master": DEFAULTS["submit_master"],
-        # ULHPC: Apptainer is a module; non-interactive Slurm job shells need /etc/profile for 'module', and set +u
-        # because /etc/profile reads unset variables under bash -u
-        "pre_commands": (["set +u", "source /etc/profile", "module load tools/Apptainer"]
+        # ULHPC: Apptainer is a module on the compute nodes; non-interactive Slurm job shells need /etc/profile for
+        # 'module', and set +u because /etc/profile reads unset variables under bash -u. The access nodes have no
+        # 'module' (and no apptainer): the load is skipped there, so a dry run on the access node still works
+        "pre_commands": (["set +u", "source /etc/profile",
+                          "if type module >/dev/null 2>&1; then module load tools/Apptainer; fi"]
                          if (a.container and a.site == "ulhpc") else []),
         # ULHPC: the container gets a private /dev/shm, so the temporary files go to the scratch file system
         "tmp_root": ("/scratch/users/$USER/imp3_tmp" if (a.container and a.site == "ulhpc") else
