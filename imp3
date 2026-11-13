@@ -108,7 +108,7 @@ DEFAULTS = {
     "max_threads": 0,              # most threads any rule may use (0 = IMP3's own, up to 128); e.g. 16 for test data
     "parallel_samples": 10,        # samples (Snakemake masters) at the same time
     "submit_master": "--time 5-00:00:00 --qos long --cpus-per-task 1 --mem 8G",   # sbatch options for --submit
-    "pre_commands": [],            # shell lines before Snakemake, e.g. "module load tools/Singularity"
+    "pre_commands": [],            # shell lines before Snakemake, e.g. "module load tools/Apptainer"
     "snakemake_args": "",          # extra Snakemake options for every run
 }
 
@@ -678,7 +678,10 @@ def cmd_init(a):
         "container_mounts": ["/work/projects", "/scratch/users"] if (a.container and a.site == "ulhpc") else [],
         "parallel_samples": 10 if a.executor == "slurm" else 1,
         "submit_master": DEFAULTS["submit_master"],
-        "pre_commands": ["module load tools/Singularity"] if (a.container and a.site == "ulhpc") else [],
+        # ULHPC: Apptainer is a module; non-interactive Slurm job shells need /etc/profile for 'module', and set +u
+        # because /etc/profile reads unset variables under bash -u
+        "pre_commands": (["set +u", "source /etc/profile", "module load tools/Apptainer"]
+                         if (a.container and a.site == "ulhpc") else []),
         # ULHPC: the container gets a private /dev/shm, so the temporary files go to the scratch file system
         "tmp_root": ("/scratch/users/$USER/imp3_tmp" if (a.container and a.site == "ulhpc") else
                      "" if a.executor == "slurm" else "/tmp"),
@@ -707,7 +710,7 @@ SETTINGS_HEADER = """# IMP3 project settings (imp3 run / imp3 status). Paths are
 #                    as the mount point. Needed where Apptainer cannot create missing bind destinations (no overlay)
 #   parallel_samples Snakemake masters at the same time (local: 1, one sample after the other)
 #   submit_master    sbatch options when the masters run as Slurm jobs (imp3 run --submit)
-#   pre_commands     shell lines before Snakemake, e.g. module load tools/Singularity
+#   pre_commands     shell lines before Snakemake, e.g. module load tools/Apptainer
 #   tmp_root         root of IMP3's temporary folder ("" = /dev/shm); with a container it must be visible inside
 #                    it (imp3 run checks), e.g. /scratch/users/$USER/imp3_tmp where /dev/shm is private there
 #   gpu, cores, mem_gb   local machine: GPUs (auto), cores and memory IMP3 may use (0 = all / 90 %)
