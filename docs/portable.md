@@ -52,7 +52,7 @@ process; `running?` when that cannot be checked from this machine), `+err` (a ru
 master runs the other rules on), `failed`, `stopped`, `done`.
 
 On a cluster, `imp3 run` runs the Snakemake masters on the machine where it is started (e.g. in tmux on a login
-node, as before). `imp3 run --submit` instead submits every master as a long Slurm job (`submit_master` options,
+node, as before). `imp3 run --submit` instead submits every master as a Slurm job (`submit_master` options,
 1 core), so nothing has to keep running on the login node; each master then submits the rules as usual.
 
 ### Settings (`imp3.yaml`)
@@ -71,7 +71,7 @@ node, as before). `imp3 run --submit` instead submits every master as a long Slu
 | `max_threads` | 0 | most threads any rule may use (0 = IMP3's own, up to 128); e.g. 16 for small test data, so the jobs do not wait for whole nodes. `imp3 run --max-threads N` for one run |
 | `container_mounts` | – | mount points built into the image (see *Mount points*); folders below them are bound as the mount point |
 | `parallel_samples` | 10 (local: 1) | Snakemake masters at the same time |
-| `submit_master` | `--time 5-00:00:00 --qos long --cpus-per-task 1 --mem 8G` | `sbatch` options for `imp3 run --submit` |
+| `submit_master` | `--time 24:00:00 --cpus-per-task 1 --mem 8G` | `sbatch` options for `imp3 run --submit`; the account's default QoS. A master that reaches its time limit stops the sample; `imp3 run --submit` again continues it from its finished steps |
 | `pre_commands` | – | shell lines before Snakemake, e.g. `module load tools/Apptainer` (ULHPC default with `--site ulhpc --container`: `set +u`, `source /etc/profile` and `module load tools/Apptainer` where `module` exists, i.e. on the compute nodes; the access nodes have neither `module` nor Apptainer, so a dry run there skips the bind check) |
 | `tmp_root` | `/dev/shm` (local: `/tmp`) | root of IMP3's temporary folder |
 | `cores`, `mem_gb`, `gpu` | all, 90 %, auto | local: what IMP3 may use on the machine |

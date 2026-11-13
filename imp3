@@ -107,7 +107,7 @@ DEFAULTS = {
     "tmp_root": "",                # root of the per-run temp dir ("" = /dev/shm, IMP3's default)
     "max_threads": 0,              # most threads any rule may use (0 = IMP3's own, up to 128); e.g. 16 for test data
     "parallel_samples": 10,        # samples (Snakemake masters) at the same time
-    "submit_master": "--time 5-00:00:00 --qos long --cpus-per-task 1 --mem 8G",   # sbatch options for --submit
+    "submit_master": "--time 24:00:00 --cpus-per-task 1 --mem 8G",   # sbatch options for --submit (default QoS)
     "pre_commands": [],            # shell lines before Snakemake, e.g. "module load tools/Apptainer"
     "snakemake_args": "",          # extra Snakemake options for every run
 }
