@@ -13,7 +13,12 @@ case " $* " in *" --unlock "*|*" --dry-run "*) exit 0;; esac
 out=$(python3 -c "import yaml;print(yaml.safe_load(open('$cfg'))['outputdir'])")
 mkdir -p "$out/status" && touch "$out/status/preprocessing.done" "$out/status/all.done"
 S
-printf '#!/bin/bash\necho "SBATCH $*" >> "$CALLS"; echo "Submitted batch job 42"\n' > "$T/bin/sbatch"
+cat > "$T/bin/sbatch" <<'S'
+#!/bin/bash
+echo "SBATCH $*" >> "$CALLS"
+n=$(( $(cat "$CALLS.jid" 2>/dev/null || echo 41) + 1 )); echo $n > "$CALLS.jid"
+case " $* " in *" --parsable "*) echo "$n;aion";; *) echo "Submitted batch job $n";; esac
+S
 printf '#!/bin/bash\necho "GPU 0: test"\n' > "$T/bin/nvidia-smi"
 chmod +x "$T/bin/"*
 export PATH="$T/bin:$PATH" CALLS="$T/calls.txt"
@@ -48,8 +53,14 @@ grep -q "^custom_ref=$B/database/hmms/checkm_tf/checkm_filtered_tf.hmm$" "$B/con
 "$I" run -p "$T/p" 2>&1 | grep -q "0 to run" && ok "finished samples skipped" || fail "skip"
 "$I" status -p "$T/p" | grep -q "^S1 *done" && ok "status" || fail "status"
 rm -rf "$T/p/imp/S1"; "$I" run -p "$T/p" --submit >/dev/null 2>&1
-grep -q "SBATCH --job-name imp3_S1 .*--wrap .*imp3 run -p $T/p --samples S1 --foreground" "$CALLS" && ok "submit master" || fail "submit"
+grep -q "SBATCH --parsable --job-name imp3_S1 .*--wrap .*imp3 run -p $T/p --samples S1 --foreground" "$CALLS" && ok "submit master" || fail "submit"
 "$I" status -p "$T/p" | grep -q "^S1 *submitted" && ok "status: submitted until the master starts" || fail "status submitted"
+# --submit: at most -j masters at a time, the others wait in chains (afterany)
+rm -rf "$T/p/imp"; : > "$CALLS"
+"$I" run -p "$T/p" --submit -j 1 >/dev/null 2>&1
+j1=$(grep -m1 "SBATCH" "$CALLS" >/dev/null && cat "$CALLS.jid")
+[ "$(grep -c '^SBATCH' "$CALLS")" = 2 ] && grep "imp3_S2" "$CALLS" | grep -q -- "--dependency afterany:$((j1 - 1))" \
+  && ! grep "imp3_S1" "$CALLS" | grep -q -- "--dependency" && ok "submit: chains of -j masters (afterany)" || fail "submit chains"
 # max_threads: cores_max of the sample config capped
 "$I" run -p "$T/p" --samples S2 --force --max-threads 16 >/dev/null 2>&1
 python3 - "$T/p/config/imp_config_S2.yaml" <<'P' && ok "--max-threads caps cores_max" || fail "max threads"

@@ -53,7 +53,12 @@ master runs the other rules on), `failed`, `stopped`, `done`.
 
 On a cluster, `imp3 run` runs the Snakemake masters on the machine where it is started (e.g. in tmux on a login
 node, as before). `imp3 run --submit` instead submits every master as a Slurm job (`submit_master` options,
-1 core), so nothing has to keep running on the login node; each master then submits the rules as usual.
+1 core), so nothing has to keep running on the login node; each master then submits the rules as usual. At most
+`parallel_samples` (or `-j`) masters run at a time: the samples are dealt into that many chains, and each master
+waits for the previous one of its chain (`--dependency=afterany`, so a failed sample does not hold up the others).
+Keep `parallel_samples` well below the account's job limit, since every master also submits its own rule jobs.
+Resubmitting while chains are still queued would start the waiting samples twice: `scancel` the pending
+`imp3_<sample>` jobs first.
 
 ### Settings (`imp3.yaml`)
 
@@ -70,7 +75,7 @@ node, as before). `imp3 run --submit` instead submits every master as a Slurm jo
 | `bind` | – | extra folders the container must see (reads, databases, IMP3 and the project are bound automatically) |
 | `max_threads` | 0 | most threads any rule may use (0 = IMP3's own, up to 128); e.g. 16 for small test data, so the jobs do not wait for whole nodes. `imp3 run --max-threads N` for one run |
 | `container_mounts` | – | mount points built into the image (see *Mount points*); folders below them are bound as the mount point |
-| `parallel_samples` | 10 (local: 1) | Snakemake masters at the same time |
+| `parallel_samples` | 10 (local: 1) | Snakemake masters at the same time, also with `imp3 run --submit` |
 | `submit_master` | `--time 24:00:00 --cpus-per-task 1 --mem 8G` | `sbatch` options for `imp3 run --submit`; the account's default QoS. A master that reaches its time limit stops the sample; `imp3 run --submit` again continues it from its finished steps |
 | `pre_commands` | – | shell lines before Snakemake, e.g. `module load tools/Apptainer` (ULHPC default with `--site ulhpc --container`: `set +u`, `source /etc/profile` and `module load tools/Apptainer` where `module` exists, i.e. on the compute nodes; the access nodes have neither `module` nor Apptainer, so a dry run there skips the bind check) |
 | `tmp_root` | `/dev/shm` (local: `/tmp`) | root of IMP3's temporary folder |

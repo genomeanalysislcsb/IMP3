@@ -106,7 +106,7 @@ DEFAULTS = {
     "mem_gb": 0,                   # local: memory for IMP3 (0 = 90 % of the machine)
     "tmp_root": "",                # root of the per-run temp dir ("" = /dev/shm, IMP3's default)
     "max_threads": 0,              # most threads any rule may use (0 = IMP3's own, up to 128); e.g. 16 for test data
-    "parallel_samples": 10,        # samples (Snakemake masters) at the same time
+    "parallel_samples": 10,        # samples (Snakemake masters) at the same time, also with run --submit
     "submit_master": "--time 24:00:00 --cpus-per-task 1 --mem 8G",   # sbatch options for --submit (default QoS)
     "pre_commands": [],            # shell lines before Snakemake, e.g. "module load tools/Apptainer"
     "snakemake_args": "",          # extra Snakemake options for every run
@@ -503,8 +503,9 @@ def run_sample(s, sample, reads, extra, dry):
     return sample, r.returncode
 
 
-def submit_master(s, sample, extra):
-    """one Slurm job per sample that runs its Snakemake master (instead of a tmux session on the login node)"""
+def submit_master(s, sample, extra, after=""):
+    """one Slurm job per sample that runs its Snakemake master (instead of a tmux session on the login node);
+    after = job id this master waits for (--dependency=afterany). Returns (return code, job id)"""
     logdir = os.path.join(s["project"], "slurm_logs")
     os.makedirs(logdir, exist_ok=True)
     me = [sys.executable, follow_links(__file__), "run", "-p", s["project"], "--samples", sample, "--foreground"]
@@ -512,17 +513,36 @@ def submit_master(s, sample, extra):
         me += ["--max-threads", str(int(s["max_threads"]))]
     me += (["--"] + list(extra) if extra else [])
     wrap = shell_line(dict(s, pre_commands=[]), me)
-    cmd = ["sbatch", "--job-name", "imp3_%s" % sample, "--output", os.path.join(logdir, "imp3_master_%s_%%j.out" % sample)]
+    cmd = ["sbatch", "--parsable", "--job-name", "imp3_%s" % sample,
+           "--output", os.path.join(logdir, "imp3_master_%s_%%j.out" % sample)]
+    if after:
+        cmd += ["--dependency", "afterany:%s" % after]
     cmd += shlex.split(s.get("submit_master") or "") + ["--wrap", wrap]
     out = subprocess.run(cmd, cwd=s["project"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          universal_newlines=True)
-    say("%s: %s" % (sample, (out.stdout or out.stderr).strip()))
+    jid = out.stdout.strip().split(";")[0] if out.returncode == 0 else ""     # --parsable: <id>[;<cluster>]
+    say("%s: %s" % (sample, ("job %s%s" % (jid, " (after %s)" % after if after else "")) if jid
+                    else (out.stdout or out.stderr).strip()))
     if out.returncode == 0:              # imp3 status: 'submitted' until the master writes its run log
         d = os.path.join(s["project"], "imp_run_logs")
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "imp_%s.submitted" % sample), "w") as fh:
-            fh.write(out.stdout)
-    return out.returncode
+            fh.write("Submitted batch job %s\n" % jid)
+    return out.returncode, jid
+
+
+def submit_masters(s, samples, extra, n):
+    """at most n masters at a time: the samples are dealt round-robin into n chains, and every master after the
+    first of its chain waits for the previous one (afterany: a failed sample does not hold up its chain). So the
+    masters never fill the account's job limit and leave no room for the rules they submit"""
+    lanes, codes = [""] * n, []
+    for i, k in enumerate(samples):
+        rc, jid = submit_master(s, k, extra, lanes[i % n])
+        codes.append(rc)
+        if jid:
+            lanes[i % n] = jid
+    say("%d masters in %d chains (at most %d at a time; parallel_samples / -j)" % (len(samples), min(n, len(samples)), n))
+    return max(codes)
 
 
 def cmd_run(a):
@@ -552,7 +572,7 @@ def cmd_run(a):
     if a.submit and not a.dry_run:
         if not shutil.which("sbatch"):
             sys.exit("imp3: --submit needs sbatch (Slurm)")
-        return max(submit_master(s, k, extra) for k in todo)
+        return submit_masters(s, list(todo), extra, max(1, int(a.jobs or s["parallel_samples"])))
     n = 1 if a.foreground or a.dry_run else max(1, min(int(a.jobs or s["parallel_samples"]), len(todo)))
     if s["executor"] == "local" and not a.jobs:
         n = 1                      # one machine: one sample after the other, each with all cores
@@ -745,7 +765,7 @@ SETTINGS_HEADER = """# IMP3 project settings (imp3 run / imp3 status). Paths are
 #   bind             extra folders the container must see
 #   container_mounts mount points built into the image (imp3 containerize --mounts); folders below them are bound
 #                    as the mount point. Needed where Apptainer cannot create missing bind destinations (no overlay)
-#   parallel_samples Snakemake masters at the same time (local: 1, one sample after the other)
+#   parallel_samples Snakemake masters at the same time, also with run --submit (local: 1, one after the other)
 #   submit_master    sbatch options when the masters run as Slurm jobs (imp3 run --submit)
 #   pre_commands     shell lines before Snakemake, e.g. module load tools/Apptainer
 #   tmp_root         root of IMP3's temporary folder ("" = /dev/shm); with a container it must be visible inside
