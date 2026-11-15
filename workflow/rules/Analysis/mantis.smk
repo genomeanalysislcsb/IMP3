@@ -48,7 +48,11 @@ rule mantis_annot:
         # job has, and Slurm killed workers (oom_kill), which fails the job even when Mantis finished
         mem_avail_gb = lambda wildcards, threads: max(math.floor(threads * MAIN_BIGMEMCORE_MB / 1024 * 0.55), 4),
         # mem_avail_gb = math.floor(float(HIGH_MEM_BIGMEMTOTAL) * to_gb_dict[config['cluster_specs']['mem_unit']] * 0.75),
-        node_tmp_dir="/dev/shm",
+        # job-private work dir inside the shadow dir (below tmp_root, on disk), not /dev/shm: tmpfs counts as the job's
+        # memory, so Mantis' intermediate and gzipped files pushed the job over its memory limit after Mantis had
+        # finished (oom_kill -> failed job, outputs removed, retried); fixed /dev/shm paths also collided between two
+        # Mantis jobs on one node and were never removed
+        node_tmp_dir="mantis_tmp",
         sub_threads = 12
     threads:
         get_max_cores_man
@@ -65,8 +69,9 @@ rule mantis_annot:
     shadow: "copy-minimal"
     shell:
         """
-        # First we copy the mantis config file and the fasta file to the node's tmp directory
-        echo "### Copying Mantis config file and fasta file to node's tmp directory ... ###" >> {log}
+        # Copy the mantis config file and the fasta file to the job's work directory
+        echo "### Copying Mantis config file and fasta file to the job's work directory ... ###" >> {log}
+        rm -rf {params.node_tmp_dir} && mkdir -p {params.node_tmp_dir}
         rsync -a {input.config} {params.node_tmp_dir}/mantis_config.yaml >> {log} 2>&1
         rsync -a {input.faa} {params.node_tmp_dir}/annotation.faa >> {log} 2>&1
 
@@ -120,6 +125,7 @@ rule mantis_annot:
         # We need to get the correct group in case we want to write e.g. a specific project directory
         TARGET_GROUP=$(stat -c '%G' "{params.odir}")
         rsync -a --chown=:$TARGET_GROUP {params.node_tmp_dir}/mantis/* {params.odir} >> {log} 2>&1
+        rm -rf {params.node_tmp_dir}
 
         log_memory
 
