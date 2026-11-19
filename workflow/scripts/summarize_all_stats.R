@@ -626,6 +626,18 @@ if(file.exists(bin_in_file)){
     
     # Merge the binning statistics data frame with the RNA-related statistics data frame
     binTab <- merge(binTab, rnas_bin_tab, by.x="Bin", by.y=0, all.x=T)
+
+    # Quality and size columns, whatever their case: CheckM2/MetaWRAP bins.stats (Completeness, Contamination,
+    # Genome_Size) or the older lower-case names (completeness, contamination, size)
+    bin_col <- function(names_wanted){
+      i <- match(tolower(names_wanted), tolower(colnames(binTab)))
+      i <- i[!is.na(i)]
+      if(length(i)==0) return(rep(NA_real_, nrow(binTab)))
+      suppressWarnings(as.numeric(binTab[[i[1]]]))
+    }
+    bin_completeness <- bin_col(c("completeness"))
+    bin_contamination <- bin_col(c("contamination"))
+    bin_size <- bin_col(c("size", "genome_size"))
     
     # Create a temporary data frame to store the summary statistics for the current bin
     binTemp <- data.frame("type"=ass,
@@ -637,33 +649,33 @@ if(file.exists(bin_in_file)){
                                    "LQ_drafts",
                                    "binned_length"),
                           "number"=c(nrow(binTab),
-                                     length(which(as.numeric(binTab$completeness)>90 &
-                                                    as.numeric(binTab$contamination)<5 &
+                                     length(which(bin_completeness>90 &
+                                                    bin_contamination<5 &
                                                     binTab$complete_16S>0 &
                                                     binTab$complete_23S>0 &
                                                     binTab$any_5S>0 &
                                                     binTab$tRNAs >= 18)),
-                                     length(which(as.numeric(binTab$completeness)>90 &
-                                                    as.numeric(binTab$contamination)<5 &
+                                     length(which(bin_completeness>90 &
+                                                    bin_contamination<5 &
                                                     (binTab$complete_16S+binTab$partial_16S)>0 &
                                                     (binTab$complete_23S+binTab$partial_23S)>0 &
                                                     !(binTab$complete_16S>0 &
                                                         binTab$complete_23S>0) &
                                                     binTab$any_5S>0 &
                                                     binTab$tRNAs >= 18)),
-                                     length(which(as.numeric(binTab$completeness)>90 &
-                                                    as.numeric(binTab$contamination)<5 &
+                                     length(which(bin_completeness>90 &
+                                                    bin_contamination<5 &
                                                     !((binTab$complete_16S+binTab$partial_16S)>0 &
                                                         (binTab$complete_23S+binTab$partial_23S)>0 &
                                                         binTab$any_5S>0 &
                                                         binTab$tRNAs >= 18))),
-                                     length(which(as.numeric(binTab$completeness)>=50 &
-                                                    as.numeric(binTab$contamination)<10 &
-                                                    !(as.numeric(binTab$completeness)>90 &
-                                                        as.numeric(binTab$contamination)<5))),
-                                     length(which(as.numeric(binTab$completeness)<50 &
-                                                    as.numeric(binTab$contamination)<10 )),
-                                     sum(as.numeric(binTab$size))),
+                                     length(which(bin_completeness>=50 &
+                                                    bin_contamination<10 &
+                                                    !(bin_completeness>90 &
+                                                        bin_contamination<5))),
+                                     length(which(bin_completeness<50 &
+                                                    bin_contamination<10 )),
+                                     sum(bin_size, na.rm=T)),
                           stringsAsFactors=F)
     
     # Append the summary statistics for the current bin to the overall statistics table
