@@ -6,7 +6,8 @@
   reference-independent integrated metagenomic and metatranscriptomic analyses.
   *Genome Biology* 17, 260 (2016). <https://doi.org/10.1186/s13059-016-1116-8>
 - **IMP3** re-implemented IMP in Snakemake with conda environments and extended it with binning, read- and
-  contig-based taxonomy, long reads and modular steps (first documentation 2020, Anna Heintz-Buschart).
+  contig-based taxonomy, long reads and modular steps (first documentation 2020, Anna Heintz-Buschart:
+  [imp3.readthedocs.io](https://imp3.readthedocs.io/en/latest/)).
 - **IMP3 3.0** (current) replaced Trimmomatic by fastp and Prokka by Bakta, added Mantis annotation, several
   binners with DAS Tool / MetaWrap refinement, CheckM2, GTDB-Tk, mOTUs, Nonpareil and per-sample
   statistics tables.
@@ -16,8 +17,7 @@ The development history moved from the LCSB GitLab to
 
 ## Licence
 
-MIT licence, © Helmholtz Centre for Environmental Research (UFZ) & Luxembourg Centre for Systems Biomedicine
-(LCSB).
+MIT licence, © Luxembourg Centre for Systems Biomedicine (LCSB).
 
 ## Citing the tools
 
