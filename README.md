@@ -1,7 +1,7 @@
 # IMP3
 
 [![docs](https://img.shields.io/badge/docs-genomeanalysislcsb.github.io%2FIMP3-blue)](https://genomeanalysislcsb.github.io/IMP3/)
-[![code DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24005283.svg)](https://doi.org/10.5281/zenodo.24005283)
+[![code DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24005282.svg)](https://doi.org/10.5281/zenodo.24005282)
 [![image DOI](https://img.shields.io/badge/Apptainer%20image-10.5281%2Fzenodo.24003090-blue)](https://doi.org/10.5281/zenodo.24003090)
 
 Integrated Meta-omic Pipeline, version 3: a reproducible Snakemake workflow for the integrated analysis of
