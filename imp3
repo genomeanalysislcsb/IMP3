@@ -429,7 +429,9 @@ def check_binds(s, bind_list, probes=()):
         todo = [b for b in bind_list if b not in _CHECKED]
         if not todo and not probes:
             return []
-        args = " ".join("--bind %s" % shlex.quote("%s:%s" % (b, b)) for b in todo)
+        # the probes lie below bound folders (e.g. the temporary root under /scratch): bind all folders when probing,
+        # also those already checked for an earlier sample, or the probe looks missing from the second sample on
+        args = " ".join("--bind %s" % shlex.quote("%s:%s" % (b, b)) for b in (bind_list if probes else todo))
         test = 'for d in "$@"; do [ -d "$d" ] || echo "MISSING $d"; done; echo IMP3_BINDS_CHECKED'
         line = ('APP=$(command -v apptainer || command -v singularity) && "$APP" -s exec %s %s sh -c %s sh %s'
                 % (args, shlex.quote(s["container"]), shlex.quote(test),
