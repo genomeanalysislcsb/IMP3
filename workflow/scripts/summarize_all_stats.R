@@ -237,16 +237,28 @@ if(file.exists(paste0("Stats/",types[1],"/",ass,".assembly.contig_flagstat.txt")
   
   print("Reading map stats.")
   for(type in types){
-    mapTab <- read.delim(mapStats_files[[type]],stringsAsFactors=F,header = F)
+    # samtools flagstat: read the numbers by their labels; newer samtools (>= 1.13) adds the lines 'primary',
+    # 'primary duplicates' and 'primary mapped', which shifted all fixed line positions
+    fl <- readLines(mapStats_files[[type]])
+    fnum <- function(label){
+      k <- grep(paste0("^[0-9]+ \\+ [0-9]+ ", label), fl)
+      if(length(k)) as.numeric(sub(" .*", "", fl[k[1]])) else NA
+    }
+    f_total <- fnum("in total"); f_sec <- fnum("secondary$"); f_sup <- fnum("supplementary$")
+    f_mapped <- fnum("mapped \\("); f_pmapped <- fnum("primary mapped \\(")
+    f_paired <- fnum("paired in sequencing$"); f_both <- fnum("with itself and mate mapped$")
+    f_single <- fnum("singletons \\("); f_read1 <- fnum("read1$")
+    f_primary <- f_total - f_sec - f_sup
+    if(is.na(f_pmapped)) f_pmapped <- f_mapped - f_sec - f_sup
     mapTemp <- data.frame("type"=type,
                           "step"=c("paired reads","se reads",
                                    "primary lines in bam",
                                    "segments mapped",
                                    "both partners map","one partner maps"),
-                          "number"=c(mapTab$V1[7],mapTab$V1[1]-mapTab$V1[2]-mapTab$V1[6],
-                                     mapTab$V1[1]-mapTab$V1[2],
-                                     mapTab$V1[5],
-                                     mapTab$V1[10]/2,mapTab$V1[11]),
+                          "number"=c(f_read1, f_primary - f_paired,
+                                     f_primary,
+                                     f_pmapped,
+                                     f_both/2, f_single),
                           stringsAsFactors=F)
     if(!"statsTab" %in% ls()){
       statsTab <- mapTemp
