@@ -237,19 +237,18 @@ if(file.exists(paste0("Stats/",types[1],"/",ass,".assembly.contig_flagstat.txt")
   
   print("Reading map stats.")
   for(type in types){
-    # samtools flagstat: read the numbers by their labels; newer samtools (>= 1.13) adds the lines 'primary',
-    # 'primary duplicates' and 'primary mapped', which shifted all fixed line positions
-    fl <- readLines(mapStats_files[[type]])
-    fnum <- function(label){
-      k <- grep(paste0("^[0-9]+ \\+ [0-9]+ ", label), fl)
-      if(length(k)) as.numeric(sub(" .*", "", fl[k[1]])) else NA
+    # contig_flagstat.txt holds only the numbers of 'samtools flagstat' (labels cut off). samtools >= 1.13 writes
+    # 16 lines (with 'primary', 'primary duplicates' and 'primary mapped'), older versions 13; the fixed positions
+    # of the old layout read the wrong numbers from the new one
+    fv <- suppressWarnings(as.numeric(readLines(mapStats_files[[type]])))
+    if(length(fv) >= 16){
+      f_total <- fv[1]; f_primary <- fv[2]; f_sec <- fv[3]; f_sup <- fv[4]; f_mapped <- fv[7]; f_pmapped <- fv[8]
+      f_paired <- fv[9]; f_read1 <- fv[10]; f_both <- fv[13]; f_single <- fv[14]
+    } else {
+      f_total <- fv[1]; f_sec <- fv[2]; f_sup <- fv[3]; f_mapped <- fv[5]; f_paired <- fv[6]; f_read1 <- fv[7]
+      f_both <- fv[10]; f_single <- fv[11]
+      f_primary <- f_total - f_sec - f_sup; f_pmapped <- f_mapped - f_sec - f_sup
     }
-    f_total <- fnum("in total"); f_sec <- fnum("secondary$"); f_sup <- fnum("supplementary$")
-    f_mapped <- fnum("mapped \\("); f_pmapped <- fnum("primary mapped \\(")
-    f_paired <- fnum("paired in sequencing$"); f_both <- fnum("with itself and mate mapped$")
-    f_single <- fnum("singletons \\("); f_read1 <- fnum("read1$")
-    f_primary <- f_total - f_sec - f_sup
-    if(is.na(f_pmapped)) f_pmapped <- f_mapped - f_sec - f_sup
     mapTemp <- data.frame("type"=type,
                           "step"=c("paired reads","se reads",
                                    "primary lines in bam",
