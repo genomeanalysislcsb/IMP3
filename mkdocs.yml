@@ -44,6 +44,7 @@ nav:
   - Downstream tools: downstream.md
   - FAQ and troubleshooting: faq.md
   - History and credits: about.md
+  - Changelog: changelog.md
 
 # old Sphinx documentation (replaced by these pages); remove with: git rm -r docs/source docs/build docs/Makefile docs/make.bat README.rst
 exclude_docs: |
