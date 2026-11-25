@@ -229,9 +229,25 @@ def filtering_reads_input(wildcards, paired=True):
 
     return ifiles
 
+def filtering_step_ref(wildcards):
+    '''Name of the filter reference of a filter step (the last one in the step name)'''
+    return [ref.replace('_filtered', '') for ref in wildcards.filterstep.split('__')
+            if ref not in ['trimmed', 'rrna_filtered', 'rrna_proc']][-1]
+
+def filtering_method(wildcards):
+    '''deacon (the first host step: removes the host reads), deacon_pass (later host steps), bwa (length-relative rule)
+    or bwa_any (IMP3 <= 3.0.3)'''
+    ref = filtering_step_ref(wildcards)
+    if HOST_METHOD == 'deacon' and ref in DEACON_STEPS:
+        first = [s for s in FILTER if s in DEACON_STEPS][0]
+        return 'deacon' if ref == first else 'deacon_pass'
+    return 'bwa_any' if HOST_METHOD == 'bwa_any' else 'bwa'
+
 def filtering_filter(wildcards):
     '''Reference input files for the paired-/single-end MG/MT reads filtering rule.'''
 
+    if filtering_method(wildcards).startswith('deacon'):
+        return ancient([os.path.join(DBPATH, 'filtering', DEACON_INDEX)])
     return ancient(expand('{dir}/filtering/{filter}.{ext}',
                           dir=DBPATH,
                           filter=[ref.replace('_filtered', '') for ref in wildcards.filterstep.split('__') if ref not in ['trimmed', 'rrna_filtered']][-1],

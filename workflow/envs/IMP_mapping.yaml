@@ -7,6 +7,7 @@ dependencies:
   - bcftools=1.17
   - bedtools=2.31.0
   - bwa-mem2=2.2.1
+  - deacon=0.20.0
   - curl=8.7.1
   - samtools=1.17
   - star=2.7.10b

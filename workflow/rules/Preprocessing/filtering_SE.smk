@@ -16,7 +16,12 @@ checkpoint reads_filtering_se:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
         mem = str(max(int(MAIN_BIGMEMCORE_MB * 0.75), 1)) + 'M',
-        tmp_dir=TMPDIR
+        tmp_dir=TMPDIR,
+        method = filtering_method,
+        deacon_abs = DEACON_ABS,
+        deacon_rel = DEACON_REL,
+        bwa_rule = BWA_RULE,
+        script = os.path.join(SRCDIR, "host_filter_reads.py")
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -24,6 +29,22 @@ checkpoint reads_filtering_se:
     shadow: "copy-minimal"
     shell:
         """
+        if [[ "{params.method}" == "deacon_pass" ]]; then
+            echo "Human reads were removed by Deacon in an earlier filter step: reads passed on." > {log}
+            cp {input.reads} {output}
+            exit 0
+        fi
+        if [[ "{params.method}" == "deacon" ]]; then
+            deacon filter --deplete -a {params.deacon_abs} -r {params.deacon_rel} -t {threads} \
+                          -s {log}.single.json -o {output} {input.ref[0]} {input.reads} > {log} 2>&1
+            exit 0
+        fi
+        if [[ "{params.method}" == "bwa" ]]; then
+            bwa-mem2 mem -v 1 -K {BWA_BATCH} -t {threads} {input.ref[0]} {input.reads} 2> {log} | \
+                samtools view --threads {threads} -F 2304 - 2>> {log} | \
+                python {params.script} {params.bwa_rule} --out {output} --stats {log}.single.json >> {log} 2>&1
+            exit 0
+        fi
         bwa-mem2 mem -v 1 -K {BWA_BATCH} \
                      -t {threads} \
                      {input.ref[0]} \

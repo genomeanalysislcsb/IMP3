@@ -71,6 +71,12 @@ if "genomes" in config:
         genome=config["genomes"].keys()
     )
 
+# reads filtering, Deacon human pangenome index (filtering: method: deacon)
+if "deacon" in config:
+    include:
+        "rules/deacon.smk"
+    TARGETS.append("filtering/deacon/%s.k31w15.idx" % config["deacon"]["index"])
+
 # taxonomy, Kraken2 databases
 if "kraken2" in config:
     include:

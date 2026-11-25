@@ -4,6 +4,21 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
 [doi:10.5281/zenodo.24005282](https://doi.org/10.5281/zenodo.24005282); Apptainer image:
 [doi:10.5281/zenodo.24003090](https://doi.org/10.5281/zenodo.24003090).
 
+## unreleased (3.1.0)
+
+- **Read filtering without false host removal** (`filtering.method`). `bwa_any`, the behaviour up to 3.0.3, removed a
+  pair whenever BWA-MEM2 reported a mate as mapped; with short-insert libraries its pairing and mate rescue mark many
+  microbial pairs as mapped: on 10 Expobiome stool metagenomes 12–31 % of the pairs, against 0.02–1.1 % human reads
+  by Deacon and Hostile, with a GC-dependent loss (low-GC Bacillota most). New methods:
+  - `deacon` (default of the configuration template): the host genome and transcriptome steps use
+    [Deacon](https://github.com/bede/deacon) 0.20 and the human pangenome index `panhuman-1`; PhiX and other filter
+    references use BWA-MEM2 with the rule of `bwa`;
+  - `bwa`: BWA-MEM2 for all references, a read counts as aligned only when ≥ 80 % of it aligns (≥ 30 bases, ≤ 5 %
+    mismatches), and the mate of a removed read is no longer lost (`scripts/host_filter_reads.py`).
+  Both remove 0.01–0.1 % on these samples. Configurations without `filtering.method` keep `bwa_any`, so earlier runs
+  can be reproduced. The installer fetches the Deacon index with `deacon: index: panhuman-1`; `deacon` is added to
+  the IMP_mapping environment (the Apptainer image needs a rebuild).
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

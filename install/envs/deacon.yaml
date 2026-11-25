@@ -1,0 +1,7 @@
+name: deacon
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - deacon=0.20.0

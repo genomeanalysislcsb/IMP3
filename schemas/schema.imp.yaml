@@ -128,6 +128,23 @@ properties:
       filter:
         type: string
         pattern: "^.+$"  # TODO: Needs proper adjustment or change of system to work properly with different inputs
+      method:
+        type: string
+        enum: ["deacon", "bwa", "bwa_any"]
+      bwa_min_aligned_fraction:
+        type: number
+      bwa_min_aligned_length:
+        type: integer
+      bwa_max_mismatch_fraction:
+        type: number
+      deacon_steps:
+        type: string
+      deacon_index:
+        type: string
+      deacon_abs_threshold:
+        type: integer
+      deacon_rel_threshold:
+        type: number
   keep_rrnas:
     type: boolean
   sortmerna:

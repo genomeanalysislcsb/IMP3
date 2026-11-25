@@ -16,7 +16,12 @@ rule reads_filtering:
         getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
         mem = str(max(int(MAIN_BIGMEMCORE_MB * 0.75), 1)) + 'M',
-        tmp_dir=TMPDIR
+        tmp_dir=TMPDIR,
+        method = filtering_method,
+        deacon_abs = DEACON_ABS,
+        deacon_rel = DEACON_REL,
+        bwa_rule = BWA_RULE,
+        script = os.path.join(SRCDIR, "host_filter_reads.py")
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
@@ -25,6 +30,44 @@ rule reads_filtering:
     shell:
         """
         export TMPDIR="{params.tmp_dir}"
+        if [[ "{params.method}" == "deacon_pass" ]]; then
+            echo "Human reads were removed by Deacon in an earlier filter step: reads passed on." >> {log} 2>&1
+            cp {input.reads[0]} {output[0]} && cp {input.reads[1]} {output[1]} && cp {input.reads[2]} {output[2]}
+            exit 0
+        fi
+        if [[ "{params.method}" == "deacon" ]]; then
+            echo "Removing human reads with Deacon ($(deacon --version)), index {input.ref[0]}." >> {log} 2>&1
+            deacon filter --deplete -a {params.deacon_abs} -r {params.deacon_rel} -t {threads} \
+                          -s {log}.paired.json -o {output[0]} -O {output[1]} \
+                          {input.ref[0]} {input.reads[0]} {input.reads[1]} >> {log} 2>&1
+            if [[ -s {input.reads[2]} ]]; then
+                deacon filter --deplete -a {params.deacon_abs} -r {params.deacon_rel} -t {threads} \
+                              -s {log}.single.json -o {output[2]} {input.ref[0]} {input.reads[2]} >> {log} 2>&1
+            else
+                echo "There are no singletons reads. {input.reads[2]} is empty. Generating empty {output[2]}" >> {log}
+                touch {output[2]}
+            fi
+            echo "Done." >> {log}
+            exit 0
+        fi
+        if [[ "{params.method}" == "bwa" ]]; then
+            echo "Mapping PE reads; a pair is removed when a mate aligns over most of its length ({params.bwa_rule})." >> {log}
+            bwa-mem2 mem -v 1 -K {BWA_BATCH} -t {threads} {input.ref[0]} {input.reads[0]} {input.reads[1]} 2>> {log} | \
+                samtools view --threads {threads} -F 2304 - 2>> {log} | \
+                python {params.script} --paired {params.bwa_rule} --out1 {output[0]} --out2 {output[1]} \
+                    --stats {log}.paired.json >> {log} 2>&1
+            if [[ -s {input.reads[2]} ]]; then
+                bwa-mem2 mem -v 1 -K {BWA_BATCH} -t {threads} {input.ref[0]} {input.reads[2]} 2>> {log} | \
+                    samtools view --threads {threads} -F 2304 - 2>> {log} | \
+                    python {params.script} {params.bwa_rule} --out {output[2]} --stats {log}.single.json >> {log} 2>&1
+            else
+                echo "There are no singletons reads. {input.reads[2]} is empty. Generating empty {output[2]}" >> {log}
+                touch {output[2]}
+            fi
+            echo "Done." >> {log}
+            exit 0
+        fi
+        # bwa_any (IMP3 <= 3.0.3): a pair is removed when bwa-mem2 reports either mate as mapped
         TMP_FILE=$(mktemp "alignment_XXXXXX.bam")
         
         echo "Mapping PE reads." >> {log} 2>&1

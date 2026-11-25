@@ -126,6 +126,20 @@ fastp:
 # Sequences to filter reads against
 filtering:
   filter: "PhiX T2TCHM13v2genomic T2TCHM13v2transcripts"
+  # How reads are matched to the filter references:
+  #   deacon   host genome / transcriptome (deacon_steps) with Deacon and the human pangenome index panhuman-1
+  #            (install: deacon); the other references (PhiX, extra libraries) with bwa-mem2 and the rule of "bwa"
+  #   bwa      bwa-mem2 for every reference; a read counts when >= bwa_min_aligned_fraction of it aligns
+  #   bwa_any  IMP3 <= 3.0.3: any bwa-mem2 alignment removes the pair (removes many microbial pairs from
+  #            short-insert libraries); also used when "method" is missing
+  method: "deacon"
+  deacon_steps: "T2TCHM13v2genomic T2TCHM13v2transcripts"
+  deacon_index: "deacon/panhuman-1.k31w15.idx"   # relative to <db>/filtering
+  deacon_abs_threshold: 2     # minimizer hits for a read (pair) to count as host, Deacon default
+  deacon_rel_threshold: 0.01  # share of a read's minimizers, Deacon default
+  bwa_min_aligned_fraction: 0.8   # share of the read that must align (M/=/X bases)
+  bwa_min_aligned_length: 30      # and at least this many bases
+  bwa_max_mismatch_fraction: 0.05 # mismatches (NM) per aligned base
 # Keep rRNA reads in preprocessed reads
 keep_rrnas: false
 # Normalize read coverage for MT reads

@@ -38,6 +38,10 @@ or `T`.
 | `fastp.length_filtering.length_required` | 40 | minimum read length |
 | `fastp.merging.merge` | true | merge overlapping pairs |
 | `preprocessing_filtering`, `filtering.filter` | `PhiX T2TCHM13v2genomic T2TCHM13v2transcripts` | references whose reads are removed |
+| `filtering.method` | `deacon` (template; `bwa_any` when the key is missing) | `deacon`: Deacon for the host steps, BWA-MEM2 with the length-relative rule for PhiX / other references; `bwa`: BWA-MEM2 with that rule for all; `bwa_any`: IMP3 ≤ 3.0.3 (any alignment removes the pair) |
+| `filtering.deacon_steps`, `filtering.deacon_index` | `T2TCHM13v2genomic T2TCHM13v2transcripts`, `deacon/panhuman-1.k31w15.idx` | host steps done by Deacon; its index under `<db>/filtering` (install: `deacon: index: panhuman-1`) |
+| `filtering.deacon_abs_threshold`, `filtering.deacon_rel_threshold` | 2, 0.01 | minimizer hits and share of a read pair's minimizers for it to count as host |
+| `filtering.bwa_min_aligned_fraction`, `bwa_min_aligned_length`, `bwa_max_mismatch_fraction` | 0.8, 30, 0.05 | BWA-MEM2 rule: share of the read aligned, minimum aligned bases, mismatches per aligned base |
 | `keep_rrnas` | false | keep rRNA reads in the preprocessed mt reads |
 | `sortmerna.files` | SILVA / Rfam rRNA sets | not used: rRNA reads are found with RiboDetector, which needs no database |
 

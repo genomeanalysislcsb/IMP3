@@ -164,6 +164,33 @@ if _removed:
     raise Exception("These IMP3 options were removed, change them in the config: " + "; ".join(_removed))
 # Importing filter from the configuration file and splitting it
 FILTER = config['filtering']['filter'].split()
+# Read filtering against filtering: filter (filtering: method):
+#   deacon   host genome / transcriptome steps (filtering: deacon_steps) with Deacon: minimizers of the human
+#            pangenome, minimizers shared with microbes removed (Constantinides et al. 2025); the first of these steps
+#            removes the host reads, later ones pass the reads on. All other references (PhiX, extra filter libraries)
+#            with bwa-mem2 and the length-relative rule of method bwa
+#   bwa      every reference with bwa-mem2; a read counts as aligned when >= bwa_min_aligned_fraction of it aligns
+#            (>= bwa_min_aligned_length bases, mismatches <= bwa_max_mismatch_fraction of the aligned bases); a pair
+#            goes when either mate counts (scripts/host_filter_reads.py)
+#   bwa_any  IMP3 <= 3.0.3 (also when filtering: method is missing): a pair goes when bwa-mem2 reports either mate as
+#            mapped. With short-insert libraries bwa-mem2's pairing / mate rescue marks many microbial pairs as mapped
+#            (10 Expobiome stool metagenomes: 12-31 % of the pairs against T2T-CHM13, < 6 % of them human by Deacon
+#            and Hostile; bwa and deacon: 0.01-0.1 %)
+HOST_METHOD = str(config['filtering'].get('method', 'bwa_any')).lower()
+if HOST_METHOD not in ('deacon', 'bwa', 'bwa_any'):
+    raise Exception("filtering: method must be deacon, bwa or bwa_any, not %s" % HOST_METHOD)
+DEACON_STEPS = str(config['filtering'].get('deacon_steps', 'T2TCHM13v2genomic T2TCHM13v2transcripts')).split()
+DEACON_INDEX = config['filtering'].get('deacon_index', 'deacon/panhuman-1.k31w15.idx')   # under DBPATH/filtering
+DEACON_ABS = int(config['filtering'].get('deacon_abs_threshold', 2))
+DEACON_REL = float(config['filtering'].get('deacon_rel_threshold', 0.01))
+BWA_MIN_FRAC = float(config['filtering'].get('bwa_min_aligned_fraction', 0.8))
+BWA_MIN_LEN = int(config['filtering'].get('bwa_min_aligned_length', 30))
+BWA_MAX_MM = float(config['filtering'].get('bwa_max_mismatch_fraction', 0.05))
+BWA_RULE = "--min-aligned-fraction %s --min-aligned-length %d --max-mismatch-fraction %s" % (BWA_MIN_FRAC, BWA_MIN_LEN,
+                                                                                            BWA_MAX_MM)
+if HOST_METHOD == 'deacon' and not any(s in DEACON_STEPS for s in FILTER):
+    raise Exception("filtering: method deacon, but none of deacon_steps (%s) is in filtering: filter (%s)"
+                    % (" ".join(DEACON_STEPS), " ".join(FILTER)))
 # Importing assembler from the configuration file
 # kraken.memory_mapping: true -> kraken2 --memory-mapping: the database is read through the page cache instead of
 # being loaded into the job's memory, and the Kraken2 rules take a whole regular node. Only sensible when the

@@ -35,6 +35,12 @@ genomes:
 #  GCF_000001405.38_GRCh38.p12: # human
 #    url: "ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.38_GRCh38.p12/GCF_000001405.38_GRCh38.p12_genomic.fna.gz"
 
+# Deacon minimizer index of the human pangenome for host read removal (filtering: method: deacon), saved as
+# filtering/deacon/<name>.k31w15.idx; panhuman-1: 47 HPRC haplotypes + CHM13v2 + GRCh38, minimizers shared with
+# bacteria and viruses removed (~3.3 GB)
+deacon:
+  index: "panhuman-1"
+
 ##################################################
 # Kraken2 databases for tax. analysis
 ##################################################
