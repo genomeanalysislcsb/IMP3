@@ -39,6 +39,17 @@ missing; remove it when it is done (the commit says so).
 - **imp-explorer and Pfam accessions.** Since 3.1.0 the Pfam term counts use accessions only (`PF00483`, no names);
   check that imp-explorer's Pfam layers and term names read them (and old releases with names).
 
+## Installation and tests
+
+- `config/config_test.yaml` is older than the workflow: it lacks keys the rules read (e.g. `mantis: params`), so the
+  test run stops while parsing. Regenerate it from `config/config.imp.yaml` with the test reads and test paths.
+- `localrules` names `prepare_input_data`, which no longer exists (Snakemake warns at every start).
+- Snakemake 7 (`imp_sm_classic`) with mamba >= 2: Snakemake creates the environment folder before
+  `mamba env create --prefix`, and mamba 2 aborts ("Non-conda folder exists at prefix"). Workaround: create the
+  environment with `micromamba create -p <conda-prefix>/<hash>_ -f <conda-prefix>/<hash>_.yaml`, or use
+  `--conda-frontend conda` / mamba < 2 in the Snakemake environment. Fix in the installation docs (or move to
+  Snakemake 8).
+
 ## Container
 
 - Tool caches in the sample folder: in the container Snakemake sets `--home` to the sample's output folder, so
