@@ -121,6 +121,17 @@ fastp:
 # Sequences to filter reads against
 filtering:
   filter: "PhiX T2TCHM13v2genomic T2TCHM13v2transcripts"
+  # deacon: host genome / transcriptome with Deacon (panhuman-1 index), PhiX and other references with bwa-mem2 and
+  # the length-relative rule; bwa: bwa-mem2 with that rule for all; bwa_any: IMP3 <= 3.0.3 (removes many microbial
+  # pairs from short-insert libraries)
+  method: "deacon"
+  deacon_steps: "T2TCHM13v2genomic T2TCHM13v2transcripts"
+  deacon_index: "deacon/panhuman-1.k31w15.idx"   # relative to __IMP_DB__/filtering
+  deacon_abs_threshold: 2
+  deacon_rel_threshold: 0.01
+  bwa_min_aligned_fraction: 0.8
+  bwa_min_aligned_length: 30
+  bwa_max_mismatch_fraction: 0.05
 # Keep rRNA reads in preprocessed reads
 keep_rrnas: false
 # Normalize read coverage for MT reads
@@ -282,3 +293,18 @@ locked_normalMem: 0
 locked_bigMem: 0
 locked_bigCores: 0
 locked_bigTotal: 0 
+
+# Term counts: Pfam-A.hmm for Pfam names -> accessions (empty: __IMP_DB__/mantis/pfam/Pfam-A.hmm)
+annotation_terms:
+  pfam_hmm: ""
+
+# Remapping (add "remap" to steps): this run's reads on the assembly of another IMP3 run of the same sample
+remap:
+  assembly_dir: ""
+  assembly: "Assembly/*.assembly.merged.fa.gz"
+  gff: "Analysis/annotation/annotation_CDS_RNA_hmms.gff.gz"
+  bins: "Binning/MetaWrap/bins.contigs.gz"
+  mantis_dbs: "eggnog cazy enzyme_ec cog arcog go is_essential_gene kegg_brite kegg_ko kegg_module kegg_pathway kegg_reaction pfam tcdb tigrfam"
+  stranding:
+    mg: 0
+    mt: auto
