@@ -198,6 +198,11 @@ properties:
     type: object
   COGS:
     type: string
+  annotation_terms:
+    type: object
+    properties:
+      pfam_hmm:
+        type: string
   remap:
     type: object
     properties:

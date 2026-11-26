@@ -29,8 +29,7 @@ its own assembly and MAGs, plus the remapping.
 | reads per MAG (`remap.bins`) | `remapping/Stats/<omic>/<omic>.bin_abundance.tsv` (contigs, length, reads, share, mean depth; `unbinned`) |
 | Mantis terms per MAG | `remapping/annotation/per_bin_counts/<omic>.mantis.<db>.per_bin.counts.tsv` (bin, term, count) |
 
-The Mantis counts use the other run's per-database GFF (`Analysis/annotation/intermediary/mantis/ref_gff/`) when it
-is still there, as its own counts did, and otherwise the merged annotation `annotation_CDS_RNA_hmms.gff` with the
-database as attribute. featureCounts counts multi-mapping and overlapping reads fractionally (`-O --fraction -M
+The term counts use the other run's merged annotation `annotation_CDS_RNA_hmms.gff`, split into one line per gene
+and term as in the main workflow (Pfam names turned into accessions, KEGG pathways once as `koNNNNN`). featureCounts counts multi-mapping and overlapping reads fractionally (`-O --fraction -M
 --fraction`), paired reads with `-p`, as in the main workflow. imp-explorer reads the counts with
 `imp-explorer fraction --imp-root <folder of the fraction runs> --suffix ext` (omics `<omic>_ext_remap`).

@@ -25,6 +25,12 @@ counted fractionally:
 
 - per feature type and gene: `{mg,mt}.{ID,Name}.{CDS,rRNA,tRNA,ncRNA,tmRNA,CRISPR,…}_counts.tsv`;
 - per functional term of each database: `{mg,mt}.mantis.{db}.counts.tsv` (e.g. `kegg_ko`, `kegg_module`, `cazy`).
+  The terms are taken from the merged annotation, so they include all sources (Mantis consensus, Bakta), one line per
+  gene and term (`scripts/split_annotation_terms.py`). Mantis reports Pfam domains by accession and by name
+  (`PF00483` and `NTP_transferase` for the same domain); names are turned into accessions with the NAME / ACC pairs
+  of `Pfam-A.hmm` (`annotation_terms: pfam_hmm`, default `<db>/mantis/pfam/Pfam-A.hmm`) and each term is kept once per
+  gene; KEGG pathways given as `koNNNNN` and `mapNNNNN` are kept once as `koNNNNN`. Before 3.1.0 the counts came from
+  Mantis' per-database GFFs, where a domain could appear under its accession and its name with different counts.
 
 Coverage per gene and per contig (mosdepth, hts-nim-tools, BEDTools) goes to `Stats/{mg,mt}/`.
 

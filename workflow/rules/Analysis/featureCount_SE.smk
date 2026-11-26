@@ -1,5 +1,7 @@
 include:
     "strandedness.smk"
+include:
+    "annotation_terms.smk"
 
 #########################
 ### hmmer db counting ###
@@ -92,7 +94,7 @@ use rule feature_count_hmmer as feature_count_mantis with:
     input:
         map = "Assembly/{type}.reads.sorted.bam",
         strand = strand_file,
-        gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
+        gff = "Analysis/annotation/intermediary/terms/annotation.{db}.gff"
     output:
         "Analysis/annotation/{type}.mantis.{db}.counts.tsv",
         "Analysis/annotation/{type}.mantis.{db}.counts.tsv.summary"
@@ -112,7 +114,7 @@ use rule feature_count_hmmer as feature_count_mantis_per_contig with:
     input:
         map = "Assembly/{type}.reads.sorted.bam",
         strand = strand_file,
-        gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
+        gff = "Analysis/annotation/intermediary/terms/annotation.{db}.gff"
     output:
         "Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.tsv",
         "Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.tsv.summary"

@@ -1,5 +1,7 @@
 include:
     "strandedness.smk"
+include:
+    "annotation_terms.smk"
 
 #########################
 ### hmmer db counting ###
@@ -194,7 +196,7 @@ use rule feature_count_hmmer_paired as feature_count_mantis_paired with:
     input:
         map = "Assembly/{type}.reads.paired.sorted.bam",
         strand = strand_file,
-        gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
+        gff = "Analysis/annotation/intermediary/terms/annotation.{db}.gff"
     output:
         temp("Analysis/annotation/{type}.mantis.{db}.counts.paired.tsv"),
         temp("Analysis/annotation/{type}.mantis.{db}.counts.paired.tsv.summary")
@@ -215,7 +217,7 @@ use rule feature_count_hmmer_paired as feature_count_mantis_single with:
     input:
         map = "Assembly/{type}.reads.single.sorted.bam",
         strand = strand_file,
-        gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
+        gff = "Analysis/annotation/intermediary/terms/annotation.{db}.gff"
     output:
         temp("Analysis/annotation/{type}.mantis.{db}.counts.single.tsv"),
         temp("Analysis/annotation/{type}.mantis.{db}.counts.single.tsv.summary")
@@ -235,7 +237,7 @@ use rule feature_count_hmmer_paired as feature_count_mantis_paired_per_contig wi
     input:
         map = "Assembly/{type}.reads.paired.sorted.bam",
         strand = strand_file,
-        gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
+        gff = "Analysis/annotation/intermediary/terms/annotation.{db}.gff"
     output:
         temp("Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.paired.tsv"),
         temp("Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.paired.tsv.summary")
@@ -255,7 +257,7 @@ use rule feature_count_hmmer_paired as feature_count_mantis_single_per_contig wi
     input:
         map = "Assembly/{type}.reads.single.sorted.bam",
         strand = strand_file,
-        gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
+        gff = "Analysis/annotation/intermediary/terms/annotation.{db}.gff"
     output:
         temp("Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.single.tsv"),
         temp("Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.single.tsv.summary")

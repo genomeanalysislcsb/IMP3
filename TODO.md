@@ -27,6 +27,18 @@ missing; remove it when it is done (the commit says so).
   Options: metaSPAdes hybrid again, or Flye (already in `IMP_assembly.yaml`) followed by the short-read polishing
   and merging of the current workflow.
 
+## Analysis
+
+- **Fractional counting of overlapping terms.** All featureCounts rules use `-O --fraction -M --fraction`. For the
+  term counts (`<omic>.mantis.<db>.counts.tsv`, per contig, per MAG, also in `remap`) this splits a read over all
+  terms of one database on the same gene: a read on a gene with two Pfam domains gives 0.5 to each, a gene with one
+  domain gives 1, so term counts depend on how many terms a gene carries. Option: `-O` without `--fraction` for the
+  term counts (each term gets the whole read; multi-mapping stays fractional), keep `-O --fraction` for the gene
+  counts. Left as is in 3.1.0 (the duplicate Pfam name / accession terms that made it visible are merged since
+  then); decide before the next comparison of term counts across runs.
+- **imp-explorer and Pfam accessions.** Since 3.1.0 the Pfam term counts use accessions only (`PF00483`, no names);
+  check that imp-explorer's Pfam layers and term names read them (and old releases with names).
+
 ## Container
 
 - Tool caches in the sample folder: in the container Snakemake sets `--home` to the sample's output folder, so

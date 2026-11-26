@@ -4,7 +4,7 @@
 #   remapping/Assembly/<omic>.reads.sorted.bam                     reads on the other run's assembly (bwa-mem2)
 #   remapping/Stats/<omic>/<omic>.{flagstat.txt,contig_coverage.tsv,strandedness.json,bin_abundance.tsv}
 #   remapping/annotation/<omic>.{ID,Name}.<feature>_counts.tsv     genes (as Analysis/annotation)
-#   remapping/annotation/<omic>.mantis.<db>.counts.tsv             Mantis terms (as Analysis/annotation)
+#   remapping/annotation/<omic>.mantis.<db>.counts.tsv             terms of the merged annotation per database
 #   remapping/annotation/per_contig_counts/...                     the same per contig
 #   remapping/annotation/per_bin_counts/<omic>.mantis.<db>.per_bin.counts.tsv   Mantis terms per MAG
 import glob as _glob
@@ -38,13 +38,8 @@ REMAP_INDEX = "remapping/Assembly/remap.assembly.fa"
 
 
 def remap_mantis_gff(wildcards):
-    """the other run's per-database Mantis GFF (as used by its own counts), else its merged annotation"""
-    for ext in ("", ".gz"):
-        p = os.path.join(REMAP_DIR, "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.%s.gff%s"
-                         % (wildcards.mdb, ext))
-        if os.path.exists(p):
-            return p
-    return REMAP_GFF
+    """per-database GFF made from the other run's merged annotation (one line per term, Pfam names -> accessions)"""
+    return "remapping/Assembly/terms/annotation.%s.gff" % wildcards.mdb
 
 
 def remap_paired(wildcards):
@@ -62,6 +57,31 @@ def remap_stranding(wildcards):
 
 def remap_fc_flags(wildcards):
     return "-p -O --fraction -M --fraction" if remap_paired(wildcards) else "-O --fraction -M --fraction"
+
+
+REMAP_PFAM_HMM = (config.get("annotation_terms", {}) or {}).get("pfam_hmm", "") or \
+    os.path.join(DBPATH, "mantis", "pfam", "Pfam-A.hmm")
+
+
+rule remap_split_terms:
+    input:
+        gff = REMAP_GFF
+    output:
+        temp("remapping/Assembly/terms/annotation.{mdb}.gff")
+    params:
+        script = os.path.join(SRCDIR, "split_annotation_terms.py"),
+        pfam = "--pfam-hmm %s" % REMAP_PFAM_HMM if os.path.exists(REMAP_PFAM_HMM) else ""
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        1
+    log:
+        "logs/remap/annotation_terms.{mdb}.log"
+    message:
+        "remap_split_terms: {wildcards.mdb} terms of the other run's merged annotation."
+    shell:
+        "python {params.script} --gff {input.gff} --db {wildcards.mdb} {params.pfam} --out {output} > {log} 2>&1"
 
 
 rule remap_index:

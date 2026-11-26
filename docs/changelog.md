@@ -32,6 +32,13 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   Mantis databases, per contig) and per MAG (reads, depth, Mantis terms), with strand detection (`stranding: auto`);
   outputs in `remapping/`. Replaces the manual Expobiome remapping scripts.
 
+- **Term counts from the merged annotation**: the per-database counts (`<omic>.mantis.<db>.counts.tsv`, per contig,
+  per MAG) now use the merged annotation `annotation_CDS_RNA_hmms.gff` (all sources), split into one line per gene and
+  term; Pfam domains reported by Mantis under both accession and name (`PF00483` / `NTP_transferase`) are counted once,
+  as accession (NAME / ACC of `Pfam-A.hmm`); KEGG pathways given as `ko` and `map` are counted once (`ko`). Before, a
+  domain could be counted under two terms with different values, and with `-O --fraction` a read was split over the
+  duplicates.
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

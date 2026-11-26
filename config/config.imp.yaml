@@ -306,3 +306,7 @@ remap:
   stranding:                                              # featureCounts -s on the other run's annotation, or auto
     mg: 0
     mt: auto
+
+# Term counts (Analysis, remap): Pfam-A.hmm for Pfam names -> accessions (default <db_path>/mantis/pfam/Pfam-A.hmm)
+annotation_terms:
+  pfam_hmm: ""
