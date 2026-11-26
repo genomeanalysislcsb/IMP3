@@ -43,6 +43,10 @@ missing; remove it when it is done (the commit says so).
 
 - `config/config_test.yaml` is older than the workflow: it lacks keys the rules read (e.g. `mantis: params`), so the
   test run stops while parsing. Regenerate it from `config/config.imp.yaml` with the test reads and test paths.
+- Bakta copies its database (72 GB on ULHPC) to `/dev/shm` (`--tmp_db_path`), which counts against the job's memory;
+  with `max_threads: 16` (test runs) the annotate job gets too little memory and is OOM-killed while Bakta seems to
+  hang ("predict CRISPR arrays..." is the last log line). Size the annotate job's memory from the database size (or
+  read the database from disk when the job is small), and say so in the docs of `max_threads`.
 - `localrules` names `prepare_input_data`, which no longer exists (Snakemake warns at every start).
 - Snakemake 7 (`imp_sm_classic`) with mamba >= 2: Snakemake creates the environment folder before
   `mamba env create --prefix`, and mamba 2 aborts ("Non-conda folder exists at prefix"). Workaround: create the
