@@ -68,6 +68,8 @@ rule remap_split_terms:
         gff = REMAP_GFF
     output:
         temp("remapping/Assembly/terms/annotation.{mdb}.gff")
+    wildcard_constraints:
+        mdb = "[A-Za-z0-9_-]+"
     params:
         script = os.path.join(SRCDIR, "split_annotation_terms.py"),
         pfam = "--pfam-hmm %s" % REMAP_PFAM_HMM if os.path.exists(REMAP_PFAM_HMM) else ""

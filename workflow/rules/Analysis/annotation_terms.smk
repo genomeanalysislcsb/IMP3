@@ -11,6 +11,10 @@ if "ANNOTATION_TERMS_RULES" not in globals():
             gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
         output:
             temp("Analysis/annotation/intermediary/terms/annotation.{db}.gff")
+        wildcard_constraints:
+            # a database name has no dots: otherwise per_contig_counts/<omic>.mantis.<db>.per_contig.counts.tsv
+            # could also be made by the total-count rules (db = "<db>.per_contig"), and Snakemake stops as ambiguous
+            db = "[A-Za-z0-9_-]+"
         params:
             script = os.path.join(SRCDIR, "split_annotation_terms.py"),
             pfam = "--pfam-hmm %s" % PFAM_HMM if os.path.exists(PFAM_HMM) else ""
