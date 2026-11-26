@@ -265,7 +265,8 @@ rule compress_dirs:
         'Stats/all_stats.Rdata' if 'summary' in IMP_STEPS else [],
         'Stats/all_bin_stats.tsv' if 'binning' in IMP_STEPS else [],
         'Assembly/intermediary.tar.gz' if 'assembly' in IMP_STEPS else [],
-        expand('Preprocessing/{type}.{read}.preprocessed.fq.gz', type=TYPES, read=['r1', 'r2', 'se']) if 'preprocessing' in IMP_STEPS else []
+        [f for t in TYPES for f in expand('Preprocessing/{type}.{read}.preprocessed.fq.gz', type=t,
+         read=['se'] if len(MG if t == 'mg' else MT) == 1 else ['r1', 'r2', 'se'])] if 'preprocessing' in IMP_STEPS else []
     output:
         touch('status/compress_dirs.done')
     params:
