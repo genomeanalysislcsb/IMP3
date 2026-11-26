@@ -73,11 +73,29 @@ Per sample, on the IMP3 assembly (`Assembly/<mgmt|mg|mt>.assembly.merged.fa(.gz)
 | gene calling, run for genes ≥ 20 aa (`--min-gene 60 --max-overlap 60`) and for small genes (`--min-gene 15 --max-overlap 15`), metagenome mode, closed ends, no stop codon; on the intergenic regions or the whole assembly | pyrodigal-gv | `pyrodigal_gv/{default,small}/<sample>.{faa,fna,gff}` |
 | smORF candidates of the gene calling: complete genes (`partial=00`) with an RBS motif, ≤ 100 aa (`prediction: max_aa`) | | `pyrodigal_gv/{default,small}/<sample>.smorf.faa` |
 | identical candidates merged (100 % identity and coverage) | MMseqs2 | `potential_smORF/<sample>.smorf.{faa,fna,gff}` |
-| ncRNA genes (Rfam, `--cut_tc`), tRNA / tmRNA genes (standard and bacterial code), spurious ORFs (AntiFam, gathering cut-offs), on all candidates | cmscan, Aragorn, pyhmmer | `potential_smORF/{RFAM,Aragorn_std,Aragorn_gcbact,antifam}/` |
+| false positives: spurious ORFs (AntiFam, gathering cut-offs; `antifam`, on); ncRNA genes and cis-regulatory elements (Rfam, `--cut_tc`; `rfam`) and tRNA / tmRNA genes (Aragorn, standard and bacterial code; `aragorn`): `auto` = only with `regions: full` | pyhmmer, cmscan, Aragorn | `potential_smORF/{antifam,RFAM,Aragorn_std,Aragorn_gcbact}/` |
 | **final smORFs** (candidates without any of these hits) | | `smORF/<sample>.smorf.{faa,fna,gff}` |
-| **IMP3 annotation with the smORFs** (`annotation_with_smorfs`): the IMP3 GFF, IMP3 CDS that are smORFs tagged `smORF=true`, new smORFs added as CDS (source `smORF_module`, ID `<sample>_smORF_<n>`, `product=small protein (predicted smORF)`) | | `smORF/<sample>.annotation_with_smORFs.gff` |
+| **status** from metaproteomics (`validation: metap_peptides`): `validated` with ≥ `min_unique_peptides` identified peptides that occur in the smORF and in no protein > 100 aa (IMP3 proteins, human proteome, cRAP), otherwise `predicted` | | `validation/<sample>.smorf_metap.tsv` |
+| **IMP3 annotation with the smORFs**: the IMP3 GFF, IMP3 CDS that are smORFs tagged `smORF=true`, new smORFs added as CDS (source `smORF_module`, ID `<sample>_smORF_<n>`, `product=small protein (predicted smORF)`); attributes `smorf_status`, `smorf_set`, `smorf_length_aa`, `smorf_unique_peptides`, `smorf_overlaps` | | `smORF/<sample>.annotation_with_smORFs.gff` |
+| **one table of the smORFs**: set, position, length, IMP3 locus tag, GFF ID, status, unique peptides, overlapping IMP3 features (e.g. `regulatory_region:<riboswitch>` for leader peptides), reads per omic and support class | | `smORF/<sample>.smorf_table.tsv`, all samples `smORF_table.tsv` |
 | numbers per step (intergenic bp, IMP3 vs new smORFs, filters, lengths) | | `Stats/<sample>.smorf_stats.tsv` |
 | metaG / metaT reads per smORF on the IMP3 BAMs (`Assembly/<omic>.reads.sorted.bam`; unstranded, fractional multi-mapping / overlap as IMP3's gene counts); support class MG only / MT only / MG+MT / none | featureCounts | `read_support/<sample>.smorf_reads.tsv`, `read_support/<sample>.<omic>.counts.tsv` |
+
+**Why Rfam and Aragorn are off on the intergenic regions.** Bakta, the annotation of IMP3, already searches the
+whole assembly for tRNAs (tRNAscan-SE), tmRNAs (Aragorn), rRNAs and ncRNA genes (Infernal with Rfam models,
+`--cut_tc`), and discards CDS that overlap tRNA, tmRNA, rRNA or CRISPR features and CDS with AntiFam hits. These
+features are excluded from the intergenic regions, so new candidates cannot overlap them, and IMP3's own CDS were
+already checked. Bakta does not discard CDS overlapping ncRNA genes, and riboswitches / attenuators
+(`regulatory_region`) are not excluded on purpose: they hold leader peptides (e.g. *trpL*). The paper's Rfam filter
+would remove those; here such overlaps are reported (`smorf_overlaps`, `overlaps` column), not removed. AntiFam
+stays on for the new candidates (cheap; Bakta checked only its own CDS).
+
+**Metaproteomic validation.** Metaproteomics confirms few small proteins, so it does not filter: it changes the
+status of a smORF from `predicted` to `validated`. Peptides are matched as sequences (I = L; modifications and
+flanking residues removed), so any search engine and database can be used; give the identified peptides after FDR
+control, as one file per sample (`metap_peptides: /path/{sample}.tsv`) or one table with a `sample` column, and a
+column `peptide`, `sequence`, `Annotated Sequence`, `Stripped.Sequence` or `Modified.Sequence`. Peptides that also
+occur in a protein > 100 aa are not counted (as in the paper). `validation_samples.tsv` has the numbers per sample.
 
 The IMP3 output itself is not changed: the annotation with the smORFs is a new file next to the smORFs, which
 downstream tools (featureCounts, IMP explorer) can use in place of the IMP3 GFF.

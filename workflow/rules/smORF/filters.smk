@@ -158,15 +158,52 @@ rule smorf_sample_stats:
         """
 
 
+rule smorf_metap_validation:
+    input:
+        smorfs = "smORF/{s}.smorf.faa",
+        peptides = lambda wc: metap_file(wc.s) or [],
+        imp3 = lambda wc: imp_file(wc.s, "bakta_faa") or [],
+        human = HUMAN_FAA if (BUILD_MPDB and _true(MPDB.get("human", True))) or os.path.exists(HUMAN_FAA) else [],
+        crap = CRAP_FAA
+    output:
+        tab = "validation/{s}.smorf_metap.tsv",
+        stats = "validation/{s}.metap_stats.tsv"
+    params:
+        script = os.path.join(SRCDIR, "smorf_metap.py"),
+        peptides = lambda wc, input: "--peptides %s" % input.peptides if input.peptides else "",
+        max_aa = int(PRED.get("max_aa", 100)),
+        min_pep = int(VAL.get("min_unique_peptides", 1))
+    threads: 1
+    resources:
+        runtime = 120,
+        mem_mb = MEM * 4
+    log:
+        "logs/validation/{s}.log"
+    conda:
+        os.path.join(ENVDIR, "IMP_smorf.yaml")
+    message:
+        "smorf_metap_validation: smORFs of {wildcards.s} with identified peptides"
+    shell:
+        """
+        python {params.script} --sample {wildcards.s} --smorfs {input.smorfs} {params.peptides} \\
+            --background {input.imp3} {input.human} {input.crap} --max-aa {params.max_aa} \\
+            --min-peptides {params.min_pep} --out {output.tab} --stats {output.stats} > {log} 2>&1
+        """
+
+
 rule annotation_with_smorfs:
     input:
         imp3 = lambda wc: HAVE_GFF[wc.s],
         gff = "smORF/{s}.smorf.gff",
-        faa = "smORF/{s}.smorf.faa"
+        faa = "smORF/{s}.smorf.faa",
+        status = "validation/{s}.smorf_metap.tsv",
+        reads = lambda wc: "read_support/%s.smorf_reads.tsv" % wc.s if wc.s in RS_SAMPLES else []
     output:
-        "smORF/{s}.annotation_with_smORFs.gff"
+        gff = "smORF/{s}.annotation_with_smORFs.gff",
+        table = "smORF/{s}.smorf_table.tsv"
     params:
-        script = os.path.join(SRCDIR, "smorf_gff.py")
+        script = os.path.join(SRCDIR, "smorf_gff.py"),
+        reads = lambda wc, input: "--reads %s" % input.reads if input.reads else ""
     threads: 1
     resources:
         runtime = 60,
@@ -176,9 +213,32 @@ rule annotation_with_smorfs:
     conda:
         os.path.join(ENVDIR, "IMP_smorf.yaml")
     message:
-        "annotation_with_smorfs: IMP3 annotation of {wildcards.s} with its smORFs (new file)"
+        "annotation_with_smorfs: IMP3 annotation of {wildcards.s} with its smORFs (new file), table of its smORFs"
     shell:
         """
         python {params.script} --imp3-gff {input.imp3} --smorf-gff {input.gff} --smorf-faa {input.faa} \\
-            --sample {wildcards.s} --out {output} > {log} 2>&1
+            --status {input.status} {params.reads} --sample {wildcards.s} --out {output.gff} \\
+            --table {output.table} > {log} 2>&1
+        """
+
+
+rule smorf_tables_all:
+    input:
+        tables = expand("smORF/{s}.smorf_table.tsv", s=SAMPLES),
+        stats = expand("validation/{s}.metap_stats.tsv", s=SAMPLES)
+    output:
+        table = "smORF_table.tsv",
+        stats = "validation_samples.tsv"
+    params:
+        script = os.path.join(SRCDIR, "smorf_summary.py")
+    threads: 1
+    resources:
+        runtime = 60,
+        mem_mb = MEM
+    conda:
+        os.path.join(ENVDIR, "IMP_smorf.yaml")
+    shell:
+        """
+        python {params.script} concat --inputs {input.tables} --out {output.table}
+        python {params.script} concat --inputs {input.stats} --out {output.stats}
         """

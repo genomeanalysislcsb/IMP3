@@ -136,6 +136,24 @@ def cmd_cohort(a):
             fo.write("\t".join(str(x) for x in r) + "\n")
 
 
+def cmd_concat(a):
+    """tables of the samples -> one table (header once; columns united by name)"""
+    import csv
+    cols = []
+    for f in a.inputs:
+        with open(f) as fh:
+            for c in fh.readline().rstrip("\n").split("\t"):
+                if c not in cols:
+                    cols.append(c)
+    with open(a.out, "w") as fo:
+        w = csv.DictWriter(fo, cols, delimiter="\t", lineterminator="\n", restval="")
+        w.writeheader()
+        for f in a.inputs:
+            with open(f) as fh:
+                for r in csv.DictReader(fh, delimiter="\t"):
+                    w.writerow(r)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -150,8 +168,11 @@ def main():
     p.add_argument("--clusters", nargs="*", default=[], help="label,cluster.tsv,rep_seq.fasta")
     p.add_argument("--out", required=True)
     p.add_argument("--cluster-summary", required=True)
+    p = sub.add_parser("concat")
+    p.add_argument("--inputs", nargs="+", required=True)
+    p.add_argument("--out", required=True)
     a = ap.parse_args()
-    cmd_sample(a) if a.cmd == "sample" else cmd_cohort(a)
+    {"sample": cmd_sample, "cohort": cmd_cohort, "concat": cmd_concat}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -25,14 +25,18 @@ properties:
       min_region: {type: integer, minimum: 1}
       flank: {type: integer, minimum: 0}
       imp3_cds: {type: boolean}
-      annotation_with_smorfs: {type: boolean}
       mode: {type: string, enum: ["meta", "single"]}
       default: {type: string}
       small: {type: string}
       max_aa: {type: integer, minimum: 1}
-      rfam: {type: boolean}
+      rfam: {oneOf: [{type: boolean}, {type: string, enum: ["auto"]}]}
       antifam: {type: boolean}
-      aragorn: {type: boolean}
+      aragorn: {oneOf: [{type: boolean}, {type: string, enum: ["auto"]}]}
+  validation:
+    type: object
+    properties:
+      metap_peptides: {type: string}
+      min_unique_peptides: {type: integer, minimum: 1}
   read_support:
     oneOf:
       - {type: boolean}

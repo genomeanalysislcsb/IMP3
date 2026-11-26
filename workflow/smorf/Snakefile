@@ -120,17 +120,44 @@ INTERGENIC = REGIONS == "intergenic"
 IMP3_CDS = INTERGENIC and _true(PRED.get("imp3_cds", True))
 HAVE_GFF = {s: imp_file(s, "annotation_gff") for s in SAMPLES}
 _no = [s for s in SAMPLES if not HAVE_GFF[s]]
-if _no and (INTERGENIC or _true(PRED.get("annotation_with_smorfs", True))):
+if _no:
     raise Exception("smORF module: no IMP3 annotation (%s) for %s" % (INPUTS["annotation_gff"], ", ".join(_no)))
 if IMP3_CDS:
     _no = [s for s in SAMPLES if not imp_file(s, "bakta_faa")]
     if _no:
         raise Exception("smORF module: prediction: imp3_cds needs the Bakta proteins (%s) of %s"
                         % (INPUTS["bakta_faa"], ", ".join(_no)))
-WITH_GFF = _true(PRED.get("annotation_with_smorfs", True))
-USE_RFAM = _true(PRED.get("rfam", True))
-USE_ANTIFAM = _true(PRED.get("antifam", True))
-USE_ARAGORN = _true(PRED.get("aragorn", True))
+
+
+def _filter(key):
+    """rfam / aragorn: auto = only with regions: full. On the intergenic regions they are redundant: Bakta (IMP3) has
+    already searched the whole assembly for tRNAs (tRNAscan-SE), tmRNAs (Aragorn), rRNAs and ncRNA genes (Infernal,
+    Rfam), new candidates cannot overlap these features, and Bakta discards CDS overlapping tRNA / tmRNA / rRNA /
+    CRISPR. Overlaps with IMP3 features (ncRNA genes, regulatory regions such as riboswitches) are reported per
+    smORF instead (smorf_overlaps)"""
+    v = str(PRED.get(key, "auto")).lower()
+    return (not INTERGENIC) if v == "auto" else _true(v)
+
+
+USE_RFAM = _filter("rfam")
+USE_ARAGORN = _filter("aragorn")
+USE_ANTIFAM = _true(PRED.get("antifam", True))      # cheap; new candidates have not been checked by Bakta
+
+# metaproteomic validation: identified peptides per sample -> status validated / predicted
+VAL = _cfg("validation", default={}) or {}
+METAP = str(VAL.get("metap_peptides") or "")
+
+
+def metap_file(s):
+    """peptide file of a sample: metap_peptides with {sample} replaced, or the one table of all samples"""
+    if not METAP:
+        return None
+    p = os.path.expandvars(METAP.replace("{sample}", s))
+    return p if os.path.exists(p) else None
+
+
+if METAP and "{sample}" not in METAP and not os.path.exists(os.path.expandvars(METAP)):
+    raise Exception("smORF module: validation: metap_peptides %s not found" % METAP)
 RFAM_CM = os.path.abspath(_cfg("databases", "rfam_cm", default="") or os.path.join(SMORF_DB, "Rfam", "Rfam.cm"))
 ANTIFAM_HMM = os.path.abspath(_cfg("databases", "antifam_hmm", default="")
                               or os.path.join(SMORF_DB, "AntiFam", "AntiFam.hmm"))
@@ -191,7 +218,9 @@ localrules: SMORF, link_contigs, groups_csv
 rule SMORF:
     input:
         expand("smORF/{s}.smorf.{ext}", s=SAMPLES, ext=["faa", "fna", "gff"]),
-        expand("smORF/{s}.annotation_with_smORFs.gff", s=SAMPLES) if WITH_GFF else [],
+        expand("smORF/{s}.annotation_with_smORFs.gff", s=SAMPLES),
+        "smORF_table.tsv",
+        "validation_samples.tsv",
         "smORF_samples.tsv",
         "smORF_clusters.tsv",
         expand("Cluster_predicted_smORF/{lvl}_rep_seq.fna", lvl=LEVELS),

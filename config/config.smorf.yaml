@@ -30,15 +30,25 @@ prediction:
   flank: 0                     # nt of the neighbouring features added on both sides of a region (genes may overlap
                                # IMP3 features by up to this; prodigal itself allows 60 / 15 nt on whole contigs)
   imp3_cds: true               # IMP3 CDS <= max_aa (complete, not at a contig end) as candidates
-  annotation_with_smorfs: true # smORF/<sample>.annotation_with_smORFs.gff: the IMP3 GFF plus the smORFs
   mode: "meta"                 # pyrodigal-gv -p (single for one genome, e.g. the E. coli demo with regions: full)
   default: "--min-gene 60 --max-overlap 60"   # gene calling run for smORFs >= 20 aa
   small: "--min-gene 15 --max-overlap 15"     # run for smORFs < 20 aa
   max_aa: 100                  # longest smORF (aa)
   # false-positive filters on the smORF candidates (removed when any of them hits)
-  rfam: true                   # Rfam covariance models (cmscan --cut_tc): ncRNA genes
-  antifam: true                # AntiFam HMMs (gathering cut-offs): spurious ORFs
-  aragorn: true                # tRNA / tmRNA genes (standard and bacterial genetic code)
+  antifam: true                # AntiFam HMMs (gathering cut-offs): spurious ORFs (Bakta checks only its own CDS)
+  # auto = only with regions: full. On intergenic regions they repeat what Bakta did on the whole assembly (tRNAscan-SE,
+  # Aragorn tmRNA, Infernal / Rfam ncRNA genes and rRNAs are IMP3 features, so new candidates cannot overlap them);
+  # overlaps with IMP3 features, e.g. riboswitches around leader peptides, are reported per smORF instead
+  rfam: auto                   # Rfam covariance models (cmscan --cut_tc): ncRNA genes and cis-regulatory elements
+  aragorn: auto                # tRNA / tmRNA genes (standard and bacterial genetic code)
+
+# status of a smORF: predicted, or validated by metaproteomics (>= min_unique_peptides identified peptides that occur
+# in the smORF and in no IMP3 protein > max_aa aa, human protein or contaminant). Peptides after FDR control from any
+# search engine: a file per sample (path with {sample}) or one table with a 'sample' column; peptide column
+# peptide / sequence / Annotated Sequence / Stripped.Sequence / Modified.Sequence (or the first column)
+validation:
+  metap_peptides: ""
+  min_unique_peptides: 1
 
 read_support: "auto"           # reads on the smORFs from the IMP3 BAMs: auto (when the BAMs are there), true, false
 read_support_min_reads: 1      # reads for an omic to support a smORF
