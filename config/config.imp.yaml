@@ -293,3 +293,16 @@ locked_normalMem: 0
 locked_bigMem: 0
 locked_bigCores: 0
 locked_bigTotal: 0 
+
+# Remapping (add "remap" to steps): this run's preprocessed reads (e.g. an extracellular fraction) are mapped to the
+# assembly of another IMP3 run of the same sample (e.g. the intracellular MG/MT co-assembly) and counted on its
+# annotation (genes, Mantis databases, per contig) and its MAGs; outputs in remapping/
+remap:
+  assembly_dir: ""                                        # output folder of the other IMP3 run
+  assembly: "Assembly/*.assembly.merged.fa.gz"            # relative to assembly_dir; .gz or not
+  gff: "Analysis/annotation/annotation_CDS_RNA_hmms.gff.gz"
+  bins: "Binning/MetaWrap/bins.contigs.gz"                # contig -> MAG; per-MAG counts are skipped without it
+  mantis_dbs: "eggnog cazy enzyme_ec cog arcog go is_essential_gene kegg_brite kegg_ko kegg_module kegg_pathway kegg_reaction pfam tcdb tigrfam"
+  stranding:                                              # featureCounts -s on the other run's annotation, or auto
+    mg: 0
+    mt: auto

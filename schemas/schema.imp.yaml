@@ -198,6 +198,21 @@ properties:
     type: object
   COGS:
     type: string
+  remap:
+    type: object
+    properties:
+      assembly_dir:
+        type: string
+      assembly:
+        type: string
+      gff:
+        type: string
+      bins:
+        type: string
+      mantis_dbs:
+        type: string
+      stranding:
+        type: object
   featureCountsStranding:
     type: object
     properties:

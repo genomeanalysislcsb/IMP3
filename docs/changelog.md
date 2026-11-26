@@ -27,6 +27,11 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   `-s 2` on the CDS; ≥ 3× decides, otherwise unstranded) and used by all featureCounts rules;
   `Stats/<omic>/<omic>.strandedness.json` keeps the counts.
 
+- **Remapping step** (`steps: ... remap`, `remap: assembly_dir`): a run's preprocessed reads (e.g. an extracellular
+  fraction) are mapped to the assembly of another IMP3 run of the same sample and counted on its annotation (genes,
+  Mantis databases, per contig) and per MAG (reads, depth, Mantis terms), with strand detection (`stranding: auto`);
+  outputs in `remapping/`. Replaces the manual Expobiome remapping scripts.
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

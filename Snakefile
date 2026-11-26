@@ -172,6 +172,12 @@ elif MTaln:
 else:
     raise Exception('No input data.')
 
+# Remapping of this run's reads to the assembly of another run (e.g. an extracellular fraction on the intracellular
+# co-assembly), counted on that run's annotation and MAGs
+if 'remap' in IMP_STEPS:
+    include:
+        "workflow/rules/modules/remap/Remap.smk"
+
 # Clean up at the end
 if EMAIL == "":
     onsuccess:
