@@ -1,7 +1,8 @@
 # smORF module
 
 Small open reading frames (smORFs, ≤ 100 aa) are left out of the usual gene calling, annotation and metaproteomics
-searches. The smORF module predicts them on the IMP3 assemblies, removes false positives, counts the metagenomic and
+searches. The smORF module takes the small genes of the IMP3 annotation and predicts new ones in its intergenic
+regions, removes false positives, counts the metagenomic and
 metatranscriptomic reads on them, clusters them across samples and, optionally, builds per-sample metaproteomics
 search databases with the IMP3 proteins, the smORFs, the human proteome and common contaminants.
 
@@ -52,20 +53,37 @@ Other locations: `databases: rfam_cm / antifam_hmm / human_proteome`.
 
 ## What it does
 
-Per sample, on `Assembly/<mgmt|mg|mt>.assembly.merged.fa(.gz)` of the IMP3 run:
+Per sample, on the IMP3 assembly (`Assembly/<mgmt|mg|mt>.assembly.merged.fa(.gz)`) and its annotation
+(`Analysis/annotation/annotation_CDS_RNA_hmms.gff(.gz)`). Where the smORF candidates come from
+(`prediction: regions`):
+
+- **`intergenic`** (default): the module does not call genes on the whole assembly again. The candidates are
+  the CDS of the IMP3 annotation with ≤ 100 aa (`imp3_cds`; complete, not at a contig end) and new genes that
+  pyrodigal-gv finds only in the intergenic regions of the IMP3 annotation: stretches of at least `min_region` nt
+  without a feature of the types in `occupied` (CDS, tRNA, tmRNA, rRNA, ncRNA, CRISPR), extended by `flank` nt
+  into the neighbouring features (default 0: new smORFs do not overlap IMP3 features). The genes found on these
+  fragments are lifted back to contig coordinates. Since pyrodigal-gv sees only the fragments, it picks its
+  metagenome model per fragment.
+- **`full`**: the paper's pipeline, pyrodigal-gv on the whole assembly (e.g. to reproduce its numbers).
 
 | step | tool | output (in the module's folder) |
 |---|---|---|
-| gene calling, run for genes ≥ 20 aa (`--min-gene 60 --max-overlap 60`) and for small genes (`--min-gene 15 --max-overlap 15`), metagenome mode, closed ends, no stop codon | pyrodigal-gv | `pyrodigal_gv/{default,small}/<sample>.{faa,fna,gff}` |
-| smORF candidates: complete genes (`partial=00`) with an RBS motif, ≤ 100 aa (`prediction: max_aa`) | | `pyrodigal_gv/{default,small}/<sample>.smorf.faa` |
-| identical candidates of the two runs merged (100 % identity and coverage) | MMseqs2 | `potential_smORF/<sample>.smorf.{faa,fna,gff}` |
-| ncRNA genes (Rfam, `--cut_tc`), tRNA / tmRNA genes (standard and bacterial code), spurious ORFs (AntiFam, gathering cut-offs) | cmscan, Aragorn, pyhmmer | `potential_smORF/{RFAM,Aragorn_std,Aragorn_gcbact,antifam}/` |
+| intergenic regions of the IMP3 annotation (`intergenic`) | | `Input/intergenic/<sample>.{fasta.gz,map.tsv}`, `Stats/<sample>.intergenic.tsv` |
+| IMP3 CDS ≤ 100 aa (`intergenic`, `imp3_cds`) | | `pyrodigal_gv/imp3/<sample>.{smorf.faa,fna,gff}` |
+| gene calling, run for genes ≥ 20 aa (`--min-gene 60 --max-overlap 60`) and for small genes (`--min-gene 15 --max-overlap 15`), metagenome mode, closed ends, no stop codon; on the intergenic regions or the whole assembly | pyrodigal-gv | `pyrodigal_gv/{default,small}/<sample>.{faa,fna,gff}` |
+| smORF candidates of the gene calling: complete genes (`partial=00`) with an RBS motif, ≤ 100 aa (`prediction: max_aa`) | | `pyrodigal_gv/{default,small}/<sample>.smorf.faa` |
+| identical candidates merged (100 % identity and coverage) | MMseqs2 | `potential_smORF/<sample>.smorf.{faa,fna,gff}` |
+| ncRNA genes (Rfam, `--cut_tc`), tRNA / tmRNA genes (standard and bacterial code), spurious ORFs (AntiFam, gathering cut-offs), on all candidates | cmscan, Aragorn, pyhmmer | `potential_smORF/{RFAM,Aragorn_std,Aragorn_gcbact,antifam}/` |
 | **final smORFs** (candidates without any of these hits) | | `smORF/<sample>.smorf.{faa,fna,gff}` |
-| numbers per step | | `Stats/<sample>.smorf_stats.tsv` |
+| **IMP3 annotation with the smORFs** (`annotation_with_smorfs`): the IMP3 GFF, IMP3 CDS that are smORFs tagged `smORF=true`, new smORFs added as CDS (source `smORF_module`, ID `<sample>_smORF_<n>`, `product=small protein (predicted smORF)`) | | `smORF/<sample>.annotation_with_smORFs.gff` |
+| numbers per step (intergenic bp, IMP3 vs new smORFs, filters, lengths) | | `Stats/<sample>.smorf_stats.tsv` |
 | metaG / metaT reads per smORF on the IMP3 BAMs (`Assembly/<omic>.reads.sorted.bam`; unstranded, fractional multi-mapping / overlap as IMP3's gene counts); support class MG only / MT only / MG+MT / none | featureCounts | `read_support/<sample>.smorf_reads.tsv`, `read_support/<sample>.<omic>.counts.tsv` |
 
-smORF names are `<sample>::<run>_<contig>_<n>` (run `default` or `small`); the GFF keeps the run prefix on the
-contig names, as in the paper's pipeline (`read_support/<sample>.smorf.saf` has the plain contig names).
+The IMP3 output itself is not changed: the annotation with the smORFs is a new file next to the smORFs, which
+downstream tools (featureCounts, IMP explorer) can use in place of the IMP3 GFF.
+
+smORF names are `<sample>::<set>_<contig>_<n>` (set `default`, `small` or `imp3`; `n` numbers the genes of a set
+along the contig); `smORF/<sample>.smorf.gff` keeps the set prefix on the contig names, as in the paper's pipeline (`read_support/<sample>.smorf.saf` has the plain contig names).
 `read_support: auto` counts reads for the samples whose BAMs are there; `true` requires them, `false` skips it.
 
 All samples:

@@ -13,12 +13,19 @@ properties:
     type: object
     properties:
       assembly: {type: string}
+      annotation_gff: {type: string}
       bakta_faa: {type: string}
       bakta_tsv: {type: string}
       bam: {type: string}
   prediction:
     type: object
     properties:
+      regions: {type: string, enum: ["intergenic", "full"]}
+      occupied: {type: string}
+      min_region: {type: integer, minimum: 1}
+      flank: {type: integer, minimum: 0}
+      imp3_cds: {type: boolean}
+      annotation_with_smorfs: {type: boolean}
       mode: {type: string, enum: ["meta", "single"]}
       default: {type: string}
       small: {type: string}

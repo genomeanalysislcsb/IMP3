@@ -22,11 +22,11 @@ def get_proteins_ids(filein):
 
 
 
-def get_gff(proteins, filein1, filein2, outfile):
+def get_gff(proteins, filein1, filein2, outfile, extra=()):
     selected_lines = []
     contigs = set("_".join(k.split("_")[:-1]) for k in proteins.keys())
 
-    for filein in [filein1, filein2]:
+    for filein in [filein1, filein2] + list(extra):
         with open(filein, "r") as fin:
             for line in fin:
                 line = line.rstrip()
@@ -136,6 +136,9 @@ def main():
     parser.add_argument('-p', dest='p', help='Selected proteins .fasta file', required=True)
     parser.add_argument('-o', dest='o', help='Output file for selected genes', required=True)
     parser.add_argument('-a', dest='a', help='Output gff file for selected genes', required=True)
+    # IMP3: further gene sets in the same format (e.g. the small CDS of the IMP3 annotation, prefix imp3_)
+    parser.add_argument('-gx', dest='gx', nargs='*', default=[], help='further DNA fasta files (.fna)')
+    parser.add_argument('-ax', dest='ax', nargs='*', default=[], help='further gff files, same order as -gx')
 
     args = parser.parse_args()
 
@@ -143,8 +146,10 @@ def main():
     proteins_ids = get_proteins_ids(args.p) 
     proteins_ids=print_DNA_seqs(proteins_ids, args.gd, args.o)
     print_DNA_seqs2(proteins_ids, args.gs, args.o)
+    for gx in args.gx:
+        print_DNA_seqs2(proteins_ids, gx, args.o)
     #print(proteins_ids.keys())
-    get_gff(proteins_ids, args.ad, args.asm, args.a)
+    get_gff(proteins_ids, args.ad, args.asm, args.a, args.ax)
 
 
 if __name__ == "__main__":

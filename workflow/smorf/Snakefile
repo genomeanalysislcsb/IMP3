@@ -9,9 +9,12 @@
 #   snakemake -s <IMP3>/workflow/smorf/Snakefile --configfile smorf.yaml --use-conda --cores 24
 #   imp3 smorf -p <project> [--submit]          (writes the config from the project and runs this)
 #
-# Per sample: gene calling with pyrodigal-gv (two runs: default and small genes), smORF candidates (complete, with
-# RBS motif, <= 100 aa), deduplication (MMseqs2, 100 %), removal of ncRNA / tRNA genes and spurious ORFs (Rfam,
-# Aragorn, AntiFam), metaG / metaT reads per smORF (featureCounts on the IMP3 BAMs). All samples: clusters
+# Per sample: smORF candidates from the IMP3 annotation (its CDS <= 100 aa) and from gene calling with pyrodigal-gv
+# on the intergenic regions of that annotation (prediction: regions: intergenic; or, as the paper, on the whole
+# assembly: full; two runs each: default and small genes; complete, with RBS motif, <= 100 aa), deduplication
+# (MMseqs2, 100 %), removal of ncRNA / tRNA genes and spurious ORFs (Rfam,
+# Aragorn, AntiFam), the IMP3 GFF with the smORFs added (new file), metaG / metaT reads per smORF (featureCounts
+# on the IMP3 BAMs). All samples: clusters
 # (100 % and 95 %), presence per sample and group, length distributions, numbers; optionally per-sample
 # metaproteomics search databases (IMP3 proteins + smORFs + human proteome + cRAP, one ID per identical protein).
 import os
@@ -62,6 +65,7 @@ SMORF_DB = os.path.join(DBPATH, "smorf")
 
 # ------------------------------------------------------------------------------------------------- samples, inputs
 INPUTS = dict(assembly="Assembly/mgmt.assembly.merged.fa Assembly/mg.assembly.merged.fa Assembly/mt.assembly.merged.fa",
+              annotation_gff="Analysis/annotation/annotation_CDS_RNA_hmms.gff Analysis/annotation/bakta/annotation.filt.gff",
               bakta_faa="Analysis/annotation/bakta/annotation.faa",
               bakta_tsv="Analysis/annotation/bakta/annotation.tsv",
               bam="Assembly/{omic}.reads.sorted.bam")
@@ -107,6 +111,23 @@ RS_SAMPLES = [s for s in SAMPLES if OMICS[s]] if RS not in ("false", "0", "no") 
 
 # databases
 PRED = _cfg("prediction", default={}) or {}
+# where the candidates come from: intergenic = IMP3 CDS <= max_aa + gene calling on the intergenic regions of the
+# IMP3 annotation; full = gene calling on the whole assembly (the paper)
+REGIONS = str(PRED.get("regions", "intergenic")).lower()
+if REGIONS not in ("intergenic", "full"):
+    raise Exception("smORF module: prediction: regions must be intergenic or full, not %s" % REGIONS)
+INTERGENIC = REGIONS == "intergenic"
+IMP3_CDS = INTERGENIC and _true(PRED.get("imp3_cds", True))
+HAVE_GFF = {s: imp_file(s, "annotation_gff") for s in SAMPLES}
+_no = [s for s in SAMPLES if not HAVE_GFF[s]]
+if _no and (INTERGENIC or _true(PRED.get("annotation_with_smorfs", True))):
+    raise Exception("smORF module: no IMP3 annotation (%s) for %s" % (INPUTS["annotation_gff"], ", ".join(_no)))
+if IMP3_CDS:
+    _no = [s for s in SAMPLES if not imp_file(s, "bakta_faa")]
+    if _no:
+        raise Exception("smORF module: prediction: imp3_cds needs the Bakta proteins (%s) of %s"
+                        % (INPUTS["bakta_faa"], ", ".join(_no)))
+WITH_GFF = _true(PRED.get("annotation_with_smorfs", True))
 USE_RFAM = _true(PRED.get("rfam", True))
 USE_ANTIFAM = _true(PRED.get("antifam", True))
 USE_ARAGORN = _true(PRED.get("aragorn", True))
@@ -170,6 +191,7 @@ localrules: SMORF, link_contigs, groups_csv
 rule SMORF:
     input:
         expand("smORF/{s}.smorf.{ext}", s=SAMPLES, ext=["faa", "fna", "gff"]),
+        expand("smORF/{s}.annotation_with_smORFs.gff", s=SAMPLES) if WITH_GFF else [],
         "smORF_samples.tsv",
         "smORF_clusters.tsv",
         expand("Cluster_predicted_smORF/{lvl}_rep_seq.fna", lvl=LEVELS),

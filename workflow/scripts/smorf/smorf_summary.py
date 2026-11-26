@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Numbers of the smORF module of IMP3.
 
-  sample  one sample: genes of the two pyrodigal-gv runs, smORF candidates, after deduplication, hits of each
+  sample  one sample: intergenic regions and IMP3 CDS <= 100 aa (regions: intergenic), genes of the two pyrodigal-gv
+          runs, smORF candidates, after deduplication, hits of each
           false-positive filter (Rfam, AntiFam, Aragorn), final smORFs and their lengths
   cohort  all samples: the per-sample table, and per clustering level the clusters with their samples
           (<prefix>_rep_samples.tsv) and the numbers of the paper (clusters, singletons, unique to one sample,
@@ -67,7 +68,17 @@ def cmd_sample(a):
     rf, af = rfam_ids(a.rfam), antifam_ids(a.antifam)
     ar = aragorn_ids(a.aragorn_std) | aragorn_ids(a.aragorn_bact)
     lens = list(final.values())
+    regions = {}
+    if a.regions:
+        h, v = open(a.regions).read().splitlines()[:2]
+        regions = dict(zip(h.split("\t"), v.split("\t")))
+    imp3 = count_headers(a.cand_imp3) if a.cand_imp3 else 0
+    n_imp3 = sum(1 for k in final if "::imp3_" in k)
     row = [("sample", a.sample),
+           ("intergenic_regions", regions.get("intergenic_regions", "NA")),
+           ("intergenic_bp", regions.get("intergenic_bp", "NA")),
+           ("assembly_bp", regions.get("assembly_bp", "NA")),
+           ("smorf_candidates_imp3", imp3 if a.cand_imp3 else "NA"),
            ("genes_default", count_headers(a.genes_default)), ("genes_small", count_headers(a.genes_small)),
            ("smorf_candidates_default", count_headers(a.cand_default)),
            ("smorf_candidates_small", count_headers(a.cand_small)),
@@ -75,6 +86,7 @@ def cmd_sample(a):
            ("removed_rfam", len(rf)), ("removed_antifam", len(af)), ("removed_aragorn", len(ar)),
            ("removed_total", len(rf | af | ar)),
            ("smorfs", len(final)),
+           ("smorfs_imp3_cds", n_imp3), ("smorfs_new", len(final) - n_imp3),
            ("smorfs_le50aa", sum(1 for x in lens if x <= 50)),
            ("smorfs_lt20aa", sum(1 for x in lens if x < 20)),
            ("length_min", min(lens) if lens else 0), ("length_median", statistics.median(lens) if lens else 0),
@@ -131,6 +143,8 @@ def main():
     for k in ("sample", "genes_default", "genes_small", "cand_default", "cand_small", "potential", "rfam", "antifam",
               "aragorn_std", "aragorn_bact", "final", "out"):
         p.add_argument("--" + k.replace("_", "-"), dest=k, required=True)
+    p.add_argument("--cand-imp3", default="", help="IMP3 CDS <= max_aa (regions: intergenic)")
+    p.add_argument("--regions", default="", help="Stats/<sample>.intergenic.tsv (regions: intergenic)")
     p = sub.add_parser("cohort")
     p.add_argument("--samples", nargs="+", required=True, help="per-sample tables")
     p.add_argument("--clusters", nargs="*", default=[], help="label,cluster.tsv,rep_seq.fasta")

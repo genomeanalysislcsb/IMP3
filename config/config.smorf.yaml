@@ -14,12 +14,24 @@ email: ""
 # Input files in each IMP3 output folder (relative; the first match counts, .gz or not)
 inputs:
   assembly: "Assembly/mgmt.assembly.merged.fa Assembly/mg.assembly.merged.fa Assembly/mt.assembly.merged.fa"
+  annotation_gff: "Analysis/annotation/annotation_CDS_RNA_hmms.gff Analysis/annotation/bakta/annotation.filt.gff"
   bakta_faa: "Analysis/annotation/bakta/annotation.faa"
   bakta_tsv: "Analysis/annotation/bakta/annotation.tsv"
   bam: "Assembly/{omic}.reads.sorted.bam"
 
 prediction:
-  mode: "meta"                 # pyrodigal-gv -p (single for one genome, e.g. the E. coli demo)
+  # where the smORF candidates come from:
+  #   intergenic  the CDS of the IMP3 annotation with <= max_aa aa (imp3_cds) plus genes called by pyrodigal-gv only
+  #               on the intergenic regions of the IMP3 annotation (no second gene calling on the whole assembly)
+  #   full        pyrodigal-gv on the whole assembly (the paper; e.g. to reproduce its numbers)
+  regions: "intergenic"
+  occupied: "CDS tRNA tmRNA rRNA ncRNA CRISPR"   # IMP3 feature types that make a region genic
+  min_region: 30               # shortest intergenic region (nt)
+  flank: 0                     # nt of the neighbouring features added on both sides of a region (genes may overlap
+                               # IMP3 features by up to this; prodigal itself allows 60 / 15 nt on whole contigs)
+  imp3_cds: true               # IMP3 CDS <= max_aa (complete, not at a contig end) as candidates
+  annotation_with_smorfs: true # smORF/<sample>.annotation_with_smORFs.gff: the IMP3 GFF plus the smORFs
+  mode: "meta"                 # pyrodigal-gv -p (single for one genome, e.g. the E. coli demo with regions: full)
   default: "--min-gene 60 --max-overlap 60"   # gene calling run for smORFs >= 20 aa
   small: "--min-gene 15 --max-overlap 15"     # run for smORFs < 20 aa
   max_aa: 100                  # longest smORF (aa)

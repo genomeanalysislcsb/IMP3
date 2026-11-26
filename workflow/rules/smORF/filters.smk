@@ -135,11 +135,14 @@ rule smorf_sample_stats:
         antifam = "potential_smORF/antifam/{s}.hits.tsv",
         arstd = "potential_smORF/Aragorn_std/{s}.fasta",
         arbac = "potential_smORF/Aragorn_gcbact/{s}.fasta",
-        final = "smORF/{s}.smorf.faa"
+        final = "smORF/{s}.smorf.faa",
+        imp3 = "pyrodigal_gv/imp3/{s}.smorf.faa" if INTERGENIC else [],
+        regions = "Stats/{s}.intergenic.tsv" if INTERGENIC else []
     output:
         "Stats/{s}.smorf_stats.tsv"
     params:
-        script = os.path.join(SRCDIR, "smorf_summary.py")
+        script = os.path.join(SRCDIR, "smorf_summary.py"),
+        extra = lambda wc, input: ("--cand-imp3 %s --regions %s" % (input.imp3, input.regions)) if INTERGENIC else ""
     threads: 1
     resources:
         runtime = 30,
@@ -151,5 +154,31 @@ rule smorf_sample_stats:
         python {params.script} sample --sample {wildcards.s} --genes-default {input.genes_default} \\
             --genes-small {input.genes_small} --cand-default {input.cand_default} --cand-small {input.cand_small} \\
             --potential {input.potential} --rfam {input.rfam} --antifam {input.antifam} --aragorn-std {input.arstd} \\
-            --aragorn-bact {input.arbac} --final {input.final} --out {output}
+            --aragorn-bact {input.arbac} --final {input.final} --out {output} {params.extra}
+        """
+
+
+rule annotation_with_smorfs:
+    input:
+        imp3 = lambda wc: HAVE_GFF[wc.s],
+        gff = "smORF/{s}.smorf.gff",
+        faa = "smORF/{s}.smorf.faa"
+    output:
+        "smORF/{s}.annotation_with_smORFs.gff"
+    params:
+        script = os.path.join(SRCDIR, "smorf_gff.py")
+    threads: 1
+    resources:
+        runtime = 60,
+        mem_mb = MEM * 4
+    log:
+        "logs/annotation_with_smorfs/{s}.log"
+    conda:
+        os.path.join(ENVDIR, "IMP_smorf.yaml")
+    message:
+        "annotation_with_smorfs: IMP3 annotation of {wildcards.s} with its smORFs (new file)"
+    shell:
+        """
+        python {params.script} --imp3-gff {input.imp3} --smorf-gff {input.gff} --smorf-faa {input.faa} \\
+            --sample {wildcards.s} --out {output} > {log} 2>&1
         """

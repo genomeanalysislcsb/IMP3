@@ -2,7 +2,7 @@
 """Metagenomic and metatranscriptomic reads on the predicted smORFs (smORF module of IMP3).
 
   saf      smORF GFF of the prediction -> SAF for featureCounts on the IMP3 assembly (contig names without the
-           default_ / small_ prefix of the two gene-calling runs)
+           default_ / small_ / imp3_ prefix of the candidate sets)
   summary  featureCounts tables (mg, mt) -> one row per smORF: reads per omic and support class
            (MG only / MT only / MG+MT / none), as in the paper (64 % MG only, 11 % MT only, 25 % both)
 """
@@ -21,7 +21,7 @@ def saf(gff, out):
             if len(p) != 9:
                 continue
             chrom = p[0]
-            for pre in ("default_", "small_"):
+            for pre in ("default_", "small_", "imp3_"):
                 if chrom.startswith(pre):
                     chrom = chrom[len(pre):]
                     break
