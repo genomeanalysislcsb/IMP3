@@ -1,0 +1,182 @@
+# smORF module of IMP3: small open reading frames (smORFs, <= 100 aa) on the assemblies of finished IMP3 runs.
+#
+# An independent analysis on top of IMP3 results: it reads the output folders of the samples (assembly, Bakta
+# proteins, read alignments) and writes to its own folder, so it runs (again) at any time after IMP3 and never
+# changes the IMP3 results. Method and code: the smORF prediction pipeline and metaproteomics database of
+# Davin, Ortis Sunyer, Delgado et al., Nat Commun 2026 (doi:10.1038/s41467-026-72762-5); code by Luis F. Delgado
+# and Julia Ortis Sunyer (gitlab.com/uniluxembourg/lcsb/systems-ecology/smorf_methods_paper).
+#
+#   snakemake -s <IMP3>/workflow/smorf/Snakefile --configfile smorf.yaml --use-conda --cores 24
+#   imp3 smorf -p <project> [--submit]          (writes the config from the project and runs this)
+#
+# Per sample: gene calling with pyrodigal-gv (two runs: default and small genes), smORF candidates (complete, with
+# RBS motif, <= 100 aa), deduplication (MMseqs2, 100 %), removal of ncRNA / tRNA genes and spurious ORFs (Rfam,
+# Aragorn, AntiFam), metaG / metaT reads per smORF (featureCounts on the IMP3 BAMs). All samples: clusters
+# (100 % and 95 %), presence per sample and group, length distributions, numbers; optionally per-sample
+# metaproteomics search databases (IMP3 proteins + smORFs + human proteome + cRAP, one ID per identical protein).
+import os
+import glob
+import re
+from snakemake.utils import validate
+
+ROOTDIR = os.path.abspath(os.path.join(srcdir(""), "..", ".."))
+
+if not workflow.config:
+    configfile:
+        os.path.join(ROOTDIR, "config", "config.smorf.yaml")
+
+validate(config, schema=os.path.join(ROOTDIR, "schemas", "schema.smorf.yaml"))
+
+shell.executable("bash")
+
+SRCDIR = os.path.join(ROOTDIR, "workflow", "scripts", "smorf")
+ENVDIR = os.path.join(ROOTDIR, "workflow", "envs")
+SMORF_ENV = os.path.join(ENVDIR, "IMP_smorf.yaml")
+
+if config.get("container"):
+    containerized:
+        config["container"]
+
+
+def _cfg(*keys, default=None):
+    d = config
+    for k in keys:
+        if not isinstance(d, dict) or k not in d:
+            return default
+        d = d[k]
+    return d
+
+
+def _true(x):
+    return str(x).lower() in ("true", "1", "yes", "y", "t")
+
+
+IMP_ROOT = os.path.abspath(os.path.expandvars(str(config["imp_root"])))
+OUTDIR = os.path.abspath(os.path.expandvars(str(config["outdir"])))
+if not config["imp_root"] or not os.path.isdir(IMP_ROOT):
+    raise Exception("smORF module: imp_root (%s) must be the folder with the IMP3 output folders" % IMP_ROOT)
+if not config["outdir"]:
+    raise Exception("smORF module: set outdir")
+DBPATH = os.path.abspath(os.path.expandvars(str(config.get("db_path") or os.path.join(OUTDIR, "db"))))
+SMORF_DB = os.path.join(DBPATH, "smorf")
+
+# ------------------------------------------------------------------------------------------------- samples, inputs
+INPUTS = dict(assembly="Assembly/mgmt.assembly.merged.fa Assembly/mg.assembly.merged.fa Assembly/mt.assembly.merged.fa",
+              bakta_faa="Analysis/annotation/bakta/annotation.faa",
+              bakta_tsv="Analysis/annotation/bakta/annotation.tsv",
+              bam="Assembly/{omic}.reads.sorted.bam")
+INPUTS.update(_cfg("inputs", default={}) or {})
+
+
+def imp_file(sample, key, omic=None):
+    """first existing candidate of inputs: <key> in the IMP3 folder of the sample, .gz or not (IMP3 compresses its
+    text files at the end of a run)"""
+    for rel in str(INPUTS[key]).split():
+        rel = rel.replace("{omic}", omic or "")
+        for cand in ([rel, rel + ".gz"] if not rel.endswith(".gz") else [rel, rel[:-3]]):
+            p = os.path.join(IMP_ROOT, sample, cand)
+            if os.path.exists(p):
+                return p
+    return None
+
+
+if str(config.get("samples") or "").strip():
+    SAMPLES = str(config["samples"]).split()
+    _missing = [s for s in SAMPLES if not os.path.isdir(os.path.join(IMP_ROOT, s))]
+    if _missing:
+        raise Exception("smORF module: no IMP3 output folder in %s for %s" % (IMP_ROOT, ", ".join(_missing)))
+else:
+    SAMPLES = sorted(os.path.basename(os.path.dirname(os.path.dirname(p)))
+                     for p in glob.glob(os.path.join(IMP_ROOT, "*", "status", "all.done")))
+if not SAMPLES:
+    raise Exception("smORF module: no finished IMP3 runs (status/all.done) in %s; or list them in samples" % IMP_ROOT)
+for s in SAMPLES:
+    if "::" in s or "/" in s or " " in s:
+        raise Exception("smORF module: sample name %s may not contain '::', '/' or blanks" % s)
+    if not imp_file(s, "assembly"):
+        raise Exception("smORF module: no assembly (%s) in %s" % (INPUTS["assembly"], os.path.join(IMP_ROOT, s)))
+
+# metaG / metaT reads on the smORFs: the BAMs of the IMP3 run (reads on the same assembly)
+RS = str(config.get("read_support", "auto")).lower()
+OMICS = {s: [o for o in ("mg", "mt") if imp_file(s, "bam", o)] for s in SAMPLES}
+if RS in ("true", "1", "yes"):
+    _no = [s for s in SAMPLES if not OMICS[s]]
+    if _no:
+        raise Exception("smORF module: read_support: true, but no BAM (%s) for %s" % (INPUTS["bam"], ", ".join(_no)))
+RS_SAMPLES = [s for s in SAMPLES if OMICS[s]] if RS not in ("false", "0", "no") else []
+
+# databases
+PRED = _cfg("prediction", default={}) or {}
+USE_RFAM = _true(PRED.get("rfam", True))
+USE_ANTIFAM = _true(PRED.get("antifam", True))
+USE_ARAGORN = _true(PRED.get("aragorn", True))
+RFAM_CM = os.path.abspath(_cfg("databases", "rfam_cm", default="") or os.path.join(SMORF_DB, "Rfam", "Rfam.cm"))
+ANTIFAM_HMM = os.path.abspath(_cfg("databases", "antifam_hmm", default="")
+                              or os.path.join(SMORF_DB, "AntiFam", "AntiFam.hmm"))
+HUMAN_FAA = os.path.abspath(_cfg("databases", "human_proteome", default="")
+                            or os.path.join(SMORF_DB, "human_refseq", "human_refseq.dedup.faa"))
+MPDB = _cfg("proteomics_db", default={}) or {}
+BUILD_MPDB = _true(MPDB.get("build", False))
+CRAP_FAA = os.path.abspath(MPDB.get("crap") or os.path.join(ROOTDIR, "workflow", "data", "smorf",
+                                                            "CCP_cRAP_20250614.fasta"))
+
+# clustering levels: "identity coverage" -> Coverage_<cov>_Ident_<id> (names of the paper's pipeline)
+LEVELS = []
+for lv in (_cfg("clustering", "levels", default=["1 1", "0.95 0.95"]) or []):
+    idt, cov = str(lv).split()
+    LEVELS.append("Coverage_%s_Ident_%s" % (cov, idt))
+MMSEQS_PARAMS = _cfg("clustering", "params", default="--cov-mode 0 --cluster-mode 0")
+
+# resources
+RES = _cfg("resources", default={}) or {}
+T_SMALL = int(RES.get("threads_small", 14))
+T_BIG = int(RES.get("threads_big", 24))
+MEM = int(RES.get("mem_per_thread_mb", 4000))
+BIGMEM = int(RES.get("big_mem_per_thread_mb", 16000))
+TMP = os.path.abspath(os.path.expandvars(RES.get("tmp_dir") or os.path.join(OUTDIR, "tmp")))
+
+workdir:
+    OUTDIR
+
+wildcard_constraints:
+    s = "|".join(re.escape(x) for x in SAMPLES),
+    lvl = "Coverage_[0-9.]+_Ident_[0-9.]+",
+    cov = "[0-9.]+",
+    idt = "[0-9.]+",
+    omic = "mg|mt"
+
+os.makedirs("logs", exist_ok=True)
+os.makedirs("logs_cluster_jobs", exist_ok=True)     # sbatch --output of the imp3 Slurm profile
+with open("smorf.samples.txt", "w") as _fh:
+    _fh.write("\n".join(SAMPLES) + "\n")
+
+include:
+    os.path.join(ROOTDIR, "workflow", "rules", "smORF", "databases.smk")
+include:
+    os.path.join(ROOTDIR, "workflow", "rules", "smORF", "prediction.smk")
+include:
+    os.path.join(ROOTDIR, "workflow", "rules", "smORF", "filters.smk")
+include:
+    os.path.join(ROOTDIR, "workflow", "rules", "smORF", "read_support.smk")
+include:
+    os.path.join(ROOTDIR, "workflow", "rules", "smORF", "cohort.smk")
+if BUILD_MPDB:
+    include:
+        os.path.join(ROOTDIR, "workflow", "rules", "smORF", "proteomics_db.smk")
+
+
+localrules: SMORF, link_contigs, groups_csv
+
+rule SMORF:
+    input:
+        expand("smORF/{s}.smorf.{ext}", s=SAMPLES, ext=["faa", "fna", "gff"]),
+        "smORF_samples.tsv",
+        "smORF_clusters.tsv",
+        expand("Cluster_predicted_smORF/{lvl}_rep_seq.fna", lvl=LEVELS),
+        expand("Cluster_predicted_smORF/{lvl}_rep_presence_in_groups_report.tsv", lvl=LEVELS),
+        "Size_distribution/smORF/Per_Group_size_distribution.png",
+        expand("Size_distribution/smORF/{lvl}_cluster_representative_size_distribution.png", lvl=LEVELS),
+        ["read_support_samples.tsv"] if RS_SAMPLES else [],
+        ["proteomics_db/protein_clusters.tsv"] if BUILD_MPDB else []
+    output:
+        touch("status/smorf.done")

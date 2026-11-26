@@ -41,6 +41,7 @@ nav:
       - Binning: steps/binning.md
       - Summary: steps/summary.md
       - Remapping: steps/remap.md
+      - smORFs (after IMP3): steps/smorf.md
   - Output files: outputs.md
   - Downstream tools: downstream.md
   - FAQ and troubleshooting: faq.md

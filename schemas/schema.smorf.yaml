@@ -1,0 +1,60 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+description: configuration of the IMP3 smORF module (workflow/smorf/Snakefile)
+type: object
+properties:
+  imp_root: {type: string}
+  samples: {type: string}
+  outdir: {type: string}
+  db_path: {type: string}
+  metadata: {type: string}
+  container: {type: string}
+  email: {type: string}
+  inputs:
+    type: object
+    properties:
+      assembly: {type: string}
+      bakta_faa: {type: string}
+      bakta_tsv: {type: string}
+      bam: {type: string}
+  prediction:
+    type: object
+    properties:
+      mode: {type: string, enum: ["meta", "single"]}
+      default: {type: string}
+      small: {type: string}
+      max_aa: {type: integer, minimum: 1}
+      rfam: {type: boolean}
+      antifam: {type: boolean}
+      aragorn: {type: boolean}
+  read_support:
+    oneOf:
+      - {type: boolean}
+      - {type: string, enum: ["auto", "true", "false"]}
+  read_support_min_reads: {type: number, minimum: 0}
+  clustering:
+    type: object
+    properties:
+      levels: {type: array, items: {type: string, pattern: "^\\s*(0(\\.\\d+)?|1(\\.0+)?)\\s+(0(\\.\\d+)?|1(\\.0+)?)\\s*$"}}
+      params: {type: string}
+  proteomics_db:
+    type: object
+    properties:
+      build: {type: boolean}
+      id_prefix: {type: string, pattern: "^[A-Za-z0-9]+$"}
+      human: {type: boolean}
+      crap: {type: string}
+  databases:
+    type: object
+    properties:
+      rfam_cm: {type: string}
+      antifam_hmm: {type: string}
+      human_proteome: {type: string}
+  resources:
+    type: object
+    properties:
+      threads_small: {type: integer, minimum: 1}
+      threads_big: {type: integer, minimum: 1}
+      mem_per_thread_mb: {type: integer, minimum: 1}
+      big_mem_per_thread_mb: {type: integer, minimum: 1}
+      tmp_dir: {type: string}
+required: [imp_root, outdir]

@@ -1,0 +1,57 @@
+# smORF module of IMP3 (workflow/smorf/Snakefile; 'imp3 smorf' writes this config for a project).
+# Small open reading frames (<= 100 aa) predicted on the IMP3 assemblies of finished runs, false positives removed,
+# reads per smORF, clusters across samples and, optionally, per-sample metaproteomics search databases.
+# Method: Davin, Ortis Sunyer, Delgado et al., Nat Commun 2026 (doi:10.1038/s41467-026-72762-5).
+
+imp_root: ""          # folder with one IMP3 output folder per sample (an imp3 project: <project>/imp)
+samples: ""           # sample folders to use (space separated); "" = every folder with status/all.done
+outdir: ""            # output folder of the module
+db_path: ""           # databases: <db_path>/smorf/... (Rfam, AntiFam, human RefSeq proteins), downloaded if missing
+metadata: ""          # optional TSV, first two columns sample and group: plots and smORF presence per group
+container: ""         # Apptainer image with the IMP_smorf environment (IMP3 >= 3.1 image); "" = conda
+email: ""
+
+# Input files in each IMP3 output folder (relative; the first match counts, .gz or not)
+inputs:
+  assembly: "Assembly/mgmt.assembly.merged.fa Assembly/mg.assembly.merged.fa Assembly/mt.assembly.merged.fa"
+  bakta_faa: "Analysis/annotation/bakta/annotation.faa"
+  bakta_tsv: "Analysis/annotation/bakta/annotation.tsv"
+  bam: "Assembly/{omic}.reads.sorted.bam"
+
+prediction:
+  mode: "meta"                 # pyrodigal-gv -p (single for one genome, e.g. the E. coli demo)
+  default: "--min-gene 60 --max-overlap 60"   # gene calling run for smORFs >= 20 aa
+  small: "--min-gene 15 --max-overlap 15"     # run for smORFs < 20 aa
+  max_aa: 100                  # longest smORF (aa)
+  # false-positive filters on the smORF candidates (removed when any of them hits)
+  rfam: true                   # Rfam covariance models (cmscan --cut_tc): ncRNA genes
+  antifam: true                # AntiFam HMMs (gathering cut-offs): spurious ORFs
+  aragorn: true                # tRNA / tmRNA genes (standard and bacterial genetic code)
+
+read_support: "auto"           # reads on the smORFs from the IMP3 BAMs: auto (when the BAMs are there), true, false
+read_support_min_reads: 1      # reads for an omic to support a smORF
+
+# clustering of the smORFs of all samples (MMseqs2 easy-cluster): "identity coverage" per level
+clustering:
+  levels: ["1 1", "0.95 0.95"]   # 100 %: identical smORFs across samples; 95 %: the families of the paper
+  params: "--cov-mode 0 --cluster-mode 0"
+
+# per-sample metaproteomics search databases: IMP3 (Bakta) proteins + smORFs + human RefSeq proteome + cRAP, each
+# deduplicated (100 % identity and coverage); identical proteins get one ID across samples
+proteomics_db:
+  build: false
+  id_prefix: "imp3"            # protein IDs <prefix>_imp_..., <prefix>_smorf_... (paper: expobiome)
+  human: true                  # add the human RefSeq proteome
+  crap: ""                     # contaminants FASTA; "" = CCP cRAP of 14 June 2025 shipped with IMP3
+
+databases:                     # "" = below <db_path>/smorf (downloaded by the module when missing)
+  rfam_cm: ""                  # Rfam.cm (cmpress'ed by the module)
+  antifam_hmm: ""              # AntiFam.hmm
+  human_proteome: ""           # human RefSeq proteins, deduplicated
+
+resources:                     # threads and memory of the rules (per thread)
+  threads_small: 14
+  threads_big: 24
+  mem_per_thread_mb: 4000
+  big_mem_per_thread_mb: 16000 # MMseqs2 clustering of all samples
+  tmp_dir: ""                  # MMseqs2 temporary files; "" = <outdir>/tmp

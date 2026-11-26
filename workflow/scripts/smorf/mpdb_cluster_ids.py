@@ -1,3 +1,6 @@
+# smORF module of IMP3. From the smORF prediction pipeline of Luis F. Delgado and Julia Ortis Sunyer
+# (gitlab.com/uniluxembourg/lcsb/systems-ecology/smorf_methods_paper; Davin, Ortis Sunyer, Delgado et al.,
+# Nat Commun 2026, doi:10.1038/s41467-026-72762-5). GPL-3.0 (LICENSE.GPL-3.0 in this folder).
 import re
 import argparse
 import os
@@ -43,7 +46,7 @@ def read_cluster(filein, fileout):
     current_id = ""
     cluster_number = 0
 
-    header = "Cluster_number\tcluster_membership\tExpoBiomeID\tSource\tSample\tContig\tGene\tIs_smORF"
+    header = "Cluster_number\tcluster_membership\tProteinID\tSource\tSample\tContig\tGene\tIs_smORF"
 
     with open(filein, "r") as fin, open(fileout, "w") as fout:
         fout.write(header + "\n")
@@ -117,10 +120,12 @@ def modify_fasta_headers_wrapper(args):
     modify_fasta_headers(clusters, filein, dirout)
 
 def main():
-    parser = argparse.ArgumentParser(description="Assign identical ExpoBiomeIDs to clustered sequences across multiple samples.")
+    parser = argparse.ArgumentParser(description="Assign identical IDs to clustered sequences across multiple samples.")
     parser.add_argument("-tsv", required=True, help="MMseq2 cluster file (.tsv)")
-    parser.add_argument("-i", required=True, help="Directory with input FASTA files")
-    parser.add_argument("-e", required=True, help="FASTA file extension (e.g., .faa, .fasta)")
+    parser.add_argument("-i", default=None, help="Directory with input FASTA files")
+    # IMP3: the per-sample FASTA files can be given directly
+    parser.add_argument("-f", nargs="+", default=None, help="Input FASTA files (instead of -i / -e)")
+    parser.add_argument("-e", default=".faa", help="FASTA file extension (e.g., .faa, .fasta)")
     parser.add_argument("-o", required=True, help="Output TSV file with cluster info")
     parser.add_argument("-d", required=True, help="Directory to write modified FASTA files")
     parser.add_argument("-t", type=int, default=4, help="Number of CPUs to use (default: 4)")
@@ -136,7 +141,10 @@ def main():
     clusters = read_cluster(args.tsv, args.o)
 
     # Collect FASTA files
-    fasta_files = [os.path.join(args.i, f) for f in os.listdir(args.i) if f.endswith(args.e)]
+    if args.f:
+        fasta_files = list(args.f)
+    else:
+        fasta_files = [os.path.join(args.i, f) for f in os.listdir(args.i) if f.endswith(args.e)]
     task_args = [(clusters, f, args.d) for f in fasta_files]
 
     print(f"INFO: Total number of fasta files to be modified {len(fasta_files)}")
@@ -148,7 +156,8 @@ def main():
             try:
                 future.result()
             except Exception as exc:
-                print(f"Error processing file: {exc}")
+                # IMP3: a failed file fails the rule (before, it was only printed)
+                raise SystemExit(f"Error processing file: {exc}")
 
 if __name__ == "__main__":
     main()

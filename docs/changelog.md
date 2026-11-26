@@ -6,6 +6,14 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
 
 ## unreleased (3.1.0)
 
+- **smORF module** (`imp3 smorf`, `workflow/smorf/Snakefile`): small ORFs (≤ 100 aa) on the assemblies of finished
+  IMP3 runs with the method of Davin, Ortís Sunyer, Delgado *et al.* (*Nat Commun* 2026): two pyrodigal-gv runs,
+  deduplication, removal of ncRNA / tRNA genes and spurious ORFs (Rfam, Aragorn, AntiFam), metaG / metaT reads per
+  smORF from the IMP3 BAMs, clusters across samples (100 % and 95 %), and optionally per-sample metaproteomics search
+  databases (IMP3 proteins + smORFs + human RefSeq + cRAP). An independent analysis in its own output folder, run
+  any time after IMP3. New conda environment `IMP_smorf` (not in the 3.0 image); scripts of the paper under GPL-3.0
+  in `workflow/scripts/smorf/`. See [smORF module](steps/smorf.md).
+
 - **Read filtering without false host removal** (`filtering.method`). `bwa_any`, the behaviour up to 3.0.3, removed a
   pair whenever BWA-MEM2 reported a mate as mapped; with short-insert libraries its pairing and mate rescue mark many
   microbial pairs as mapped: on 10 Expobiome stool metagenomes 12–31 % of the pairs, against 0.02–1.1 % human reads

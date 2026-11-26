@@ -1,0 +1,155 @@
+# False positives among the smORF candidates (the paper's remove_false_positives.smk): ncRNA genes (Rfam, cmscan
+# with the trusted cut-offs), tRNA / tmRNA genes (Aragorn, standard and bacterial code) and spurious ORFs (AntiFam,
+# gathering cut-offs). A switched-off filter (prediction: rfam / antifam / aragorn: false) writes an empty result.
+
+rule rfam_on_smorfs:
+    input:
+        db = expand(RFAM_CM + "{ext}", ext=[".i1f", ".i1i", ".i1m", ".i1p"]) if USE_RFAM else [],
+        s = "potential_smORF/{s}.smorf.fna"
+    output:
+        "potential_smORF/RFAM/{s}.tbl"
+    params:
+        cm = RFAM_CM,
+        use = "yes" if USE_RFAM else "no"
+    threads: T_BIG
+    resources:
+        runtime = 600,
+        mem_mb = MEM * T_BIG
+    log:
+        "logs/rfam_on_smorfs/{s}.log"
+    conda:
+        os.path.join(ENVDIR, "IMP_smorf.yaml")
+    message:
+        "rfam_on_smorfs: Rfam on the smORF genes of {wildcards.s}"
+    shell:
+        """
+        if [[ {params.use} == yes ]]; then
+            cmscan --rfam --fmt 2 --nohmmonly --cut_tc -g --cpu {threads} --noali --tblout {output} -o /dev/null \\
+                {params.cm} {input.s} 2> {log}
+        else
+            echo "rfam: false" > {log}; : > {output}
+        fi
+        """
+
+
+rule antifam:
+    input:
+        s = "potential_smORF/{s}.smorf.faa",
+        db = ANTIFAM_HMM if USE_ANTIFAM else []
+    output:
+        "potential_smORF/antifam/{s}.hits.tsv"
+    params:
+        script = os.path.join(SRCDIR, "antifam_search.py"),
+        hmm = ANTIFAM_HMM,
+        use = "yes" if USE_ANTIFAM else "no"
+    threads: T_SMALL
+    resources:
+        runtime = 120,
+        mem_mb = MEM * T_SMALL
+    log:
+        "logs/antifam/{s}.log"
+    conda:
+        os.path.join(ENVDIR, "IMP_smorf.yaml")
+    message:
+        "antifam: spurious ORFs among the smORFs of {wildcards.s}"
+    shell:
+        """
+        if [[ {params.use} == yes ]]; then
+            python {params.script} -hmm {params.hmm} -seqs {input.s} -n {threads} -o {output} 2> {log}
+            touch {output}
+        else
+            echo "antifam: false" > {log}; : > {output}
+        fi
+        """
+
+
+rule aragorn:
+    input:
+        "potential_smORF/{s}.smorf.fna"
+    output:
+        "potential_smORF/Aragorn_{code}/{s}.fasta"
+    wildcard_constraints:
+        code = "std|gcbact"
+    params:
+        use = "yes" if USE_ARAGORN else "no"
+    threads: 1
+    resources:
+        runtime = 960,
+        mem_mb = MEM
+    log:
+        "logs/Aragorn_{code}/{s}.log"
+    conda:
+        os.path.join(ENVDIR, "IMP_smorf.yaml")
+    message:
+        "aragorn: tRNA / tmRNA genes among the smORFs of {wildcards.s} (-{wildcards.code})"
+    shell:
+        """
+        if [[ {params.use} == yes ]]; then
+            aragorn -{wildcards.code} -d -w -fasta -o {output} {input} > {log} 2>&1
+        else
+            echo "aragorn: false" > {log}; : > {output}
+        fi
+        """
+
+
+rule remove_false_positives:
+    input:
+        p = "potential_smORF/{s}.smorf.faa",
+        g = "potential_smORF/{s}.smorf.fna",
+        a = "potential_smORF/{s}.smorf.gff",
+        rfam = "potential_smORF/RFAM/{s}.tbl",
+        antifam = "potential_smORF/antifam/{s}.hits.tsv",
+        arstd = "potential_smORF/Aragorn_std/{s}.fasta",
+        arbac = "potential_smORF/Aragorn_gcbact/{s}.fasta"
+    output:
+        p = "smORF/{s}.smorf.faa",
+        g = "smORF/{s}.smorf.fna",
+        a = "smORF/{s}.smorf.gff"
+    params:
+        script = os.path.join(SRCDIR, "get_smORFs_sequences.py")
+    threads: 1
+    resources:
+        runtime = 60,
+        mem_mb = MEM * 2
+    log:
+        "logs/remove_false_positives/{s}.log"
+    conda:
+        os.path.join(ENVDIR, "IMP_smorf.yaml")
+    message:
+        "remove_false_positives: final smORFs of {wildcards.s}"
+    shell:
+        """
+        python {params.script} -p {input.p} -g {input.g} -a {input.a} -rfam {input.rfam} -antifam {input.antifam} \\
+            -arstd {input.arstd} -arbac {input.arbac} -prot {output.p} -gene {output.g} -gff {output.a} > {log} 2>&1
+        """
+
+
+rule smorf_sample_stats:
+    input:
+        genes_default = "pyrodigal_gv/default/{s}.faa",
+        genes_small = "pyrodigal_gv/small/{s}.faa",
+        cand_default = "pyrodigal_gv/default/{s}.smorf.faa",
+        cand_small = "pyrodigal_gv/small/{s}.smorf.faa",
+        potential = "potential_smORF/{s}.smorf.faa",
+        rfam = "potential_smORF/RFAM/{s}.tbl",
+        antifam = "potential_smORF/antifam/{s}.hits.tsv",
+        arstd = "potential_smORF/Aragorn_std/{s}.fasta",
+        arbac = "potential_smORF/Aragorn_gcbact/{s}.fasta",
+        final = "smORF/{s}.smorf.faa"
+    output:
+        "Stats/{s}.smorf_stats.tsv"
+    params:
+        script = os.path.join(SRCDIR, "smorf_summary.py")
+    threads: 1
+    resources:
+        runtime = 30,
+        mem_mb = MEM
+    conda:
+        os.path.join(ENVDIR, "IMP_smorf.yaml")
+    shell:
+        """
+        python {params.script} sample --sample {wildcards.s} --genes-default {input.genes_default} \\
+            --genes-small {input.genes_small} --cand-default {input.cand_default} --cand-small {input.cand_small} \\
+            --potential {input.potential} --rfam {input.rfam} --antifam {input.antifam} --aragorn-std {input.arstd} \\
+            --aragorn-bact {input.arbac} --final {input.final} --out {output}
+        """

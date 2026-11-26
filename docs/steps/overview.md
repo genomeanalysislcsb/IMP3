@@ -15,5 +15,8 @@ taxonomy summary` on an existing assembly.
 | `binning` | [Binning](binning.md) |
 | `summary` | [Summary](summary.md) |
 
+After IMP3, the [smORF module](smorf.md) (`imp3 smorf`) predicts small ORFs on the finished runs, as an
+independent analysis in its own folder.
+
 To see every Snakemake rule of a run, let Snakemake draw the graph:
 `snakemake -s Snakefile --configfile sample.yaml --rulegraph | dot -Tpdf > rules.pdf`.

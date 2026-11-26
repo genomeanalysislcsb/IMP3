@@ -1,0 +1,21 @@
+name: IMP_smorf
+# smORF module (workflow/smorf): versions of the smORF methods paper (Davin, Ortis Sunyer, Delgado et al. 2026)
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - python=3.12
+  - pyrodigal-gv=0.3.2
+  - pyrodigal=3.6.3.post1
+  - mmseqs2=15.6f452
+  - infernal=1.1.5
+  - aragorn=1.2.41
+  - pyhmmer=0.10.14
+  - pandas=2.2.3
+  - matplotlib-base=3.10
+  - seaborn-base=0.13
+  - subread=2.0.6
+  - samtools=1.17
+  - pigz=2.8
+  - curl

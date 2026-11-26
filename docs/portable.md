@@ -45,6 +45,7 @@ cd my_project
 /path/to/IMP3/imp3 run --samples GF06,GF12  # only these
 /path/to/IMP3/imp3 run -- --until assembly  # extra Snakemake options after --
 /path/to/IMP3/imp3 status                   # done / running / failed / stopped per sample, steps done, last log
+/path/to/IMP3/imp3 smorf [--submit]         # smORF module on the finished samples (see Workflow steps: smORFs)
 ```
 
 `imp3 status` states: `submitted` (master submitted, not started yet), `running` (its master is alive: Slurm job or
@@ -81,6 +82,7 @@ Resubmitting while chains are still queued would start the waiting samples twice
 | `tmp_root` | `/dev/shm` (local: `/tmp`) | root of IMP3's temporary folder |
 | `cores`, `mem_gb`, `gpu` | all, 90 %, auto | local: what IMP3 may use on the machine |
 | `snakemake_args` | – | extra Snakemake options for every run |
+| `smorf_container`, `smorf_conda_prefix` | – | `imp3 smorf`: image with the `IMP_smorf` environment; else its conda environment in `smorf_conda_prefix`, `conda_prefix` or `<project>/conda_envs_smorf` |
 
 ## On a Slurm cluster
 
