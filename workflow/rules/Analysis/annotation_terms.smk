@@ -17,7 +17,7 @@ if "ANNOTATION_TERMS_RULES" not in globals():
             db = "[A-Za-z0-9_-]+"
         params:
             script = os.path.join(SRCDIR, "split_annotation_terms.py"),
-            pfam = "--pfam-hmm %s" % PFAM_HMM if os.path.exists(PFAM_HMM) else ""
+            pfam = ("--pfam-hmm %s" % PFAM_HMM if os.path.exists(PFAM_HMM) else "") + (" --pfam-metadata %s" % os.path.join(os.path.dirname(PFAM_HMM), "metadata.tsv") if os.path.exists(os.path.join(os.path.dirname(PFAM_HMM), "metadata.tsv")) else "")
         resources:
             runtime = VERY_SHORT_RUNTIME,
             mem_mb = MAIN_MEMCORE_MB

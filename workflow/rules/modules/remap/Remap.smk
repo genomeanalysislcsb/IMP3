@@ -72,7 +72,7 @@ rule remap_split_terms:
         mdb = "[A-Za-z0-9_-]+"
     params:
         script = os.path.join(SRCDIR, "split_annotation_terms.py"),
-        pfam = "--pfam-hmm %s" % REMAP_PFAM_HMM if os.path.exists(REMAP_PFAM_HMM) else ""
+        pfam = ("--pfam-hmm %s" % REMAP_PFAM_HMM if os.path.exists(REMAP_PFAM_HMM) else "") + (" --pfam-metadata %s" % os.path.join(os.path.dirname(REMAP_PFAM_HMM), "metadata.tsv") if os.path.exists(os.path.join(os.path.dirname(REMAP_PFAM_HMM), "metadata.tsv")) else "")
     resources:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
