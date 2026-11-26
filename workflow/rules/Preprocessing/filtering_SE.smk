@@ -58,10 +58,8 @@ checkpoint reads_filtering_se:
 
 rule make_preprocessed_reads_files_se:
     input:
-        # check = se_filter_checkpoint,
-        fake_pe = expand("Preprocessing/{{type}}.{read}.fq", read=['r1', 'r2']),
         final_filter = lambda wildcards: expand("Preprocessing/{{type}}.{read}.{filtered}.fq.gz",
-                                 filtered=('trimmed.' if wildcards.type == 'mg' \
+                                 filtered=('trimmed__' if wildcards.type == 'mg' \
                                            else 'trimmed__rrna_proc__') \
                                            + "__".join([s + "_filtered" for s in FILTER]),
                                  read=['se'])

@@ -1,3 +1,6 @@
+include:
+    "strandedness.smk"
+
 #########################
 ### hmmer db counting ###
 #########################
@@ -16,12 +19,13 @@ def set_fc_runtime(wildcards, attempt):
 rule feature_count_hmmer_paired:
     input:
         map = "Assembly/{type}.reads.paired.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     output:
         temp("Analysis/annotation/{type}.hmmer.{db}.counts.paired.tsv"),
         temp("Analysis/annotation/{type}.hmmer.{db}.counts.paired.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-p -O --fraction -M --fraction",
         feature = "CDS",
@@ -61,12 +65,13 @@ rule feature_count_hmmer_paired:
 use rule feature_count_hmmer_paired as feature_count_hmmer_single with:
     input:
         map = "Assembly/{type}.reads.single.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     output:
         temp("Analysis/annotation/{type}.hmmer.{db}.counts.single.tsv"),
         temp("Analysis/annotation/{type}.hmmer.{db}.counts.single.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-O --fraction -M --fraction",
         feature = "CDS",
@@ -83,7 +88,7 @@ use rule feature_count_hmmer_paired as feature_count_hmmer_paired_per_contig wit
         temp("Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.counts.paired.tsv"),
         temp("Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.counts.paired.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-p -f -O --fraction -M --fraction",
         feature = "CDS",
@@ -98,12 +103,13 @@ use rule feature_count_hmmer_paired as feature_count_hmmer_paired_per_contig wit
 use rule feature_count_hmmer_paired as feature_count_hmmer_single_per_contig with:
     input:
         map = "Assembly/{type}.reads.single.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     output:
         temp("Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.counts.single.tsv"),
         temp("Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.counts.single.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-f -O --fraction -M --fraction",
         feature = "CDS",
@@ -187,12 +193,13 @@ use rule combine_feature_counts_hmmer as combine_feature_counts_hmmer_per_contig
 use rule feature_count_hmmer_paired as feature_count_mantis_paired with:
     input:
         map = "Assembly/{type}.reads.paired.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
     output:
         temp("Analysis/annotation/{type}.mantis.{db}.counts.paired.tsv"),
         temp("Analysis/annotation/{type}.mantis.{db}.counts.paired.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-p -O --fraction -M --fraction",
         feature = "CDS",
@@ -207,12 +214,13 @@ use rule feature_count_hmmer_paired as feature_count_mantis_paired with:
 use rule feature_count_hmmer_paired as feature_count_mantis_single with:
     input:
         map = "Assembly/{type}.reads.single.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
     output:
         temp("Analysis/annotation/{type}.mantis.{db}.counts.single.tsv"),
         temp("Analysis/annotation/{type}.mantis.{db}.counts.single.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-O --fraction -M --fraction",
         feature = "CDS",
@@ -226,12 +234,13 @@ use rule feature_count_hmmer_paired as feature_count_mantis_single with:
 use rule feature_count_hmmer_paired as feature_count_mantis_paired_per_contig with:
     input:
         map = "Assembly/{type}.reads.paired.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
     output:
         temp("Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.paired.tsv"),
         temp("Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.paired.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-p -f -O --fraction -M --fraction",
         feature = "CDS",
@@ -245,12 +254,13 @@ use rule feature_count_hmmer_paired as feature_count_mantis_paired_per_contig wi
 use rule feature_count_hmmer_paired as feature_count_mantis_single_per_contig with:
     input:
         map = "Assembly/{type}.reads.single.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
     output:
         temp("Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.single.tsv"),
         temp("Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.single.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-f -O --fraction -M --fraction",
         feature = "CDS",
@@ -304,12 +314,13 @@ use rule combine_feature_counts_hmmer as combine_feature_counts_mantis_per_conti
 use rule feature_count_hmmer_paired as feature_count_gene_paired with:
     input:
         map = "Assembly/{type}.reads.paired.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         temp("Analysis/annotation/{type}.{db}.{feature}_counts.paired.tsv"),
         temp("Analysis/annotation/{type}.{db}.{feature}_counts.paired.tsv.summary"),
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-p -O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,
@@ -324,12 +335,13 @@ use rule feature_count_hmmer_paired as feature_count_gene_paired with:
 use rule feature_count_hmmer_paired as feature_count_gene_single with:
     input:
         map = "Assembly/{type}.reads.single.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         temp("Analysis/annotation/{type}.{db}.{feature}_counts.single.tsv"),
         temp("Analysis/annotation/{type}.{db}.{feature}_counts.single.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,
@@ -344,13 +356,14 @@ use rule feature_count_hmmer_paired as feature_count_gene_single with:
 use rule feature_count_hmmer_paired as feature_count_gene_paired_per_contig with:
     input:
         map = "Assembly/{type}.reads.paired.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         temp("Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_counts.paired.tsv"),
         temp("Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_counts.paired.tsv.summary")
 
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-p -f -O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,
@@ -365,12 +378,13 @@ use rule feature_count_hmmer_paired as feature_count_gene_paired_per_contig with
 use rule feature_count_hmmer_paired as feature_count_gene_single_per_contig with:
     input:
         map = "Assembly/{type}.reads.single.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         temp("Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_counts.single.tsv"),
         temp("Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_counts.single.tsv.summary")
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-f -O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,

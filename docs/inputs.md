@@ -20,7 +20,10 @@ raws:
   Gff: ""
 ```
 
-Leave `Metatranscriptomics` (or `Metagenomics`) empty for a single-omic run. Single-end data: give one file per omic.
+Leave `Metatranscriptomics` (or `Metagenomics`) empty for a single-omic run. Single-end data: give one file per omic;
+a single-end metaT library (e.g. stranded total RNA) runs as a single-omic mt run with trimming, rRNA separation,
+host filtering, assembly and annotation; set `featureCountsStranding: mt: auto` when the strand of the kit is not
+known.
 
 ## Preprocessed reads
 

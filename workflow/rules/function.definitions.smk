@@ -507,3 +507,17 @@ def gather_kraken_tax_proteome_checks(wildcards):
     GENOME_IDS, = glob_wildcards(os.path.join(checkpoint_output, "files/{genome_id}_genomic.fna.gz"))
 
     return expand('status/proteomics/{genome_id}.processed', genome_id=GENOME_IDS)
+
+# featureCountsStranding: a number (0, 1, 2) or "auto" (detected per library, Analysis/strandedness.smk)
+def strand_auto(wildcards):
+    return str(config["featureCountsStranding"][wildcards.type]).lower() == "auto"
+
+def strand_file(wildcards):
+    '''input for featureCounts rules: the detected strand when featureCountsStranding is auto'''
+    return "Stats/%s/%s.strandedness.txt" % (wildcards.type, wildcards.type) if strand_auto(wildcards) else []
+
+def strand_param(wildcards):
+    '''value for featureCounts -s: the configured number, or the detected one read at run time'''
+    if strand_auto(wildcards):
+        return "$(cat Stats/%s/%s.strandedness.txt)" % (wildcards.type, wildcards.type)
+    return str(config["featureCountsStranding"][wildcards.type])

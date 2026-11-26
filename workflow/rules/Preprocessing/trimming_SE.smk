@@ -101,9 +101,9 @@ def get_fastp_params(wildcards):
 
 rule trimming:
     input:
-        se = 'Preprocessing/{type}.se.fq'
+        se = 'Preprocessing/{type}.se.fq.gz'
     output:
-        se_trimmed = temp('Preprocessing/{type}.se.trimmed.fq'),
+        se_trimmed = temp('Preprocessing/{type}.se.trimmed.fq.gz'),
         json = 'Stats/{type}/fastp.{type}.json',
         html = 'Stats/{type}/fastp.{type}.html'
     threads:

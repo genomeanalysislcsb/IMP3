@@ -19,6 +19,14 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   can be reproduced. The installer fetches the Deacon index with `deacon: index: panhuman-1`; `deacon` is added to
   the IMP_mapping environment (the Apptainer image needs a rebuild).
 
+- **Single-end metatranscriptomes** (single-omic mt runs with one read file): the preprocessing rules now use the
+  same compressed file names as the paired-end rules (trimming, RiboDetector rRNA separation, host filtering and the
+  final `mt.se.preprocessed.fq.gz` no longer disagree on `.fq` / `.fq.gz` and on step names), so a single-end stranded
+  total-RNA library runs through preprocessing, assembly and annotation.
+- **`featureCountsStranding: auto`**: the strand of a library is detected from its reads on the assembly (`-s 1` vs
+  `-s 2` on the CDS; ≥ 3× decides, otherwise unstranded) and used by all featureCounts rules;
+  `Stats/<omic>/<omic>.strandedness.json` keeps the counts.
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

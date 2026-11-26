@@ -1,3 +1,6 @@
+include:
+    "strandedness.smk"
+
 #########################
 ### hmmer db counting ###
 #########################
@@ -16,12 +19,13 @@ def set_fc_runtime(wildcards, attempt):
 rule feature_count_hmmer:
     input:
         map = "Assembly/{type}.reads.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     output:
         "Analysis/annotation/{type}.hmmer.{db}.counts.tsv",
         "Analysis/annotation/{type}.hmmer.{db}.counts.tsv.summary"
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-O --fraction -M --fraction",
         feature = "CDS",
@@ -62,12 +66,13 @@ rule feature_count_hmmer:
 use rule feature_count_hmmer as feature_count_hmmer_per_contig with:
     input:
         map = "Assembly/{type}.reads.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     output:
         "Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.counts.tsv",
         "Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.counts.tsv.summary"
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-f -O --fraction -M --fraction",
         feature = "CDS",
@@ -86,12 +91,13 @@ use rule feature_count_hmmer as feature_count_hmmer_per_contig with:
 use rule feature_count_hmmer as feature_count_mantis with:
     input:
         map = "Assembly/{type}.reads.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
     output:
         "Analysis/annotation/{type}.mantis.{db}.counts.tsv",
         "Analysis/annotation/{type}.mantis.{db}.counts.tsv.summary"
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-O --fraction -M --fraction",
         feature = "CDS",
@@ -105,12 +111,13 @@ use rule feature_count_hmmer as feature_count_mantis with:
 use rule feature_count_hmmer as feature_count_mantis_per_contig with:
     input:
         map = "Assembly/{type}.reads.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/intermediary/mantis/ref_gff/consensus_annotation.mantis.{db}.gff"
     output:
         "Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.tsv",
         "Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.tsv.summary"
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-f -O --fraction -M --fraction",
         feature = "CDS",
@@ -128,12 +135,13 @@ use rule feature_count_hmmer as feature_count_mantis_per_contig with:
 use rule feature_count_hmmer as feature_count_gene with:
     input:
         map = "Assembly/{type}.reads.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "Analysis/annotation/{type}.{db}.{feature}_counts.tsv",
         "Analysis/annotation/{type}.{db}.{feature}_counts.tsv.summary"
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,
@@ -148,12 +156,13 @@ use rule feature_count_hmmer as feature_count_gene with:
 use rule feature_count_hmmer as feature_count_gene_per_contig with:
     input:
         map = "Assembly/{type}.reads.sorted.bam",
+        strand = strand_file,
         gff = "Analysis/annotation/annotation_CDS_RNA_hmms.gff"
     output:
         "Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_per_contig.counts.tsv",
         "Analysis/annotation/per_contig_counts/{type}.{db}.{feature}_per_contig.counts.tsv.summary"
     params:
-        stranding = lambda wildcards: config["featureCountsStranding"][wildcards.type],
+        stranding = strand_param,
         db = lambda wildcards: wildcards.db,
         flags = "-f -O --fraction -M --fraction",
         feature = lambda wildcards: wildcards.feature,

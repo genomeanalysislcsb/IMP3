@@ -202,13 +202,19 @@ properties:
     type: object
     properties:
       mt:
-        type: number
-        minimum: 0
-        maximum: 2
+        anyOf:
+          - type: number
+            minimum: 0
+            maximum: 2
+          - type: string
+            enum: ["auto"]
       mg:
-        type: number
-        minimum: 0
-        maximum: 2
+        anyOf:
+          - type: number
+            minimum: 0
+            maximum: 2
+          - type: string
+            enum: ["auto"]
   proteomics:
     type: object
     properties:
