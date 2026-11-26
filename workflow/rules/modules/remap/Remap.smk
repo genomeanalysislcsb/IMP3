@@ -123,6 +123,10 @@ rule remap_mapping:
         paired = lambda wildcards: "yes" if remap_paired(wildcards) else "no",
         rg = lambda wildcards: "@RG\\tID:%s_%s_remap\\tSM:%s\\tLB:%s\\tPL:ILLUMINA" % (SAMPLE, wildcards.type, SAMPLE,
                                                                                  wildcards.type),
+        # read files as params: Snakemake formats the whole shell text, so {input.reads[1]} in the paired-end branch
+        # would fail for single-end runs even though the branch is not taken
+        r1 = lambda wildcards, input: input.reads[0] if remap_paired(wildcards) else "",
+        r2 = lambda wildcards, input: input.reads[1] if remap_paired(wildcards) else "",
         se = lambda wildcards, input: input.reads[-1],
         mem = str(max(int(MAIN_MEMCORE_MB * 0.75), 1)) + "M"
     resources:
@@ -142,7 +146,7 @@ rule remap_mapping:
         parts=""
         if [[ "{params.paired}" == "yes" ]]; then
             bwa-mem2 mem -v 1 -K {BWA_BATCH} -t {threads} -R '{params.rg}' {REMAP_INDEX} \\
-                {input.reads[0]} {input.reads[1]} 2>> {log} | \\
+                {params.r1} {params.r2} 2>> {log} | \\
                 samtools sort -@ {threads} -m {params.mem} -o paired.bam - >> {log} 2>&1
             parts="paired.bam"
         fi
