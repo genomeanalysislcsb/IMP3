@@ -45,7 +45,8 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   than the assembly has contigs.
 
 - **`kraken_reads` for single-end metatranscriptomes**: the rRNA reads to add were a param, so they were missing
-  from the shadow directory and the rule stopped without a message. They are now an input (`.fq.gz`).
+  from the shadow directory and the rule stopped without a message. They are now an input (`.fq.gz`), and the
+  reads and rRNA reads are decompressed one after the other (zcat was given an already decompressed stream).
 
 ## 3.0.3 (2026-11-23)
 

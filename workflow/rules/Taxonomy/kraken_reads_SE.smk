@@ -56,7 +56,7 @@ rule kraken_reads:
             # Combine input reads with rRNA reads
             if [ -n "$rrna_se" ]; then
                 echo "Combining input reads with rRNA reads..." >> {log}
-                zcat {input.reads} <(zcat "$rrna_se" || cat "$rrna_se") > ${{k_se}}
+                {{ zcat {input.reads}; zcat -f "$rrna_se"; }} > ${{k_se}} 2>> {log}
             else
                 echo "Error: rRNA file not found" >> {log}
                 exit 1
