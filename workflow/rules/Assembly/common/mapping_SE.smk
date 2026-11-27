@@ -65,7 +65,8 @@ rule mapping_on_assembly:
 
         # merge paired and se and sort
         echo "###### Linking mapped SE to final out. ######" >> {log} 2>&1
-        ln -s {output.map_se} {output.map_merge} 2>> {log}
+        # relative link in the same folder (ln -s Assembly/x Assembly/y pointed to Assembly/Assembly/x)
+        ln -sf $(basename {output.map_se}) {output.map_merge} 2>> {log} && touch -h {output.map_merge}
         echo "#####################################################################################" >> {log} 2>&1
         echo "###### Done. ######" >> {log}
         """
