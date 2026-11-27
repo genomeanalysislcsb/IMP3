@@ -138,6 +138,7 @@ filtering:
   deacon_index: "deacon/panhuman-1.k31w15.idx"   # relative to <db>/filtering
   deacon_abs_threshold: 2     # minimizer hits for a read (pair) to count as host, Deacon default
   deacon_rel_threshold: 0.01  # share of a read's minimizers, Deacon default
+  deacon_threads: 16          # threads of a Deacon filter job (regular node, not a whole big-memory node)
   bwa_min_aligned_fraction: 0.8   # share of the read that must align (M/=/X bases)
   bwa_min_aligned_length: 30      # and at least this many bases
   bwa_max_mismatch_fraction: 0.05 # mismatches (NM) per aligned base

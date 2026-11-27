@@ -11,9 +11,10 @@ checkpoint reads_filtering_se:
         filterstep = "|".join(["trimmed(__rrna_proc)?__" + "__".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
         runtime = SHORT_RUNTIME,
-        mem_mb = MAIN_BIGMEMCORE_MB
+        mem_mb = MAIN_MEMCORE_MB if HOST_METHOD == 'deacon' else MAIN_BIGMEMCORE_MB
     threads:
-        getThreads(MAIN_BIGCORENO, bigmem=True)
+        # Deacon needs a few GB and streams at > 300 Mbp/s on 16 threads: no whole node (which waits in the queue)
+        getThreads(DEACON_THREADS) if HOST_METHOD == 'deacon' else getThreads(MAIN_BIGCORENO, bigmem=True)
     params:
         mem = str(max(int(MAIN_BIGMEMCORE_MB * 0.75), 1)) + 'M',
         tmp_dir=TMPDIR,

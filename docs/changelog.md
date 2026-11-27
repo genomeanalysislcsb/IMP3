@@ -68,6 +68,9 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   of PhiX / other references is built with 4 threads; `compress_text_files` also gzips `.tsv` tables that `file`
   does not report as text (very short count tables, e.g. remap CRISPR counts).
 
+- With `filtering.method: deacon` the filter jobs ask for 16 threads (`filtering.deacon_threads`) and regular
+  memory instead of a whole big-memory node (128 cores), which waited long in the queue for a step of minutes.
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

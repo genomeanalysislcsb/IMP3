@@ -184,6 +184,7 @@ DEACON_STEPS = str(config['filtering'].get('deacon_steps', 'T2TCHM13v2genomic T2
 DEACON_INDEX = config['filtering'].get('deacon_index', 'deacon/panhuman-1.k31w15.idx')   # under DBPATH/filtering
 DEACON_ABS = int(config['filtering'].get('deacon_abs_threshold', 2))
 DEACON_REL = float(config['filtering'].get('deacon_rel_threshold', 0.01))
+DEACON_THREADS = int(config['filtering'].get('deacon_threads', 16))   # threads of a Deacon filter job
 BWA_MIN_FRAC = float(config['filtering'].get('bwa_min_aligned_fraction', 0.8))
 BWA_MIN_LEN = int(config['filtering'].get('bwa_min_aligned_length', 30))
 BWA_MAX_MM = float(config['filtering'].get('bwa_max_mismatch_fraction', 0.05))

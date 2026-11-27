@@ -145,6 +145,8 @@ properties:
         type: integer
       deacon_rel_threshold:
         type: number
+      deacon_threads:
+        type: integer
   keep_rrnas:
     type: boolean
   sortmerna:
