@@ -60,6 +60,10 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   there after each step and failed on directories (`IsADirectoryError`). Bakta now gets its own directory below the
   run's temporary directory, removed afterwards; the fork removes only files (genomeanalysislcsb/bakta).
 
+- **Per-contig term counts, single-end**: the single-end rules wrote `per_contig_counts/<type>.mantis.<db>.counts.tsv`
+  (and the same for hmmer), the paired-end ones and the aggregation `<type>.mantis.<db>.per_contig.counts.tsv`; the
+  aggregation then matched `db=<db>.per_contig` and asked for a non-existing GFF (MissingInputException).
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

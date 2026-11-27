@@ -71,8 +71,8 @@ use rule feature_count_hmmer as feature_count_hmmer_per_contig with:
         strand = strand_file,
         gff = "Analysis/annotation/intermediary/annotation.CDS.RNA.{db}.gff"
     output:
-        "Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.counts.tsv",
-        "Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.counts.tsv.summary"
+        "Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.per_contig.counts.tsv",
+        "Analysis/annotation/per_contig_counts/{type}.hmmer.{db}.per_contig.counts.tsv.summary"
     params:
         stranding = strand_param,
         db = lambda wildcards: wildcards.db,
@@ -116,8 +116,8 @@ use rule feature_count_hmmer as feature_count_mantis_per_contig with:
         strand = strand_file,
         gff = "Analysis/annotation/intermediary/terms/annotation.{db}.gff"
     output:
-        "Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.tsv",
-        "Analysis/annotation/per_contig_counts/{type}.mantis.{db}.counts.tsv.summary"
+        "Analysis/annotation/per_contig_counts/{type}.mantis.{db}.per_contig.counts.tsv",
+        "Analysis/annotation/per_contig_counts/{type}.mantis.{db}.per_contig.counts.tsv.summary"
     params:
         stranding = strand_param,
         db = lambda wildcards: wildcards.db,
