@@ -44,6 +44,9 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   when no chunk had a tmRNA, e.g. small single-end metaT assemblies. `annotate` also gives Bakta no more threads
   than the assembly has contigs.
 
+- **`kraken_reads` for single-end metatranscriptomes**: the rRNA reads to add were a param, so they were missing
+  from the shadow directory and the rule stopped without a message. They are now an input (`.fq.gz`).
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

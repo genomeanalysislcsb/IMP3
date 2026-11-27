@@ -4,7 +4,9 @@ KRAKTHREADS = max(1, round((KRAKSIZE / (float(HIGH_MEM_BIGMEMCORE[:-1]) * to_gb_
 
 rule kraken_reads:
     input:
-        reads = "Preprocessing/{type}.se.preprocessed.fq.gz"
+        reads = "Preprocessing/{type}.se.preprocessed.fq.gz",
+        # an input (not a param), so that it exists in the shadow directory
+        rrna_se = lambda wildcards: "Preprocessing/mt.se.trimmed.rrna.fq.gz" if wildcards.type == "mt" and not KEEP_RRNAs else []
     output:
         "Analysis/taxonomy/kraken/{type}.se.kraken.output.gz",
         report("Analysis/taxonomy/kraken/{type}.kraken.unfiltered.report", category="Taxonomy")
@@ -17,7 +19,6 @@ rule kraken_reads:
         database = os.path.join(DBPATH, config['kraken']['krakendb']),
         report_minimizer = '--report-minimizer-data' if config['kraken']['report_minimizer'] else '',
         min_hit_groups = config['kraken']['min_hit_groups'],
-        rrna_se = "Preprocessing/mt.se.trimmed.rrna.fq",
         keep_rrnas = KEEP_RRNAs
     threads:
         getThreads(128) if KRAKEN_MMAP else getThreads(KRAKTHREADS, bigmem=True, high_mem_cluster=True)
@@ -50,7 +51,7 @@ rule kraken_reads:
             echo "rRNA reads will be added to input reads..." >> {log}
             k_se="{input.reads}.tmp"
 
-            rrna_se=$(get_rrna_file {params.rrna_se})
+            rrna_se=$(get_rrna_file {input.rrna_se} 2>> {log})
 
             # Combine input reads with rRNA reads
             if [ -n "$rrna_se" ]; then
