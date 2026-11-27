@@ -122,8 +122,13 @@ rule annotate:
         n_contigs=$(grep -c '^>' {input.assembly} || true)
         bakta_threads=$(( n_contigs < {threads} ? (n_contigs > 0 ? n_contigs : 1) : {threads} ))
         echo "contigs: $n_contigs, Bakta threads: $bakta_threads" >> {log}
+        # own directory for the database copy: the fork removes what it copied there after each step, and the
+        # temporary directory is node-local (created here, not by the master job)
+        mkdir -p {params.tmp}
+        bakta_db_tmp=$(mktemp -d {params.tmp}/bakta_db.XXXXXX)
+        trap 'rm -rf "$bakta_db_tmp"' EXIT
         bakta --db {params.db} \
-              --tmp_db_path /dev/shm \
+              --tmp_db_path $bakta_db_tmp \
               --verbose \
               --debug \
               --prefix {params.prefix} \
