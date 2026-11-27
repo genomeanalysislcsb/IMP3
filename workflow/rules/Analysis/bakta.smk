@@ -116,6 +116,12 @@ rule annotate:
     shell:
         """
         echo "Running bakta ..." >> {log}
+        # the Bakta fork splits the assembly into one chunk per thread; with fewer contigs than threads (tiny
+        # assemblies, e.g. single-end metaT) empty chunks crash its Aragorn parser (int('found')): no more
+        # threads than contigs
+        n_contigs=$(grep -c '^>' {input.assembly} || true)
+        bakta_threads=$(( n_contigs < {threads} ? (n_contigs > 0 ? n_contigs : 1) : {threads} ))
+        echo "contigs: $n_contigs, Bakta threads: $bakta_threads" >> {log}
         bakta --db {params.db} \
               --tmp_db_path /dev/shm \
               --verbose \
@@ -127,7 +133,7 @@ rule annotate:
               --skip-write-genbank-embl \
               --tmp-dir {params.tmp} \
               --output {output.bakta_dir} \
-              --threads {threads} \
+              --threads $bakta_threads \
               {input.assembly} >> {log} 2>&1
         
         # Filter gff to just contain annotation lines
