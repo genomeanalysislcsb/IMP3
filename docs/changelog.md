@@ -52,6 +52,10 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
 - **`setup_bakta_functions_from_fork`** copied `main.py`, `config.py`, `utils.py` etc. from `bakta/bakta/` in the
   clone, which does not exist; the files are in `bakta/`.
 
+- **Slurm job status**: `runscripts/status.py` failed on the bare job id that `sbatch --parsable` prints when no
+  cluster is set (only `<id>;<cluster>` and `Submitted batch job …` were accepted), which stopped the run right after
+  the first submissions ("Failed to obtain job status").
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

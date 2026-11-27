@@ -41,6 +41,9 @@ def main():
         else:
             print(f"Error: Unexpected format in job info: {jobinfo}")
             sys.exit(1)
+    elif jobinfo.isdigit():
+        # sbatch --parsable without a cluster: the job id alone
+        jobid, cluster = jobinfo, ''
     elif jobinfo.startswith("Submitted batch job"):
         jobinfo_parts = jobinfo.split(' ')
         if len(jobinfo_parts) == 4:
