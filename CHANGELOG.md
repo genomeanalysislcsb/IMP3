@@ -71,6 +71,10 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
 - With `filtering.method: deacon` the filter jobs ask for 16 threads (`filtering.deacon_threads`) and regular
   memory instead of a whole big-memory node (128 cores), which waited long in the queue for a step of minutes.
 
+- `imp3 status`: a master cancelled while its successor for the same sample had already started removed the
+  successor's `.running` marker when it shut down, so running samples showed as `stopped`. A master now removes only
+  its own marker.
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

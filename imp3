@@ -486,9 +486,10 @@ def run_sample(s, sample, reads, extra, dry):
                    stderr=subprocess.DEVNULL)
     # imp3 status: this master is running (host, pid, Slurm job), removed when it ends
     marker = os.path.join(s["project"], "imp_run_logs", "imp_%s.running" % sample)
+    mine = "%s %d %s %s\n" % (socket.gethostname(), os.getpid(), os.environ.get("SLURM_JOB_ID", "-"),
+                              os.path.basename(log))
     with open(marker, "w") as fh:
-        fh.write("%s %d %s %s\n" % (socket.gethostname(), os.getpid(), os.environ.get("SLURM_JOB_ID", "-"),
-                                    os.path.basename(log)))
+        fh.write(mine)
     try:
         with open(log, "w") as fh:
             fh.write("== %s: IMP3 for sample %s\n== %s\n" % (datetime.datetime.now().isoformat(timespec="seconds"),
@@ -497,8 +498,11 @@ def run_sample(s, sample, reads, extra, dry):
             r = subprocess.run(["bash", "-c", shell_line(s, cmd)], cwd=s["project"], stdout=fh,
                                stderr=subprocess.STDOUT)
     finally:
+        # only our own marker: a master that was cancelled while a new one for the sample already started (its
+        # shutdown can take minutes) must not remove the new master's marker
         try:
-            os.remove(marker)
+            if open(marker).read() == mine:
+                os.remove(marker)
         except OSError:
             pass
     say("%s finished with exit code %d (log %s)" % (sample, r.returncode, os.path.relpath(log, s["project"])))
