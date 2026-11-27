@@ -182,6 +182,7 @@ T_BIG = int(RES.get("threads_big", 24))
 MEM = int(RES.get("mem_per_thread_mb", 4000))
 BIGMEM = int(RES.get("big_mem_per_thread_mb", 16000))
 TMP = os.path.abspath(os.path.expandvars(RES.get("tmp_dir") or os.path.join(OUTDIR, "tmp")))
+os.makedirs(TMP, exist_ok=True)   # MMseqs2 and featureCounts create their own folder in it, not its parents
 
 workdir:
     OUTDIR
