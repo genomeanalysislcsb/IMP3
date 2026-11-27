@@ -235,10 +235,12 @@ def filtering_step_ref(wildcards):
             if ref not in ['trimmed', 'rrna_filtered', 'rrna_proc']][-1]
 
 def filtering_method(wildcards):
-    '''deacon (the first host step: removes the host reads), deacon_pass (later host steps), bwa (length-relative rule)
-    or bwa_any (IMP3 <= 3.0.3)'''
+    '''deacon (the first host step: removes the host reads), deacon_pass (later host steps), deacon_ref (other
+    references, e.g. PhiX, with their own Deacon index), bwa (length-relative rule) or bwa_any (IMP3 <= 3.0.3)'''
     ref = filtering_step_ref(wildcards)
-    if HOST_METHOD == 'deacon' and ref in DEACON_STEPS:
+    if HOST_METHOD == 'deacon':
+        if ref not in DEACON_STEPS:
+            return 'deacon_ref'
         first = [s for s in FILTER if s in DEACON_STEPS][0]
         return 'deacon' if ref == first else 'deacon_pass'
     return 'bwa_any' if HOST_METHOD == 'bwa_any' else 'bwa'
@@ -246,7 +248,10 @@ def filtering_method(wildcards):
 def filtering_filter(wildcards):
     '''Reference input files for the paired-/single-end MG/MT reads filtering rule.'''
 
-    if filtering_method(wildcards).startswith('deacon'):
+    method = filtering_method(wildcards)
+    if method == 'deacon_ref':
+        return [os.path.join(DBPATH, 'filtering', 'deacon', filtering_step_ref(wildcards) + '.k31w15.idx')]
+    if method.startswith('deacon'):
         return ancient([os.path.join(DBPATH, 'filtering', DEACON_INDEX)])
     return ancient(expand('{dir}/filtering/{filter}.{ext}',
                           dir=DBPATH,

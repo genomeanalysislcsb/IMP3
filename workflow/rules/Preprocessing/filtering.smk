@@ -35,8 +35,8 @@ rule reads_filtering:
             cp {input.reads[0]} {output[0]} && cp {input.reads[1]} {output[1]} && cp {input.reads[2]} {output[2]}
             exit 0
         fi
-        if [[ "{params.method}" == "deacon" ]]; then
-            echo "Removing human reads with Deacon ($(deacon --version)), index {input.ref[0]}." >> {log} 2>&1
+        if [[ "{params.method}" == "deacon" || "{params.method}" == "deacon_ref" ]]; then
+            echo "Removing reads matching {input.ref[0]} with Deacon ($(deacon --version))." >> {log} 2>&1
             deacon filter --deplete -a {params.deacon_abs} -r {params.deacon_rel} -t {threads} \
                           -s {log}.paired.json -o {output[0]} -O {output[1]} \
                           {input.ref[0]} {input.reads[0]} {input.reads[1]} >> {log} 2>&1
@@ -167,3 +167,26 @@ rule make_preprocessed_reads_files:
         for i, o in zip(input,output):
             shell("cp {i} {o} > {log} 2>&1")
 
+rule deacon_index_build:
+    '''Deacon index (default k 31, w 15) of a filter reference other than the host (PhiX, extra libraries), method deacon'''
+    input:
+        ancient(os.path.join(DBPATH, "filtering", "{ref}.fa"))
+    output:
+        os.path.join(DBPATH, "filtering", "deacon", "{ref}.k31w15.idx")
+    wildcard_constraints:
+        ref = "|".join(DEACON_REFS) if DEACON_REFS else "no_reference"
+    log:
+        "logs/preprocessing/deacon_index.{ref}.log"
+    resources:
+        runtime = VERY_SHORT_RUNTIME,
+        mem_mb = MAIN_MEMCORE_MB
+    threads:
+        1
+    conda:
+        os.path.join(ENVDIR, "IMP_mapping.yaml")
+    message:
+        "deacon_index_build: Deacon index of {wildcards.ref}."
+    shell:
+        """
+        deacon index build {input} > {output}.$$.tmp 2> {log} && mv {output}.$$.tmp {output}
+        """

@@ -76,6 +76,7 @@ if "deacon" in config:
     include:
         "rules/deacon.smk"
     TARGETS.append("filtering/deacon/%s.k31w15.idx" % config["deacon"]["index"])
+    TARGETS += expand("filtering/deacon/{genome}.k31w15.idx", genome=config.get("genomes", {}).keys())
 
 # taxonomy, Kraken2 databases
 if "kraken2" in config:

@@ -10,13 +10,14 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   pair whenever BWA-MEM2 reported a mate as mapped; with short-insert libraries its pairing and mate rescue mark many
   microbial pairs as mapped: on 10 Expobiome stool metagenomes 12–31 % of the pairs, against 0.02–1.1 % human reads
   by Deacon and Hostile, with a GC-dependent loss (low-GC Bacillota most). New methods:
-  - `deacon` (default of the configuration template): the host genome and transcriptome steps use
-    [Deacon](https://github.com/bede/deacon) 0.20 and the human pangenome index `panhuman-1`; PhiX and other filter
-    references use BWA-MEM2 with the rule of `bwa`;
+  - `deacon` (default): Deacon for every filter reference: [Deacon](https://github.com/bede/deacon) 0.20 with the
+    human pangenome index `panhuman-1` for the host genome and transcriptome steps, and an index built from the
+    fasta for PhiX and other references (`<db>/filtering/deacon/<name>.k31w15.idx`, by the installer or on first use);
   - `bwa`: BWA-MEM2 for all references, a read counts as aligned only when ≥ 80 % of it aligns (≥ 30 bases, ≤ 5 %
     mismatches), and the mate of a removed read is no longer lost (`scripts/host_filter_reads.py`).
-  Both remove 0.01–0.1 % on these samples. Configurations without `filtering.method` keep `bwa_any`, so earlier runs
-  can be reproduced. The installer fetches the Deacon index with `deacon: index: panhuman-1`; `deacon` is added to
+  Both remove 0.01–0.1 % on these samples. On Expobiome metatranscriptomes (72–79 % overlapping mates) `bwa_any`
+  removed 44–53 % of the non-rRNA pairs, `bwa` and `deacon` 0.04–0.12 %. `deacon` is also used when
+  `filtering.method` is missing; set `bwa_any` to reproduce earlier runs. The installer fetches the Deacon index with `deacon: index: panhuman-1`; `deacon` is added to
   the IMP_mapping environment (the Apptainer image needs a rebuild).
 
 - **Single-end metatranscriptomes** (single-omic mt runs with one read file): the preprocessing rules now use the

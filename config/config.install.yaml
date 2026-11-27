@@ -37,7 +37,8 @@ genomes:
 
 # Deacon minimizer index of the human pangenome for host read removal (filtering: method: deacon), saved as
 # filtering/deacon/<name>.k31w15.idx; panhuman-1: 47 HPRC haplotypes + CHM13v2 + GRCh38, minimizers shared with
-# bacteria and viruses removed (~3.3 GB)
+# bacteria and viruses removed (~3.3 GB). The references under "genomes" (PhiX, ...) get their own Deacon index
+# filtering/deacon/<genome>.k31w15.idx (built from the fasta; also built by IMP3 on first use)
 deacon:
   index: "panhuman-1"
 

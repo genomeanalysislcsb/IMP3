@@ -121,9 +121,9 @@ fastp:
 # Sequences to filter reads against
 filtering:
   filter: "PhiX T2TCHM13v2genomic T2TCHM13v2transcripts"
-  # deacon: host genome / transcriptome with Deacon (panhuman-1 index), PhiX and other references with bwa-mem2 and
-  # the length-relative rule; bwa: bwa-mem2 with that rule for all; bwa_any: IMP3 <= 3.0.3 (removes many microbial
-  # pairs from short-insert libraries)
+  # deacon: Deacon for every reference (host: panhuman-1 index; PhiX and others: index built from their fasta);
+  # bwa: bwa-mem2 with the length-relative rule for all; bwa_any: IMP3 <= 3.0.3 (removes many microbial pairs from
+  # short-insert libraries)
   method: "deacon"
   deacon_steps: "T2TCHM13v2genomic T2TCHM13v2transcripts"
   deacon_index: "deacon/panhuman-1.k31w15.idx"   # relative to __IMP_DB__/filtering

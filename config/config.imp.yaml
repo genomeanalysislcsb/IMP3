@@ -127,11 +127,12 @@ fastp:
 filtering:
   filter: "PhiX T2TCHM13v2genomic T2TCHM13v2transcripts"
   # How reads are matched to the filter references:
-  #   deacon   host genome / transcriptome (deacon_steps) with Deacon and the human pangenome index panhuman-1
-  #            (install: deacon); the other references (PhiX, extra libraries) with bwa-mem2 and the rule of "bwa"
+  #   deacon   (default, also when "method" is missing) Deacon for every reference: host genome / transcriptome
+  #            (deacon_steps) with the human pangenome index panhuman-1 (install: deacon), the other references
+  #            (PhiX, extra libraries) with an index built from their fasta (<db>/filtering/deacon/<name>.k31w15.idx)
   #   bwa      bwa-mem2 for every reference; a read counts when >= bwa_min_aligned_fraction of it aligns
   #   bwa_any  IMP3 <= 3.0.3: any bwa-mem2 alignment removes the pair (removes many microbial pairs from
-  #            short-insert libraries); also used when "method" is missing
+  #            short-insert libraries, about half of a metatranscriptome)
   method: "deacon"
   deacon_steps: "T2TCHM13v2genomic T2TCHM13v2transcripts"
   deacon_index: "deacon/panhuman-1.k31w15.idx"   # relative to <db>/filtering
