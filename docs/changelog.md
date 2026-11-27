@@ -39,6 +39,11 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   domain could be counted under two terms with different values, and with `-O --fraction` a read was split over the
   duplicates.
 
+- **Bakta fork moved to `genomeanalysislcsb/bakta`** (from `ohickl/bakta`, branch `dynamic_db_fetch`), with a fix
+  for assemblies without tmRNA: the fork read Aragorn's summary line by column and failed (`ValueError: 'found'`)
+  when no chunk had a tmRNA, e.g. small single-end metaT assemblies. `annotate` also gives Bakta no more threads
+  than the assembly has contigs.
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

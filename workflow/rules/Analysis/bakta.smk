@@ -34,7 +34,7 @@ rule setup_bakta_functions_from_fork:
     log:
         os.path.join(ENVDIR, "logs/bakta_setup_functions.log")
     params:
-        fork_url = "https://github.com/ohickl/bakta.git",
+        fork_url = "https://github.com/genomeanalysislcsb/bakta.git",   # fork of ohickl/bakta (dynamic_db_fetch) with the tmRNA fix
         fork_branch = "dynamic_db_fetch"
     message:
         "bakta: Setting up functions from fork."
