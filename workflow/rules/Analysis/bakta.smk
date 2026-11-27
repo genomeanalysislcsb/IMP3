@@ -61,7 +61,7 @@ rule setup_bakta_functions_from_fork:
 
         # Replace files in the main bakta directory
         for file in main.py config.py utils.py psc.py pscc.py ips.py ups.py; do
-            cp {output.bakta_path}/bakta/bakta/$file ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
+            cp {output.bakta_path}/bakta/$file ${{BAKTA_CONDA_DIR}}/ >> {log} 2>&1
         done
 
         # Increase diamond block size from 3 to 6

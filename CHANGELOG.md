@@ -48,6 +48,9 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   from the shadow directory and the rule stopped without a message. They are now an input (`.fq.gz`), and the
   reads and rRNA reads are decompressed one after the other (zcat was given an already decompressed stream).
 
+- **`setup_bakta_functions_from_fork`** copied `main.py`, `config.py`, `utils.py` etc. from `bakta/bakta/` in the
+  clone, which does not exist; the files are in `bakta/`.
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.
