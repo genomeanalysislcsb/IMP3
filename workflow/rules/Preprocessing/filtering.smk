@@ -40,9 +40,11 @@ rule reads_filtering:
             deacon filter --deplete -a {params.deacon_abs} -r {params.deacon_rel} -t {threads} \
                           -s {log}.paired.json -o {output[0]} -O {output[1]} \
                           {input.ref[0]} {input.reads[0]} {input.reads[1]} >> {log} 2>&1
+            cat {log}.paired.json >> {log}
             if [[ -s {input.reads[2]} ]]; then
                 deacon filter --deplete -a {params.deacon_abs} -r {params.deacon_rel} -t {threads} \
                               -s {log}.single.json -o {output[2]} {input.ref[0]} {input.reads[2]} >> {log} 2>&1
+                cat {log}.single.json >> {log}
             else
                 echo "There are no singletons reads. {input.reads[2]} is empty. Generating empty {output[2]}" >> {log}
                 touch {output[2]}
@@ -181,12 +183,12 @@ rule deacon_index_build:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
-        1
+        4
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
         "deacon_index_build: Deacon index of {wildcards.ref}."
     shell:
         """
-        deacon index build {input} > {output}.$$.tmp 2> {log} && mv {output}.$$.tmp {output}
+        deacon index build -t {threads} {input} > {output}.$$.tmp 2> {log} && mv {output}.$$.tmp {output}
         """

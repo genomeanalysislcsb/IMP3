@@ -38,6 +38,7 @@ checkpoint reads_filtering_se:
             echo "Removing reads matching {input.ref[0]} with Deacon ($(deacon --version))." >> {log} 2>&1
             deacon filter --deplete -a {params.deacon_abs} -r {params.deacon_rel} -t {threads} \
                           -s {log}.single.json -o {output} {input.ref[0]} {input.reads} >> {log} 2>&1
+            cat {log}.single.json >> {log}
             exit 0
         fi
         if [[ "{params.method}" == "bwa" ]]; then
@@ -99,12 +100,12 @@ rule deacon_index_build:
         runtime = VERY_SHORT_RUNTIME,
         mem_mb = MAIN_MEMCORE_MB
     threads:
-        1
+        4
     conda:
         os.path.join(ENVDIR, "IMP_mapping.yaml")
     message:
         "deacon_index_build: Deacon index of {wildcards.ref}."
     shell:
         """
-        deacon index build {input} > {output}.$$.tmp 2> {log} && mv {output}.$$.tmp {output}
+        deacon index build -t {threads} {input} > {output}.$$.tmp 2> {log} && mv {output}.$$.tmp {output}
         """

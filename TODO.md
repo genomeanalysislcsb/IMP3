@@ -54,6 +54,15 @@ missing; remove it when it is done (the commit says so).
   `--conda-frontend conda` / mamba < 2 in the Snakemake environment. Fix in the installation docs (or move to
   Snakemake 8).
 
+- Bakta fork: IMP3 clones `genomeanalysislcsb/bakta` (branch `dynamic_db_fetch`, fork of `ohickl/bakta`, Bakta
+  1.9.4) and copies its `features/*.py`, `main.py`, `config.py`, `utils.py`, ... into the conda Bakta 1.9.3. Since
+  3.1.0 these files really are copied (the path was wrong before, so earlier runs used conda's own main.py etc.).
+  Keep the fork in sync with upstream, pin the commit IMP3 clones instead of the branch, and either install the fork
+  as a package (matching version) or move to upstream Bakta once its database handling suffices. Our fixes on the
+  fork: tmRNA summary parsing, tmp_db_path cleanup of files only.
+- Single-end metatranscriptome runs (MT-Ext) were fixed rule by rule in 3.1.0 (strandedness, kraken_reads, mapping
+  link, per-contig count names, Bakta on tiny assemblies): add a single-end test sample to the test data.
+
 ## Container
 
 - Tool caches in the sample folder: in the container Snakemake sets `--home` to the sample's output folder, so

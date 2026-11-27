@@ -325,6 +325,8 @@ rule compress_text_files:
         echo "Compressing text files larger than {params.min_size} bytes ..." >> {log} 2>&1
         MIN_SIZE={params.min_size}
         find . -type f ! -name "*.gz" ! -name "*.tar.gz" ! -path "./.snakemake/*" -size +${{MIN_SIZE}}c -exec file {{}} + | grep -E 'text|ASCII' | cut -d: -f1 | parallel -j {threads} gzip -f >> {log} 2>&1
+        # tables that 'file' does not report as text (e.g. very short ones)
+        find . -type f \( -name "*.tsv" -o -name "*.tsv.summary" \) ! -path "./.snakemake/*" -size +${{MIN_SIZE}}c | parallel -j {threads} gzip -f >> {log} 2>&1
         touch {output} >> {log} 2>&1
         echo "Done." >> {log} 2>&1
         """

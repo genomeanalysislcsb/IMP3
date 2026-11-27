@@ -64,6 +64,10 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   (and the same for hmmer), the paired-end ones and the aggregation `<type>.mantis.<db>.per_contig.counts.tsv`; the
   aggregation then matched `db=<db>.per_contig` and asked for a non-existing GFF (MissingInputException).
 
+- Deacon's filter summary (JSON) is appended to the step's log (the file next to it was not kept); the Deacon index
+  of PhiX / other references is built with 4 threads; `compress_text_files` also gzips `.tsv` tables that `file`
+  does not report as text (very short count tables, e.g. remap CRISPR counts).
+
 ## 3.0.3 (2026-11-23)
 
 Fixes in the launcher and the summary statistics. The 3.0.0 Apptainer image is unchanged and still used.

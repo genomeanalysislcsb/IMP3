@@ -26,6 +26,8 @@ rule deacon_index_build:
         "filtering/deacon/{genome}.k31w15.idx"
     wildcard_constraints:
         genome = "|".join(config.get("genomes", {}).keys()) or "no_genome"
+    threads:
+        4
     log:
         "filtering/deacon/{genome}.log"
     conda:
@@ -33,4 +35,4 @@ rule deacon_index_build:
     message:
         "Filtering: Deacon index of {wildcards.genome}"
     shell:
-        "deacon index build {input} > {output}.tmp 2> {log} && mv {output}.tmp {output}"
+        "deacon index build -t {threads} {input} > {output}.tmp 2> {log} && mv {output}.tmp {output}"
