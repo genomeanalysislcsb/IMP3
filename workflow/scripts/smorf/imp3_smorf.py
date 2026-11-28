@@ -206,6 +206,9 @@ def main():
     ap.add_argument("--threads", type=int, default=8)
     ap.add_argument("--outdir", default="", help="[<sample-dir>/Analysis/smORF]")
     a = ap.parse_args()
+    # the environment's programs (featureCounts, samtools, cmscan, aragorn) next to its Python, also when the script
+    # is started with that Python without activating the environment (imp3 smorf does so)
+    os.environ["PATH"] = os.path.dirname(os.path.abspath(sys.executable)) + os.pathsep + os.environ.get("PATH", "")
 
     C = {"regions": "intergenic", "occupied": "CDS tRNA tmRNA rRNA ncRNA CRISPR", "min_region": 30, "flank": 0,
          "imp3_cds": True, "max_aa": 100, "default": [60, 60], "small": [15, 15], "antifam": True,
