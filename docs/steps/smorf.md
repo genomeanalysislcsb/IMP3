@@ -113,6 +113,52 @@ All samples:
 | length distributions per group | `Size_distribution/smORF/*.png` |
 | numbers: per sample (`smORF_samples.tsv`), per level: clusters, singletons, in one sample, in ≥ 2 samples, core (`smORF_clusters.tsv`), read support (`read_support_samples.tsv`) | |
 
+## Complete genes, unconfirmed starts and RBS motifs
+
+**All smORFs are complete genes in the formal sense.** pyrodigal-gv runs with closed ends (`-c`, as in the paper's
+pipeline), and Bakta, the annotation of IMP3, also predicts genes with closed ends on linear contigs (every
+metagenome contig; open ends only for circular replicons). A gene is therefore only called when its start codon and
+its stop codon lie on the contig; every gene is `partial=00`, and the paper's "complete genes only" criterion
+removes nothing.
+
+**A start codon on the contig is not always the start of the gene.** ATG, GTG and TTG also occur inside genes.
+When a contig begins in the middle of a gene, the real start lies outside the contig, and the gene caller reports
+the gene from the next internal start codon instead:
+
+```
+real gene:      ATG.........................ATG..........TAA
+contig:                   |-----------------ATG..........TAA------|
+reported:                                   ATG..........TAA   (complete, partial=00)
+```
+
+The reported ORF is complete, but it is the 3' part of a longer gene; because it is short, it looks like a smORF.
+
+**Start status.** The module looks upstream of the start codon in the same reading frame:
+
+- `start_confirmed`: an in-frame stop codon lies upstream on the contig. A longer gene cannot run through it, so the
+  gene begins at this start codon.
+- `start_open`: no in-frame stop codon up to the contig end. The smORF may be a real small gene or the 3' part of a
+  longer gene; this cannot be decided from the contig.
+
+A stop codon occurs on average every ~21 codons in any reading frame of non-coding sequence or of another gene's
+coding sequence, so genes with more than ~100 nt upstream on the contig are almost always `start_confirmed` — also
+genes inside operons and the first gene of an operon (its upstream region, promoter and spacer, has stop codons in
+all frames). `start_open` concerns genes near the 5' end of a contig, i.e. mostly short contigs. On BHC01 (median
+contig 546 bp) 35 % of the paper pipeline's smORFs and 47 % of the IMP3 CDS ≤ 100 aa were `start_open`.
+
+`start_open` smORFs are kept in the table and the GFF (`smorf_start=open`), but left out of the core set used for
+statistics, clustering across samples and overlaps with sRNAs (`smorf_start=confirmed`). The same applies to all genes
+of the IMP3 annotation near contig ends; the IMP3 gene counts do not use this status.
+
+**RBS motif.** The paper keeps only smORFs for which Prodigal reports a Shine-Dalgarno motif (`rbs_motif` not
+`None`). The module does not filter on it, but reports `rbs_motif`, `rbs_spacer` and whether at least 20 nt upstream
+were available (`motif`, `none`, `not_assessable`). The motif is missing for reasons other than a false gene: genes
+near contig ends (80 % without motif with < 20 nt upstream on BHC01) and whole taxa that translate with weak or no
+Shine-Dalgarno motifs. On BHC01, complete genes with enough upstream sequence lacked a motif in 16-18 % of
+Bacillota, 22 % of Actinomycetota, 37 % of Bacteroidota and 82 % of Verrucomicrobiota (smORF-sized genes: 20 %, 30 %
+and 69 %); an RBS filter would remove smORFs unevenly by taxon. Apply it downstream if comparability with the paper
+is needed.
+
 ## Metaproteomics search databases (`proteomics_db: build: true`)
 
 As in the paper (MP_DB): per sample the Bakta proteins of the IMP3 run and the smORFs, deduplicated (100 % identity
