@@ -77,6 +77,12 @@ if "deacon" in config:
         "rules/deacon.smk"
     TARGETS.append("filtering/deacon/%s.k31w15.idx" % config["deacon"]["index"])
 
+# smORFs, GMSC catalogue and GMSC-mapper (imp3 smorf; optional, ~tens of GB)
+if "gmsc" in config:
+    include:
+        "rules/gmsc.smk"
+    TARGETS.append("gmsc/gmsc.ready")
+
 # taxonomy, Kraken2 databases
 if "kraken2" in config:
     include:

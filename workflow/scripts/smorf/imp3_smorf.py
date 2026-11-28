@@ -116,6 +116,8 @@ def attrs(s):
 def md5(path):
     if not path or not os.path.exists(path):
         return None
+    if os.path.getsize(path) > 2 ** 31:          # large databases: size and time instead of a checksum
+        return "size=%d;mtime=%d" % (os.path.getsize(path), os.path.getmtime(path))
     h = hashlib.md5()
     with open(path, "rb") as fh:
         for b in iter(lambda: fh.read(1 << 22), b""):
@@ -213,7 +215,9 @@ def main():
     C = {"regions": "intergenic", "occupied": "CDS tRNA tmRNA rRNA ncRNA CRISPR", "min_region": 30, "flank": 0,
          "imp3_cds": True, "max_aa": 100, "default": [60, 60], "small": [15, 15], "antifam": True,
          "min_upstream": 20, "paper": False, "read_support": "auto", "read_support_min_reads": 1,
-         "metap_peptides": "", "min_unique_peptides": 1, "metap_background": [], "databases": {}}
+         "metap_peptides": "", "min_unique_peptides": 1, "metap_background": [], "databases": {},
+         "pfam": "auto", "gmsc": "auto", "gmsc_mapper": "", "gmsc_tool": "diamond", "gmsc_min_identity": 0.9,
+         "gmsc_min_coverage": 0.9, "gmsc_evalue": 1e-3}
     if a.config:
         C.update({k: v for k, v in read_config(a.config).items() if v is not None})
     S = Sample(os.path.abspath(a.sample_dir), a.sample or os.path.basename(os.path.abspath(a.sample_dir)))
@@ -449,6 +453,11 @@ def main():
     log("smORFs: %d (start confirmed %d, open %d)" % (len(smorfs), stats.get("start_confirmed", 0),
                                                       stats.get("start_open", 0)))
 
+    # evidence from known proteins: Pfam domains (new smORFs) and GMSC (all smORFs); columns, never filters
+    pfam_hmm = pfam_db(C, db)
+    pfam(smorfs, pfam_hmm, C, a.threads, stats)
+    gmsc_used = gmsc(smorfs, C, db, out, a.threads, stats)
+
     # metaP status
     peps_file = C.get("metap_peptides") or ""
     if peps_file and "{sample}" in peps_file:
@@ -475,7 +484,9 @@ def main():
                 for k, p in (("assembly", S.assembly), ("gff", S.gff), ("bakta_faa", S.faa),
                              ("bam_mg", S.bams["mg"]), ("bam_mt", S.bams["mt"])) if p},
         databases={"antifam_hmm": {"path": antifam_hmm, "md5": md5(antifam_hmm)} if C.get("antifam", True) else None,
-                   "rfam_cm": {"path": rfam_cm, "md5": md5(rfam_cm)} if paper else None},
+                   "rfam_cm": {"path": rfam_cm, "md5": md5(rfam_cm)} if paper else None,
+                   "pfam_hmm": {"path": pfam_hmm, "md5": md5(pfam_hmm)} if pfam_hmm else None,
+                   "gmsc": gmsc_used},
         software={"pyrodigal_gv": mod_version("pyrodigal_gv"), "pyrodigal": mod_version("pyrodigal"),
                   "pyhmmer": mod_version("pyhmmer"), "featureCounts": tool_version(["featureCounts", "-v"]),
                   "cmscan": tool_version(["cmscan", "-h"]) if paper else None,
@@ -573,6 +584,146 @@ def where(c, s0, e0, cds, L, annotated):
     return "between_features" if before and after else "contig_end"
 
 
+def pfam_db(C, db):
+    """Pfam-A HMMs: databases.pfam_hmm, else <db>/smorf/Pfam/Pfam-A.hmm, else the Pfam-A of the Mantis databases"""
+    if str(C.get("pfam", "auto")).lower() in ("false", "no"):
+        return None
+    p = (C.get("databases") or {}).get("pfam_hmm") or ""
+    cands = [p] if p else [os.path.join(db, "smorf", "Pfam", "Pfam-A.hmm")] + sorted(
+        glob.glob(os.path.join(db, "mantis", "*pfam*", "Pfam-A.hmm")) +
+        glob.glob(os.path.join(os.path.dirname(db.rstrip("/")), "mantis", "*", "pfam", "Pfam-A.hmm")))
+    for c in cands:
+        if c and os.path.exists(c):
+            return c
+    if str(C.get("pfam")).lower() in ("true", "yes"):
+        sys.exit("pfam: true, but no Pfam-A.hmm (set databases: pfam_hmm)")
+    log("Pfam: no Pfam-A.hmm found (databases: pfam_hmm), skipped")
+    return None
+
+
+def pfam(smorfs, hmm, C, threads, stats):
+    """Pfam-A domains (gathering cut-offs) of the new smORFs; IMP3 CDS keep their Mantis annotation in the GFF"""
+    for x in smorfs:
+        x["pfam"] = ""
+    if not hmm:
+        return
+    import pyhmmer
+    test = [i for i, x in enumerate(smorfs) if x["set"] != "imp3"]
+    if not test:
+        return
+    with pyhmmer.plan7.HMMFile(hmm) as fh:
+        hmms = list(fh)
+    alph = hmms[0].alphabet
+    block = pyhmmer.easel.DigitalSequenceBlock(alph, [
+        pyhmmer.easel.TextSequence(name=str(i).encode(), sequence=smorfs[i]["prot"]).digitize(alph) for i in test])
+    hits = collections.defaultdict(set)
+    for th in pyhmmer.hmmsearch(hmms, block, cpus=threads, bit_cutoffs="gathering"):
+        q = th.query
+        acc = getattr(q, "accession", None) or b""
+        nm = getattr(q, "name", None) or b""
+        acc, nm = (acc.decode() if isinstance(acc, bytes) else acc), (nm.decode() if isinstance(nm, bytes) else nm)
+        for h in th:
+            if getattr(h, "included", getattr(h, "is_included", True)):
+                hits[int(h.name.decode() if isinstance(h.name, bytes) else h.name)].add("%s:%s" % (acc.split(".")[0], nm))
+    for i, v in hits.items():
+        smorfs[i]["pfam"] = ",".join(sorted(v))
+    stats["pfam_hits"] = len(hits)
+    log("Pfam (%d HMMs, gathering): %d of %d new smORFs with a domain" % (len(hmms), len(hits), len(test)))
+
+
+def gmsc_mapper_cmd(C, db):
+    """the gmsc-mapper program: gmsc_mapper, else <db>/gmsc/gmsc-mapper.path (written by the installer), else PATH"""
+    p = C.get("gmsc_mapper") or ""
+    f = os.path.join(db, "gmsc", "gmsc-mapper.path")
+    if not p and os.path.exists(f):
+        p = open(f).read().strip()
+    return p if p and os.path.exists(p) else shutil.which("gmsc-mapper")
+
+
+def gmsc(smorfs, C, db, out, threads, stats):
+    """GMSC (global microbial smORF catalogue, Duan et al. 2024) with GMSC-mapper on the smORF proteins: best hit,
+    'family' with >= gmsc_min_identity identity (GMSC's family definition, 90 %), else 'homolog'; habitat,
+    taxonomy, quality label and CDD of the hits as GMSC-mapper reports them"""
+    for x in smorfs:
+        x.update(gmsc_class="", gmsc_family="", gmsc_identity="", gmsc_coverage="", gmsc_quality="", gmsc_habitat="",
+                 gmsc_taxonomy="", gmsc_cdd="")
+    mode = str(C.get("gmsc", "auto")).lower()
+    if mode in ("false", "no"):
+        return None
+    dbdir = (C.get("databases") or {}).get("gmsc_db") or os.path.join(db, "gmsc")
+    prog = gmsc_mapper_cmd(C, db)
+    if not prog or not os.path.exists(os.path.join(dbdir, "GMSC10.90AA.faa.gz")):
+        if mode in ("true", "yes"):
+            sys.exit("gmsc: true, but gmsc-mapper (%s) or %s/GMSC10.90AA.faa.gz is missing" % (prog, dbdir))
+        log("GMSC: gmsc-mapper or its database (%s) not found, skipped" % dbdir)
+        return None
+    tmp = tempfile.mkdtemp(prefix="gmsc_", dir=out)
+    faa = os.path.join(tmp, "smorfs.faa")
+    with open(faa, "w") as fh:
+        for x in smorfs:
+            fh.write(">%s\n%s\n" % (x["id"], x["prot"]))
+    res = os.path.join(tmp, "out")
+    cmd = [prog, "--aa-genes", faa, "-o", res, "--dbdir", dbdir, "--tool", str(C.get("gmsc_tool", "diamond")),
+           "-t", str(threads), "--id", "0", "--cov", str(C.get("gmsc_min_coverage", 0.9)),
+           "-e", str(C.get("gmsc_evalue", 1e-3)), "--quiet"]
+    # gmsc-mapper calls diamond / mmseqs: its environment's bin first on PATH
+    env = dict(os.environ, PATH=os.path.dirname(os.path.realpath(prog)) + os.pathsep + os.environ.get("PATH", ""))
+    with open(os.path.join(out, "gmsc-mapper.log"), "w") as lf:
+        r = subprocess.run(cmd, stdout=lf, stderr=subprocess.STDOUT, env=env)
+    if r.returncode:
+        shutil.rmtree(tmp, ignore_errors=True)
+        sys.exit("gmsc-mapper failed (exit %d), see %s/gmsc-mapper.log" % (r.returncode, out))
+
+    def table(name):
+        f = os.path.join(res, name)
+        rows = []
+        if os.path.exists(f):
+            hdr = None
+            for l in open(f):
+                if l.startswith("#") or not l.strip():
+                    continue
+                p = l.rstrip("\n").split("\t")
+                if hdr is None and p[0] == "qseqid":
+                    hdr = p
+                    continue
+                rows.append(dict(zip(hdr or [], p)) if hdr else p)
+        return rows
+
+    best = {}
+    for r in table("alignment.out.smorfs.tsv"):
+        if not isinstance(r, dict) or "qseqid" not in r:
+            continue
+        b = best.get(r["qseqid"])
+        if b is None or float(r.get("bitscore", 0)) > float(b.get("bitscore", 0)):
+            best[r["qseqid"]] = r
+    ann = {}
+    for name, col in (("habitat.out.smorfs.tsv", "habitat"), ("taxonomy.out.smorfs.tsv", "taxonomy"),
+                      ("quality.out.smorfs.tsv", "quality"), ("domain.out.smorfs.tsv", "cdd")):
+        for r in table(name):
+            if isinstance(r, dict):
+                ann.setdefault(r.get("qseqid"), {})[col] = r.get(col, "")
+            elif len(r) >= 2:
+                ann.setdefault(r[0], {})[col] = r[1]
+    mi = 100 * float(C.get("gmsc_min_identity", 0.9))
+    for x in smorfs:
+        b = best.get(x["id"])
+        if not b:
+            continue
+        pid = float(b.get("pident", 0))
+        x.update(gmsc_class="family" if pid >= mi else "homolog", gmsc_family=b.get("sseqid", ""),
+                 gmsc_identity="%.1f" % pid, gmsc_coverage=b.get("qcovhsp", ""))
+        for col in ("habitat", "taxonomy", "quality", "cdd"):
+            x["gmsc_" + col] = (ann.get(x["id"]) or {}).get(col, "")
+    c = collections.Counter(x["gmsc_class"] for x in smorfs)
+    stats["gmsc_family"], stats["gmsc_homolog"] = c["family"], c["homolog"]
+    stats["gmsc_high_quality"] = sum("high" in x["gmsc_quality"].lower() for x in smorfs if x["gmsc_class"])
+    shutil.rmtree(tmp, ignore_errors=True)
+    log("GMSC: %d smORFs in a GMSC family (>= %.0f %% identity), %d homologs, %d with a high-quality hit"
+        % (c["family"], mi, c["homolog"], stats["gmsc_high_quality"]))
+    return {"dbdir": dbdir, "faa": md5(os.path.join(dbdir, "GMSC10.90AA.faa.gz")),
+            "gmsc_mapper": tool_version([prog, "--version"]), "tool": C.get("gmsc_tool", "diamond")}
+
+
 def metap(S, smorfs, peps_file, C, max_aa, stats):
     for x in smorfs:
         x["status"], x["unique_peptides"], x["peptides"] = "predicted", 0, ""
@@ -655,7 +806,8 @@ def write_outputs(S, smorfs, seq, gff_head, gff_rows, out, stats, dst):
     n, p = S.name, os.path.join(out, S.name)
     cols = ["smORF", "sample", "set", "found_by", "copies", "contig", "start", "end", "strand", "length_aa",
             "region", "start_status", "rbs_status", "rbs_motif", "rbs_spacer", "imp3_locus_tag", "status",
-            "unique_peptides", "overlaps", "mg_reads", "mt_reads", "support"]
+            "unique_peptides", "overlaps", "pfam", "gmsc_class", "gmsc_family", "gmsc_identity", "gmsc_coverage",
+            "gmsc_quality", "gmsc_habitat", "gmsc_taxonomy", "gmsc_cdd", "mg_reads", "mt_reads", "support"]
 
     def gattr(x):
         a = collections.OrderedDict(
@@ -664,6 +816,13 @@ def write_outputs(S, smorfs, seq, gff_head, gff_rows, out, stats, dst):
             smorf_status=x["status"], smorf_unique_peptides=x["unique_peptides"])
         if x["overlaps"]:
             a["smorf_overlaps"] = x["overlaps"]
+        if x.get("pfam"):
+            a["smorf_pfam"] = x["pfam"]
+        if x.get("gmsc_class"):
+            a["smorf_gmsc"] = x["gmsc_class"]
+            a["smorf_gmsc_family"] = x["gmsc_family"]
+            if x.get("gmsc_quality"):
+                a["smorf_gmsc_quality"] = x["gmsc_quality"].replace(" ", "_").replace(";", ",")
         return ";".join("%s=%s" % kv for kv in a.items())
 
     with open(p + ".smorf.faa", "w") as fa, open(p + ".smorf.fna", "w") as fn, open(p + ".smorf.gff", "w") as fg, \

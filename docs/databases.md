@@ -13,6 +13,9 @@ workflow (`install/Snakefile`) downloads and prepares them; some are downloaded 
 | taxonomy | mOTUs database | install workflow / first use | `motus` |
 | binning | CheckM2 database | main workflow on first use (`get_checkm2_db`) | – |
 | binning / taxonomy | GTDB-Tk reference data | install workflow (`gtdbtk`) | – |
+| smORFs (`imp3 smorf`) | AntiFam 8.0 | `imp3 smorf` on first run | `databases.antifam_hmm` |
+| smORFs (`imp3 smorf`, optional) | GMSC 90 % families + annotation, GMSC-mapper and its index | install workflow (`gmsc`) | `gmsc*`, `databases.gmsc_db` |
+| smORFs (`imp3 smorf`, optional) | Pfam-A (the Mantis copy is used when present) | Mantis / by hand | `databases.pfam_hmm` |
 
 ## Space and memory (approximate)
 
@@ -22,6 +25,7 @@ workflow (`install/Snakefile`) downloads and prepares them; some are downloaded 
 | Kraken2 standard / NCBI nt | 50 GB – 500 GB | up to ~450 GB (or use memory mapping) |
 | GTDB-Tk | ~100 GB | ~100 GB (pplacer) |
 | Mantis (all references) | ~100–200 GB | moderate |
+| GMSC (90 % families, annotation, DIAMOND index) | tens of GB | DIAMOND: a few GB per job |
 
 Choose small databases for a first test; the test run works with MiniKraken2.
 

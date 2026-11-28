@@ -41,6 +41,12 @@ genomes:
 deacon:
   index: "panhuman-1"
 
+# optional, for imp3 smorf: GMSC (global microbial smORF catalogue, Duan et al. 2024, CC BY-SA 4.0) with GMSC-mapper:
+# 90 % family representatives, habitat / taxonomy / quality / domain annotation and a DIAMOND (or MMseqs2) index in
+# gmsc/ (tens of GB; check the free space). Uncomment to install:
+# gmsc:
+#   tool: "diamond"
+
 ##################################################
 # Kraken2 databases for tax. analysis
 ##################################################

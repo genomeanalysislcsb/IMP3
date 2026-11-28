@@ -22,6 +22,16 @@ min_upstream: 20          # nt upstream needed to assess the RBS motif (else rbs
 paper: false              # with regions: full: the paper's RBS-motif, Rfam (cmscan --cut_tc) and Aragorn filters
                           # (reproduction; Rfam.cm pressed in <db>/smorf/Rfam)
 
+# evidence from known proteins (columns, never filters)
+pfam: "auto"              # Pfam-A domains (gathering cut-offs) of the new smORFs: auto = when Pfam-A.hmm is found
+                          # (databases: pfam_hmm, <db>/smorf/Pfam, or the Pfam-A of the Mantis databases)
+gmsc: "auto"              # GMSC with GMSC-mapper (install: gmsc:): auto = when <db>/gmsc and gmsc-mapper are there
+gmsc_mapper: ""           # the gmsc-mapper program ("" = <db>/gmsc/gmsc-mapper.path from the installer, then PATH)
+gmsc_tool: "diamond"      # diamond | mmseqs (the index built at installation)
+gmsc_min_identity: 0.9    # best hit >= this identity: smORF in that GMSC family (GMSC's 90 % families), else homolog
+gmsc_min_coverage: 0.9
+gmsc_evalue: 0.001        # E-values of short proteins are high even for identical hits (GMSC paper, Fig. 5)
+
 # metaproteomic status: peptides after FDR, one file per sample ({sample} in the path) or one table with a sample
 # column; validated with >= min_unique_peptides peptides found in the smORF and in no protein > max_aa aa
 metap_peptides: ""
@@ -32,6 +42,8 @@ metap_background: []      # FASTA of further proteins (human proteome, contamina
 read_support: "auto"
 read_support_min_reads: 1
 
-databases:                # "" = below <db_path>/smorf
+databases:                # "" = below <db_path>/smorf (GMSC: <db_path>/gmsc)
   antifam_hmm: ""
   rfam_cm: ""
+  pfam_hmm: ""
+  gmsc_db: ""

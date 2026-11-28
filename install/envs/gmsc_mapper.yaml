@@ -1,0 +1,9 @@
+name: gmsc_mapper
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - gmsc-mapper=0.2.0
+  - diamond
+  - mmseqs2

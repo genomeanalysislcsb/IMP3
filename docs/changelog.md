@@ -14,7 +14,9 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
   open to the contig end), RBS motif reported instead of filtered, overlaps with IMP3 features, metaproteomic
   status, metaG / metaT read support; outputs in `imp/<sample>/Analysis/smORF/` and
   `Analysis/annotation/annotation_CDS_RNA_hmms_smORF.gff.gz`, provenance JSON. New conda environment `IMP_smorf`
-  (not in the 3.0 image). Clustering across samples is part of imp-explorer.
+  (not in the 3.0 image). Evidence from known proteins as columns: Pfam-A domains of the new smORFs and the
+  global microbial smORF catalogue (GMSC, via GMSC-mapper; optional install `gmsc:`). Clustering across samples is part
+  of imp-explorer.
 - **Read filtering without false host removal** (`filtering.method`). `bwa_any`, the behaviour up to 3.0.3, removed a
   pair whenever BWA-MEM2 reported a mate as mapped; with short-insert libraries its pairing and mate rescue mark many
   microbial pairs as mapped: on 10 Expobiome stool metagenomes 12–31 % of the pairs, against 0.02–1.1 % human reads

@@ -53,6 +53,8 @@ python <IMP3>/workflow/scripts/smorf/imp3_smorf.py --sample-dir imp/S01 --config
 | RBS motif | reported, not filtered: `motif` / `none` / `not_assessable`; for IMP3 CDS from pyrodigal-gv on the gene plus 60 nt upstream (`unmatched` if it calls another start there) |
 | overlaps | IMP3 features overlapping the smORF (other than the smORF itself), e.g. `regulatory_region:<riboswitch>` for leader peptides |
 | metaproteomic status | `predicted` → `validated` with ≥ `min_unique_peptides` identified peptides that occur in the smORF and in no protein > 100 aa (IMP3 proteins, `metap_background`); I = L, modifications removed, any search engine |
+| Pfam domains | new smORFs against Pfam-A (pyhmmer, gathering cut-offs; the IMP3 CDS have Mantis' Pfam annotation); `pfam: auto` when Pfam-A is found |
+| GMSC | all smORFs against the global microbial smORF catalogue (GMSC-mapper, 90 % family representatives): best hit; `family` with ≥ `gmsc_min_identity` (90 %, GMSC's family definition) identity, else `homolog`; GMSC quality label (high quality = coding, transcription or translation evidence in GMSC), habitats, taxonomy and CDD of the hits; `gmsc: auto` when installed |
 | read support | featureCounts on `Assembly/<omic>.reads.sorted.bam` as IMP3's gene counts (`-O --fraction -M --fraction`, unstranded); class MG only / MT only / MG+MT / none |
 
 `paper: true` with `regions: full` adds the paper's three further filters for a reproduction of its numbers: smORFs
@@ -70,11 +72,48 @@ leader peptides (e.g. *trpL*) sit in riboswitch regions.
 | `Analysis/smORF/<sample>.smorf_stats.tsv` | numbers per step: regions per class, candidates per run, duplicates, filters, start and RBS status, new smORFs per region class, lengths, metaP, read support |
 | `Analysis/smORF/<sample>.smorf.provenance.json` | settings, input files (size, time), database checksums (MD5), tool versions, run time |
 | `Analysis/smORF/<sample>.smorf.<omic>.counts.tsv` | featureCounts tables |
+| `Analysis/smORF/gmsc-mapper.log` | log of the GMSC search |
 | `Analysis/annotation/annotation_CDS_RNA_hmms_smORF.gff.gz` | the IMP3 GFF with the smORFs: IMP3 CDS that are smORFs get `smORF=true`, new smORFs are added as `CDS` (source `smORF_module`, `product=small protein (predicted smORF)`); attributes `smorf_set`, `smorf_region`, `smorf_start`, `smorf_rbs`, `smorf_status`, … (extra GFF3 attributes; other tools ignore them) |
 | `status/smorf.done` | finished |
 
 Across samples (clusters at 100 % and 95 % identity, presence per group, length distributions, read support and
 metaP status per cluster) the smORFs are analysed by imp-explorer's cohort analysis.
+
+## Known small proteins: Pfam and GMSC
+
+A smORF that is also found in other samples, habitats or genomes is less likely to be a false prediction (the
+principle of the global microbial smORF catalogue, GMSC: Duan *et al.*, A catalog of small proteins from the global
+microbiome. *Nat Commun* 15, 7563 (2024), [doi:10.1038/s41467-024-51894-6](https://doi.org/10.1038/s41467-024-51894-6)).
+`imp3 smorf` therefore searches every smORF against GMSC (965 million smORFs from 63,410 metagenomes and 87,920
+genomes, 75 habitats, in 288 million families at 90 % identity) and the new smORFs against Pfam-A. The results are
+columns (`pfam`, `gmsc_class`, `gmsc_family`, `gmsc_identity`, `gmsc_coverage`, `gmsc_quality`, `gmsc_habitat`,
+`gmsc_taxonomy`, `gmsc_cdd`) and GFF attributes (`smorf_pfam`, `smorf_gmsc`, `smorf_gmsc_family`,
+`smorf_gmsc_quality`); they never remove a smORF.
+
+Identity, not the E-value, decides the GMSC class: for proteins of 20–40 aa even identical hits get E-values above the
+usual cut-offs (GMSC paper, Fig. 5), so the search keeps hits up to `gmsc_evalue` (1e-3) with ≥ 90 % coverage, and a
+smORF counts as member of the GMSC family of its best hit from 90 % identity (GMSC's own family definition), below as
+`homolog`. GMSC's quality checks include the upstream in-frame stop codon test used here for the start status and
+AntiFam. The smORFs of Sberro *et al.* (Cell 2019) are not searched separately: 97.4 % of their 4,539 conserved
+families have a homolog in GMSC.
+
+**Installing GMSC** (once, needs internet; tens of GB, check the space). With the install workflow: uncomment
+`gmsc:` in `config/config.install.yaml` (`tool: diamond` or `mmseqs`) and run it; it creates the GMSC-mapper
+environment, downloads the database to `<db_path>/gmsc` and builds the index. By hand:
+
+```bash
+micromamba create -y -p <envs>/gmsc_mapper -c conda-forge -c bioconda gmsc-mapper=0.2.0 diamond mmseqs2
+micromamba activate <envs>/gmsc_mapper
+mkdir -p <db_path>/gmsc && cd <db_path>/gmsc
+gmsc-mapper downloaddb --dbdir . --all
+gmsc-mapper createdb -i GMSC10.90AA.faa.gz -o . -m diamond
+command -v gmsc-mapper > gmsc-mapper.path        # imp3 smorf finds GMSC-mapper here
+```
+
+GMSC is distributed under CC BY-SA 4.0: GMSC identifiers and annotations in results are fine; GMSC sequences or
+databases derived from them that are passed on must keep that licence. GMSC-mapper is MIT-licensed. Searching ~130,000
+smORFs of one sample takes about half an hour on 16 threads (DIAMOND, `--sensitive`); for whole studies the catalogue
+module (planned) searches the non-redundant smORFs once.
 
 ## Complete genes, unconfirmed starts and RBS motifs
 
