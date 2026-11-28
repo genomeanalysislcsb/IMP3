@@ -157,7 +157,8 @@ Co-assembly of metaG + metaT, 463 Mb in 346,887 contigs (median 546 bp); IMP3 3.
   features 1,582, unannotated contigs 717); AntiFam removed 299; 8–100 aa, median 72 (former Snakemake version of the module, ~7 min on 24 cores).
 - **Intergenic vs full (paper)**: 63,809 smORFs in both (96 % of the paper's set). Only in `full`: 2,948, of which
   2,257 lie inside or overlap an IMP3 CDS (excluded on purpose) and 690 in regions without a feature (missed by the
-  fragment-wise gene calling; `flank` > 0 may recover them). Only in `intergenic`: 49,533 IMP3 CDS (no RBS filter on
+  fragment-wise gene calling). `flank: 60` recovers only 65 of them (flank 0: 19), but adds 5,647 new smORFs of which
+  78 % overlap the end of an IMP3 CDS (and loses 1,367); `flank` therefore stays 0. Only in `intergenic`: 49,533 IMP3 CDS (no RBS filter on
   annotated genes) and 6,115 new genes.
 - **Start status**: `start_open` 35 % of the paper's smORFs and 46 % of the intergenic ones (47 % of the IMP3 CDS
   ≤ 100 aa), mostly on short contigs.
