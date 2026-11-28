@@ -207,13 +207,12 @@ def main():
     ap.add_argument("--outdir", default="", help="[<sample-dir>/Analysis/smORF]")
     a = ap.parse_args()
 
-    import yaml
     C = {"regions": "intergenic", "occupied": "CDS tRNA tmRNA rRNA ncRNA CRISPR", "min_region": 30, "flank": 0,
          "imp3_cds": True, "max_aa": 100, "default": [60, 60], "small": [15, 15], "antifam": True,
          "min_upstream": 20, "paper": False, "read_support": "auto", "read_support_min_reads": 1,
          "metap_peptides": "", "min_unique_peptides": 1, "metap_background": [], "databases": {}}
     if a.config:
-        C.update({k: v for k, v in (yaml.safe_load(open(a.config)) or {}).items() if v is not None})
+        C.update({k: v for k, v in read_config(a.config).items() if v is not None})
     S = Sample(os.path.abspath(a.sample_dir), a.sample or os.path.basename(os.path.abspath(a.sample_dir)))
     out = os.path.abspath(a.outdir or os.path.join(S.dir, "Analysis", "smORF"))
     os.makedirs(out, exist_ok=True)
@@ -482,6 +481,50 @@ def main():
     with open(os.path.join(out, "%s.smorf.provenance.json" % S.name), "w") as fh:
         json.dump(prov, fh, indent=1, default=str)
     log("done")
+
+
+def _value(v):
+    v = v.strip()
+    if v.startswith("[") and v.endswith("]"):
+        return [_value(x) for x in v[1:-1].split(",") if x.strip()]
+    if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+        return v[1:-1]
+    if v.lower() in ("true", "false"):
+        return v.lower() == "true"
+    if v in ("", "null", "~"):
+        return None
+    for t in (int, float):
+        try:
+            return t(v)
+        except ValueError:
+            pass
+    return v
+
+
+def read_config(path):
+    """the settings file (YAML); PyYAML if installed, else the subset the settings use (key: value, [lists],
+    one level of nesting, # comments)"""
+    try:
+        import yaml
+        return yaml.safe_load(open(path)) or {}
+    except ImportError:
+        pass
+    out, cur = {}, None
+    for line in open(path):
+        txt = re.sub(r"\s+#.*$", "", line.rstrip("\n")) if not line.lstrip().startswith("#") else ""
+        if not txt.strip():
+            continue
+        m = re.match(r"^(\s*)([\w.-]+):\s*(.*)$", txt)
+        if not m:
+            continue
+        ind, k, v = m.groups()
+        if ind and cur is not None:
+            out[cur][k] = _value(v)
+        elif v.strip() == "":
+            cur, out[k] = k, {}
+        else:
+            cur, out[k] = None, _value(v)
+    return out
 
 
 def mod_version(m):
