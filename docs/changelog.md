@@ -6,16 +6,15 @@ IMP3 is the successor of IMP (Narayanasamy et al., *Genome Biol* 2016;17:260). C
 
 ## unreleased (3.1.0)
 
-- **smORF module** (`imp3 smorf`, `workflow/smorf/Snakefile`): small ORFs (≤ 100 aa) on finished IMP3 runs with the
-  method of Davin, Ortís Sunyer, Delgado *et al.* (*Nat Commun* 2026): the IMP3 CDS ≤ 100 aa plus two pyrodigal-gv
-  runs on the intergenic regions of the IMP3 annotation (`prediction: regions: intergenic`; `full`: the whole assembly
-  as in the paper), deduplication, removal of spurious ORFs (AntiFam; Rfam and Aragorn only with `full`, since Bakta
-  covers them), status `validated` from identified metaproteomics peptides, metaG / metaT reads per smORF from the
-  IMP3 BAMs, the IMP3 GFF with the smORFs added (new file), clusters across samples (100 % and 95 %), and optionally
-  per-sample metaproteomics search databases (IMP3 proteins + smORFs + human RefSeq + cRAP). An independent analysis
-  in its own output folder, run any time after IMP3. New conda environment `IMP_smorf` (not in the 3.0 image); scripts
-  of the paper under GPL-3.0 in `workflow/scripts/smorf/`. See [smORF module](steps/smorf.md).
-
+- **smORFs** (`imp3 smorf`): small ORFs (≤ 100 aa) of finished samples, one job per sample
+  (`workflow/scripts/smorf/imp3_smorf.py`): the IMP3 CDS ≤ 100 aa and new genes called with pyrodigal-gv (as the smORF
+  methods paper, Davin, Ortís Sunyer, Delgado et al. 2026) in the regions without an IMP3 feature (classes
+  between_features / contig_end / unannotated_contig), or on the whole assembly (`regions: full`, `paper: true`
+  for the paper's filters); exact duplicates merged, AntiFam; start status (in-frame stop codon upstream or frame
+  open to the contig end), RBS motif reported instead of filtered, overlaps with IMP3 features, metaproteomic
+  status, metaG / metaT read support; outputs in `imp/<sample>/Analysis/smORF/` and
+  `Analysis/annotation/annotation_CDS_RNA_hmms_smORF.gff.gz`, provenance JSON. New conda environment `IMP_smorf`
+  (not in the 3.0 image). Clustering across samples is part of imp-explorer.
 - **Read filtering without false host removal** (`filtering.method`). `bwa_any`, the behaviour up to 3.0.3, removed a
   pair whenever BWA-MEM2 reported a mate as mapped; with short-insert libraries its pairing and mate rescue mark many
   microbial pairs as mapped: on 10 Expobiome stool metagenomes 12–31 % of the pairs, against 0.02–1.1 % human reads

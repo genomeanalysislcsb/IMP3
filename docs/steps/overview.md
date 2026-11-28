@@ -15,8 +15,9 @@ taxonomy summary` on an existing assembly.
 | `binning` | [Binning](binning.md) |
 | `summary` | [Summary](summary.md) |
 
-After IMP3, the [smORF module](smorf.md) (`imp3 smorf`) predicts small ORFs on the finished runs, as an
-independent analysis in its own folder.
+After IMP3, [`imp3 smorf`](smorf.md) collects the small ORFs (≤ 100 aa) of every finished sample: the small IMP3
+genes and new ones in the regions without an IMP3 feature, with start status, RBS motif, metaproteomic status and
+read support, written into the sample's IMP3 folder.
 
 To see every Snakemake rule of a run, let Snakemake draw the graph:
 `snakemake -s Snakefile --configfile sample.yaml --rulegraph | dot -Tpdf > rules.pdf`.

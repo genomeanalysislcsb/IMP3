@@ -1,79 +1,37 @@
-# smORF module of IMP3 (workflow/smorf/Snakefile; 'imp3 smorf' writes this config for a project).
-# Small open reading frames (<= 100 aa) predicted on the IMP3 assemblies of finished runs, false positives removed,
-# reads per smORF, clusters across samples and, optionally, per-sample metaproteomics search databases.
-# Method: Davin, Ortis Sunyer, Delgado et al., Nat Commun 2026 (doi:10.1038/s41467-026-72762-5).
+# imp3 smorf: smORFs (<= max_aa aa) of finished IMP3 samples, one job per sample
+# (workflow/scripts/smorf/imp3_smorf.py). Outputs in imp/<sample>/Analysis/smORF/ and
+# imp/<sample>/Analysis/annotation/annotation_CDS_RNA_hmms_smORF.gff.gz. imp3 smorf copies this file to
+# <project>/smorf_config.yaml on the first run: edit it there. See docs/steps/smorf.md.
 
-imp_root: ""          # folder with one IMP3 output folder per sample (an imp3 project: <project>/imp)
-samples: ""           # sample folders to use (space separated); "" = every folder with status/all.done
-outdir: ""            # output folder of the module
-db_path: ""           # databases: <db_path>/smorf/... (Rfam, AntiFam, human RefSeq proteins), downloaded if missing
-metadata: ""          # optional TSV, first two columns sample and group: plots and smORF presence per group
-container: ""         # Apptainer image with the IMP_smorf environment (IMP3 >= 3.1 image); "" = conda
-email: ""
+# where candidates come from
+regions: "intergenic"     # intergenic: IMP3 CDS <= max_aa + new genes in the regions without an IMP3 feature;
+                          # full: gene calling on the whole assembly (the smORF paper's pipeline)
+occupied: "CDS tRNA tmRNA rRNA ncRNA CRISPR"   # IMP3 feature types that make a region genic
+min_region: 30            # shortest region without a feature (nt)
+flank: 0                  # nt of the neighbouring features added to both sides of a region (genes may overlap them)
+imp3_cds: true            # IMP3 CDS <= max_aa (complete, not touching a contig end) as smORFs
+max_aa: 100               # longest smORF (aa)
 
-# Input files in each IMP3 output folder (relative; the first match counts, .gz or not)
-inputs:
-  assembly: "Assembly/mgmt.assembly.merged.fa Assembly/mg.assembly.merged.fa Assembly/mt.assembly.merged.fa"
-  annotation_gff: "Analysis/annotation/annotation_CDS_RNA_hmms.gff Analysis/annotation/bakta/annotation.filt.gff"
-  bakta_faa: "Analysis/annotation/bakta/annotation.faa"
-  bakta_tsv: "Analysis/annotation/bakta/annotation.tsv"
-  bam: "Assembly/{omic}.reads.sorted.bam"
+# pyrodigal-gv (metagenome mode, closed ends, masked N runs): [min_gene, max_overlap] of the two runs
+default: [60, 60]         # genes >= 20 aa
+small: [15, 15]           # small genes
 
-prediction:
-  # where the smORF candidates come from:
-  #   intergenic  the CDS of the IMP3 annotation with <= max_aa aa (imp3_cds) plus genes called by pyrodigal-gv only
-  #               on the intergenic regions of the IMP3 annotation (no second gene calling on the whole assembly)
-  #   full        pyrodigal-gv on the whole assembly (the paper; e.g. to reproduce its numbers)
-  regions: "intergenic"
-  occupied: "CDS tRNA tmRNA rRNA ncRNA CRISPR"   # IMP3 feature types that make a region genic
-  min_region: 30               # shortest intergenic region (nt)
-  flank: 0                     # nt of the neighbouring features added on both sides of a region (genes may overlap
-                               # IMP3 features by up to this; prodigal itself allows 60 / 15 nt on whole contigs)
-  imp3_cds: true               # IMP3 CDS <= max_aa (complete, not at a contig end) as candidates
-  mode: "meta"                 # pyrodigal-gv -p (single for one genome, e.g. the E. coli demo with regions: full)
-  default: "--min-gene 60 --max-overlap 60"   # gene calling run for smORFs >= 20 aa
-  small: "--min-gene 15 --max-overlap 15"     # run for smORFs < 20 aa
-  max_aa: 100                  # longest smORF (aa)
-  # false-positive filters on the smORF candidates (removed when any of them hits)
-  antifam: true                # AntiFam HMMs (gathering cut-offs): spurious ORFs (Bakta checks only its own CDS)
-  # auto = only with regions: full. On intergenic regions they repeat what Bakta did on the whole assembly (tRNAscan-SE,
-  # Aragorn tmRNA, Infernal / Rfam ncRNA genes and rRNAs are IMP3 features, so new candidates cannot overlap them);
-  # overlaps with IMP3 features, e.g. riboswitches around leader peptides, are reported per smORF instead
-  rfam: auto                   # Rfam covariance models (cmscan --cut_tc): ncRNA genes and cis-regulatory elements
-  aragorn: auto                # tRNA / tmRNA genes (standard and bacterial genetic code)
+# filters and statuses
+antifam: true             # AntiFam (gathering cut-offs) on the new candidates; HMMs in <db>/smorf/AntiFam
+min_upstream: 20          # nt upstream needed to assess the RBS motif (else rbs_status not_assessable)
+paper: false              # with regions: full: the paper's RBS-motif, Rfam (cmscan --cut_tc) and Aragorn filters
+                          # (reproduction; Rfam.cm pressed in <db>/smorf/Rfam)
 
-# status of a smORF: predicted, or validated by metaproteomics (>= min_unique_peptides identified peptides that occur
-# in the smORF and in no IMP3 protein > max_aa aa, human protein or contaminant). Peptides after FDR control from any
-# search engine: a file per sample (path with {sample}) or one table with a 'sample' column; peptide column
-# peptide / sequence / Annotated Sequence / Stripped.Sequence / Modified.Sequence (or the first column)
-validation:
-  metap_peptides: ""
-  min_unique_peptides: 1
+# metaproteomic status: peptides after FDR, one file per sample ({sample} in the path) or one table with a sample
+# column; validated with >= min_unique_peptides peptides found in the smORF and in no protein > max_aa aa
+metap_peptides: ""
+min_unique_peptides: 1
+metap_background: []      # FASTA of further proteins (human proteome, contaminants); the IMP3 proteins are always used
 
-read_support: "auto"           # reads on the smORFs from the IMP3 BAMs: auto (when the BAMs are there), true, false
-read_support_min_reads: 1      # reads for an omic to support a smORF
+# metaG / metaT reads per smORF (featureCounts on Assembly/<omic>.reads.sorted.bam): auto, true, false
+read_support: "auto"
+read_support_min_reads: 1
 
-# clustering of the smORFs of all samples (MMseqs2 easy-cluster): "identity coverage" per level
-clustering:
-  levels: ["1 1", "0.95 0.95"]   # 100 %: identical smORFs across samples; 95 %: the families of the paper
-  params: "--cov-mode 0 --cluster-mode 0"
-
-# per-sample metaproteomics search databases: IMP3 (Bakta) proteins + smORFs + human RefSeq proteome + cRAP, each
-# deduplicated (100 % identity and coverage); identical proteins get one ID across samples
-proteomics_db:
-  build: false
-  id_prefix: "imp3"            # protein IDs <prefix>_imp_..., <prefix>_smorf_... (paper: expobiome)
-  human: true                  # add the human RefSeq proteome
-  crap: ""                     # contaminants FASTA; "" = CCP cRAP of 14 June 2025 shipped with IMP3
-
-databases:                     # "" = below <db_path>/smorf (downloaded by the module when missing)
-  rfam_cm: ""                  # Rfam.cm (cmpress'ed by the module)
-  antifam_hmm: ""              # AntiFam.hmm
-  human_proteome: ""           # human RefSeq proteins, deduplicated
-
-resources:                     # threads and memory of the rules (per thread)
-  threads_small: 14
-  threads_big: 24
-  mem_per_thread_mb: 4000
-  big_mem_per_thread_mb: 16000 # MMseqs2 clustering of all samples
-  tmp_dir: ""                  # MMseqs2 temporary files; "" = <outdir>/tmp
+databases:                # "" = below <db_path>/smorf
+  antifam_hmm: ""
+  rfam_cm: ""

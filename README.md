@@ -48,7 +48,7 @@ not part of this repository.
 
 - [IMP explorer](https://github.com/genomeanalysislcsb/imp-explorer): study-level interactive exploration of IMP3 results
 - [sRNA-IMP](https://github.com/genomeanalysislcsb/sRNA-IMP): small-RNA analysis on the IMP3 assembly
-- smORF module (`imp3 smorf`, in this repository): small ORFs (≤ 100 aa) and metaproteomics search databases on finished runs ([docs](https://genomeanalysislcsb.github.io/IMP3/steps/smorf/))
+- smORFs (`imp3 smorf`, in this repository): small ORFs (≤ 100 aa) of finished runs, written into the sample folders ([docs](https://genomeanalysislcsb.github.io/IMP3/steps/smorf/))
 
 Known open points (removed or postponed features): [TODO.md](TODO.md).
 

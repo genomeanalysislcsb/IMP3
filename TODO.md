@@ -60,3 +60,13 @@ missing; remove it when it is done (the commit says so).
   matplotlib, Java, Keras and GNU parallel leave `.cache/`, `.java/`, `.keras/`, `.parallel/` there (harmless, a few
   files). Could point HOME to the run's temporary folder instead.
   The container run also left `nltk_data/` (NLTK stopwords downloaded by a tool) in the sample folder.
+
+## smORFs
+
+- Metaproteomics search databases with the smORFs (the paper's MP_DB: Bakta proteins + smORFs + human RefSeq + cRAP,
+  deduplicated, one ID per identical protein across samples) were part of the former Snakemake version of the
+  smORF module (git history: workflow/rules/smORF/proteomics_db.smk) and are not in `imp3 smorf` yet.
+- `flank` > 0 (~60 nt) to recover smORFs in gaps that touch a neighbouring feature (690 on BHC01 found only by the
+  paper's whole-assembly gene calling); compare on a few samples and choose the default.
+- An IMP3 step `smorf` (rule calling `imp3_smorf.py` before the final compression) so new runs can include it.
+- `IMP_smorf` environment into the next Apptainer image.
