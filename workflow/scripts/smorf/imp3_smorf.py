@@ -135,9 +135,9 @@ def tool_version(cmd):
 class Sample:
     def __init__(self, d, name):
         self.dir, self.name = d, name
-        self.assembly = first(d + "/Assembly/mgmt.assembly.merged.fa*", d + "/Assembly/mg.assembly.merged.fa*",
-                              d + "/Assembly/mt.assembly.merged.fa*")
-        self.assembly = self.assembly if self.assembly and re.search(r"\.fa(\.gz)?$", self.assembly) else None
+        # the FASTA itself, not its indexes (.fa.0123, .fa.amb, .fa.fai, ... next to it)
+        self.assembly = first(*[d + "/Assembly/%s.assembly.merged.%s" % (t, x) for t in ("mgmt", "mg", "mt")
+                                for x in ("fa.gz", "fa")])
         self.gff = first(d + "/Analysis/annotation/annotation_CDS_RNA_hmms.gff.gz",
                          d + "/Analysis/annotation/annotation_CDS_RNA_hmms.gff",
                          d + "/Analysis/annotation/bakta/annotation.filt.gff*")
